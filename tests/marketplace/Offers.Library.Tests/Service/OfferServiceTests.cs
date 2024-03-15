@@ -21,7 +21,6 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -29,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
@@ -63,7 +63,7 @@ public class OfferServiceTests
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly ILanguageRepository _languageRepository;
-    private readonly IRoleBaseMailService _roleBaseMailService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IDocumentRepository _documentRepository;
     private readonly OfferService _sut;
     private readonly IOfferSetupService _offerSetupService;
@@ -94,7 +94,7 @@ public class OfferServiceTests
         _languageRepository = A.Fake<ILanguageRepository>();
         _technicalUserProfileRepository = A.Fake<ITechnicalUserProfileRepository>();
         _notificationService = A.Fake<INotificationService>();
-        _roleBaseMailService = A.Fake<IRoleBaseMailService>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _offerSetupService = A.Fake<IOfferSetupService>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
@@ -106,7 +106,7 @@ public class OfferServiceTests
         A.CallTo(() => _identity.CompanyId).Returns(_companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        _sut = new OfferService(_portalRepositories, _notificationService, _roleBaseMailService, _identityService, _offerSetupService, _logger);
+        _sut = new OfferService(_portalRepositories, _notificationService, _mailingProcessCreation, _identityService, _offerSetupService, _logger);
 
         SetupRepositories();
         _createNotificationsEnumerator = SetupServices();
@@ -832,7 +832,7 @@ public class OfferServiceTests
         var userNameParameter = ("offerProviderName", "User");
         var template = new[]
         {
-            "offer-release-activation"
+            "app-release-activation"
         };
 
         //Act
@@ -857,7 +857,7 @@ public class OfferServiceTests
             A.CallTo(() => _offerSetupService.ActivateSingleInstanceAppAsync(offer.Id))
                 .MustNotHaveHappened();
         }
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
+        A.CallTo(() => _mailingProcessCreation.RoleBaseSendMail(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userNameParameter,
@@ -1182,7 +1182,7 @@ public class OfferServiceTests
         var userNameParameter = ("offerProviderName", "Service Manager");
         var template = new[]
         {
-            "offer-request-decline"
+            $"{offerTypeId.ToString().ToLower()}-request-decline"
         };
 
         // Act
@@ -1193,7 +1193,7 @@ public class OfferServiceTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _createNotificationsEnumerator.MoveNextAsync()).MustHaveHappened(2, Times.Exactly);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
+        A.CallTo(() => _mailingProcessCreation.RoleBaseSendMail(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(recipients),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userNameParameter,

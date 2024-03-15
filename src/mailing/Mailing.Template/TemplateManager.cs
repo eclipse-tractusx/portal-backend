@@ -37,7 +37,7 @@ public class TemplateManager : ITemplateManager
         _settings = templateSettings.Value;
     }
 
-    public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
+    public async Task<Mail> ApplyTemplateAsync(string id, IReadOnlyDictionary<string, string> parameters)
     {
         var template = _settings.Templates.SingleOrDefault(x => x.Name == id)?.Setting ?? throw new NoSuchTemplateException(id);
 
@@ -74,7 +74,7 @@ public class TemplateManager : ITemplateManager
         }
     }
 
-    private static string ReplaceValues(string template, IDictionary<string, string> parameters) =>
+    private static string ReplaceValues(string template, IReadOnlyDictionary<string, string> parameters) =>
         _templateMatcherExpression.Replace(
             template,
             m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");

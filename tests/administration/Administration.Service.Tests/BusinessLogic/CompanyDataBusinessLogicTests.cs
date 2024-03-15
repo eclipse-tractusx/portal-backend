@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Text.Json;
@@ -55,7 +55,7 @@ public class CompanyDataBusinessLogicTests
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CompanyDataBusinessLogic _sut;
@@ -76,8 +76,8 @@ public class CompanyDataBusinessLogicTests
         _notificationRepository = A.Fake<INotificationRepository>();
         _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
-        _mailingService = A.Fake<IMailingService>();
         _custodianService = A.Fake<ICustodianService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identityService = A.Fake<IIdentityService>();
@@ -98,7 +98,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF } });
-        _sut = new CompanyDataBusinessLogic(_portalRepositories, _mailingService, _custodianService, _dateTimeProvider, _identityService, options);
+        _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, options);
     }
 
     #region GetOwnCompanyDetails
@@ -255,7 +255,7 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
-    #region  CreateCompanyRoleAndConsentAgreementDetails
+    #region CreateCompanyRoleAndConsentAgreementDetails
 
     [Fact]
     public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
@@ -1189,7 +1189,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1213,7 +1213,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1237,7 +1237,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1263,7 +1263,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1327,7 +1327,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(recipientMail, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1454,7 +1454,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1499,7 +1499,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1520,7 +1520,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1556,7 +1556,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1573,7 +1573,6 @@ public class CompanyDataBusinessLogicTests
     public async Task RejectCredential_WithoutUserMail_ReturnsExpected()
     {
         // Arrange
-        const string recipientMail = "test@mail.com";
         var now = DateTimeOffset.UtcNow;
         var requesterId = Guid.NewGuid();
         var notifications = new List<Notification>();
@@ -1599,7 +1598,7 @@ public class CompanyDataBusinessLogicTests
         await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 

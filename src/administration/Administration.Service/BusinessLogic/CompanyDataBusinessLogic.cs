@@ -27,13 +27,14 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.Json;
 
@@ -44,28 +45,28 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IIdentityData _identityData;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly CompanyDataSettings _settings;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="portalRepositories"></param>
-    /// <param name="mailingService"></param>
     /// <param name="custodianService"></param>
     /// <param name="dateTimeProvider"></param>
     /// <param name="identityService"></param>
+    /// <param name="mailingProcessCreation"></param>
     /// <param name="options"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, IMailingService mailingService, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IOptions<CompanyDataSettings> options)
+    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IMailingProcessCreation mailingProcessCreation, IOptions<CompanyDataSettings> options)
     {
         _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
         _custodianService = custodianService;
         _dateTimeProvider = dateTimeProvider;
         _identityData = identityService.IdentityData;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = options.Value;
     }
 
@@ -504,24 +505,22 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 throw new ArgumentOutOfRangeException($"{data.Kind} is currently not supported");
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         if (!string.IsNullOrWhiteSpace(data.RequesterData.RequesterEmail))
         {
             var userName = string.Join(" ", new[] { data.RequesterData.Firstname, data.RequesterData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail },
-                { "requestName", typeValue },
-                { "companyName", data.CompanyName },
-                { "credentialType", typeValue },
-                {
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail),
+                KeyValuePair.Create("requestName", typeValue),
+                KeyValuePair.Create("companyName", data.CompanyName),
+                KeyValuePair.Create("credentialType", typeValue),
+                KeyValuePair.Create(
                     "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)
-                }
-            };
-
-            await _mailingService.SendMails(data.RequesterData.RequesterEmail, mailParameters, Enumerable.Repeat("CredentialApproval", 1)).ConfigureAwait(false);
+                )
+            });
+            _mailingProcessCreation.CreateMailProcess(data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
         }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -558,20 +557,17 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 c.DateLastChanged = _dateTimeProvider.OffsetNow;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
-
         if (!string.IsNullOrWhiteSpace(requesterEmail))
         {
             var userName = string.Join(" ", new[] { requesterFirstname, requesterLastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail },
-                { "requestName", typeValue }
-            };
-
-            await _mailingService.SendMails(requesterEmail, mailParameters, Enumerable.Repeat("CredentialRejected", 1))
-                .ConfigureAwait(false);
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail),
+                KeyValuePair.Create("requestName", typeValue)
+            });
+            _mailingProcessCreation.CreateMailProcess(requesterEmail, "CredentialRejected", mailParameters);
         }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />

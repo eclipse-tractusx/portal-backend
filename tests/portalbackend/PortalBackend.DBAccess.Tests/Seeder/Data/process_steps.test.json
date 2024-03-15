@@ -214,5 +214,45 @@
     "process_id": "0cc208c3-bdf6-456c-af81-6c3ebe14fe13",
     "date_created": "2023-10-11 08:15:20.479000 +00:00",
     "date_last_changed": null
+  },
+  {
+    "id": "a50fc891-2ffb-4bc4-920f-833398aa7a98",
+    "process_step_type_id": 401,
+    "process_step_status_id": 2,
+    "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
+    "date_created": "2023-10-11 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "71e6579e-e1d6-46a8-9e62-6fe4e44f7079",
+    "process_step_type_id": 402,
+    "process_step_status_id": 2,
+    "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
+    "date_created": "2023-10-11 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "b744137c-ac7c-4eae-9d4c-49fe1ea5b087",
+    "process_step_type_id": 403,
+    "process_step_status_id": 2,
+    "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
+    "date_created": "2023-10-11 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "62a8cb61-b9e5-4807-88ab-1b458a0ff1a3",
+    "process_step_type_id": 404,
+    "process_step_status_id": 1,
+    "process_id": "70f0f368-5058-4aca-808b-cece869bcef2",
+    "date_created": "2023-10-11 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "0458c24c-e1fe-4cdb-9902-60f1bd968d22",
+    "process_step_type_id": 301,
+    "process_step_status_id": 1,
+    "process_id": "44927361-3766-4f07-9f18-860158880d86",
+    "date_created": "2023-10-11 08:15:20.479000 +00:00",
+    "date_last_changed": null
   }
 ]

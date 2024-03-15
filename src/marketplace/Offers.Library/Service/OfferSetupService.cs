@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -30,10 +29,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -45,7 +46,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly IServiceAccountCreation _serviceAccountCreation;
     private readonly INotificationService _notificationService;
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
     private readonly IIdentityData _identityData;
     private readonly ILogger<OfferSetupService> _logger;
@@ -58,9 +59,9 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="serviceAccountCreation">Access to the service account creation</param>
     /// <param name="notificationService">Creates notifications for the user</param>
     /// <param name="offerSubscriptionProcessService">Access to offer subscription process service</param>
-    /// <param name="mailingService">Mailing service to send mails to the user</param>
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
     /// <param name="identityService">Access to the identity of the user</param>
+    /// <param name="mailingProcessCreation">Mailing Process Creation</param>
     /// <param name="logger">Access to the logger</param>
     public OfferSetupService(
         IPortalRepositories portalRepositories,
@@ -68,9 +69,9 @@ public class OfferSetupService : IOfferSetupService
         IServiceAccountCreation serviceAccountCreation,
         INotificationService notificationService,
         IOfferSubscriptionProcessService offerSubscriptionProcessService,
-        IMailingService mailingService,
         ITechnicalUserProfileService technicalUserProfileService,
         IIdentityService identityService,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<OfferSetupService> logger)
     {
         _portalRepositories = portalRepositories;
@@ -78,8 +79,8 @@ public class OfferSetupService : IOfferSetupService
         _serviceAccountCreation = serviceAccountCreation;
         _notificationService = notificationService;
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
-        _mailingService = mailingService;
         _technicalUserProfileService = technicalUserProfileService;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _logger = logger;
     }
@@ -129,14 +130,13 @@ public class OfferSetupService : IOfferSetupService
 
         await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(false);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
+        if (!string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
-            return new OfferAutoSetupResponseData(technicalUserInfoData, clientInfoData);
+            SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId);
         }
 
-        await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId).ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
         return new OfferAutoSetupResponseData(
             technicalUserInfoData,
             clientInfoData);
@@ -385,17 +385,15 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(false);
     }
 
-    private async Task SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName, OfferTypeId offerType)
+    private void SendMail(string basePortalAddress, string userName, string requesterEmail, string? offerName, OfferTypeId offerType)
     {
-        var mailParams = new Dictionary<string, string>
+        var mailParams = ImmutableDictionary.CreateRange(new[]
         {
-            {"offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"},
-            {"offerName", offerName ?? "unnamed Offer"},
-            {"url", basePortalAddress},
-        };
-        await _mailingService
-            .SendMails(requesterEmail, mailParams, new[] { $"{offerType.ToString().ToLower()}-subscription-activation" })
-            .ConfigureAwait(false);
+            KeyValuePair.Create("offerCustomerName", !string.IsNullOrWhiteSpace(userName) ? userName : "User"),
+            KeyValuePair.Create("offerName", offerName ?? "unnamed Offer"),
+            KeyValuePair.Create("url", basePortalAddress),
+        });
+        _mailingProcessCreation.CreateMailProcess(requesterEmail, $"{offerType.ToString().ToLower()}-subscription-activation", mailParams);
     }
 
     /// <inheritdoc />
@@ -637,15 +635,7 @@ public class OfferSetupService : IOfferSetupService
                 null);
         }
 
-        try
-        {
-            await SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}",
-                offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId).ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            throw new ServiceException(e.Message, true);
-        }
+        SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId);
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },

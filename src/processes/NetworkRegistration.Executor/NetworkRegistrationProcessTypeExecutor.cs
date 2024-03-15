@@ -114,7 +114,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
         return ex switch
         {
             ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
-            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
+            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetNetworkRetriggerStep())
         };
     }
 }

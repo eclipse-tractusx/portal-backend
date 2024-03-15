@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,13 +25,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
 
@@ -43,26 +42,26 @@ public class ApplicationActivationService : IApplicationActivationService
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IMailingService _mailingService;
     private readonly IDateTimeProvider _dateTime;
     private readonly ICustodianService _custodianService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ApplicationActivationSettings _settings;
 
     public ApplicationActivationService(
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
-        IMailingService mailingService,
         IDateTimeProvider dateTime,
         ICustodianService custodianService,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<ApplicationActivationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _provisioningManager = provisioningManager;
-        _mailingService = mailingService;
         _dateTime = dateTime;
         _custodianService = custodianService;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = options.Value;
     }
 
@@ -261,18 +260,17 @@ public class ApplicationActivationService : IApplicationActivationService
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
-                { "companyName", companyName },
-                { "bpn", businessPartnerNumber },
-                { "homeUrl", _settings.PortalHomeAddress },
-                { "passwordResendUrl", _settings.PasswordResendAddress },
-                { "companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress },
-                { "dataspaceUrl", _settings.DataspaceAddress }
-            };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("bpn", businessPartnerNumber),
+                KeyValuePair.Create("homeUrl", _settings.PortalHomeAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+                KeyValuePair.Create("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
+                KeyValuePair.Create("dataspaceUrl", _settings.DataspaceAddress)
+            });
+            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
 
         if (failedUserNames.Any())

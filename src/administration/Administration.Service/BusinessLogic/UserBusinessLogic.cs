@@ -22,16 +22,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -47,7 +48,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     private readonly IProvisioningDBAccess _provisioningDbAccess;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<UserBusinessLogic> _logger;
     private readonly UserSettings _settings;
 
@@ -58,7 +59,7 @@ public class UserBusinessLogic : IUserBusinessLogic
     /// <param name="userProvisioningService">User Provisioning Service</param>
     /// <param name="provisioningDbAccess">Provisioning DBAccess</param>
     /// <param name="identityService">Access to the identity</param>
-    /// <param name="mailingService">Mailing Service</param>
+    /// <param name="mailingProcessCreation"></param>
     /// <param name="logger">logger</param>
     /// <param name="settings">Settings</param>
     /// <param name="portalRepositories">Portal Repositories</param>
@@ -68,7 +69,7 @@ public class UserBusinessLogic : IUserBusinessLogic
         IProvisioningDBAccess provisioningDbAccess,
         IPortalRepositories portalRepositories,
         IIdentityService identityService,
-        IMailingService mailingService,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<UserBusinessLogic> logger,
         IOptions<UserSettings> settings)
     {
@@ -76,8 +77,8 @@ public class UserBusinessLogic : IUserBusinessLogic
         _userProvisioningService = userProvisioningService;
         _provisioningDbAccess = provisioningDbAccess;
         _portalRepositories = portalRepositories;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
-        _mailingService = mailingService;
         _logger = logger;
         _settings = settings.Value;
     }
@@ -133,23 +134,17 @@ public class UserBusinessLogic : IUserBusinessLogic
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "password", password ?? "" },
-                { "companyName", companyDisplayName },
-                { "nameCreatedBy", nameCreatedBy },
-                { "url", _settings.Portal.BasePortalAddress },
-                { "passwordResendUrl", _settings.Portal.PasswordResendAddress },
-            };
-
-            try
-            {
-                await _mailingService.SendMails(email, mailParameters, new List<string> { "NewUserTemplate", "NewUserPasswordTemplate" }).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error sending email after creating user {companyUserId}", companyUserId);
-            }
+                KeyValuePair.Create("password", password ?? ""),
+                KeyValuePair.Create("companyName", companyDisplayName),
+                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
+                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.Portal.PasswordResendAddress),
+            });
+            _mailingProcessCreation.CreateMailProcess(email, "NewUserTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(email, "NewUserPasswordTemplate", mailParameters);
+            await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
             yield return email;
         }
@@ -214,13 +209,9 @@ public class UserBusinessLogic : IUserBusinessLogic
             mailParameters["password"] = result.Password;
         }
 
-        try
+        foreach (var template in mailTemplates)
         {
-            await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error sending email after creating user {CompanyUserId}", result.CompanyUserId);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, template, mailParameters.ToImmutableDictionary());
         }
 
         return result.CompanyUserId;

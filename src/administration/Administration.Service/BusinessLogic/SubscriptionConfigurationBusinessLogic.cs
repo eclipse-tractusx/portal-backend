@@ -138,7 +138,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     /// <inheritdoc />
     private async Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
     {
-        var nextStep = stepToTrigger.GetStepToRetrigger();
+        var nextStep = stepToTrigger.GetOfferSubscriptionStepToRetrigger();
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null, mustBePending)
             .ConfigureAwait(false);
 

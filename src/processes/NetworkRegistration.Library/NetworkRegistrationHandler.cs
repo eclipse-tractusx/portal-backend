@@ -18,18 +18,19 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
@@ -38,20 +39,20 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly NetworkRegistrationProcessSettings _settings;
-    private readonly IMailingService _mailingService;
 
     public NetworkRegistrationHandler(
         IPortalRepositories portalRepositories,
         IUserProvisioningService userProvisioningService,
         IProvisioningManager provisioningManager,
-        IMailingService mailingService,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<NetworkRegistrationProcessSettings> options)
     {
         _portalRepositories = portalRepositories;
         _userProvisioningService = userProvisioningService;
         _provisioningManager = provisioningManager;
-        _mailingService = mailingService;
+        _mailingProcessCreation = mailingProcessCreation;
 
         _settings = options.Value;
     }
@@ -104,15 +105,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                     continue;
                 }
 
-                await _userProvisioningService.HandleCentralKeycloakCreation(
-                    new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true),
-                    cu.CompanyUserId,
-                    cu.CompanyName,
-                    cu.Bpn,
-                    null,
-                    cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)),
-                    userRepository,
-                    userRoleRepository).ConfigureAwait(false);
+                await _userProvisioningService.HandleCentralKeycloakCreation(new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyUserId, cu.CompanyName, cu.Bpn, null, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)), userRepository, userRoleRepository).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -120,21 +113,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        var displayNames = await companyAssignedIdentityProviders
-            .SelectMany(assigned => assigned.ProviderLinkData)
-            .Select(data => data.Alias!)
-            .Distinct()
-            .ToImmutableDictionaryAsync(async alias =>
-                await _provisioningManager.GetIdentityProviderDisplayName(alias).ConfigureAwait(false) ?? throw new ConflictException($"Display Name should not be null for alias: {alias}")).ConfigureAwait(false);
-
-        var userData = companyAssignedIdentityProviders.Select(userData => new UserMailInformation(
-            userData.Email ?? throw new UnexpectedConditionException("userData.Email should never be null here"),
-            userData.FirstName,
-            userData.LastName,
-            userData.ProviderLinkData.Select(data => displayNames[data.Alias!])));
-
-        await SendMails(userData, ospName).ConfigureAwait(false);
-
+        await CreateMailProcess(GetUserMailInformation(companyAssignedIdentityProviders), ospName).ConfigureAwait(false);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -142,22 +121,54 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             null);
     }
 
-    private async Task SendMails(IEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
+    private async IAsyncEnumerable<UserMailInformation> GetUserMailInformation(IEnumerable<CompanyUserIdentityProviderProcessData> companyUserIdentityProviderProcessData)
     {
-        foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
+        var mapping = new Dictionary<string, string>();
+
+        async Task<string> GetDisplayName(string idpAlias)
+        {
+            if (!mapping.TryGetValue(idpAlias, out var displayName))
+            {
+                displayName = await _provisioningManager.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
+                }
+
+                mapping.Add(idpAlias, displayName);
+            }
+
+            return displayName;
+        }
+
+        foreach (var userData in companyUserIdentityProviderProcessData)
+        {
+            yield return new UserMailInformation(
+                userData.Email ?? throw new UnexpectedConditionException("userData.Email should never be null here"),
+                userData.FirstName,
+                userData.LastName,
+                await Task.WhenAll(
+                    userData.ProviderLinkData.Select(pld =>
+                        GetDisplayName(pld.Alias ?? throw new UnexpectedConditionException("providerLinkData.Alias should never be null here")))).ConfigureAwait(false));
+        }
+    }
+
+    private async Task CreateMailProcess(IAsyncEnumerable<UserMailInformation> companyUserWithRoleIdForCompany, string ospName)
+    {
+        await foreach (var (receiver, firstName, lastName, displayNames) in companyUserWithRoleIdForCompany)
         {
             var userName = string.Join(" ", firstName, lastName);
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver },
-                { "osp", ospName },
-                { "loginDocumentUrl", _settings.LoginDocumentAddress },
-                { "externalRegistrationUrl", _settings.ExternalRegistrationAddress },
-                { "closeApplicationUrl", _settings.CloseApplicationAddress },
-                { "url", _settings.BasePortalAddress },
-                { "idpAlias", string.Join(",", displayNames) }
-            };
-            await _mailingService.SendMails(receiver, mailParameters, Enumerable.Repeat("OspWelcomeMail", 1)).ConfigureAwait(false);
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : receiver),
+                KeyValuePair.Create("osp", ospName),
+                KeyValuePair.Create("loginDocumentUrl", _settings.LoginDocumentAddress),
+                KeyValuePair.Create("externalRegistrationUrl", _settings.ExternalRegistrationAddress),
+                KeyValuePair.Create("closeApplicationUrl", _settings.CloseApplicationAddress),
+                KeyValuePair.Create("url", _settings.BasePortalAddress),
+                KeyValuePair.Create("idpAlias", string.Join(",", displayNames))
+            });
+            _mailingProcessCreation.CreateMailProcess(receiver, "CredentialRejected", mailParameters);
         }
     }
 
@@ -176,32 +187,27 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         }
 
         var companyUserId = enumerator.Current;
-        string? iamUserId;
-        IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
+
         try
         {
-            iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
-                .ConfigureAwait(false);
-            if (iamUserId == null)
-            {
-                throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
-            }
+            var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
+                .ConfigureAwait(false) ?? throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
+            await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+
+            return await ModifyIdentityAndCreateReturnValues($"deleted user {iamUserId} for company user {companyUserId}").ConfigureAwait(false);
         }
         catch (KeycloakEntityNotFoundException) // we will ignore a not found exception and proceed with the next identity
         {
-            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
-            nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
-                : null;
-            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"no user found for company user id {companyUserId}");
+            return await ModifyIdentityAndCreateReturnValues($"no user found for company user id {companyUserId}").ConfigureAwait(false);
         }
 
-        await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
-
-        nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-            ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
-            : null;
-        return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"deleted user {iamUserId} for company user {companyUserId}");
+        async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ModifyIdentityAndCreateReturnValues(string message)
+        {
+            _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(companyUserId, null, x => { x.UserStatusId = UserStatusId.INACTIVE; });
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1) // in case there are further company users eligible for remove reschedule the same stepTypeId
+                : null;
+            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, message);
+        }
     }
 }

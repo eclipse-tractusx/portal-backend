@@ -25,16 +25,16 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -47,8 +47,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
-    private readonly IRoleBaseMailService _roleBaseMailService;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IdentityProviderSettings _settings;
     private readonly ILogger<IdentityProviderBusinessLogic> _logger;
 
@@ -59,8 +58,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IProvisioningManager provisioningManager,
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
-        IRoleBaseMailService roleBaseMailService,
-        IMailingService mailingService,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<IdentityProviderSettings> options,
         ILogger<IdentityProviderBusinessLogic> logger)
     {
@@ -68,8 +66,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         _provisioningManager = provisioningManager;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
-        _roleBaseMailService = roleBaseMailService;
-        _mailingService = mailingService;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = options.Value;
         _logger = logger;
     }
@@ -217,7 +214,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
     }
 
     private Task SendIdpMail(Guid identityProviderId, string? alias, string ownerCompanyName, IEnumerable<UserRoleConfig> idpRoles) =>
-        _roleBaseMailService.RoleBaseSendMailForIdp(
+        _mailingProcessCreation.RoleBaseSendMailForIdp(
             idpRoles,
             new[] { ("idpAlias", alias ?? identityProviderId.ToString()), ("ownerCompanyName", ownerCompanyName) },
             ("username", "User"),
@@ -399,10 +396,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
     private async Task DeleteManagedIdpLinks(Guid identityProviderId, string? alias, string ownerCompanyName, IIdentityProviderRepository identityProviderRepository)
     {
-        var roleIds = await _roleBaseMailService.GetRoleData(_settings.DeleteIdpRoles).ConfigureAwait(false);
+        var roleIds = await _mailingProcessCreation.GetRoleData(_settings.DeleteIdpRoles).ConfigureAwait(false);
         var idpLinkedData = identityProviderRepository.GetManagedIdpLinkedData(identityProviderId, roleIds.Distinct());
 
-        async IAsyncEnumerable<(string Email, IDictionary<string, string> Parameters)> DeleteLinksReturningMaildata()
+        async IAsyncEnumerable<(string Email, IReadOnlyDictionary<string, string> Parameters)> DeleteLinksReturningMaildata()
         {
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -419,28 +416,27 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.SelectMany(i => i.UserRoleIds.Select(ur => (i.IdentityId, ur))));
                     await DeleteKeycloakUsers(data.Identities.Select(i => i.IdentityId));
                 }
+
                 identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
                 userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
 
                 foreach (var userData in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }).Select(i => i.Userdata))
                 {
                     var userName = string.Join(" ", new[] { userData.FirstName, userData.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
-                    var mailParameters = new Dictionary<string, string>
+                    var mailParameters = ImmutableDictionary.CreateRange(new[]
                     {
-                        {"idpAlias", alias ?? identityProviderId.ToString()},
-                        {"ownerCompanyName", ownerCompanyName},
-                        { "username", string.IsNullOrWhiteSpace(userName) ? "User" : userName }
-                    };
+                        KeyValuePair.Create("idpAlias", alias ?? identityProviderId.ToString()),
+                        KeyValuePair.Create("ownerCompanyName", ownerCompanyName),
+                        KeyValuePair.Create("username", string.IsNullOrWhiteSpace(userName) ? "User" : userName)
+                    });
                     yield return (userData.UserMail!, mailParameters);
                 }
             }
         }
 
-        var mailTemplates = Enumerable.Repeat("DeleteManagedIdp", 1);
-
-        foreach (var mailData in await DeleteLinksReturningMaildata().ToListAsync().ConfigureAwait(false))
+        await foreach (var mailData in DeleteLinksReturningMaildata().ConfigureAwait(false))
         {
-            await _mailingService.SendMails(mailData.Email, mailData.Parameters, mailTemplates).ConfigureAwait(false);
+            _mailingProcessCreation.CreateMailProcess(mailData.Email, "DeleteManagedIdp", mailData.Parameters);
         }
     }
 

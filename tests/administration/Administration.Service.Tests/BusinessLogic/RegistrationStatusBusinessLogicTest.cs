@@ -65,7 +65,7 @@ public class RegistrationStatusBusinessLogicTest
                 new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
                 new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
             },
-            EncrptionConfigIndex = 1
+            EncryptionConfigIndex = 1
         };
         _logic = new RegistrationStatusBusinessLogic(_portalRepositories, identityService, Options.Create(_options));
     }
@@ -179,7 +179,7 @@ public class RegistrationStatusBusinessLogicTest
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
 
-        var cryptoConfig = _options.EncryptionConfigs.ElementAtOrDefault(_options.EncrptionConfigIndex);
+        var cryptoConfig = _options.EncryptionConfigs.SingleOrDefault(x => x.Index == _options.EncryptionConfigIndex);
         cryptoConfig.Should().NotBeNull()
             .And.Match<EncryptionModeConfig>(x =>
                 x.Index == 1 &&

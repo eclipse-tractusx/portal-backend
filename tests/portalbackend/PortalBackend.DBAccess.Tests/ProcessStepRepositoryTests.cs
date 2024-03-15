@@ -320,6 +320,51 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region IsValidProcess
+
+    [Fact]
+    public async Task IsValidProcess_WithTodoProcessStep_ReturnsExpected()
+    {
+        // Arrange
+        var processId = new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsValidProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, Enumerable.Repeat(ProcessStepTypeId.START_CLEARING_HOUSE, 1)).ConfigureAwait(false);
+        result.ProcessExists.Should().BeTrue();
+        result.ProcessData.ProcessSteps.Should().ContainSingle()
+            .And.Satisfy(
+                x => x.ProcessStepTypeId == ProcessStepTypeId.START_CLEARING_HOUSE && x.ProcessStepStatusId == ProcessStepStatusId.TODO
+            );
+    }
+
+    [Fact]
+    public async Task IsValidProcess_WithDoneProcessStep_ReturnsExpected()
+    {
+        // Arrange
+        var processId = new Guid("1f9a3232-9772-4ecb-8f50-c16e97772dfe");
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsValidProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, Enumerable.Repeat(ProcessStepTypeId.CREATE_IDENTITY_WALLET, 1)).ConfigureAwait(false);
+        result.ProcessExists.Should().BeTrue();
+        result.ProcessData.ProcessSteps.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IsValidProcess_WithNotExistingProcess_ReturnsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.IsValidProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, Enumerable.Repeat(ProcessStepTypeId.CREATE_IDENTITY_WALLET, 1)).ConfigureAwait(false);
+        result.ProcessExists.Should().BeFalse();
+    }
+
+    #endregion
+
     private async Task<(ProcessStepRepository sut, PortalDbContext dbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);

@@ -149,7 +149,7 @@ public class DimBusinessLogic : IDimBusinessLogic
             return;
         }
 
-        var cryptoConfig = _settings.EncryptionModeConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"encryptionConfigIndex {_settings.EncryptionConfigIndex} is not configured");
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"encryptionConfigIndex {_settings.EncryptionConfigIndex} is not configured");
         var (secret, initializationVector) = CryptoHelper.Encrypt(data.AuthenticationDetails.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         _portalRepositories.GetInstance<ICompanyRepository>().CreateWalletData(companyId, data.Did, data.DidDocument, data.AuthenticationDetails.ClientId, secret, initializationVector, _settings.EncryptionConfigIndex, data.AuthenticationDetails.AuthenticationServiceUrl);

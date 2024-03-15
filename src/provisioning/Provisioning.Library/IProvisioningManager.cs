@@ -25,7 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 public interface IProvisioningManager
 {
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
-    Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme);
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
     IAsyncEnumerable<(string Client, IEnumerable<string> Roles, Exception? Error)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);

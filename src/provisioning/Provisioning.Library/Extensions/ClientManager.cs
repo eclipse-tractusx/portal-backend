@@ -108,15 +108,6 @@ public partial class ProvisioningManager
         (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
             .SingleOrDefault() ?? throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
 
-    private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
-    {
-        var newClient = Clone(_Settings.SharedRealmClient);
-        newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
-        newClient.Attributes ??= new Dictionary<string, string>();
-        newClient.Attributes["jwks.url"] = config.JwksUrl;
-        await keycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
-    }
-
     private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl, bool enabled)
     {
         var newClient = Clone(_Settings.CentralOIDCClient);

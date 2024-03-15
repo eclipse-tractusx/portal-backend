@@ -3406,6 +3406,83 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_identity_providers", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<string>("ClientId")
+                        .HasColumnType("text")
+                        .HasColumnName("client_id");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<int?>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("IdpName")
+                        .HasColumnType("text")
+                        .HasColumnName("idp_name");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("OrganisationName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("organisation_name");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<string>("ServiceAccountUserId")
+                        .HasColumnType("text")
+                        .HasColumnName("service_account_user_id");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_invitations");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_invitations_application_id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_invitations_process_id");
+
+                    b.ToTable("company_invitations", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
                 {
                     b.Property<int>("Id")
@@ -5014,6 +5091,88 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         });
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingInformation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.Property<byte[]>("MailParameters")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("mail_parameters");
+
+                    b.Property<int>("MailingStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("mailing_status_id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("template");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mailing_informations");
+
+                    b.HasIndex("MailingStatusId")
+                        .HasDatabaseName("ix_mailing_informations_mailing_status_id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_mailing_informations_process_id");
+
+                    b.ToTable("mailing_informations", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_mailing_statuses");
+
+                    b.ToTable("mailing_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "PENDING"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "SENT"
+                        });
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MediaType", b =>
                 {
                     b.Property<int>("Id")
@@ -6314,6 +6473,126 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 210,
                             Label = "RETRIGGER_REMOVE_KEYCLOAK_USERS"
+                        },
+                        new
+                        {
+                            Id = 301,
+                            Label = "SEND_MAIL"
+                        },
+                        new
+                        {
+                            Id = 302,
+                            Label = "RETRIGGER_SEND_MAIL"
+                        },
+                        new
+                        {
+                            Id = 400,
+                            Label = "INVITATION_CREATE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 401,
+                            Label = "INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT"
+                        },
+                        new
+                        {
+                            Id = 402,
+                            Label = "INVITATION_UPDATE_CENTRAL_IDP_URLS"
+                        },
+                        new
+                        {
+                            Id = 403,
+                            Label = "INVITATION_ADD_REALM_ROLE"
+                        },
+                        new
+                        {
+                            Id = 404,
+                            Label = "INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
+                        },
+                        new
+                        {
+                            Id = 405,
+                            Label = "INVITATION_CREATE_SHARED_REALM"
+                        },
+                        new
+                        {
+                            Id = 406,
+                            Label = "INVITATION_CREATE_SHARED_CLIENT"
+                        },
+                        new
+                        {
+                            Id = 407,
+                            Label = "INVITATION_ENABLE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 408,
+                            Label = "INVITATION_CREATE_DATABASE_IDP"
+                        },
+                        new
+                        {
+                            Id = 409,
+                            Label = "INVITATION_CREATE_USER"
+                        },
+                        new
+                        {
+                            Id = 410,
+                            Label = "INVITATION_SEND_MAIL"
+                        },
+                        new
+                        {
+                            Id = 411,
+                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 412,
+                            Label = "RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT"
+                        },
+                        new
+                        {
+                            Id = 413,
+                            Label = "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS"
+                        },
+                        new
+                        {
+                            Id = 414,
+                            Label = "RETRIGGER_INVITATION_ADD_REALM_ROLE"
+                        },
+                        new
+                        {
+                            Id = 415,
+                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
+                        },
+                        new
+                        {
+                            Id = 416,
+                            Label = "RETRIGGER_INVITATION_CREATE_SHARED_REALM"
+                        },
+                        new
+                        {
+                            Id = 417,
+                            Label = "RETRIGGER_INVITATION_CREATE_SHARED_CLIENT"
+                        },
+                        new
+                        {
+                            Id = 418,
+                            Label = "RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP"
+                        },
+                        new
+                        {
+                            Id = 419,
+                            Label = "RETRIGGER_INVITATION_CREATE_USER"
+                        },
+                        new
+                        {
+                            Id = 420,
+                            Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
+                        },
+                        new
+                        {
+                            Id = 421,
+                            Label = "RETRIGGER_INVITATION_SEND_MAIL"
                         });
                 });
 
@@ -6349,6 +6628,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "PARTNER_REGISTRATION"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "MAILING"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "INVITATION"
                         });
                 });
 
@@ -7625,6 +7914,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProvider");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyInvitation", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplication", "Application")
+                        .WithOne("CompanyInvitation")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyInvitation", "ApplicationId")
+                        .HasConstraintName("fk_company_invitations_company_applications_application_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("CompanyInvitation")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyInvitation", "ProcessId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_invitations_processes_process_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Process");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRoleAssignedRoleCollection", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", "CompanyRole")
@@ -8241,6 +8548,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
 
                     b.Navigation("LongNameLanguage");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingInformation", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingStatus", "MailingStatus")
+                        .WithMany("MailingInformations")
+                        .HasForeignKey("MailingStatusId")
+                        .IsRequired()
+                        .HasConstraintName("fk_mailing_informations_mailing_statuses_mailing_status_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("MailingInformation")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingInformation", "ProcessId")
+                        .IsRequired()
+                        .HasConstraintName("fk_mailing_informations_processes_process_id");
+
+                    b.Navigation("MailingStatus");
+
+                    b.Navigation("Process");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", b =>
@@ -8938,6 +9264,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 {
                     b.Navigation("ApplicationChecklistEntries");
 
+                    b.Navigation("CompanyInvitation");
+
                     b.Navigation("Invitations");
 
                     b.Navigation("NetworkRegistration");
@@ -9148,6 +9476,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Offers");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingStatus", b =>
+                {
+                    b.Navigation("MailingInformations");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MediaType", b =>
                 {
                     b.Navigation("Documents");
@@ -9228,6 +9561,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", b =>
                 {
                     b.Navigation("CompanyApplication");
+
+                    b.Navigation("CompanyInvitation");
+
+                    b.Navigation("MailingInformation");
 
                     b.Navigation("NetworkRegistration");
 

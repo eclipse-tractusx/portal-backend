@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,38 +22,22 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models
-{
-    public class CompanyInvitationData
-    {
-        public CompanyInvitationData(string? userName, string firstName, string lastName, string email, string organisationName)
-        {
-            this.userName = userName;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.email = email;
-            this.organisationName = organisationName;
-        }
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-        [JsonPropertyName("userName")]
-        public string? userName { get; set; }
-
-        [DefaultValue("string")]
-        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-        [JsonPropertyName("firstName")]
-        public string firstName { get; set; }
-
-        [DefaultValue("string")]
-        [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-        [JsonPropertyName("lastName")]
-        public string lastName { get; set; }
-
-        [DefaultValue("string")]
-        [EmailAddress]
-        [JsonPropertyName("email")]
-        public string email { get; set; }
-
-        [JsonPropertyName("organisationName")]
-        public string organisationName { get; set; }
-    }
-}
+public record CompanyInvitationData(
+    [property: JsonPropertyName("userName")]
+    string? UserName,
+    [property: DefaultValue("string")]
+    [property: RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+    [property: JsonPropertyName("firstName")]
+    string FirstName,
+    [property: DefaultValue("string")]
+    [property: RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+    [property: JsonPropertyName("lastName")]
+    string LastName,
+    [property: DefaultValue("string")]
+    [property: EmailAddress]
+    [property: JsonPropertyName("email")]
+    string Email,
+    [property: JsonPropertyName("organisationName")]
+    string OrganisationName);

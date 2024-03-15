@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -29,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using System.Collections.Immutable;
 using System.Text.Json;
 
@@ -38,22 +38,22 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
-    private readonly IRoleBaseMailService _roleBaseMailService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     /// <param name="portalRepositories">Factory to access the repositories</param>
     /// <param name="identityService">Access to the identity of the user</param>
-    /// <param name="roleBaseMailService">Mail service.</param>
+    /// <param name="mailingProcessCreation">Mail service.</param>
     public OfferSubscriptionService(
         IPortalRepositories portalRepositories,
         IIdentityService identityService,
-        IRoleBaseMailService roleBaseMailService)
+        IMailingProcessCreation mailingProcessCreation)
     {
         _portalRepositories = portalRepositories;
         _identityData = identityService.IdentityData;
-        _roleBaseMailService = roleBaseMailService;
+        _mailingProcessCreation = mailingProcessCreation;
     }
 
     /// <inheritdoc />
@@ -88,7 +88,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        await _roleBaseMailService.RoleBaseSendMailForCompany(
+        await _mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
             new[]
             {
@@ -98,7 +98,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             ("offerProviderName", "User"),
             new[]
             {
-                "subscription-request"
+                $"{offerTypeId.ToString().ToLower()}-subscription-request"
             },
             offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
 

@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -34,10 +33,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
@@ -45,7 +46,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 {
     private readonly RegistrationSettings _settings;
-    private readonly IMailingService _mailingService;
     private readonly IBpnAccess _bpnAccess;
     private readonly IUserProvisioningService _userProvisioningService;
     private readonly IPortalRepositories _portalRepositories;
@@ -53,22 +53,22 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IIdentityData _identityData;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
 
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     public RegistrationBusinessLogic(
         IOptions<RegistrationSettings> settings,
-        IMailingService mailingService,
         IBpnAccess bpnAccess,
         IUserProvisioningService userProvisioningService,
         ILogger<RegistrationBusinessLogic> logger,
         IPortalRepositories portalRepositories,
         IApplicationChecklistCreationService checklistService,
         IIdentityService identityService,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        IMailingProcessCreation mailingProcessCreation)
     {
         _settings = settings.Value;
-        _mailingService = mailingService;
         _bpnAccess = bpnAccess;
         _userProvisioningService = userProvisioningService;
         _logger = logger;
@@ -76,6 +76,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _checklistService = checklistService;
         _identityData = identityService.IdentityData;
         _dateTimeProvider = dateTimeProvider;
+        _mailingProcessCreation = mailingProcessCreation;
     }
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -424,19 +425,19 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
 
-        var mailParameters = new Dictionary<string, string>
+        var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
-            { "password", password },
-            { "companyName", companyDisplayName },
-            { "message", userCreationInfo.Message ?? "" },
-            { "nameCreatedBy", createdByName },
-            { "url", _settings.BasePortalAddress },
-            { "passwordResendUrl", _settings.PasswordResendAddress },
-            { "username", userCreationInfo.eMail },
-        };
+            KeyValuePair.Create("password", password),
+            KeyValuePair.Create("companyName", companyDisplayName),
+            KeyValuePair.Create("message", userCreationInfo.Message ?? ""),
+            KeyValuePair.Create("nameCreatedBy", createdByName),
+            KeyValuePair.Create("url", _settings.BasePortalAddress),
+            KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+            KeyValuePair.Create("username", userCreationInfo.eMail),
+        });
 
-        await _mailingService.SendMails(userCreationInfo.eMail, mailParameters, new List<string> { inviteTemplateName, "password" }).ConfigureAwait(false);
-
+        _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, inviteTemplateName, mailParameters);
+        _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, "password", mailParameters);
         return modified;
     }
 
@@ -592,14 +593,14 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
 
-        var mailParameters = new Dictionary<string, string>
+        var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
-            { "url", $"{_settings.BasePortalAddress}"},
-        };
+            KeyValuePair.Create("url", $"{_settings.BasePortalAddress}"),
+        });
 
         if (applicationUserData.Email != null)
         {
-            await _mailingService.SendMails(applicationUserData.Email, mailParameters, new[] { "SubmitRegistrationTemplate" });
+            _mailingProcessCreation.CreateMailProcess(applicationUserData.Email, "SubmitRegistrationTemplate", mailParameters);
         }
         else
         {

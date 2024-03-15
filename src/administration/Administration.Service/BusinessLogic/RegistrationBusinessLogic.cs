@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -35,9 +34,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -50,33 +51,33 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly RegistrationSettings _settings;
-    private readonly IMailingService _mailingService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
         IOptions<RegistrationSettings> configuration,
-        IMailingService mailingService,
         IApplicationChecklistService checklistService,
         IClearinghouseBusinessLogic clearinghouseBusinessLogic,
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
         IDimBusinessLogic dimBusinessLogic,
         IProvisioningManager provisioningManager,
+        IMailingProcessCreation mailingProcessCreation,
         ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
         _settings = configuration.Value;
-        _mailingService = mailingService;
         _checklistService = checklistService;
         _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _dimBusinessLogic = dimBusinessLogic;
         _provisioningManager = provisioningManager;
+        _mailingProcessCreation = mailingProcessCreation;
         _logger = logger;
     }
 
@@ -528,11 +529,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 ? null
                 : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
+        PostRegistrationCancelEmailAsync(emailData, companyName, comment);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
-        await PostRegistrationCancelEmailAsync(emailData, companyName, comment).ConfigureAwait(false);
     }
 
-    private async Task PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
+    private void PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
     {
         if (string.IsNullOrWhiteSpace(comment))
         {
@@ -548,15 +549,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 throw new ConflictException($"user {userName} has no assigned email");
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
-                { "companyName", companyName },
-                { "declineComment", comment },
-                { "helpUrl", _settings.HelpAddress }
-            };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationDeclineTemplate" }).ConfigureAwait(false);
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("declineComment", comment),
+                KeyValuePair.Create("helpUrl", _settings.HelpAddress)
+            });
+            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
     }
 

@@ -28,16 +28,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 public static class AutoFixtureExtensions
 {
+    public static readonly string OrgNameRegex = @"[a-z]{40}";
     public static readonly string EmailRegex = @"[a-z]{20}@[a-z]{10}\.[a-z]{2}";
     public static readonly string NameRegex = @"^[a-z]{20}$";
 
-    public static IFixture ConfigureFixture(this IFixture _fixture)
+    public static IFixture ConfigureFixture(this IFixture fixture)
     {
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _fixture.Customize<JsonDocument>(x => x.FromFactory(() => JsonDocument.Parse("{}")));
-        return _fixture;
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        fixture.Customize<JsonDocument>(x => x.FromFactory(() => JsonDocument.Parse("{}")));
+        return fixture;
     }
 
     public static IPostprocessComposer<T> WithEmailPattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
@@ -48,5 +49,10 @@ public static class AutoFixtureExtensions
     public static IPostprocessComposer<T> WithNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
     {
         return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(NameRegex)));
+    }
+
+    public static IPostprocessComposer<T> WithOrgNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
+    {
+        return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(OrgNameRegex)));
     }
 }

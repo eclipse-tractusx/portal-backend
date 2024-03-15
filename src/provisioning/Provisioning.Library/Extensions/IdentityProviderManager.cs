@@ -64,22 +64,15 @@ public partial class ProvisioningManager
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
         $"{_Settings.IdpPrefix}{await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
 
-    private Task CreateCentralIdentityProviderAsync(string alias, string displayName, IdentityProvider identityProvider)
+    public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
+        => CreateCentralIdentityProviderAsyncInternal(alias, displayName, _Settings.CentralIdentityProvider);
+
+    private Task CreateCentralIdentityProviderAsyncInternal(string alias, string displayName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
         newIdp.DisplayName = displayName;
         return _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp);
-    }
-
-    private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
-    {
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("identityProvider.Config is null")).AuthorizationUrl = config.AuthorizationEndpoint.ToString();
-        identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
-        identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
-        identityProvider.Config.JwksUrl = config.JwksUri.ToString();
-        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
     }
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
@@ -150,14 +143,6 @@ public partial class ProvisioningManager
 
     public async Task<string?> GetIdentityProviderDisplayName(string alias) =>
         (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName;
-
-    private async ValueTask EnableCentralIdentityProviderAsync(string alias)
-    {
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-        identityProvider.Enabled = true;
-        (identityProvider.Config ?? throw new KeycloakInvalidResponseException("identityProvider.Config is null")).HideOnLoginPage = "false";
-        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
-    }
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {

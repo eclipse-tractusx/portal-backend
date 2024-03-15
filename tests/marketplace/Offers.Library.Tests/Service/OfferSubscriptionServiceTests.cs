@@ -20,13 +20,13 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
@@ -64,7 +64,7 @@ public class OfferSubscriptionServiceTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IRoleBaseMailService _roleBaseMailService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IIdentityService _identityService;
     private readonly OfferSubscriptionService _sut;
@@ -109,11 +109,11 @@ public class OfferSubscriptionServiceTests
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
-        _roleBaseMailService = A.Fake<IRoleBaseMailService>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         SetupRepositories();
 
-        _sut = new OfferSubscriptionService(_portalRepositories, _identityService, _roleBaseMailService);
+        _sut = new OfferSubscriptionService(_portalRepositories, _identityService, _mailingProcessCreation);
     }
 
     #region Add Offer Subscription
@@ -153,7 +153,7 @@ public class OfferSubscriptionServiceTests
         var userParameter = ("offerProviderName", "User");
         var template = new[]
         {
-            "subscription-request"
+            $"{offerTypeId.ToString().ToLower()}-subscription-request"
         };
 
         // Act
@@ -166,7 +166,7 @@ public class OfferSubscriptionServiceTests
             A.CallTo(() => _offerSubscriptionsRepository.CheckPendingOrActiveSubscriptionExists(_existingOfferId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
         }
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_PROVIDER))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
+        A.CallTo(() => _mailingProcessCreation.RoleBaseSendMail(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userParameter,
@@ -215,7 +215,7 @@ public class OfferSubscriptionServiceTests
         var userParameter = ("offerProviderName", "User");
         var template = new[]
         {
-            "subscription-request"
+            $"{offerTypeId.ToString().ToLower()}-subscription-request"
         };
 
         // Act
@@ -223,7 +223,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         companyAssignedApps.Should().HaveCount(1);
-        A.CallTo(() => _roleBaseMailService.RoleBaseSendMailForCompany(
+        A.CallTo(() => _mailingProcessCreation.RoleBaseSendMail(
             A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(subscriptionManagerRoles),
             A<IEnumerable<(string, string)>>.That.IsSameSequenceAs(mailParameters),
             userParameter,
@@ -596,7 +596,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
             .Returns(_agreementStatusDatas.ToAsyncEnumerable());
         A.CallTo(() => _agreementRepository.GetAgreementIdsForOfferAsync(A<Guid>.That.Not.Matches(id => id == _existingOfferId || id == _existingOfferWithFailingAutoSetupId || id == _existingOfferWithoutDetailsFilled || id == _existingOfferIdWithoutProviderEmail)))
-            .Returns(_fixture.CreateMany<AgreementStatusData>().ToAsyncEnumerable());
+            .Returns(_fixture.CreateMany<Guid>().Select(x => new AgreementStatusData(x, AgreementStatusId.ACTIVE)).ToAsyncEnumerable());
 
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { Guid.NewGuid() }.ToAsyncEnumerable());
@@ -611,7 +611,6 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IRoleBaseMailService>()).Returns(_roleBaseMailService);
         _fixture.Inject(_portalRepositories);
     }
 
