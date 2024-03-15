@@ -24,20 +24,48 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record CompanyInvitationData(
-    [property: JsonPropertyName("userName")]
-    string? UserName,
-    [property: DefaultValue("string")]
-    [property: RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
-    [property: JsonPropertyName("firstName")]
-    string FirstName,
-    [property: DefaultValue("string")]
-    [property: RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
-    [property: JsonPropertyName("lastName")]
-    string LastName,
-    [property: DefaultValue("string")]
-    [property: EmailAddress]
-    [property: JsonPropertyName("email")]
-    string Email,
-    [property: JsonPropertyName("organisationName")]
-    string OrganisationName);
+public class CompanyInvitationData
+{
+    public CompanyInvitationData(string? userName,
+        string firstName,
+        string lastName,
+        string email,
+        string organisationName)
+    {
+        this.UserName = userName;
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Email = email;
+        this.OrganisationName = organisationName;
+    }
+
+    [JsonPropertyName("userName")]
+    public string? UserName { get; init; }
+
+    [DefaultValue("string")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid firstName", MatchTimeoutInMilliseconds = 500)]
+    [JsonPropertyName("firstName")]
+    public string FirstName { get; init; }
+
+    [DefaultValue("string")]
+    [RegularExpression(ValidationExpressions.Name, ErrorMessage = "Invalid lastName", MatchTimeoutInMilliseconds = 500)]
+    [JsonPropertyName("lastName")]
+    public string LastName { get; init; }
+
+    [DefaultValue("string")]
+    [EmailAddress]
+    [JsonPropertyName("email")]
+    public string Email { get; init; }
+
+    [JsonPropertyName("organisationName")]
+    public string OrganisationName { get; init; }
+
+    public void Deconstruct(out string? userName, out string firstName, out string lastName, out string email, out string organisationName)
+    {
+        userName = this.UserName;
+        firstName = this.FirstName;
+        lastName = this.LastName;
+        email = this.Email;
+        organisationName = this.OrganisationName;
+    }
+}
