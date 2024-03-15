@@ -129,6 +129,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
+
         await foreach (var result in
             _userProvisioningService
                 .CreateOwnCompanyIdpUsersAsync(
@@ -157,8 +159,9 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             {
                 KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
                 KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+                KeyValuePair.Create("idpAlias", displayName)
             });
-            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserOwnIdpTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserExternalIdpTemplate", mailParameters);
 
             yield return (result.CompanyUserId, result.UserName, result.Password, null);
         }
