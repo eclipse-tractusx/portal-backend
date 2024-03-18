@@ -168,7 +168,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 KeyValuePair.Create("url", _settings.BasePortalAddress),
                 KeyValuePair.Create("idpAlias", string.Join(",", displayNames))
             });
-            _mailingProcessCreation.CreateMailProcess(receiver, "CredentialRejected", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(receiver, "OspWelcomeMail", mailParameters);
         }
     }
 
