@@ -33,7 +33,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'src/**'
   pull_request:
