@@ -32,7 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet-version: ['7.0']
+        # change to preview .NET 9 until fix for https://github.com/NuGet/Home/issues/12954 gets released for .NET 8
+        dotnet-version: ['9.0']
 
     steps:
   
@@ -46,6 +47,8 @@ jobs:
         uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+          # change to preview .NET 9 until fix for https://github.com/NuGet/Home/issues/12954 gets released for .NET 8
+          dotnet-quality: 'preview'
 
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
