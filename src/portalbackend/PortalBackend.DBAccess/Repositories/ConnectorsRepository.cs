@@ -64,7 +64,8 @@ public class ConnectorsRepository : IConnectorsRepository
                     con.CompanyServiceAccount!.Id,
                     con.CompanyServiceAccount.Name,
                     con.CompanyServiceAccount.ClientClientId,
-                    con.CompanyServiceAccount.Description))
+                    con.CompanyServiceAccount.Description),
+                con.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
@@ -90,7 +91,8 @@ public class ConnectorsRepository : IConnectorsRepository
                         c.CompanyServiceAccount!.Id,
                         c.CompanyServiceAccount.Name,
                         c.CompanyServiceAccount.ClientClientId,
-                        c.CompanyServiceAccount.Description))
+                        c.CompanyServiceAccount.Description),
+                    c.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
     public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
@@ -112,7 +114,8 @@ public class ConnectorsRepository : IConnectorsRepository
                         connector.CompanyServiceAccount!.Id,
                         connector.CompanyServiceAccount.Name,
                         connector.CompanyServiceAccount.ClientClientId,
-                        connector.CompanyServiceAccount.Description)),
+                        connector.CompanyServiceAccount.Description),
+                    connector.ConnectorUrl),
                 connector.ProviderId == companyId
             ))
             .SingleOrDefaultAsync();
