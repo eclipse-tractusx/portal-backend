@@ -30,7 +30,7 @@ public static class ToImmutableDictionaryAsyncExtension
             await Task.WhenAll(
                 keys.Select(async key => new KeyValuePair<K, V>(
                     key,
-                    await selector(key).ConfigureAwait(false)))).ConfigureAwait(false));
+                    await selector(key).ConfigureAwait(ConfigureAwaitOptions.None)))).ConfigureAwait(ConfigureAwaitOptions.None));
         return builder.ToImmutableDictionary();
     }
 }

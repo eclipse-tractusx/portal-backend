@@ -59,19 +59,19 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     /// <inheritdoc />
     public async Task<Guid> AddOfferSubscriptionAsync(Guid offerId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> notificationRecipients, IEnumerable<UserRoleConfig> serviceManagerRoles)
     {
-        var companyInformation = await ValidateCompanyInformationAsync(_identityData.CompanyId, _identityData.IdentityId).ConfigureAwait(false);
-        var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(false);
+        var companyInformation = await ValidateCompanyInformationAsync(_identityData.CompanyId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var offerProviderDetails = await ValidateOfferProviderDetailDataAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (offerProviderDetails.ProviderCompanyId == null)
         {
             throw new ConflictException($"{offerTypeId} providing company is not set");
         }
 
-        var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(false);
+        var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerSubscription = offerTypeId == OfferTypeId.APP
-            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, _identityData.IdentityId).ConfigureAwait(false)
+            ? await HandleAppSubscriptionAsync(offerId, offerSubscriptionsRepository, companyInformation, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)
             : offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, _identityData.IdentityId);
 
         CreateProcessSteps(offerSubscription);
@@ -85,8 +85,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             UserEmail = companyInformation.CompanyUserEmail,
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) && !offerProviderDetails.IsSingleInstance
         });
-        await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         await _mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
@@ -100,7 +100,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             {
                 $"{offerTypeId.ToString().ToLower()}-subscription-request"
             },
-            offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(false);
+            offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return offerSubscription.Id;
     }
@@ -166,7 +166,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     private async Task<OfferProviderDetailsData> ValidateOfferProviderDetailDataAsync(Guid offerId, OfferTypeId offerTypeId)
     {
         var offerProviderDetails = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(false);
+            .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerProviderDetails == null)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");
@@ -206,7 +206,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     private async Task<CompanyInformationData> ValidateCompanyInformationAsync(Guid companyId, Guid companyUserId)
     {
         var companyInformation = await _portalRepositories.GetInstance<ICompanyRepository>()
-            .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(false);
+            .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyInformation == null)
         {
             throw new ControllerArgumentException($"Company {companyId} does not exist", nameof(companyId));
@@ -228,7 +228,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     {
         var activeOrPendingSubscriptionExists = await offerSubscriptionsRepository
             .CheckPendingOrActiveSubscriptionExists(offerId, companyInformation.CompanyId, OfferTypeId.APP)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (activeOrPendingSubscriptionExists)
         {
             throw new ConflictException($"company {companyInformation.CompanyId} is already subscribed to {offerId}");

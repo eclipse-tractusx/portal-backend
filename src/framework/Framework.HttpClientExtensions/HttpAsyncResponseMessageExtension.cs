@@ -28,7 +28,7 @@ public static class HttpAsyncResponseMessageExtension
     {
         try
         {
-            var message = await response.ConfigureAwait(false);
+            var message = await response.ConfigureAwait(ConfigureAwaitOptions.None);
             var requestUri = message.RequestMessage?.RequestUri?.AbsoluteUri;
             if (message.IsSuccessStatusCode)
             {
@@ -41,7 +41,7 @@ public static class HttpAsyncResponseMessageExtension
                 (var ignore, errorMessage) = (int)message.StatusCode switch
                 {
                     < 500 when handleErrorResponse != null => await handleErrorResponse(message).ConfigureAwait(false),
-                    >= 500 => (false, await message.Content.ReadAsStringAsync().ConfigureAwait(false)),
+                    >= 500 => (false, await message.Content.ReadAsStringAsync().ConfigureAwait(ConfigureAwaitOptions.None)),
                     _ => (false, null)
                 };
                 if (ignore)

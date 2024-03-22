@@ -46,7 +46,7 @@ public class OfferProviderService : IOfferProviderService
     public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, CancellationToken cancellationToken)
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider")
             .ConfigureAwait(false);
@@ -58,7 +58,7 @@ public class OfferProviderService : IOfferProviderService
     public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, CancellationToken cancellationToken)
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider-callback")
             .ConfigureAwait(false);

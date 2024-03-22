@@ -48,7 +48,7 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
         };
 
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
-        var (registrationIdExists, processData) = await networkRepository.IsValidRegistration(externalId, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        var (registrationIdExists, processData) = await networkRepository.IsValidRegistration(externalId, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!registrationIdExists)
         {
             throw new NotFoundException($"external registration {externalId} does not exist");
@@ -58,6 +58,6 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
 
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

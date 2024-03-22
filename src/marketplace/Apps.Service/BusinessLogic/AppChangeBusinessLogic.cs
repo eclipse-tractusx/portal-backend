@@ -95,7 +95,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
     private async Task<IEnumerable<AppRoleData>> InsertActiveAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"app {appId} does not exist");
@@ -114,7 +114,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
         foreach (var clientId in result.ClientClientIds)
         {
-            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(false);
+            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
@@ -128,7 +128,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = _settings.ActiveAppNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await _notificationService.CreateNotifications(_settings.ActiveAppCompanyAdminRoles, _identityData.IdentityId, content, result.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return roleData;
     }
 
@@ -150,13 +150,13 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         offerRepository.AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<IEnumerable<LocalizedDescription>> ValidateAndGetAppDescription(Guid appId, IOfferRepository offerRepository)
     {
         var companyId = _identityData.CompanyId;
-        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(false);
+        var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"App {appId} does not exist.");
@@ -188,7 +188,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         documentContentType.CheckDocumentContentType(appLeadImageContentTypes);
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -204,7 +204,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
 
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
         {
             x.CompanyUserId = _identityData.IdentityId;
@@ -217,7 +217,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         offerRepository.AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -235,7 +235,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     {
         var companyId = _identityData.CompanyId;
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(false);
+        var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
             throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
@@ -280,7 +280,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!string.IsNullOrEmpty(detailData.ClientClientId))
         {
-            await _provisioningManager.UpdateClient(detailData.ClientClientId, url, url.AppendToPathEncoded("*")).ConfigureAwait(false);
+            await _provisioningManager.UpdateClient(detailData.ClientClientId, url, url.AppendToPathEncoded("*")).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var notificationContent = JsonSerializer.Serialize(new
@@ -303,7 +303,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, new (string?, NotificationTypeId)[] { (notificationContent, NotificationTypeId.SUBSCRIPTION_URL_UPDATE) }, subscribingCompanyId).AwaitAll().ConfigureAwait(false);
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -332,7 +332,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     {
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(false);
+        var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"Document {documentId} for App {appId} does not exist.");
@@ -356,10 +356,10 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             a => { a.DocumentStatusId = DocumentStatusId.INACTIVE; });
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = _dateTimeProvider.OffsetNow);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
-        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, OfferTypeId.APP, _settings.UploadActiveAppDocumentTypeIds, OfferStatusId.ACTIVE, cancellationToken).ConfigureAwait(false);
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, OfferTypeId.APP, _settings.UploadActiveAppDocumentTypeIds, OfferStatusId.ACTIVE, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 }

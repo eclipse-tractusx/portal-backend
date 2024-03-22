@@ -39,10 +39,10 @@ public class DatabaseInitializer<TDbContext> : IDatabaseInitializer where TDbCon
 
     public async Task InitializeDatabasesAsync(CancellationToken cancellationToken)
     {
-        if ((await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(false)).Any())
+        if ((await _dbContext.Database.GetPendingMigrationsAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).Any())
         {
             _logger.LogInformation("Applying Migrations");
-            await _dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+            await _dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         // First create a new scope
@@ -50,6 +50,6 @@ public class DatabaseInitializer<TDbContext> : IDatabaseInitializer where TDbCon
 
         // Then run the initialization in the new scope
         await scope.ServiceProvider.GetRequiredService<DbInitializer<TDbContext>>()
-            .InitializeAsync(cancellationToken).ConfigureAwait(false);
+            .InitializeAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

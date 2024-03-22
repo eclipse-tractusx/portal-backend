@@ -55,7 +55,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         };
 
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
+            .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
 
         checklistData.ValidateApplicationChecklistData(applicationId, entryTypeId, entryStatusIds, new[] { ProcessStepStatusId.TODO });
         var processStep = checklistData!.ProcessSteps!.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);

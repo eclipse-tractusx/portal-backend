@@ -31,10 +31,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
         .AppendPathSegment("/admin/realms/")
         .AppendPathSegment(realm, true)
         .AppendPathSegment("/client-registration-policy/providers")
         .GetJsonAsync<IEnumerable<ComponentType>>()
-        .ConfigureAwait(false);
+        .ConfigureAwait(ConfigureAwaitOptions.None);
 }

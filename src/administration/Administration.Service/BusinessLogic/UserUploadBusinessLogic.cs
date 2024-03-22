@@ -74,7 +74,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -129,7 +129,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
-        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(false);
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await foreach (var result in
             _userProvisioningService
@@ -199,7 +199,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -253,7 +253,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             unknownRoles => _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, companyId),
             out var roleDataTask))
         {
-            var roleData = await roleDataTask!.ConfigureAwait(false);
+            var roleData = await roleDataTask!.ConfigureAwait(ConfigureAwaitOptions.None);
             if (roleData != null)
             {
                 validRoleData.AddRange(roleData);

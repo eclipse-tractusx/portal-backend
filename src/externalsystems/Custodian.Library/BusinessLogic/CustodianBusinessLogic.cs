@@ -42,14 +42,14 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
     public async Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken)
     {
         var bpn = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(false);
+            .GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (string.IsNullOrWhiteSpace(bpn))
         {
             throw new ConflictException("BusinessPartnerNumber is not set");
         }
 
         var walletData = await _custodianService.GetWalletByBpnAsync(bpn, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return walletData;
     }
@@ -69,7 +69,7 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
 
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
-            var message = await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+            var message = await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.DONE,
@@ -89,7 +89,7 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
 
     private async Task<string> CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -101,6 +101,6 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
-        return await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(false);
+        return await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

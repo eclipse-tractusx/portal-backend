@@ -37,7 +37,7 @@ public class MailingService : IMailingService
 
     public async Task SendMails(string recipient, IReadOnlyDictionary<string, string> parameters, string template)
     {
-        var email = await _templateManager.ApplyTemplateAsync(template, parameters).ConfigureAwait(false);
-        await _sendMail.Send(_settings.SenderEmail, recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(false);
+        var email = await _templateManager.ApplyTemplateAsync(template, parameters).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _sendMail.Send(_settings.SenderEmail, recipient, email.Subject, email.Body, email.isHtml).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

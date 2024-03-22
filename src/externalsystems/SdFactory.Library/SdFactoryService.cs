@@ -52,7 +52,7 @@ public class SdFactoryService : ISdFactoryService
     public async Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         var requestModel = new ConnectorSdFactoryRequestModel(
             connectorId.ToString(),
             SdFactoryRequestModelSdType.ServiceOffering,
@@ -71,7 +71,7 @@ public class SdFactoryService : ISdFactoryService
     public async Task RegisterSelfDescriptionAsync(Guid applicationId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await _tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         var requestModel = new SdFactoryRequestModel(
             applicationId.ToString(),
             uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),

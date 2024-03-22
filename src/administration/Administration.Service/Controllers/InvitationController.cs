@@ -91,7 +91,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateCentralIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerCreateCentralIdp(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateCentralIdp(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -112,7 +112,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateSharedIdpServiceAccount([FromRoute] Guid processId)
     {
-        await _logic.RetriggerCreateSharedIdpServiceAccount(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateSharedIdpServiceAccount(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -133,7 +133,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerUpdateCentralIdpUrls([FromRoute] Guid processId)
     {
-        await _logic.RetriggerUpdateCentralIdpUrls(processId).ConfigureAwait(false);
+        await _logic.RetriggerUpdateCentralIdpUrls(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -154,7 +154,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateCentralIdpOrgMapper([FromRoute] Guid processId)
     {
-        await _logic.RetriggerCreateCentralIdpOrgMapper(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateCentralIdpOrgMapper(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -175,7 +175,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateSharedRealmIdpClient([FromRoute] Guid processId)
     {
-        await _logic.RetriggerCreateSharedRealmIdpClient(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateSharedRealmIdpClient(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -196,7 +196,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerEnableCentralIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerEnableCentralIdp(processId).ConfigureAwait(false);
+        await _logic.RetriggerEnableCentralIdp(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -217,7 +217,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateDatabaseIdp([FromRoute] Guid processId)
     {
-        await _logic.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(false);
+        await _logic.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -238,7 +238,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerInvitationCreateUser([FromRoute] Guid processId)
     {
-        await _logic.RetriggerInvitationCreateUser(processId).ConfigureAwait(false);
+        await _logic.RetriggerInvitationCreateUser(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -259,7 +259,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerInvitationSendMail([FromRoute] Guid processId)
     {
-        await _logic.RetriggerInvitationSendMail(processId).ConfigureAwait(false);
+        await _logic.RetriggerInvitationSendMail(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

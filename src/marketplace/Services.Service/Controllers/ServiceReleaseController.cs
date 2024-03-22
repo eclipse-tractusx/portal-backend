@@ -213,7 +213,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
     {
-        var id = await _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data).ConfigureAwait(false);
+        var id = await _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
     }
 
@@ -261,7 +261,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> SubmitService([FromRoute] Guid serviceId)
     {
-        await _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.SubmitServiceAsync(serviceId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -284,7 +284,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> ApproveServiceRequest([FromRoute] Guid serviceId)
     {
-        await _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.ApproveServiceRequestAsync(serviceId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -312,7 +312,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<NoContentResult> DeclineServiceRequest([FromRoute] Guid serviceId, [FromBody] OfferDeclineRequest data)
     {
-        await _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, data).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.DeclineServiceRequestAsync(serviceId, data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -382,7 +382,7 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<NoContentResult> CreateAndUpdateTechnicalUserProfiles([FromRoute] Guid serviceId, [FromBody] IEnumerable<TechnicalUserProfileData> data)
     {
-        await _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data).ConfigureAwait(false);
+        await _serviceReleaseBusinessLogic.UpdateTechnicalUserProfiles(serviceId, data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

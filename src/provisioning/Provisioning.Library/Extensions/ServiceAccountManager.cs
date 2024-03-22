@@ -31,7 +31,7 @@ public partial class ProvisioningManager
     public async Task<ServiceAccountData> SetupCentralServiceAccountClientAsync(string clientId, ClientConfigRolesData config, bool enabled)
     {
         var internalClientId = await CreateServiceAccountClient(_CentralIdp, _Settings.CentralRealm, clientId, config.Name, config.IamClientAuthMethod, enabled);
-        var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        var serviceAccountUser = await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (serviceAccountUser.Id == null)
         {
             throw new KeycloakEntityConflictException($"serviceAccountUser {internalClientId} has no Id in keycloak");
@@ -52,33 +52,33 @@ public partial class ProvisioningManager
         return new ServiceAccountData(
             internalClientId,
             serviceAccountUser.Id,
-            await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false));
+            await GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None));
     }
 
     public async Task<string?> GetServiceAccountUserId(string clientId)
     {
-        var internalClientId = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
+        var internalClientId = (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId).ConfigureAwait(ConfigureAwaitOptions.None)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
         if (internalClientId == null)
         {
             throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on central idp");
         }
-        return (await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false)).Id;
+        return (await _CentralIdp.GetUserForServiceAccountAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None)).Id;
     }
 
     private async Task<(string ClientId, string Secret)> GetSharedIdpServiceAccountSecretAsync(string realm)
     {
         var clientId = GetServiceAccountClientId(realm);
         var sharedIdp = _Factory.CreateKeycloakClient("shared");
-        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(false);
-        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
+        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<string, string>(clientId, credentials.Value);
     }
 
     private async Task DeleteSharedIdpServiceAccountAsync(KeycloakClient keycloak, string realm)
     {
         var clientId = GetServiceAccountClientId(realm);
-        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(keycloak, clientId).ConfigureAwait(false);
-        await keycloak.DeleteClientAsync(MasterRealm, internalClientId).ConfigureAwait(false);
+        var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(keycloak, clientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await keycloak.DeleteClientAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
@@ -88,7 +88,7 @@ public partial class ProvisioningManager
         newClient.Name = name;
         newClient.ClientAuthenticatorType = IamClientAuthMethodToInternal(iamClientAuthMethod);
         newClient.Enabled = enabled;
-        var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(false);
+        var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(ConfigureAwaitOptions.None);
         if (newClientId == null)
         {
             throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
@@ -98,7 +98,7 @@ public partial class ProvisioningManager
 
     private static async Task<string> GetInternalClientIdOfSharedIdpServiceAccount(KeycloakClient keycloak, string clientId)
     {
-        var internalClientId = (await keycloak.GetClientsAsync(MasterRealm, clientId).ConfigureAwait(false)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
+        var internalClientId = (await keycloak.GetClientsAsync(MasterRealm, clientId).ConfigureAwait(ConfigureAwaitOptions.None)).FirstOrDefault(c => c.ClientId == clientId)?.Id;
         if (internalClientId == null)
         {
             throw new KeycloakEntityNotFoundException($"clientId {clientId} not found on shared idp");

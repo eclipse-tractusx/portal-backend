@@ -65,7 +65,7 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         if (context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == ApplicationChecklistEntryStatusId.DONE && context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == ApplicationChecklistEntryStatusId.DONE)
         {
-            await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+            await CreateWalletInternal(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.DONE,
@@ -84,7 +84,7 @@ public class DimBusinessLogic : IDimBusinessLogic
 
     private async Task CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -96,12 +96,12 @@ public class DimBusinessLogic : IDimBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
-        await _dimService.CreateWalletAsync(companyName, businessPartnerNumber, $"{_settings.DidDocumentBaseLocation}/{businessPartnerNumber}/did.json", cancellationToken).ConfigureAwait(false);
+        await _dimService.CreateWalletAsync(companyName, businessPartnerNumber, $"{_settings.DidDocumentBaseLocation}/{businessPartnerNumber}/did.json", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task ProcessDimResponse(string bpn, DimWalletData data, CancellationToken cancellationToken)
     {
-        var (exists, companyId, companyApplicationStatusIds) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdByBpn(bpn).ConfigureAwait(false);
+        var (exists, companyId, companyApplicationStatusIds) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdByBpn(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
         {
             throw new NotFoundException($"No company found for bpn {bpn}");
@@ -119,7 +119,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                 new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.AWAIT_DIM_RESPONSE,
                 processStepTypeIds: new[] { ProcessStepTypeId.VALIDATE_DID_DOCUMENT })
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!ValidateDidFormat(data.Did, bpn))
         {
@@ -183,7 +183,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                 null);
         }
 
-        var (result, dateCreated) = await ValidateDid(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+        var (result, dateCreated) = await ValidateDid(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
@@ -220,7 +220,7 @@ public class DimBusinessLogic : IDimBusinessLogic
 
     private async Task<(bool ValidationResult, DateTimeOffset DateCreated)> ValidateDid(Guid applicationId, CancellationToken cancellationToken)
     {
-        var (exists, did, processStepsDateCreated) = await _portalRepositories.GetInstance<IApplicationRepository>().GetDidApplicationId(applicationId).ConfigureAwait(false);
+        var (exists, did, processStepsDateCreated) = await _portalRepositories.GetInstance<IApplicationRepository>().GetDidApplicationId(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -236,7 +236,7 @@ public class DimBusinessLogic : IDimBusinessLogic
             throw new ConflictException($"There must be excatly on active {ProcessStepTypeId.VALIDATE_DID_DOCUMENT}");
         }
 
-        return (await _dimService.ValidateDid(did, cancellationToken).ConfigureAwait(false), processStepsDateCreated.Single());
+        return (await _dimService.ValidateDid(did, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None), processStepsDateCreated.Single());
     }
 
     private static async Task<bool> ValidateSchema(JsonDocument content, CancellationToken cancellationToken)
@@ -244,7 +244,7 @@ public class DimBusinessLogic : IDimBusinessLogic
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new UnexpectedConditionException("Assembly location must be set");
 
         var path = Path.Combine(location, "Schemas", "DidDocument.schema.json");
-        var schemaJson = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        var schemaJson = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var schema = JsonSchema.FromText(schemaJson);
         SchemaRegistry.Global.Register(schema);
