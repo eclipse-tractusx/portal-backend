@@ -25,7 +25,6 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests;

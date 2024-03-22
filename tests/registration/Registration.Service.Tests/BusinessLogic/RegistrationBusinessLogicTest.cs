@@ -239,8 +239,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var result = await sut
-            .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None)
-;
+            .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None);
 
         A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
@@ -2588,8 +2587,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.SubmitRegistrationAsync(applicationId)
-;
+        var result = await sut.SubmitRegistrationAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
@@ -2639,8 +2637,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var result = await sut.SubmitRegistrationAsync(applicationId)
-;
+        var result = await sut.SubmitRegistrationAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))

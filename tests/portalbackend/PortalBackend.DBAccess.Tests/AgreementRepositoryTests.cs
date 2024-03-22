@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,8 +53,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE)
-;
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE);
 
         // Assert
         results.Should().BeTrue();
@@ -69,8 +67,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE)
-;
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE);
 
         // Assert
         results.Should().BeFalse();
@@ -84,8 +81,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP)
-;
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP);
 
         // Assert
         results.Should().BeFalse();

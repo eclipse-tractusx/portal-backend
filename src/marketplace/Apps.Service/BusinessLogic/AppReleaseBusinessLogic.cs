@@ -194,7 +194,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
         }
 
-        return this.CreateAppAsync(appRequestModel);
+        return CreateAppAsync(appRequestModel);
     }
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)

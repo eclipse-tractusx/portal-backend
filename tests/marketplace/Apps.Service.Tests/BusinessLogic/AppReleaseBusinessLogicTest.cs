@@ -1179,8 +1179,7 @@ public class AppReleaseBusinessLogicTest
 
         // Act
         await sut
-            .UpdateTechnicalUserProfiles(appId, data)
-;
+            .UpdateTechnicalUserProfiles(appId, data);
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP,
                 A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile))
@@ -1201,8 +1200,7 @@ public class AppReleaseBusinessLogicTest
         var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, _offerDocumentService, null!, _identityService);
 
         // Act
-        var result = await sut.GetTechnicalUserProfilesForOffer(appId)
-;
+        var result = await sut.GetTechnicalUserProfilesForOffer(appId);
 
         result.Should().HaveCount(5);
     }

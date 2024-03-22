@@ -508,13 +508,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         if (!string.IsNullOrWhiteSpace(data.RequesterData.RequesterEmail))
         {
             var userName = string.Join(" ", new[] { data.RequesterData.Firstname, data.RequesterData.Lastname }.Where(item => !string.IsNullOrWhiteSpace(item)));
-            var mailParameters = ImmutableDictionary.CreateRange(new[]
+            var mailParameters = ImmutableDictionary.CreateRange(new KeyValuePair<string, string>[]
             {
-                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail),
-                KeyValuePair.Create("requestName", typeValue),
-                KeyValuePair.Create("companyName", data.CompanyName),
-                KeyValuePair.Create("credentialType", typeValue),
-                KeyValuePair.Create(
+                new("userName", !string.IsNullOrWhiteSpace(userName) ? userName : data.RequesterData.RequesterEmail),
+                new("requestName", typeValue),
+                new("companyName", data.CompanyName),
+                new("credentialType", typeValue),
+                new(
                     "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)
                 )
             });

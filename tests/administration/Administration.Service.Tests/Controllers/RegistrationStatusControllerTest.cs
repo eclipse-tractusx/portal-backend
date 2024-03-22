@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,7 +45,7 @@ public class RegistrationStatusControllerTest
                   .Returns(new OnboardingServiceProviderCallbackResponseData("https://callback-url.com", "https//auth.url", "test"));
 
         //Act
-        var result = await this._controller.GetCallbackAddress();
+        var result = await _controller.GetCallbackAddress();
 
         //Assert
         result.CallbackUrl.Should().Be("https://callback-url.com");
@@ -56,7 +55,7 @@ public class RegistrationStatusControllerTest
     public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
     {
         //Act
-        var result = await this._controller.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://callback-url.com", "https//auth.url", "test", "test123"));
+        var result = await _controller.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://callback-url.com", "https//auth.url", "test", "test123"));
 
         //Assert
         A.CallTo(() => _logic.SetCallbackAddress(A<OnboardingServiceProviderCallbackRequestData>._)).MustHaveHappenedOnceExactly();

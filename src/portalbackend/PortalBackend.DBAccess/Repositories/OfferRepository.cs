@@ -39,7 +39,7 @@ public class OfferRepository : IOfferRepository
     /// <param name="portalDbContext">PortalDb context.</param>
     public OfferRepository(PortalDbContext portalDbContext)
     {
-        this._context = portalDbContext;
+        _context = portalDbContext;
     }
 
     ///<inheritdoc/>
