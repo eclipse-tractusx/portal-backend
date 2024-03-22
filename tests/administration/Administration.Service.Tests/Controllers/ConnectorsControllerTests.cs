@@ -60,7 +60,7 @@ public class ConnectorsControllerTests
             .Returns(paginationResponse);
 
         //Act
-        var result = await _controller.GetManagedConnectorsForCurrentUserAsync().ConfigureAwait(false);
+        var result = await _controller.GetManagedConnectorsForCurrentUserAsync();
 
         //Assert
         A.CallTo(() => _logic.GetManagedConnectorForCompany(0, 15)).MustHaveHappenedOnceExactly();
@@ -81,7 +81,7 @@ public class ConnectorsControllerTests
             .Returns(connectorId);
 
         //Act
-        var result = await _controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.CreateConnectorAsync(connectorInputModel, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _logic.CreateConnectorAsync(connectorInputModel, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -104,7 +104,7 @@ public class ConnectorsControllerTests
             .Returns(connectorId);
 
         //Act
-        var result = await _controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.CreateManagedConnectorAsync(connectorInputModel, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _logic.CreateManagedConnectorAsync(connectorInputModel, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -121,7 +121,7 @@ public class ConnectorsControllerTests
             .Returns(paginationResponse);
 
         //Act
-        var result = await _controller.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
+        var result = await _controller.GetCompanyConnectorsForCurrentUserAsync();
 
         //Assert
         A.CallTo(() => _logic.GetAllCompanyConnectorDatas(0, 15)).MustHaveHappenedOnceExactly();
@@ -138,7 +138,7 @@ public class ConnectorsControllerTests
             .Returns(data);
 
         //Act
-        var result = await _controller.GetCompanyConnectorByIdForCurrentUserAsync(connectorId).ConfigureAwait(false);
+        var result = await _controller.GetCompanyConnectorByIdForCurrentUserAsync(connectorId);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyConnectorData(connectorId)).MustHaveHappenedOnceExactly();
@@ -152,7 +152,7 @@ public class ConnectorsControllerTests
         var connectorId = Guid.NewGuid();
 
         //Act
-        await _controller.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _controller.DeleteConnectorAsync(connectorId);
 
         //Assert
         A.CallTo(() => _logic.DeleteConnectorAsync(connectorId)).MustHaveHappenedOnceExactly();
@@ -172,7 +172,7 @@ public class ConnectorsControllerTests
             .Returns(data.ToAsyncEnumerable());
 
         //Act
-        var result = await _controller.GetCompanyConnectorEndPointAsync(bpns).ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetCompanyConnectorEndPointAsync(bpns).ToListAsync();
 
         //Assert
         A.CallTo(() => _logic.GetCompanyConnectorEndPointAsync(bpns)).MustHaveHappenedOnceExactly();
@@ -190,7 +190,7 @@ public class ConnectorsControllerTests
             .Returns(data.ToAsyncEnumerable());
 
         //Act
-        var result = await _controller.GetCompanyConnectorEndPointAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetCompanyConnectorEndPointAsync().ToListAsync();
 
         //Assert
         A.CallTo(() => _logic.GetCompanyConnectorEndPointAsync(null)).MustHaveHappenedOnceExactly();
@@ -236,7 +236,7 @@ public class ConnectorsControllerTests
             .Returns(offerSubscriptionData.ToAsyncEnumerable());
 
         // Act
-        var result = await _controller.GetConnectorOfferSubscriptionData(null).ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetConnectorOfferSubscriptionData(null).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(offerSubscriptionData)

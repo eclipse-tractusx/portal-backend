@@ -102,7 +102,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"user {_companyUserId} does not exist");

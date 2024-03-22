@@ -225,7 +225,7 @@ public class AppReleaseBusinessLogicTest
             .Create();
 
         // Act
-        async Task Act() => await _sut.AddAppAsync(data).ConfigureAwait(false);
+        async Task Act() => await _sut.AddAppAsync(data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -241,7 +241,7 @@ public class AppReleaseBusinessLogicTest
             .Create();
 
         // Act
-        async Task Act() => await _sut.AddAppAsync(data).ConfigureAwait(false);
+        async Task Act() => await _sut.AddAppAsync(data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -390,7 +390,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_notExistingAppId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -405,7 +405,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_activeAppId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -420,7 +420,7 @@ public class AppReleaseBusinessLogicTest
         var data = _fixture.Create<AppRequestModel>();
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_differentCompanyAppId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -447,7 +447,7 @@ public class AppReleaseBusinessLogicTest
     );
 
         // Act
-        async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateAppReleaseAsync(_existingAppId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -571,7 +571,7 @@ public class AppReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyAppId_ThrowsControllerArgumentException()
     {
         // Act
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>()).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, _fixture.Create<OfferAgreementConsent>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -804,7 +804,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((true, true, true, false, appDeleteData));
 
         //Act
-        async Task Act() => await _sut.DeleteAppAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteAppAsync(appId);
 
         // Assert 
         // Assert
@@ -823,7 +823,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((true, true, false, true, appDeleteData));
 
         //Act
-        async Task Act() => await _sut.DeleteAppAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.DeleteAppAsync(appId);
 
         // Assert 
         // Assert
@@ -866,7 +866,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(true, null);
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -881,7 +881,7 @@ public class AppReleaseBusinessLogicTest
         var data = new AppInstanceSetupData(false, "https://test.de");
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -898,7 +898,7 @@ public class AppReleaseBusinessLogicTest
             .Returns<(OfferStatusId, bool, AppInstanceSetupTransferData?, IEnumerable<(Guid, Guid, string)>)>(default);
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -915,7 +915,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((OfferStatusId.ACTIVE, false, null, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -932,7 +932,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((OfferStatusId.ACTIVE, true, null, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -951,7 +951,7 @@ public class AppReleaseBusinessLogicTest
             .Returns((OfferStatusId.CREATED, true, instanceSetupTransferData, Enumerable.Empty<(Guid, Guid, string)>()));
 
         //Act
-        async Task Act() => await _sut.SetInstanceType(appId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SetInstanceType(appId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1157,7 +1157,7 @@ public class AppReleaseBusinessLogicTest
             .Returns<InReviewOfferData?>(default);
 
         //Act
-        async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetInReviewAppDetailsByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

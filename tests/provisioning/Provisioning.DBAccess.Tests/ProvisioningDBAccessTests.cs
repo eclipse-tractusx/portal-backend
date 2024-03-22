@@ -142,7 +142,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ProvisioningDBAccess(context);
         return (sut, context);
     }

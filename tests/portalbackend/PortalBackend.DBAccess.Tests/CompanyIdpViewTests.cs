@@ -67,7 +67,7 @@ public class CompanyIdpViewTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<PortalDbContext> CreateContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return context;
     }
 }

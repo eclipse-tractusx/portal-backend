@@ -33,7 +33,7 @@ public class DevMailApiRequests
 
     public async Task<string?> FetchPassword()
     {
-        var emails = await CheckMailbox().ConfigureAwait(false);
+        var emails = await CheckMailbox();
         var index = emails.Result.FindIndex(item => item.Value.Contains("Password required"));
         string? password = null;
 
@@ -74,7 +74,7 @@ public class DevMailApiRequests
             .StatusCode(200)
             .Extract()
             .Response();
-        _devMailboxData = DataHandleHelper.DeserializeData<DevMailboxData>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
+        _devMailboxData = DataHandleHelper.DeserializeData<DevMailboxData>(await data.Content.ReadAsStringAsync());
         if (_devMailboxData is null)
         {
             throw new Exception($"Could not get mail address from {Endpoint}, response was null/empty.");
@@ -100,7 +100,7 @@ public class DevMailApiRequests
             .Extract()
             .Response();
 
-        var emails = DataHandleHelper.DeserializeData<DevMailboxContent>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var emails = DataHandleHelper.DeserializeData<DevMailboxContent>(await data.Content.ReadAsStringAsync());
         if (emails is null)
         {
             throw new Exception($"Could not mails from {endpoint}, response data was null.");
@@ -140,7 +140,7 @@ public class DevMailApiRequests
             .Extract()
             .Response();
 
-        var messageIds = DataHandleHelper.DeserializeData<DevMailboxMessageIds>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var messageIds = DataHandleHelper.DeserializeData<DevMailboxMessageIds>(await data.Content.ReadAsStringAsync());
         if (messageIds is null)
         {
             throw new Exception($"Could not messageIds from {endpoint}, response data was null.");

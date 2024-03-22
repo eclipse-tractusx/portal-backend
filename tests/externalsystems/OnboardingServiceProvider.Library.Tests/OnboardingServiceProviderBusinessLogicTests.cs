@@ -119,7 +119,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
 
         // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -138,7 +138,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);

@@ -62,7 +62,7 @@ public class TokenServiceTests
 
         var sut = new TokenService(_httpClientFactory);
 
-        using var result = await sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken).ConfigureAwait(false);
+        using var result = await sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
         result.Should().NotBeNull();
         result.BaseAddress.Should().Be(_validBaseAddress);
@@ -79,7 +79,7 @@ public class TokenServiceTests
 
         Task<HttpClient> Act() => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(Act);
 
         error.Should().NotBeNull();
         error.Message.Should().Be($"call to external system token-post failed with statuscode 500 - Message: {errorResponse}");
@@ -96,7 +96,7 @@ public class TokenServiceTests
 
         Task<HttpClient> Act() => sut.GetAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(Act);
 
         error.Should().NotBeNull();
         error.InnerException.Should().Be(_testException);
@@ -117,7 +117,7 @@ public class TokenServiceTests
 
         var sut = new TokenService(_httpClientFactory);
 
-        var result = await sut.GetBasicAuthorizedClient<TokenService>(settings, _cancellationToken).ConfigureAwait(false);
+        var result = await sut.GetBasicAuthorizedClient<TokenService>(settings, _cancellationToken);
 
         result.Should().NotBeNull();
         result.BaseAddress.Should().Be(_validBaseAddress);
@@ -134,7 +134,7 @@ public class TokenServiceTests
 
         var act = () => sut.GetBasicAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(act);
 
         error.Should().NotBeNull();
         error.Message.Should().Be($"call to external system token-post failed with statuscode 500 - Message: {errorResponse}");
@@ -151,7 +151,7 @@ public class TokenServiceTests
 
         var act = () => sut.GetBasicAuthorizedClient<TokenService>(settings, _cancellationToken);
 
-        var error = await Assert.ThrowsAsync<ServiceException>(act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ServiceException>(act);
 
         error.Should().NotBeNull();
         error.InnerException.Should().Be(_testException);

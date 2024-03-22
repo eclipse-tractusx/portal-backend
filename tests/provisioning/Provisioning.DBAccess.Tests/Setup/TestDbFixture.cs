@@ -61,13 +61,13 @@ public class TestDbFixture : IAsyncLifetime
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new ProvisioningDbContext(optionsBuilder.Options);
-        await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+        await context.Database.EnsureCreatedAsync();
         foreach (var seedAction in seedActions)
         {
             seedAction.Invoke(context);
         }
 
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
         return context;
     }
 
@@ -77,7 +77,7 @@ public class TestDbFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _container.StartAsync()
-            .ConfigureAwait(false);
+            ;
 
         var optionsBuilder = new DbContextOptionsBuilder<ProvisioningDbContext>();
 
@@ -96,6 +96,6 @@ public class TestDbFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _container.DisposeAsync()
-            .ConfigureAwait(false);
+            ;
     }
 }

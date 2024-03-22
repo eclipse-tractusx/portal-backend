@@ -189,10 +189,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentByCompanyUserIdContentFile_WithValidData_ReturnsExpectedDocument()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9752d"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9752d"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"), DocumentTypeId.COMPANY_CERTIFICATE);
 
         // Assert
         result.Should().NotBe(default);
@@ -204,10 +204,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentByCompanyUserIdContentFile_WithNotExistingDocument_ReturnsDefault()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid.NewGuid(), Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid.NewGuid(), Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE);
 
         // Assert
         result.Should().Be(default);
@@ -221,10 +221,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentContentFile_WithValidData_ReturnsExpectedDocument()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f"), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f"), DocumentTypeId.COMPANY_CERTIFICATE);
 
         // Assert
         result.Should().NotBe(default);
@@ -236,10 +236,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentContentFile_WithNotExistingDocument_ReturnsDefault()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE).ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE);
 
         // Assert
         result.Should().Be(default);
@@ -253,10 +253,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentDetailsForIdUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"));
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -268,10 +268,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetCompanyCertificateDocumentDetailsForIdUntrackedAsync_ReturnsInvalidExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2544")).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2544"));
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -329,13 +329,13 @@ public class CompanyCertificateRepositoryTests
 
     private async Task<CompanyCertificateRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new CompanyCertificateRepository(context);
     }
 
     private async Task<(CompanyCertificateRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return (new CompanyCertificateRepository(context), context);
     }
 

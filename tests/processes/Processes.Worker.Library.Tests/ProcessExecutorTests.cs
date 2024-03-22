@@ -80,7 +80,7 @@ public class ProcessExecutorTests
     public async Task ExecuteProcess_WithInvalidProcessTypeId_Throws()
     {
         // Arrange
-        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), default, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), default, CancellationToken.None).ToListAsync();
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -840,7 +840,7 @@ public class ProcessExecutorTests
 
         var Act = async () =>
         {
-            await foreach (var stepResult in _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ConfigureAwait(false))
+            await foreach (var stepResult in _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None))
             {
                 stepResults.Add(stepResult);
             }

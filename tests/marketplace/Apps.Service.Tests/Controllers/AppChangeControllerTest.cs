@@ -115,7 +115,7 @@ public class AppChangeControllerTest
         var cancellationToken = CancellationToken.None;
 
         // Act
-        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken).ConfigureAwait(false);
+        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken);
 
         // Assert
         A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken)).MustHaveHappenedOnceExactly();

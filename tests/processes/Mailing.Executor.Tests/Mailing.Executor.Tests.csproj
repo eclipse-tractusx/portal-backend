@@ -25,7 +25,6 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.Tests</RootNamespace>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.Tests</AssemblyName>
-    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

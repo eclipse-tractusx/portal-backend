@@ -25,7 +25,6 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Tests</RootNamespace>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Tests</AssemblyName>
-    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.1" />

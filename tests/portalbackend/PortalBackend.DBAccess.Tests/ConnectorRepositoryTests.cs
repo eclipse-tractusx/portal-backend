@@ -519,7 +519,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         sut.CreateConnectorAssignedSubscriptions(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"));
-        async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
+        async Task Act() => await context.SaveChangesAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<DbUpdateException>(Act);
@@ -553,7 +553,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ConnectorsRepository(context);
         return (sut, context);
     }

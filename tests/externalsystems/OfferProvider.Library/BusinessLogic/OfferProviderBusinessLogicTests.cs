@@ -82,7 +82,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         SetupTriggerProvider();
         var fakeId = Guid.NewGuid();
-        async Task Act() => await _sut.TriggerProvider(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProvider(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -144,7 +144,7 @@ public class OfferProviderBusinessLogicTests
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns<(IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId)>(default);
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -160,7 +160,7 @@ public class OfferProviderBusinessLogicTests
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((Enumerable.Empty<(Guid, string?)>(), string.Empty, null, OfferSubscriptionStatusId.PENDING));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -176,7 +176,7 @@ public class OfferProviderBusinessLogicTests
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((Enumerable.Empty<(Guid, string?)>(), null, null, OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -192,7 +192,7 @@ public class OfferProviderBusinessLogicTests
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -233,7 +233,7 @@ public class OfferProviderBusinessLogicTests
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

@@ -86,7 +86,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await sut.GetSeedData(invalidId).ConfigureAwait(false);
+        async Task Act() => await sut.GetSeedData(invalidId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -102,7 +102,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await sut.GetSeedData(ValidDocumentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetSeedData(ValidDocumentId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -138,7 +138,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await sut.GetDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -155,7 +155,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await sut.GetDocumentAsync(ValidDocumentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentAsync(ValidDocumentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -194,7 +194,7 @@ public class DocumentsBusinessLogicTests
         var sut = new DocumentsBusinessLogic(_portalRepositories, _identityService, _options);
 
         // Act
-        async Task Act() => await sut.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetSelfDescriptionDocumentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

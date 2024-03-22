@@ -250,7 +250,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -268,7 +268,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -290,7 +290,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(url!, null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -324,7 +324,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -339,7 +339,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         await Assert.ThrowsAsync<ForbiddenException>(Action);

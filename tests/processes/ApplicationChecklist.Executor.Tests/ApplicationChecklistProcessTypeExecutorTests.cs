@@ -164,7 +164,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((false, Guid.Empty, default, null!));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -184,7 +184,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, Guid.Empty, default, null!));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -212,7 +212,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, applicationId, CompanyApplicationStatusId.CREATED, checklist));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -232,7 +232,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -267,7 +267,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        var Act = async () => await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -649,7 +649,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
-        var Act = async () => await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Act execute
         var executionResult = await Assert.ThrowsAsync<SystemException>(Act);
@@ -729,7 +729,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
     {
         // Arrange
         var stepTypeId = Enum.GetValues<ProcessStepTypeId>().Except(_executableSteps).First();
-        var Act = async () => await _executor.IsLockRequested(stepTypeId).ConfigureAwait(false);
+        var Act = async () => await _executor.IsLockRequested(stepTypeId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);

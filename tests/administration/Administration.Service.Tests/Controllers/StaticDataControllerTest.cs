@@ -129,7 +129,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetDidDocument("bpn").ConfigureAwait(false);
+        var result = await _controller.GetDidDocument("bpn");
 
         // Assert 
         A.CallTo(() => _logic.GetDidDocument("bpn")).MustHaveHappenedOnceExactly();

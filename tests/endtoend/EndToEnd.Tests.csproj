@@ -29,7 +29,6 @@
     <UserSecretsId>89b874aa-64fd-4b0b-906a-89beb21c09e6</UserSecretsId>
     <!-- Exclude the project from analysis -->
     <SonarQubeExclude>true</SonarQubeExclude>
-    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

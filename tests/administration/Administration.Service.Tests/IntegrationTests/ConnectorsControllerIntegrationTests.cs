@@ -45,7 +45,7 @@ public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTes
         var endpoint = new ConnectorsEndpoints(client);
 
         // Act
-        using var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
+        using var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

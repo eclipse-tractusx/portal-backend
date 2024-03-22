@@ -79,7 +79,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        var result = await data.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await data.Content.ReadAsStringAsync();
         result.Should().NotBeNullOrEmpty("Response should not be null or empty");
     }
 }

@@ -86,7 +86,7 @@ public class ServiceAccountCreationTests
         Setup();
 
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

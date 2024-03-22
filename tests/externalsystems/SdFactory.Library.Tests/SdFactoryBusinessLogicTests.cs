@@ -152,7 +152,7 @@ public class SdFactoryBusinessLogicTests
             .Returns<(Guid, string?, string, IEnumerable<(UniqueIdentifierId, string)>)>(default);
 
         // Act
-        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -177,7 +177,7 @@ public class SdFactoryBusinessLogicTests
             .Returns((CompanyId, null, CountryCode, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
 
         // Act
-        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -229,7 +229,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, null);
 
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -271,7 +271,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, null, null);
 
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -294,7 +294,7 @@ public class SdFactoryBusinessLogicTests
             .Returns<(Guid, string?, string, IEnumerable<(UniqueIdentifierId, string)>)>(default);
 
         // Act
-        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -317,7 +317,7 @@ public class SdFactoryBusinessLogicTests
             .Returns((CompanyId, null, CountryCode, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
 
         // Act
-        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -358,7 +358,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(Guid.NewGuid(), SelfDescriptionStatus.Confirm, null, null);
 
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -390,7 +390,7 @@ public class SdFactoryBusinessLogicTests
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Failed, null, null);
 
         // Act
-        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

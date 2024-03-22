@@ -28,7 +28,6 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-      <NoWarn>xUnit1030</NoWarn>
     </PropertyGroup>
     
     <ItemGroup>

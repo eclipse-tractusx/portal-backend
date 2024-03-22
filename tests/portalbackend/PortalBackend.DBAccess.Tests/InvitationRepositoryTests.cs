@@ -56,7 +56,7 @@ public class InvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<InvitationRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new InvitationRepository(context);
         return sut;
     }

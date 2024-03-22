@@ -424,7 +424,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetRoleDatas(clientRoles).ToListAsync();
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith("invalid roles: clientId:");
@@ -463,7 +463,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
-        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyPortalRoleDatas(client, roles, companyId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith("invalid roles: clientId:");

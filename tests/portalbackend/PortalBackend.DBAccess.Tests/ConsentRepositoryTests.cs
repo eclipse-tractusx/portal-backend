@@ -304,14 +304,14 @@ public class ConsentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(IConsentRepository, PortalDbContext)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ConsentRepository(context);
         return (sut, context);
     }
 
     private async Task<IConsentRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ConsentRepository(context);
         return sut;
     }

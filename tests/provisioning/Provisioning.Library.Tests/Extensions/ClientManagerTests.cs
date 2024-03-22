@@ -131,7 +131,7 @@ public class ClientManagerTests
             .WithGetClientsAsync("test", Enumerable.Empty<Client>());
 
         // Act
-        async Task Act() => await _sut.UpdateClient(clientId, $"{url}/*", url).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateClient(clientId, $"{url}/*", url);
 
         // Assert
         var ex = await Assert.ThrowsAsync<KeycloakEntityNotFoundException>(Act);
@@ -172,7 +172,7 @@ public class ClientManagerTests
             .WithGetClientsAsync("test", Enumerable.Empty<Client>());
 
         // Act
-        async Task Act() => await _sut.EnableClient(clientId).ConfigureAwait(false);
+        async Task Act() => await _sut.EnableClient(clientId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<KeycloakEntityNotFoundException>(Act);

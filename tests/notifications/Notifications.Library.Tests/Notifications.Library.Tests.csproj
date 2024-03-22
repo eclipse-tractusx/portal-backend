@@ -26,7 +26,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-      <NoWarn>xUnit1030</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

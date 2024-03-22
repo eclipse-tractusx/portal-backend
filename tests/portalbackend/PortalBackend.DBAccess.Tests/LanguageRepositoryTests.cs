@@ -99,7 +99,7 @@ public class LanguageRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<LanguageRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new LanguageRepository(context);
         return sut;
     }

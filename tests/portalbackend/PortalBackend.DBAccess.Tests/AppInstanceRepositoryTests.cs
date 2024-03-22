@@ -187,14 +187,14 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(AppInstanceRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new AppInstanceRepository(context);
         return (sut, context);
     }
 
     private async Task<AppInstanceRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new AppInstanceRepository(context);
         return sut;
     }

@@ -64,7 +64,7 @@ public class InvitationBusinessLogicTests
             .With(x => x.Email, (string?)null)
             .Create();
 
-        async Task Act() => await _sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("email must not be empty (Parameter 'email')");
@@ -81,7 +81,7 @@ public class InvitationBusinessLogicTests
             .WithEmailPattern(x => x.Email)
             .Create();
 
-        async Task Act() => await _sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
@@ -105,7 +105,7 @@ public class InvitationBusinessLogicTests
             .WithEmailPattern(x => x.Email)
             .Create();
 
-        await _sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
+        await _sut.ExecuteInvitation(invitationData);
 
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
@@ -131,7 +131,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerCreateCentralIdp(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateCentralIdp(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -148,10 +148,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateCentralIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateCentralIdp(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -176,7 +176,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerCreateSharedIdpServiceAccount(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateSharedIdpServiceAccount(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -193,10 +193,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -221,7 +221,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerUpdateCentralIdpUrls(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerUpdateCentralIdpUrls(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -238,10 +238,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -266,7 +266,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -283,10 +283,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -311,7 +311,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerCreateSharedRealmIdpClient(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateSharedRealmIdpClient(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -328,10 +328,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateSharedRealmIdpClient(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateSharedRealmIdpClient(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -356,7 +356,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerEnableCentralIdp(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerEnableCentralIdp(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -373,10 +373,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerEnableCentralIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerEnableCentralIdp(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -401,7 +401,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -418,10 +418,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -446,7 +446,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerInvitationCreateUser(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerInvitationCreateUser(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -463,10 +463,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerInvitationCreateUser(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerInvitationCreateUser(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -491,7 +491,7 @@ public class InvitationBusinessLogicTests
             .Returns((true, verifyProcessData));
 
         // Act
-        await _sut.RetriggerInvitationSendMail(process.Id).ConfigureAwait(false);
+        await _sut.RetriggerInvitationSendMail(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -508,10 +508,10 @@ public class InvitationBusinessLogicTests
         var process = _fixture.Create<Process>();
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerInvitationSendMail(process.Id).ConfigureAwait(false);
+        async Task Act() => await _sut.RetriggerInvitationSendMail(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");

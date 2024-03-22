@@ -132,5 +132,5 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
     #endregion
 
     private async Task<PortalDbContext> CreateContext() =>
-        await _dbTestDbFixture.GetPortalDbContext(_dateTimeProvider).ConfigureAwait(false);
+        await _dbTestDbFixture.GetPortalDbContext(_dateTimeProvider);
 }

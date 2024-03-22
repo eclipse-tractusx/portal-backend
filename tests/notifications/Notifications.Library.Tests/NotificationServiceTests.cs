@@ -194,7 +194,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content, Guid.NewGuid()).ToListAsync();
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
@@ -315,7 +315,7 @@ public class NotificationServiceTests
         };
 
         // Act
-        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content).ConfigureAwait(false);
+        async Task Action() => await _sut.CreateNotifications(userRoles, Guid.NewGuid(), content);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);
@@ -428,7 +428,7 @@ public class NotificationServiceTests
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
 
         // Act
-        async Task Action() => await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId).ConfigureAwait(false);
+        async Task Action() => await _sut.SetNotificationsForOfferToDone(userRoles, Enumerable.Repeat(NotificationTypeId.APP_RELEASE_REQUEST, 1), appId);
 
         // Assert
         await Assert.ThrowsAsync<ConfigurationException>(Action);

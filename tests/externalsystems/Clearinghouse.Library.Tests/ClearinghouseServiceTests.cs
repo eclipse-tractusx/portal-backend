@@ -95,7 +95,7 @@ public class ClearinghouseServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -117,7 +117,7 @@ public class ClearinghouseServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -139,7 +139,7 @@ public class ClearinghouseServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

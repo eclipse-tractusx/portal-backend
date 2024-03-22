@@ -95,7 +95,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -141,7 +141,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -257,7 +257,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -282,7 +282,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -323,7 +323,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -398,7 +398,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -424,7 +424,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -467,7 +467,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

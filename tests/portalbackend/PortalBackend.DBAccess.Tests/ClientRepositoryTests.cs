@@ -96,7 +96,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ClientRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ClientRepository(context);
         return (sut, context);
     }

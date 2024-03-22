@@ -112,7 +112,7 @@ public class RoleManagerTests
         httpTest.RespondWithJson(new { access_token = "123" }).RespondWithJson(new List<Client>());
 
         // Act
-        async Task Act() => await _sut.AddRolesToClientAsync("notvalid", roles).ConfigureAwait(false);
+        async Task Act() => await _sut.AddRolesToClientAsync("notvalid", roles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

@@ -51,9 +51,9 @@ public class WalletEndpointTests : EndToEndTestBase
     {
         Bpn = $"BPNLTEST{DateTime.Now:DDhhmmss}";
         GetListOfWallets();
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
         CreateWallet(201);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
         CreateWallet(409);
     }
 

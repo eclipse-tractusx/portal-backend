@@ -151,7 +151,7 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ICompanyRolesRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new CompanyRolesRepository(context);
         return (sut, context);
     }

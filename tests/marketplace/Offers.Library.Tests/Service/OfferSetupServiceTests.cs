@@ -280,7 +280,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -297,7 +297,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, url);
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.APP, "https://base-address.com", Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.APP, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -349,7 +349,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_offerIdWithMultipleInstances, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerRoles).ConfigureAwait(false);
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerRoles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -441,7 +441,7 @@ public class OfferSetupServiceTests
         var offerId = Guid.NewGuid();
         SetupCreateSingleInstance();
 
-        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(offerId).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(offerId);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"App {offerId} does not exist.");
@@ -452,7 +452,7 @@ public class OfferSetupServiceTests
     {
         SetupCreateSingleInstance();
 
-        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithWithNoInstanceSetupIds).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithWithNoInstanceSetupIds);
 
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"There should always be exactly one instance defined for a single instance offer {_offerIdWithWithNoInstanceSetupIds}");
@@ -462,7 +462,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceAppAsync_WithNoClientSet_ThrowsConflictException()
     {
         SetupCreateSingleInstance();
-        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithoutClient).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithoutClient);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"clientId must not be empty for single instance offer {_offerIdWithoutClient}");
@@ -472,7 +472,7 @@ public class OfferSetupServiceTests
     public async Task ActivateSingleInstanceAppAsync_WithMultipleInstances_ThrowsConflictException()
     {
         SetupCreateSingleInstance();
-        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithMultipleInstances).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithMultipleInstances);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"offer {_offerIdWithMultipleInstances} is not set up as single instance app");
@@ -528,7 +528,7 @@ public class OfferSetupServiceTests
             .Returns(true);
 
         // Act
-        async Task Act() => await _sut.SetupSingleInstance(offerId, "https://base-address.com").ConfigureAwait(false);
+        async Task Act() => await _sut.SetupSingleInstance(offerId, "https://base-address.com");
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -648,7 +648,7 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(Guid.NewGuid(), url);
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -667,7 +667,7 @@ public class OfferSetupServiceTests
             .Returns<OfferSubscriptionTransferData?>(null);
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -689,7 +689,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -713,7 +713,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -738,7 +738,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -775,7 +775,7 @@ public class OfferSetupServiceTests
                 _portalRepositories));
 
         // Act
-        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId).ConfigureAwait(false);
+        async Task Act() => await _sut.StartAutoSetupAsync(data, offerTypeId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -840,7 +840,7 @@ public class OfferSetupServiceTests
             .Returns<SubscriptionActivationData?>(null);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -861,7 +861,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -882,7 +882,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -904,7 +904,7 @@ public class OfferSetupServiceTests
             .Returns(transferData);
 
         // Act
-        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -965,7 +965,7 @@ public class OfferSetupServiceTests
             .Returns<OfferSubscriptionClientCreationData?>(null);
 
         // Act
-        async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateClient(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -984,7 +984,7 @@ public class OfferSetupServiceTests
             .Returns(clientCreationData);
 
         // Act
-        async Task Act() => await _sut.CreateClient(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateClient(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1046,7 +1046,7 @@ public class OfferSetupServiceTests
             .Returns<OfferSubscriptionTechnicalUserCreationData?>(null);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1063,7 +1063,7 @@ public class OfferSetupServiceTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1156,7 +1156,7 @@ public class OfferSetupServiceTests
             .Returns<SubscriptionActivationData?>(null);
 
         // Act
-        async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!, null!).ConfigureAwait(false);
+        async Task Act() => await _sut.ActivateSubscription(offerSubscriptionId, null!, null!, null!);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1304,7 +1304,7 @@ public class OfferSetupServiceTests
             .Returns(false);
 
         // Act
-        async Task Act() => await _sut.TriggerActivateSubscription(offerSubscriptionId).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerActivateSubscription(offerSubscriptionId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

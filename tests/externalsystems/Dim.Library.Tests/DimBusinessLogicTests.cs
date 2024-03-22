@@ -96,7 +96,7 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
@@ -117,7 +117,7 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
@@ -138,7 +138,7 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
@@ -159,7 +159,7 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
@@ -180,10 +180,10 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(ApplicationId))
             .Returns(new ValueTuple<Guid, string, string?>());
-        async Task Act() => await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be($"CompanyApplication {ApplicationId} is not in status SUBMITTED");
@@ -204,10 +204,10 @@ public class DimBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(ApplicationId))
             .Returns(new ValueTuple<Guid, string, string?>(companyId, "Test Corp", null));
-        async Task Act() => await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be($"BusinessPartnerNumber (bpn) for CompanyApplications {ApplicationId} company {companyId} is empty");
@@ -231,7 +231,7 @@ public class DimBusinessLogicTests
             .Returns(new ValueTuple<Guid, string, string?>(companyId, companyName, BPN));
 
         // Act
-        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _dimService.CreateWalletAsync(companyName, BPN, A<string>.That.Contains($"{BPN}/did.json"), A<CancellationToken>._))
@@ -251,7 +251,7 @@ public class DimBusinessLogicTests
         var data = _fixture.Create<DimWalletData>();
         A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
             .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(false, default, Enumerable.Empty<Guid>()));
-        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -269,7 +269,7 @@ public class DimBusinessLogicTests
         var data = _fixture.Create<DimWalletData>();
         A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
             .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, default, _fixture.CreateMany<Guid>(2)));
-        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -300,7 +300,7 @@ public class DimBusinessLogicTests
             .Returns(context);
 
         // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
@@ -326,7 +326,7 @@ public class DimBusinessLogicTests
             .Returns(context);
 
         // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
@@ -399,7 +399,7 @@ public class DimBusinessLogicTests
             });
 
         // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateWalletData(companyId, data.Did, didDocument, data.AuthenticationDetails.ClientId, A<byte[]>._, A<byte[]?>._, 1, data.AuthenticationDetails.AuthenticationServiceUrl))
@@ -428,7 +428,7 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        var result = await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.FAILED);
@@ -446,10 +446,10 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetDidApplicationId(ApplicationId))
             .Returns((false, null, Enumerable.Empty<DateTimeOffset>()));
-        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"CompanyApplication {ApplicationId} does not exist");
@@ -467,10 +467,10 @@ public class DimBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetDidApplicationId(ApplicationId))
             .Returns((true, null, Enumerable.Empty<DateTimeOffset>()));
-        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be("There must be a did set");
@@ -490,10 +490,10 @@ public class DimBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetDidApplicationId(ApplicationId))
             .Returns((true, did, Enumerable.Empty<DateTimeOffset>()));
         A.CallTo(() => _dimService.ValidateDid(did, A<CancellationToken>._)).Returns(false);
-        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be($"There must be excatly on active {ProcessStepTypeId.VALIDATE_DID_DOCUMENT}");
@@ -516,7 +516,7 @@ public class DimBusinessLogicTests
         A.CallTo(() => _dimService.ValidateDid(did, A<CancellationToken>._)).Returns(false);
 
         // Act
-        var result = await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
@@ -541,7 +541,7 @@ public class DimBusinessLogicTests
         A.CallTo(() => _dimService.ValidateDid(did, A<CancellationToken>._)).Returns(false);
 
         // Act
-        var result = await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.FAILED);
@@ -566,7 +566,7 @@ public class DimBusinessLogicTests
         A.CallTo(() => _dimService.ValidateDid(did, A<CancellationToken>._)).Returns(true);
 
         // Act
-        var result = await _logic.ValidateDidDocument(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.ValidateDidDocument(context, CancellationToken.None);
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);

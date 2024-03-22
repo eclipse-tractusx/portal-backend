@@ -236,14 +236,14 @@ public class NetworkRepositoryTests
 
     private async Task<(NetworkRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NetworkRepository(context);
         return (sut, context);
     }
 
     private async Task<NetworkRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NetworkRepository(context);
         return sut;
     }
