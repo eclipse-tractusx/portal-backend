@@ -306,14 +306,14 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     private async Task<(TechnicalUserProfileRepository, PortalDbContext)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new TechnicalUserProfileRepository(context);
         return (sut, context);
     }
 
     private async Task<TechnicalUserProfileRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new TechnicalUserProfileRepository(context);
         return sut;
     }

@@ -206,14 +206,14 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     private async Task<StaticDataRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new StaticDataRepository(context);
         return sut;
     }
 
     private async Task<(PortalDbContext, StaticDataRepository)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new StaticDataRepository(context);
         return (context, sut);
     }

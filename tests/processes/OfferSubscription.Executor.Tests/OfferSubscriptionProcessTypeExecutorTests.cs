@@ -83,7 +83,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         // Arrange
         var processId = Guid.NewGuid();
 
-        async Task Act() => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        async Task Act() => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -115,7 +115,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);

@@ -65,7 +65,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _container.StartAsync()
-            .ConfigureAwait(false);
+            ;
 
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -96,6 +96,6 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _container.DisposeAsync()
-            .ConfigureAwait(false);
+            ;
     }
 }

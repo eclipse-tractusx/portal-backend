@@ -218,14 +218,14 @@ public class ApplicationChecklistRepositoryTests : IAssemblyFixture<TestDbFixtur
 
     private async Task<(ApplicationChecklistRepository, PortalDbContext)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ApplicationChecklistRepository(context);
         return (sut, context);
     }
 
     private async Task<ApplicationChecklistRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ApplicationChecklistRepository(context);
         return sut;
     }

@@ -194,7 +194,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new AgreementRepository(context);
         return (sut, context);
     }

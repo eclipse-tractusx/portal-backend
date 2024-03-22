@@ -243,7 +243,7 @@ public class AppChangeBusinessLogicTest
             .Returns((true, appName, Guid.NewGuid(), clientIds));
 
         //Act
-        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
+        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -267,7 +267,7 @@ public class AppChangeBusinessLogicTest
             .Returns((true, appName, null, clientIds));
 
         //Act
-        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
+        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -306,7 +306,7 @@ public class AppChangeBusinessLogicTest
             .Returns<(bool, bool, IEnumerable<LocalizedDescription>?)>(default);
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -324,7 +324,7 @@ public class AppChangeBusinessLogicTest
             .Returns((false, true, offerDescription));
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -342,7 +342,7 @@ public class AppChangeBusinessLogicTest
             .Returns((true, false, offerDescription));
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -826,7 +826,7 @@ public class AppChangeBusinessLogicTest
         var subscriptionId = _fixture.Create<Guid>();
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -850,7 +850,7 @@ public class AppChangeBusinessLogicTest
             .Returns<OfferUpdateUrlData?>(null);
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -876,7 +876,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", true, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -902,7 +902,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, false, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -928,7 +928,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -952,7 +952,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

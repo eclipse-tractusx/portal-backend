@@ -116,7 +116,7 @@ public class NetworkBusinessLogicTests
             .Returns<(bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?)>(default);
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -132,7 +132,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Empty<(Guid, CompanyApplicationStatusId, string?)>(), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -148,7 +148,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, _fixture.CreateMany<(Guid, CompanyApplicationStatusId, string?)>(2), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -165,7 +165,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -190,7 +190,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -219,7 +219,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -248,7 +248,7 @@ public class NetworkBusinessLogicTests
             .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -359,7 +359,7 @@ public class NetworkBusinessLogicTests
                 )?)>(default);
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(notExistingId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(notExistingId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -380,7 +380,7 @@ public class NetworkBusinessLogicTests
                      VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applcationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applcationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -401,7 +401,7 @@ public class NetworkBusinessLogicTests
                      VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applicationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -422,7 +422,7 @@ public class NetworkBusinessLogicTests
                       VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applicationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

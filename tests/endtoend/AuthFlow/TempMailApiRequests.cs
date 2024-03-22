@@ -35,7 +35,7 @@ public class TempMailApiRequests
 
     public async Task<string?> FetchPassword()
     {
-        var passwordMessage = await GetPasswordMessage().ConfigureAwait(false);
+        var passwordMessage = await GetPasswordMessage();
         string? password = null;
 
         if (passwordMessage == null)
@@ -61,7 +61,7 @@ public class TempMailApiRequests
 
     private async Task<TempMailMessageData> GetPasswordMessage()
     {
-        var hashedEmailAddress = await CreateMd5().ConfigureAwait(false);
+        var hashedEmailAddress = await CreateMd5();
         var endpoint = $"{EndPoint}/mail/id/{hashedEmailAddress}";
         var data = Given()
             .DisableSslCertificateValidation()
@@ -75,7 +75,7 @@ public class TempMailApiRequests
             .Extract()
             .Response();
         var messages =
-            DataHandleHelper.DeserializeData<List<TempMailMessageData>>(await data.Content.ReadAsStringAsync().ConfigureAwait(false));
+            DataHandleHelper.DeserializeData<List<TempMailMessageData>>(await data.Content.ReadAsStringAsync());
         if (messages is null)
         {
             throw new Exception($"Could not get password message from {endpoint}, response was null/empty.");
@@ -99,7 +99,7 @@ public class TempMailApiRequests
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<string[]>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var data = DataHandleHelper.DeserializeData<string[]>(await response.Content.ReadAsStringAsync());
         if (data is null || data.Length < 1)
         {
             throw new Exception($"Could not get domain from {endpoint}, response data was null.");
@@ -110,7 +110,7 @@ public class TempMailApiRequests
     //https://stackoverflow.com/questions/11454004/calculate-a-md5-hash-from-a-string
     private async Task<string> CreateMd5()
     {
-        var emailAddress = ApiTestUsername + await GetDomain().ConfigureAwait(false);
+        var emailAddress = ApiTestUsername + await GetDomain();
         using (var md5 = MD5.Create())
         {
             var inputBytes = Encoding.ASCII.GetBytes(emailAddress);

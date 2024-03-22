@@ -183,7 +183,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         exception.Message.Should().Be("uploaded file contains no lines (Parameter 'document')");
@@ -251,7 +251,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
         exception.Message.Should().Be("invalid header");

@@ -101,7 +101,7 @@ public class ClearinghouseBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.NewGuid(), stepTypeId, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -125,7 +125,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -148,7 +148,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -171,7 +171,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

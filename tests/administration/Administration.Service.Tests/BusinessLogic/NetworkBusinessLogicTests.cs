@@ -125,7 +125,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -143,7 +143,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -162,7 +162,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -184,7 +184,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -203,7 +203,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -222,7 +222,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -241,7 +241,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -260,7 +260,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -281,7 +281,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(NoIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -301,7 +301,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(MultiIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -322,7 +322,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -343,7 +343,7 @@ public class NetworkBusinessLogicTests
             .Throws(new ControllerArgumentException($"invalid roles: clientId: 'cl1', roles: [Company Admin]"));
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -381,7 +381,7 @@ public class NetworkBusinessLogicTests
             .Throws(new UnexpectedConditionException("Test message"));
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -409,7 +409,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(NoAliasIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

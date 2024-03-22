@@ -193,7 +193,7 @@ public class ServiceReleaseBusinessLogicTest
            .Returns<ServiceDetailsData?>(null);
 
         // Act
-        async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -335,7 +335,7 @@ public class ServiceReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
     {
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("ServiceId must not be empty");
@@ -392,7 +392,7 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -407,7 +407,7 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -422,7 +422,7 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data);
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);

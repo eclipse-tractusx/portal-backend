@@ -172,7 +172,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetDidDocument("bpn").ConfigureAwait(false);
+        var result = await sut.GetDidDocument("bpn");
 
         // Assert
         result.Should().Be(jsonDocument);
@@ -185,10 +185,10 @@ public class StaticDataBusinessLogicTest
         A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
             .Returns(new ValueTuple<bool, JsonDocument>(false, null!));
         var sut = new StaticDataBusinessLogic(_portalRepositories);
-        async Task Act() => await sut.GetDidDocument("bpn").ConfigureAwait(false);
+        async Task Act() => await sut.GetDidDocument("bpn");
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be("The did document does not exist");

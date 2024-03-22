@@ -25,7 +25,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>xUnit1030</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.1" />

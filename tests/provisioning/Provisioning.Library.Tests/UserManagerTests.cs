@@ -184,7 +184,7 @@ public class UserManagerTests
             .WithGetUsersFailing(HttpStatusCode.InternalServerError);
 
         // Act
-        async Task Act() => await _sut.GetUserByUserName("test").ConfigureAwait(false);
+        async Task Act() => await _sut.GetUserByUserName("test");
 
         // Assert
         var ex = await Assert.ThrowsAsync<FlurlHttpException>(Act);

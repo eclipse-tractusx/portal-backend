@@ -127,7 +127,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -144,7 +144,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 1 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -161,7 +161,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
@@ -185,7 +185,7 @@ public class RegistrationBusinessLogicTest
             .Returns(data);
 
         // Act
-        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -230,7 +230,7 @@ public class RegistrationBusinessLogicTest
             .Returns(data);
 
         // Act
-        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -263,7 +263,7 @@ public class RegistrationBusinessLogicTest
         var bpn = "123";
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -278,7 +278,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -292,7 +292,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -306,7 +306,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -320,7 +320,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -340,7 +340,7 @@ public class RegistrationBusinessLogicTest
         var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, _provisioningManager, null!, null!);
 
         // Act
-        await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+        await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
@@ -364,7 +364,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _clearinghouseBusinessLogic.ProcessEndClearinghouse(ApplicationId, data, A<CancellationToken>._))
@@ -380,7 +380,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -396,7 +396,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -419,7 +419,7 @@ public class RegistrationBusinessLogicTest
         SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await logic.ApproveRegistrationVerification(IdWithBpn).ConfigureAwait(false);
+        await logic.ApproveRegistrationVerification(IdWithBpn);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -444,7 +444,7 @@ public class RegistrationBusinessLogicTest
         SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await _logic.ApproveRegistrationVerification(IdWithoutBpn).ConfigureAwait(false);
+        await _logic.ApproveRegistrationVerification(IdWithoutBpn);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -470,7 +470,7 @@ public class RegistrationBusinessLogicTest
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId, idpTypeId);
 
         // Act
-        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -507,7 +507,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
             .Returns<(Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)>(default);
-        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -549,7 +549,7 @@ public class RegistrationBusinessLogicTest
                 }));
 
         // Act
-        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
@@ -588,7 +588,7 @@ public class RegistrationBusinessLogicTest
             .Returns<(bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>)>(default);
 
         //Act
-        async Task Act() => await _logic.GetChecklistForApplicationAsync(applicationId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetChecklistForApplicationAsync(applicationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -616,7 +616,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, list, processSteps));
 
         //Act
-        var result = await _logic.GetChecklistForApplicationAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetChecklistForApplicationAsync(applicationId);
 
         // Assert
         result.Should().NotBeNull().And.NotBeEmpty().And.HaveCount(5);
@@ -643,7 +643,7 @@ public class RegistrationBusinessLogicTest
             .Throws(new ConflictException("Test"));
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -691,7 +691,7 @@ public class RegistrationBusinessLogicTest
             });
 
         //Act
-        await _logic.TriggerChecklistAsync(applicationId, typeId, stepId).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context,
@@ -718,7 +718,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, companyId, true));
 
         // Act
-        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, companyId, A<CancellationToken>._))
@@ -735,7 +735,7 @@ public class RegistrationBusinessLogicTest
             .Returns<(bool, Guid, bool)>(default);
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -751,7 +751,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, Guid.NewGuid(), false));
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -790,7 +790,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, typeId, stepId).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -813,7 +813,7 @@ public class RegistrationBusinessLogicTest
             .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
 
         // Act
-        var result = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await _logic.GetDocumentAsync(documentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -829,7 +829,7 @@ public class RegistrationBusinessLogicTest
             .Returns<Document?>(null);
 
         // Act
-        async Task Act() => await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetDocumentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -847,7 +847,7 @@ public class RegistrationBusinessLogicTest
         var data = new DimWalletData($"did:web:test123:{BusinessPartnerNumber}", _fixture.Create<JsonDocument>(), new AuthenticationDetail("https://example.org", "test123", "test123"));
 
         // Act
-        await _logic.ProcessDimResponseAsync(BusinessPartnerNumber, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessDimResponseAsync(BusinessPartnerNumber, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _dimBusinessLogic.ProcessDimResponse(BusinessPartnerNumber, data, A<CancellationToken>._))

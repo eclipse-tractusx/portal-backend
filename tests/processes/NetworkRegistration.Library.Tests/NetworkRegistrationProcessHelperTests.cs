@@ -58,7 +58,7 @@ public class NetworkRegistrationProcessHelperTests
     public async Task TriggerProcessStep_WithUntriggerableProcessStep_ThrowsConflictException()
     {
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -74,7 +74,7 @@ public class NetworkRegistrationProcessHelperTests
             .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);

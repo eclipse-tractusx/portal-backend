@@ -26,7 +26,6 @@
         <IsPackable>false</IsPackable>
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Tests</RootNamespace>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Tests</AssemblyName>
-      <NoWarn>xUnit1030</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

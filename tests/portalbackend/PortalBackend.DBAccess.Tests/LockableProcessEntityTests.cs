@@ -320,9 +320,9 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(Guid Id, Guid Version, DbContext Context)> CreateProcessAndContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var process = context.Add(new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).Entity;
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
         return (process.Id, process.Version, context);
     }

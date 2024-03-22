@@ -57,7 +57,7 @@ public class UserControllerTest
             .Returns(data);
 
         // Act
-        var result = await _controller.GetOwnUserDetails().ConfigureAwait(false);
+        var result = await _controller.GetOwnUserDetails();
 
         // Assert
         A.CallTo(() => _logic.GetOwnUserDetails()).MustHaveHappenedOnceExactly();

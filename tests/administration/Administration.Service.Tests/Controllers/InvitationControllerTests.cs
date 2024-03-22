@@ -43,7 +43,7 @@ public class InvitationControllerTests
         var data = _fixture.Create<CompanyInvitationData>();
 
         // Act
-        await _controller.ExecuteInvitation(data).ConfigureAwait(false);
+        await _controller.ExecuteInvitation(data);
 
         // Assert
         A.CallTo(() => _logic.ExecuteInvitation(data)).MustHaveHappenedOnceExactly();
@@ -56,7 +56,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerCreateSharedIdpServiceAccount(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateSharedIdpServiceAccount(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -71,7 +71,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerUpdateCentralIdpUrls(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerUpdateCentralIdpUrls(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -86,7 +86,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerCreateCentralIdpOrgMapper(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateCentralIdpOrgMapper(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -101,7 +101,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerCreateSharedRealmIdpClient(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateSharedRealmIdpClient(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -116,7 +116,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerEnableCentralIdp(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerEnableCentralIdp(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -131,7 +131,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerCreateDatabaseIdp(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateDatabaseIdp(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -146,7 +146,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerInvitationCreateUser(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerInvitationCreateUser(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -161,7 +161,7 @@ public class InvitationControllerTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _controller.RetriggerInvitationSendMail(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerInvitationSendMail(processId);
 
         // Assert
         result.StatusCode.Should().Be(204);

@@ -198,7 +198,7 @@ public class CompanySsiDetailsRepositoryTests
             {
                 ssi.VerifiedCredentialExternalTypeUseCaseDetailId = new("1268a76a-ca19-4dd8-b932-01f24071d561");
             });
-        async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
+        async Task Act() => await context.SaveChangesAsync();
 
         // Act
         var ex = await Assert.ThrowsAsync<DbUpdateException>(Act);
@@ -456,13 +456,13 @@ public class CompanySsiDetailsRepositoryTests
 
     private async Task<CompanySsiDetailsRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new CompanySsiDetailsRepository(context);
     }
 
     private async Task<(CompanySsiDetailsRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return (new CompanySsiDetailsRepository(context), context);
     }
 

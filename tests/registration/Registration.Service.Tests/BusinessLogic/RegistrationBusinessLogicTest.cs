@@ -285,7 +285,7 @@ public class RegistrationBusinessLogicTest
         // Act
         async Task Act() =>
             await sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", "justatoken",
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -419,7 +419,7 @@ public class RegistrationBusinessLogicTest
             .Returns<CompanyApplicationDetailData?>(null);
 
         // Act
-        async Task Act() => await sut.GetCompanyDetailData(applicationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyDetailData(applicationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -448,7 +448,7 @@ public class RegistrationBusinessLogicTest
             .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
-        async Task Act() => await sut.GetCompanyDetailData(applicationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyDetailData(applicationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -498,7 +498,7 @@ public class RegistrationBusinessLogicTest
             null, null, null, null, uniqueIdData);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -529,7 +529,7 @@ public class RegistrationBusinessLogicTest
             .Returns<CompanyApplicationDetailData?>(null);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -565,7 +565,7 @@ public class RegistrationBusinessLogicTest
             .Returns(_fixture.Build<CompanyApplicationDetailData>().With(x => x.IsUserOfCompany, false).Create());
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -601,7 +601,7 @@ public class RegistrationBusinessLogicTest
             _mailingProcessCreation);
 
         // Act
-        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData).ConfigureAwait(false);
+        async Task Act() => await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1126,7 +1126,7 @@ public class RegistrationBusinessLogicTest
             _mailingProcessCreation);
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, 0);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1160,7 +1160,7 @@ public class RegistrationBusinessLogicTest
         // Act
         async Task Act() =>
             await sut.SetOwnCompanyApplicationStatusAsync(applicationId, CompanyApplicationStatusId.VERIFY)
-                .ConfigureAwait(false);
+                ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1194,7 +1194,7 @@ public class RegistrationBusinessLogicTest
         var status = CompanyApplicationStatusId.VERIFY;
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, status).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyApplicationStatusAsync(applicationId, status);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -1324,7 +1324,7 @@ public class RegistrationBusinessLogicTest
         var sut = _fixture.Create<RegistrationBusinessLogic>();
 
         //Act
-        async Task Action() => await sut.GetInvitedUsersAsync(Guid.Empty).ToListAsync().ConfigureAwait(false);
+        async Task Action() => await sut.GetInvitedUsersAsync(Guid.Empty).ToListAsync();
 
         // Assert
         await Assert.ThrowsAsync<Exception>(Action);
@@ -1394,7 +1394,7 @@ public class RegistrationBusinessLogicTest
         var sut = _fixture.Create<RegistrationBusinessLogic>();
 
         // Act
-        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await sut.UploadDocumentAsync(_existingApplicationId, file, DocumentTypeId.ADDITIONAL_DETAILS, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Action);
@@ -1768,7 +1768,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRoleConsentAsync(notExistingId, _fixture.Create<CompanyRoleAgreementConsents>())
-                .ConfigureAwait(false);
+                ;
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1788,7 +1788,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>())
-            .ConfigureAwait(false);
+            ;
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1818,7 +1818,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>())
-            .ConfigureAwait(false);
+            ;
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1856,7 +1856,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents)
-            .ConfigureAwait(false);
+            ;
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1995,7 +1995,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRoleConsentAsync(applicationId, consents)
-            .ConfigureAwait(false);
+            ;
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -2023,7 +2023,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(notExistingId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2205,7 +2205,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2251,7 +2251,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2290,7 +2290,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2329,7 +2329,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2360,7 +2360,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2391,7 +2391,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2422,7 +2422,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2453,7 +2453,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2481,7 +2481,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2512,7 +2512,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2544,7 +2544,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         async Task Act() => await sut.SubmitRegistrationAsync(applicationId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2912,7 +2912,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        async Task Act() => await sut.GetDocumentContentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentContentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2929,7 +2929,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        async Task Act() => await sut.GetDocumentContentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await sut.GetDocumentContentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -3077,7 +3077,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -3094,7 +3094,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(_fixture.Create<Guid>()).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(_fixture.Create<Guid>());
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -3125,7 +3125,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -3156,7 +3156,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -3187,7 +3187,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(documentId);
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -3201,7 +3201,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
-        var Act = async () => await sut.DeleteRegistrationDocumentAsync(default).ConfigureAwait(false);
+        var Act = async () => await sut.DeleteRegistrationDocumentAsync(default);
 
         // Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);

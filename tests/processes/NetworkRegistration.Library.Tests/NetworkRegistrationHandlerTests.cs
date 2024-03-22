@@ -91,7 +91,7 @@ public class NetworkRegistrationHandlerTests
             .Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -121,7 +121,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -147,7 +147,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -181,7 +181,7 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

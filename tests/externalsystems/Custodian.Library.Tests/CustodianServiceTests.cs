@@ -122,7 +122,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -203,7 +203,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -223,7 +223,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -295,7 +295,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.SetMembership(bpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -358,7 +358,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -417,7 +417,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

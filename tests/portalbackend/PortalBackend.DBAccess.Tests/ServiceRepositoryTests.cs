@@ -137,7 +137,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(OfferRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new OfferRepository(context);
         return (sut, context);
     }

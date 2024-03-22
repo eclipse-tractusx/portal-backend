@@ -125,7 +125,7 @@ public class OfferDocumentServiceTests
             .Returns<(bool, bool, bool)>(default);
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -144,7 +144,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(Guid.Empty, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -164,7 +164,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -184,7 +184,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "image/svg+xml");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
@@ -204,7 +204,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "foo/bar");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
@@ -224,7 +224,7 @@ public class OfferDocumentServiceTests
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -249,7 +249,7 @@ public class OfferDocumentServiceTests
             .Returns((true, false, true));
 
         // Act
-        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.UploadDocumentAsync(id, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

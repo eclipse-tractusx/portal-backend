@@ -73,7 +73,7 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
 
         var serviceProvider = _fixture.Create<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(PortalDbContext))).Returns(context);

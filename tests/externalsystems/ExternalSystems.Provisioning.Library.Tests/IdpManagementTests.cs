@@ -104,7 +104,7 @@ public class IdpManagementTests
         A.CallTo(() => _provisioningDbAccess.GetNextIdentityProviderSequenceAsync()).Returns(1);
 
         // Act
-        var idpName = await _sut.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
+        var idpName = await _sut.GetNextCentralIdentityProviderNameAsync();
 
         // Assert
         idpName.Should().Be("cl1");
@@ -122,7 +122,7 @@ public class IdpManagementTests
         httpTest.WithAuthorization();
 
         // Act
-        await _sut.CreateCentralIdentityProviderAsync("idp1", "testCorp").ConfigureAwait(false);
+        await _sut.CreateCentralIdentityProviderAsync("idp1", "testCorp");
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/identity-provider/instances")
@@ -148,7 +148,7 @@ public class IdpManagementTests
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
 
         // Act
-        var result = await _sut.CreateSharedIdpServiceAccountAsync("idp1").ConfigureAwait(false);
+        var result = await _sut.CreateSharedIdpServiceAccountAsync("idp1");
 
         // Assert
         result.ClientId.Should().Be(newClientId);
@@ -176,7 +176,7 @@ public class IdpManagementTests
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.AddRealmRoleMappingsToUserAsync(userId).ConfigureAwait(false);
+        await _sut.AddRealmRoleMappingsToUserAsync(userId);
 
         // Assert
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/users/{userId}/role-mappings/realm")
@@ -204,7 +204,7 @@ public class IdpManagementTests
             .WithGetIdentityProviderAsync("idp1", new IdentityProvider { Alias = "idp1", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
-        await _sut.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "theme1", "cl1", "safePw").ConfigureAwait(false);
+        await _sut.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "theme1", "cl1", "safePw");
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/{CentralRealm}/identity-provider/instances/idp1")
@@ -224,7 +224,7 @@ public class IdpManagementTests
         httpTest.WithAuthorization();
 
         // Act
-        await _sut.CreateCentralIdentityProviderOrganisationMapperAsync("idp1", "testCorp").ConfigureAwait(false);
+        await _sut.CreateCentralIdentityProviderOrganisationMapperAsync("idp1", "testCorp");
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/{CentralRealm}/identity-provider/instances/idp1/mappers")
@@ -249,7 +249,7 @@ public class IdpManagementTests
             });
 
         // Act
-        await _sut.CreateSharedRealmIdpClientAsync("idp1", "testCorp", "theme1", "cl1", "safePw").ConfigureAwait(false);
+        await _sut.CreateSharedRealmIdpClientAsync("idp1", "testCorp", "theme1", "cl1", "safePw");
 
         // Assert
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms")
@@ -274,7 +274,7 @@ public class IdpManagementTests
             });
 
         // Act
-        await _sut.CreateSharedClientAsync("idp1", "cl1", "safePw").ConfigureAwait(false);
+        await _sut.CreateSharedClientAsync("idp1", "cl1", "safePw");
 
         // Assert
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/idp1/clients")
@@ -295,7 +295,7 @@ public class IdpManagementTests
             .WithGetIdentityProviderAsync("idp1", new IdentityProvider { Alias = "Test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
-        await _sut.EnableCentralIdentityProviderAsync("idp1").ConfigureAwait(false);
+        await _sut.EnableCentralIdentityProviderAsync("idp1");
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/{CentralRealm}/identity-provider/instances/idp1")

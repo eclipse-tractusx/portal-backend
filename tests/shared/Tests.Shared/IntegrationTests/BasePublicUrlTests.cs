@@ -46,7 +46,7 @@ public class BasePublicUrlTests<TController, TSeeding> : IClassFixture<Integrati
         var endpoint = new InformationEndpoints(client);
 
         // Act
-        var response = await endpoint.Get().ConfigureAwait(false);
+        var response = await endpoint.Get();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

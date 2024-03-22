@@ -185,7 +185,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<IUserRolesRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new UserRolesRepository(context);
     }
 }
