@@ -590,8 +590,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId)
-;
+        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId);
 
         result.Should().HaveCount(5);
     }
@@ -610,8 +609,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Act
         await sut
-            .UpdateTechnicalUserProfiles(_existingServiceId, data)
-;
+            .UpdateTechnicalUserProfiles(_existingServiceId, data);
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(_existingServiceId, OfferTypeId.SERVICE,
                 A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile))

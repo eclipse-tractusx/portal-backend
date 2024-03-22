@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq.Tests;
@@ -75,8 +76,8 @@ public class NullOrSequenceEqualExtensionsTests
     public void NullOrContentEqual_WithKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string>? firstValues, IEnumerable<string>? second, IEnumerable<string>? secondValues, bool expected)
     {
         // Arrange
-        var firstItems = first?.Zip(firstValues, (x, y) => new KeyValuePair<string, string>(x, y));
-        var secondItems = second?.Zip(secondValues, (x, y) => new KeyValuePair<string, string>(x, y));
+        var firstItems = first?.Zip(firstValues ?? throw new UnexpectedConditionException("firstValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
+        var secondItems = second?.Zip(secondValues ?? throw new UnexpectedConditionException("secondValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
 
         // Act
         var result = firstItems.NullOrContentEqual(secondItems);

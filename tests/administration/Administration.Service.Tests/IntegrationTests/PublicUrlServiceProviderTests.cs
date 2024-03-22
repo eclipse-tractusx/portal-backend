@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,7 +42,6 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<CompanyDataContr
             x => x.HttpMethods == "GET" && x.Url == "api/test/partnernetwork/membercompanies",
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/owncompany",
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}",
-            x => x.HttpMethods == "POST" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}/retrigger-provider-callback")
-;
+            x => x.HttpMethods == "POST" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}/retrigger-provider-callback");
     }
 }

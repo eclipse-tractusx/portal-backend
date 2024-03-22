@@ -890,7 +890,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 null,
                 application => application.DateLastChanged = _dateTimeProvider.OffsetNow)));
 
-        await this._portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return true;
     }
 

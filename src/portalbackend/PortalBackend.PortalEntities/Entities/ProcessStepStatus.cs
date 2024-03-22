@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,8 +26,8 @@ public class ProcessStepStatus
 {
     private ProcessStepStatus()
     {
-        this.Label = null!;
-        this.ProcessSteps = new HashSet<ProcessStep>();
+        Label = null!;
+        ProcessSteps = new HashSet<ProcessStep>();
     }
 
     public ProcessStepStatus(ProcessStepStatusId processStepStatusId) : this()

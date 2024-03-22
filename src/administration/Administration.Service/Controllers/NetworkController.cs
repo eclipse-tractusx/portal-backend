@@ -59,7 +59,7 @@ public class NetworkController : ControllerBase
     public async Task<OkResult> PartnerRegister([FromBody] PartnerRegistrationData data)
     {
         await _logic.HandlePartnerRegistration(data).ConfigureAwait(ConfigureAwaitOptions.None);
-        return this.Ok();
+        return Ok();
     }
 
     /// <summary>

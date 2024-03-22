@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -37,7 +36,6 @@ public class PublicUrlActiveParticipantTests : BasePublicUrlTests<ServicesContro
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithActiveParticipant_ReturnsCorrectAmount()
     {
-        await OpenInformationController_ReturnsCorrectAmount(0)
-;
+        await OpenInformationController_ReturnsCorrectAmount(0);
     }
 }

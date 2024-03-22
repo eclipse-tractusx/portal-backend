@@ -34,7 +34,7 @@ public class NetworkControllerTests
     {
         _fixture = new Fixture();
         _logic = A.Fake<INetworkBusinessLogic>();
-        this._controller = new NetworkController(_logic);
+        _controller = new NetworkController(_logic);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class NetworkControllerTests
         var data = _fixture.Create<PartnerRegistrationData>();
 
         // Act
-        var result = await this._controller.PartnerRegister(data);
+        var result = await _controller.PartnerRegister(data);
 
         // Assert
         result.StatusCode.Should().Be(200);
@@ -58,7 +58,7 @@ public class NetworkControllerTests
         var externalId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await this._controller.RetriggerSynchronizeUser(externalId);
+        var result = await _controller.RetriggerSynchronizeUser(externalId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -73,7 +73,7 @@ public class NetworkControllerTests
         var externalId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await this._controller.RetriggerCallbackOspApprove(externalId);
+        var result = await _controller.RetriggerCallbackOspApprove(externalId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -88,7 +88,7 @@ public class NetworkControllerTests
         var externalId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await this._controller.RetriggerCallbackOspDecline(externalId);
+        var result = await _controller.RetriggerCallbackOspDecline(externalId);
 
         // Assert
         result.StatusCode.Should().Be(204);
@@ -103,7 +103,7 @@ public class NetworkControllerTests
         var externalId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await this._controller.RetriggerCallbackOspSubmitted(externalId);
+        var result = await _controller.RetriggerCallbackOspSubmitted(externalId);
 
         // Assert
         result.StatusCode.Should().Be(204);

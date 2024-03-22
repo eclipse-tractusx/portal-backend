@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -38,7 +37,6 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<AppsController, AppP
     {
         await OpenInformationController_ReturnsCorrectAmount(2,
             x => x.HttpMethods == "POST" && x.Url == "api/test/start-autosetup",
-            x => x.HttpMethods == "GET" && x.Url == "api/test/{appid}/subscription/{subscriptionid}/provider")
-;
+            x => x.HttpMethods == "GET" && x.Url == "api/test/{appid}/subscription/{subscriptionid}/provider");
     }
 }
