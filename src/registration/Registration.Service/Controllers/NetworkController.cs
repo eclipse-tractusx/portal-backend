@@ -63,7 +63,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> Submit([FromBody] PartnerSubmitData data)
     {
-        await _logic.Submit(data).ConfigureAwait(false);
+        await _logic.Submit(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -82,7 +82,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<OkResult> DeclineOsp([FromRoute] Guid applicationId, [FromBody] DeclineOspData declineData)
     {
-        await _logic.DeclineOsp(applicationId, declineData).ConfigureAwait(false);
+        await _logic.DeclineOsp(applicationId, declineData).ConfigureAwait(ConfigureAwaitOptions.None);
         return this.Ok();
     }
 }

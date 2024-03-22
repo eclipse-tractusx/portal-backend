@@ -49,7 +49,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var companyId = _identityData.CompanyId;
         var result = await _portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"Company {companyId} not found");
@@ -82,12 +82,12 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (providerDetailData == default)
         {
             var result = await companyRepository
                 .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
             if (!result.IsValidCompanyId)
             {
                 throw new ConflictException($"Company {companyId} not found");
@@ -116,7 +116,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -140,10 +140,10 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     {
         var nextStep = stepToTrigger.GetOfferSubscriptionStepToRetrigger();
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null, mustBePending)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />

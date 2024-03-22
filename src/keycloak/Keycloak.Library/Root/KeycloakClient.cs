@@ -32,14 +32,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 public partial class KeycloakClient
 {
     public async Task<ServerInfo> GetServerInfoAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/serverinfo/")
             .GetJsonAsync<ServerInfo>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task CorsPreflightAsync(string realm) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/serverinfo/")
             .OptionsAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 }

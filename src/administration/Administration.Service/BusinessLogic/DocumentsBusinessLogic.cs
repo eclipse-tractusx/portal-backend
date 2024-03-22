@@ -54,7 +54,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
             .GetDocumentDataAndIsCompanyUserAsync(documentId, _identityData.CompanyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
             throw new NotFoundException($"Document {documentId} does not exist");
@@ -78,7 +78,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     {
         var documentDetails = await _portalRepositories.GetInstance<IDocumentRepository>()
             .GetDocumentDataByIdAndTypeAsync(documentId, DocumentTypeId.SELF_DESCRIPTION)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
             throw new NotFoundException($"Self description document {documentId} does not exist");
@@ -90,7 +90,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     public async Task<bool> DeleteDocumentAsync(Guid documentId)
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
-        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, _identityData.IdentityId).ConfigureAwait(false);
+        var details = await documentRepository.GetDocumentDetailsForIdUntrackedAsync(documentId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (details.DocumentId == Guid.Empty)
         {
@@ -113,7 +113,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             _portalRepositories.GetInstance<IConsentRepository>().RemoveConsents(details.ConsentIds.Select(x => new Consent(x, Guid.Empty, Guid.Empty, Guid.Empty, default, default)));
         }
 
-        await this._portalRepositories.SaveAsync().ConfigureAwait(false);
+        await this._portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return true;
     }
 
@@ -127,7 +127,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         var document = await _portalRepositories.GetInstance<IDocumentRepository>()
             .GetDocumentSeedDataByIdAsync(documentId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {
             throw new NotFoundException($"Document {documentId} does not exists.");
@@ -141,7 +141,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     {
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
 
-        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(false);
+        var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
             throw new NotFoundException($"document {documentId} does not exist.");

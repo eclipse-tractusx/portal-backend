@@ -62,7 +62,7 @@ public partial class ProvisioningManager
     }.ToImmutableDictionary();
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
-        $"{_Settings.IdpPrefix}{await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
+        $"{_Settings.IdpPrefix}{await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None)}";
 
     public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
         => CreateCentralIdentityProviderAsyncInternal(alias, displayName, _Settings.CentralIdentityProvider);
@@ -77,7 +77,7 @@ public partial class ProvisioningManager
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url, cancellationToken).ConfigureAwait(false);
+        var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!metadata.Any())
         {
             throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
@@ -130,7 +130,7 @@ public partial class ProvisioningManager
 
     public async IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias)
     {
-        foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
+        foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             yield return new IdentityProviderMapperModel(
                 mapper.Id ?? throw new KeycloakInvalidResponseException("mapper.Id is null"),
@@ -142,11 +142,11 @@ public partial class ProvisioningManager
     }
 
     public async Task<string?> GetIdentityProviderDisplayName(string alias) =>
-        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName;
+        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None)).DisplayName;
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
-        var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
+        var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias, true)
@@ -156,7 +156,7 @@ public partial class ProvisioningManager
 
     private async ValueTask<string?> GetCentralBrokerEndpointSAMLAsync(string alias)
     {
-        var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
+        var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return samlDescriptor != null
             ? new Url(samlDescriptor.EntityId)
                 .AppendPathSegment("/broker/")

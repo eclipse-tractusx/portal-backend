@@ -70,7 +70,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
 
-        var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
+        var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var companyId = CreatePartnerCompany(companyRepository, data);
 
@@ -111,7 +111,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     try
                     {
                         var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
-                            creationInfo, companyId, aliasData.IdpId, data.BusinessPartnerNumber?.ToUpper()).ConfigureAwait(false);
+                            creationInfo, companyId, aliasData.IdpId, data.BusinessPartnerNumber?.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None);
                         identityId = companyUserId;
                     }
                     catch (Exception ex)
@@ -127,7 +127,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var userCreationErrors = await CreateUsers().Where(x => x.Error != null).Select(x => x.Error!).ToListAsync();
         userCreationErrors.IfAny(errors => throw new ServiceException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First()));
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
@@ -194,7 +194,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
             alpha2Code => countryRepository.CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
             (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds),
-            true).ConfigureAwait(false);
+            true).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!data.CompanyRoles.Any())
         {
@@ -212,12 +212,12 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         if (await networkRepository.CheckExternalIdExists(data.ExternalId, ownerCompanyId)
-                .ConfigureAwait(false))
+                .ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"ExternalId {data.ExternalId} already exists", nameof(data.ExternalId));
         }
 
-        var idpResult = await ValidateIdps(data, identityProviderRepository, ownerCompanyId).ConfigureAwait(false);
+        var idpResult = await ValidateIdps(data, identityProviderRepository, ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         IEnumerable<UserRoleData> roleData;
         try
@@ -243,7 +243,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             try
             {
-                var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).ConfigureAwait(false);
+                var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (single.IdentityProviderId == Guid.Empty)
                     throw new ConflictException($"company {ownerCompanyId} has no managed identityProvider");
                 singleIdpAlias = (single.IdentityProviderId, single.Alias ?? throw new ConflictException($"identityProvider {single.IdentityProviderId} has no alias"));
@@ -274,7 +274,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                             return idpAliasData;
                         },
                         out var idpAliasDataTask)
-                ? await idpAliasDataTask!.ConfigureAwait(false)
+                ? await idpAliasDataTask!.ConfigureAwait(ConfigureAwaitOptions.None)
                 : default(IDictionary<Guid, string>?);
 
         var idpIds = idpAliase?.Keys ?? Enumerable.Empty<Guid>();

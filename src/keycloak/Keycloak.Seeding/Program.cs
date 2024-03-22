@@ -83,7 +83,7 @@ try
     using var scope = host.Services.CreateScope();
     Log.Information("Start seeding");
     var seederInstance = scope.ServiceProvider.GetRequiredService<IKeycloakSeeder>();
-    await seederInstance.Seed(tokenSource.Token).ConfigureAwait(false);
+    await seederInstance.Seed(tokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.None);
     Log.Information("Execution finished shutting down");
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))

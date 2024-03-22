@@ -76,7 +76,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
                     ci.UserName = userName;
                 }
             });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public Task RetriggerCreateCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);
@@ -105,7 +105,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 
-        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.INVITATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.INVITATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");
@@ -115,6 +115,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

@@ -58,7 +58,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<OkResult> PartnerRegister([FromBody] PartnerRegistrationData data)
     {
-        await _logic.HandlePartnerRegistration(data).ConfigureAwait(false);
+        await _logic.HandlePartnerRegistration(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return this.Ok();
     }
 
@@ -79,7 +79,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerSynchronizeUser([FromRoute] string externalId)
     {
-        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -100,7 +100,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCallbackOspApprove([FromRoute] string externalId)
     {
-        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED).ConfigureAwait(false);
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -121,7 +121,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCallbackOspDecline([FromRoute] string externalId)
     {
-        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED).ConfigureAwait(false);
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -142,7 +142,7 @@ public class NetworkController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCallbackOspSubmitted([FromRoute] string externalId)
     {
-        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

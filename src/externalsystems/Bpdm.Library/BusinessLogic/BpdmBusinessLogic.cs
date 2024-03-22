@@ -43,7 +43,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> PushLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -88,8 +88,8 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             data.Region,
             data.Identifiers);
 
-        await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
-        await _bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
+        await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -103,14 +103,14 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+            .GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
             throw new UnexpectedConditionException($"CompanyApplication {context.ApplicationId} does not exist");
         }
 
-        var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+        var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (sharingState.SharingProcessStarted == null)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, "SharingProcessStarted was not set");
@@ -133,7 +133,7 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         CancellationToken cancellationToken)
     {
         var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrEmpty(legalEntity.LegalEntity?.Bpnl))
         {

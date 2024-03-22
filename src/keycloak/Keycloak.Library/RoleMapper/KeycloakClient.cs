@@ -33,122 +33,122 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 public partial class KeycloakClient
 {
     public async Task<Mapping> GetRoleMappingsForGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings")
             .GetJsonAsync<Mapping>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task AddRealmRoleMappingsToGroupAsync(string realm, string groupId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings/realm")
             .PostJsonAsync(roles)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetRealmRoleMappingsForGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings/realm")
             .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteRealmRoleMappingsFromGroupAsync(string realm, string groupId, IEnumerable<Role> roles) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings/realm")
             .SendJsonAsync(HttpMethod.Delete, roles)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetAvailableRealmRoleMappingsForGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings/realm/available")
             .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetEffectiveRealmRoleMappingsForGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/role-mappings/realm/composite")
             .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<Mapping> GetRoleMappingsForUserAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings")
             .GetJsonAsync<Mapping>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task AddRealmRoleMappingsToUserAsync(string realm, string userId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
-        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
             .PostJsonAsync(roles, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetRealmRoleMappingsForUserAsync(string realm, string userId, CancellationToken cancellationToken = default) =>
-        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
             .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteRealmRoleMappingsFromUserAsync(string realm, string userId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
-        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
             .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetAvailableRealmRoleMappingsForUserAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm/available")
             .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetEffectiveRealmRoleMappingsForUserAsync(string realm, string userId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm/composite")
             .GetJsonAsync<IEnumerable<Role>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 }

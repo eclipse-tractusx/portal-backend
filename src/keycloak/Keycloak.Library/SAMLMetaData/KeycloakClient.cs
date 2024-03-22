@@ -34,10 +34,10 @@ public partial class KeycloakClient
 {
     public async Task<EntityDescriptorType?> GetSAMLMetaDataAsync(string realm) =>
         new XmlSerializer(typeof(EntityDescriptorType))
-            .Deserialize(await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .Deserialize(await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
                 .AppendPathSegment("/realms/")
                 .AppendPathSegment(realm, true)
                 .AppendPathSegment("/protocol/saml/descriptor")
                 .GetStreamAsync()
-                .ConfigureAwait(false)) as EntityDescriptorType;
+                .ConfigureAwait(ConfigureAwaitOptions.None)) as EntityDescriptorType;
 }

@@ -56,7 +56,7 @@ public class UsersUpdater : IUsersUpdater
                 realm,
                 seedUser,
                 excludedUserAttributes ?? Enumerable.Empty<string>(),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await UpdateClientAndRealmRoles(
                 keycloak,
@@ -64,27 +64,27 @@ public class UsersUpdater : IUsersUpdater
                 userId,
                 seedUser,
                 clientsDictionary,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await UpdateFederatedIdentities(
                 keycloak,
                 realm,
                 userId,
                 seedUser.FederatedIdentities ?? Enumerable.Empty<FederatedIdentityModel>(),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
     private static async Task<string> CreateOrUpdateUserReturningId(KeycloakClient keycloak, string realm, UserModel seedUser, IEnumerable<string> excludedUserAttributes, CancellationToken cancellationToken)
     {
-        var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.UserName == seedUser.Username);
+        var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
 
         if (user == null)
         {
             return await keycloak.CreateAndRetrieveUserIdAsync(
                 realm,
                 CreateUpdateUser(null, seedUser, Enumerable.Empty<string>()),
-                cancellationToken).ConfigureAwait(false) ?? throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
         }
         else
         {
@@ -96,7 +96,7 @@ public class UsersUpdater : IUsersUpdater
                     realm,
                     user.Id,
                     CreateUpdateUser(user, seedUser, excludedUserAttributes),
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             return user.Id;
         }
@@ -111,7 +111,7 @@ public class UsersUpdater : IUsersUpdater
                 () => seedUser.ClientRoles?.GetValueOrDefault(clientId) ?? Enumerable.Empty<string>(),
                 () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
                 delete => keycloak.DeleteClientRoleMappingsFromUserAsync(realm, userId, id, delete, cancellationToken),
-                add => keycloak.AddClientRoleMappingsToUserAsync(realm, userId, id, add, cancellationToken)).ConfigureAwait(false);
+                add => keycloak.AddClientRoleMappingsToUserAsync(realm, userId, id, add, cancellationToken)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         await UpdateUserRoles(
@@ -119,36 +119,36 @@ public class UsersUpdater : IUsersUpdater
             () => seedUser.RealmRoles ?? Enumerable.Empty<string>(),
             () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
             delete => keycloak.DeleteRealmRoleMappingsFromUserAsync(realm, userId, delete, cancellationToken),
-            add => keycloak.AddRealmRoleMappingsToUserAsync(realm, userId, add, cancellationToken)).ConfigureAwait(false);
+            add => keycloak.AddRealmRoleMappingsToUserAsync(realm, userId, add, cancellationToken)).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task UpdateUserRoles(Func<Task<IEnumerable<Role>>> getUserRoles, Func<IEnumerable<string>> getSeedRoles, Func<Task<IEnumerable<Role>>> getAllRoles, Func<IEnumerable<Role>, Task> deleteRoles, Func<IEnumerable<Role>, Task> addRoles)
     {
-        var userRoles = await getUserRoles().ConfigureAwait(false);
+        var userRoles = await getUserRoles().ConfigureAwait(ConfigureAwaitOptions.None);
         var seedRoles = getSeedRoles();
 
         if (userRoles.ExceptBy(seedRoles, x => x.Name).IfAny(
             delete => deleteRoles(delete),
             out var deleteRolesTask))
         {
-            await deleteRolesTask!.ConfigureAwait(false);
+            await deleteRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (seedRoles.IfAny(
             async seed =>
             {
-                var allRoles = await getAllRoles().ConfigureAwait(false);
+                var allRoles = await getAllRoles().ConfigureAwait(ConfigureAwaitOptions.None);
                 seed.Except(allRoles.Select(x => x.Name)).IfAny(nonexisting => throw new ConflictException($"roles {string.Join(",", nonexisting)} does not exist"));
                 if (seed.Except(userRoles.Select(x => x.Name)).IfAny(
                     add => addRoles(allRoles.IntersectBy(add, x => x.Name)),
                     out var addRolesTask))
                 {
-                    await addRolesTask!.ConfigureAwait(false);
+                    await addRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             },
             out var updateRolesTask))
         {
-            await updateRolesTask!.ConfigureAwait(false);
+            await updateRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -196,10 +196,10 @@ public class UsersUpdater : IUsersUpdater
 
     private static async Task UpdateFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
     {
-        var identities = await keycloak.GetUserSocialLoginsAsync(realm, userId).ConfigureAwait(false);
-        await DeleteObsoleteFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
-        await CreateMissingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
-        await UpdateExistingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(false);
+        var identities = await keycloak.GetUserSocialLoginsAsync(realm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await DeleteObsoleteFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
@@ -210,7 +210,7 @@ public class UsersUpdater : IUsersUpdater
                 realm,
                 userId,
                 identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -228,7 +228,7 @@ public class UsersUpdater : IUsersUpdater
                     UserId = update.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {update.IdentityProvider}"),
                     UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
                 },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -246,7 +246,7 @@ public class UsersUpdater : IUsersUpdater
                 realm,
                 userId,
                 identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await keycloak.AddUserSocialLoginProviderAsync(
                 realm,
@@ -258,7 +258,7 @@ public class UsersUpdater : IUsersUpdater
                     UserId = update.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {update.IdentityProvider}"),
                     UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
                 },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

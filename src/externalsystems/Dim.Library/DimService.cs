@@ -44,7 +44,7 @@ public class DimService : IDimService
     /// <inhertidoc />
     public async Task<bool> CreateWalletAsync(string companyName, string bpn, string didDocumentLocation, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(false);
+        var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync($"setup-dim?companyName={Uri.EscapeDataString(companyName)}&bpn={Uri.EscapeDataString(bpn)}&didDocumentLocation={Uri.EscapeDataString(didDocumentLocation)}", Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("dim-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
@@ -61,7 +61,7 @@ public class DimService : IDimService
             return false;
         }
 
-        var validationResult = await result.Content.ReadFromJsonAsync<DidValidationResult>(Options, cancellationToken).ConfigureAwait(false);
+        var validationResult = await result.Content.ReadFromJsonAsync<DidValidationResult>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return validationResult != null && string.IsNullOrWhiteSpace(validationResult.DidResolutionMetadata.Error);
     }
 }

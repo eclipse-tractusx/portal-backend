@@ -106,7 +106,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(false);
+            .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
             throw new NotFoundException($"appId {appId} does not exist");
@@ -145,14 +145,14 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     public async Task RemoveFavouriteAppForUserAsync(Guid appId)
     {
         _portalRepositories.Remove(new CompanyUserAssignedAppFavourite(appId, _identityData.IdentityId));
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc/>
     public async Task AddFavouriteAppForUserAsync(Guid appId)
     {
         _portalRepositories.GetInstance<IOfferRepository>().CreateAppFavourite(appId, _identityData.IdentityId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -170,7 +170,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.APP, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -183,7 +183,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                             item.CompanySubscriptionStatuses.Select(x => x.GetCompanySubscriptionStatus(item.OfferId, _logger)),
                             item.Image == Guid.Empty ? null : item.Image)));
         }
-        return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
+        return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc/>

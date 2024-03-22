@@ -49,14 +49,14 @@ public class CustodianService : ICustodianService
     /// <inhertidoc />
     public async Task<WalletData> GetWalletByBpnAsync(string bpn, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var result = await httpClient.GetAsync("/api/wallets".AppendToPathEncoded(bpn), cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-get", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         try
         {
-            var walletData = await result.Content.ReadFromJsonAsync<WalletData>(Options, cancellationToken).ConfigureAwait(false);
+            var walletData = await result.Content.ReadFromJsonAsync<WalletData>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             if (walletData == null)
             {
@@ -75,17 +75,17 @@ public class CustodianService : ICustodianService
     public async Task<string> CreateWalletAsync(string bpn, string name, CancellationToken cancellationToken)
     {
         const string walletUrl = "/api/wallets";
-        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var requestBody = new { name = name, bpn = bpn };
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
-            (false, (await errorResponse.Content.ReadFromJsonAsync<WalletErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Message);
+            (false, (await errorResponse.Content.ReadFromJsonAsync<WalletErrorResponse>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))?.Message);
 
         var result = await httpClient.PostAsJsonAsync(walletUrl, requestBody, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("custodian-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
 
         try
         {
-            var walletResponse = await result.Content.ReadFromJsonAsync<WalletCreationResponse>(Options, cancellationToken).ConfigureAwait(false);
+            var walletResponse = await result.Content.ReadFromJsonAsync<WalletCreationResponse>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             if (walletResponse == null)
             {
                 return "Service Response for custodian-post is null";
@@ -102,12 +102,12 @@ public class CustodianService : ICustodianService
     /// <inhertidoc />
     public async Task<string> SetMembership(string bpn, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var requestBody = new { bpn = bpn };
 
         async ValueTask<(bool, string?)> CustomErrorHandling(HttpResponseMessage errorResponse) => (
             errorResponse.StatusCode == HttpStatusCode.Conflict &&
-                (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(false))?.Title.Trim() == _settings.MembershipErrorMessage,
+                (await errorResponse.Content.ReadFromJsonAsync<MembershipErrorResponse>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))?.Title.Trim() == _settings.MembershipErrorMessage,
             null);
 
         var result = await httpClient.PostAsJsonAsync("/api/credentials/issuer/membership", requestBody, Options, cancellationToken)
@@ -120,7 +120,7 @@ public class CustodianService : ICustodianService
     /// <inheritdoc />
     public async Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestBody = new CustodianFrameworkRequest
         (
@@ -137,7 +137,7 @@ public class CustodianService : ICustodianService
     /// <inheritdoc />
     public async Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestBody = new CustodianDismantlerRequest
         (

@@ -75,7 +75,7 @@ public class RegistrationStatusController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> SetCallbackAddress(OnboardingServiceProviderCallbackRequestData requestData)
     {
-        await _logic.SetCallbackAddress(requestData).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(requestData).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

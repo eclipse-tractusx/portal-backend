@@ -128,7 +128,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await _businessLogic.CreateConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(false);
+        var connectorId = await _businessLogic.CreateConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
@@ -152,7 +152,7 @@ public class ConnectorsController : ControllerBase
     [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await _businessLogic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(false);
+        var connectorId = await _businessLogic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
@@ -209,7 +209,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await _businessLogic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
+        await _businessLogic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -237,7 +237,7 @@ public class ConnectorsController : ControllerBase
     public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data)
     {
         await _businessLogic.UpdateConnectorUrl(connectorId, data)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 

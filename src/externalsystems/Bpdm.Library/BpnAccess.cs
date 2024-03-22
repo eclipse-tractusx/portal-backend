@@ -50,7 +50,7 @@ public class BpnAccess : IBpnAccess
             .ConfigureAwait(false);
         try
         {
-            var legalEntityResponse = await result.Content.ReadFromJsonAsync<BpdmLegalEntityDto>(Options, cancellationToken).ConfigureAwait(false);
+            var legalEntityResponse = await result.Content.ReadFromJsonAsync<BpdmLegalEntityDto>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             if (legalEntityResponse?.Bpn == null)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");

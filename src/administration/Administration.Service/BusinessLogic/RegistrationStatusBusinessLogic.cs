@@ -51,7 +51,7 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
         var (hasCompanyRole, ospDetailId, ospDetails) = await companyRepository
             .GetCallbackEditData(companyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!hasCompanyRole)
         {
@@ -86,6 +86,6 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
         {
             companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret, initializationVector, cryptoConfig.Index);
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

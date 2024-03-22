@@ -38,7 +38,7 @@ public static class ThrowingIAsyncEnumerableExtension
             catch (Exception e)
             {
                 hasResult = false;
-                await handler(e).ConfigureAwait(false);
+                await handler(e).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             if (hasResult)
             {

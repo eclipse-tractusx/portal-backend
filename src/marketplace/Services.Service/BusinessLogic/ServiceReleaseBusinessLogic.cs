@@ -73,7 +73,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     public async Task<ServiceData> GetServiceDetailsByIdAsync(Guid serviceId)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
+            .GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"serviceId {serviceId} not found or Incorrect Status");
@@ -105,7 +105,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.ServiceTypeIds == null)
         {
             throw new UnexpectedConditionException("serviceTypeIds should never be null here");
@@ -171,7 +171,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         var serviceData = await _portalRepositories
             .GetInstance<IOfferRepository>()
             .GetServiceUpdateData(serviceId, data.ServiceTypeIds, companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (serviceData is null)
         {
             throw new NotFoundException($"Service {serviceId} does not exists");
@@ -189,7 +189,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         if (data.SalesManager.HasValue)
         {
-            await _offerService.ValidateSalesManager(data.SalesManager.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(data.SalesManager.Value, _settings.SalesManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -226,7 +226,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
                 .RemoveTechnicalUserProfilesForOffer(serviceId);
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static void UpdateAssignedServiceTypes(IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> newServiceTypes, IEnumerable<(Guid serviceId, ServiceTypeId serviceTypeId)> serviceTypeIdsToRemove, IOfferRepository appRepository)

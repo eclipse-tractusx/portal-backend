@@ -65,7 +65,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
-        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(false);
+        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
     }
 

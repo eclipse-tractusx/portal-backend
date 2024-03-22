@@ -57,7 +57,7 @@ public class IdpManagement : IIdpManagement
     }
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
-        $"{_settings.IdpPrefix}{await _provisioningDbAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
+        $"{_settings.IdpPrefix}{await _provisioningDbAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None)}";
 
     public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
     {
@@ -72,21 +72,21 @@ public class IdpManagement : IIdpManagement
         var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
         var clientId = GetServiceAccountClientId(realm);
         var internalClientId = await CreateServiceAccountClient(sharedIdp, MasterRealm, clientId, clientId, IamClientAuthMethod.SECRET, true);
-        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(false);
+        var serviceAccountUser = await sharedIdp.GetUserForServiceAccountAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (serviceAccountUser == null || string.IsNullOrWhiteSpace(serviceAccountUser.Id))
         {
             throw new NotFoundException("ServiceAccount could not be found for client id: {internalClientId}");
         }
 
-        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(false);
+        var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return (clientId, credentials.Value, serviceAccountUser.Id);
     }
 
     public async Task AddRealmRoleMappingsToUserAsync(string serviceAccountUserId)
     {
         var sharedIdp = _factory.CreateKeycloakClient(SharedRealm);
-        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(false);
-        await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(false);
+        var roleCreateRealm = await sharedIdp.GetRoleByNameAsync(MasterRealm, "create-realm").ConfigureAwait(ConfigureAwaitOptions.None);
+        await sharedIdp.AddRealmRoleMappingsToUserAsync(MasterRealm, serviceAccountUserId, Enumerable.Repeat(roleCreateRealm, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<string> CreateServiceAccountClient(KeycloakClient keycloak, string realm, string clientId, string name, IamClientAuthMethod iamClientAuthMethod, bool enabled)
@@ -96,7 +96,7 @@ public class IdpManagement : IIdpManagement
         newClient.Name = name;
         newClient.ClientAuthenticatorType = IamClientAuthMethodToInternal(iamClientAuthMethod);
         newClient.Enabled = enabled;
-        var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(false);
+        var newClientId = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, newClient).ConfigureAwait(ConfigureAwaitOptions.None);
         if (newClientId == null)
         {
             throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
@@ -118,13 +118,13 @@ public class IdpManagement : IIdpManagement
     public async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, string organisationName, string loginTheme, string clientId, string secret)
     {
         var sharedKeycloak = await CreateSharedRealmAsync(alias, organisationName, loginTheme, clientId, secret);
-        var config = await sharedKeycloak.GetOpenIDConfigurationAsync(alias).ConfigureAwait(false);
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var config = await sharedKeycloak.GetOpenIDConfigurationAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         identityProvider.Config!.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
         identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
         identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
         identityProvider.Config.JwksUrl = config.JwksUri.ToString();
-        await _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
+        await _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName) =>
@@ -146,13 +146,13 @@ public class IdpManagement : IIdpManagement
 
     public async Task CreateSharedRealmIdpClientAsync(string realm, string loginTheme, string organisationName, string clientId, string secret)
     {
-        await CreateSharedRealmAsync(realm, organisationName, loginTheme, clientId, secret).ConfigureAwait(false);
+        await CreateSharedRealmAsync(realm, organisationName, loginTheme, clientId, secret).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task CreateSharedClientAsync(string realm, string clientId, string secret)
     {
         var redirectUrl = await GetCentralBrokerEndpointOIDCAsync(realm).ConfigureAwait(false);
-        var jwksUrl = await GetCentralRealmJwksUrlAsync().ConfigureAwait(false);
+        var jwksUrl = await GetCentralRealmJwksUrlAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         var config = new IdentityProviderClientConfig(
             $"{redirectUrl}/*",
             jwksUrl);
@@ -161,12 +161,12 @@ public class IdpManagement : IIdpManagement
         newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
         newClient.Attributes ??= new Dictionary<string, string>();
         newClient.Attributes["jwks.url"] = config.JwksUrl;
-        await sharedKeycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
+        await sharedKeycloak.CreateClientAsync(realm, newClient).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
-        var openidconfig = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(false);
+        var openidconfig = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias, true)
@@ -176,23 +176,23 @@ public class IdpManagement : IIdpManagement
 
     private async Task<string> GetCentralRealmJwksUrlAsync()
     {
-        var config = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(false);
+        var config = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return config.JwksUri.ToString();
     }
 
     public async ValueTask EnableCentralIdentityProviderAsync(string alias)
     {
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
+        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         identityProvider.Enabled = true;
         identityProvider.Config!.HideOnLoginPage = "false";
-        await _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
+        await _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<KeycloakClient> CreateSharedRealmAsync(string idpName, string organisationName, string? loginTheme, string clientId, string secret)
     {
         var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
 
-        await CreateSharedRealmAsyncInternal(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(false);
+        await CreateSharedRealmAsyncInternal(sharedKeycloak, idpName, organisationName, loginTheme).ConfigureAwait(ConfigureAwaitOptions.None);
         return sharedKeycloak;
     }
 
