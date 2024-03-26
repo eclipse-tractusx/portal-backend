@@ -103,4 +103,5 @@ public interface IApplicationRepository
     Task<(bool Exists, string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId);
     Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId);
     Task<(bool Exists, string? Did)> GetDidForApplicationId(Guid applicationId);
+    Task<ApplicationDeclineData?> GetDeclineApplicationForApplicationId(Guid applicationId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds);
 }

@@ -50,6 +50,7 @@ public class IdentityProvider : IBaseEntity
     public IdentityProviderTypeId IdentityProviderTypeId { get; private set; }
 
     public Guid OwnerId { get; set; }
+    public Guid? ProcessId { get; set; }
 
     // Navigation properties
     public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
@@ -59,4 +60,5 @@ public class IdentityProvider : IBaseEntity
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
     public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
+    public virtual Process? Process { get; private set; }
 }

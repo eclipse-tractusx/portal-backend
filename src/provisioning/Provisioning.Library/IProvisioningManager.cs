@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
@@ -70,4 +71,6 @@ public interface IProvisioningManager
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
     Task<string?> GetUserByUserName(string userName);
     Task<string?> GetIdentityProviderDisplayName(string alias);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerDeleteSharedRealmAsync(string alias);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerDeleteIdpSharedServiceAccount(string alias);
 }

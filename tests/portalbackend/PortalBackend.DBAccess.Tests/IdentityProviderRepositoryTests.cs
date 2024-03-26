@@ -222,11 +222,12 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync();
 
         // Assert
-        results.Should().HaveCount(3);
+        results.Should().HaveCount(4);
         results.Should().Satisfy(
             x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED,
             x => x.Alias == "Shared-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED,
-            x => x.Alias == "Managed-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
+            x => x.Alias == "Managed-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED,
+            x => x.Alias == null && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
     }
 
     #endregion
@@ -439,6 +440,73 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
             x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd") && x.CompanyName == "Service Provider");
+    }
+
+    #endregion
+
+    #region GetIdentityProviderDataForProcessId
+
+    [Fact]
+    public async Task GetIdentityProviderDataForProcessIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetIdentityProviderDataForProcessIdAsync(new Guid("44927361-3766-4f07-9f18-860158880d87")).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.idpData!.IdentityProviderId.Should().Be(new Guid("38f56465-ce26-4f25-9745-1791620dc203"));
+        result.idpData.TypeId.Should().Be(IdentityProviderTypeId.MANAGED);
+        result.companyId.Should().Be(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+
+    }
+
+    #endregion
+
+    #region GetIdentityproviderId
+
+    [Fact]
+    public async Task GetIdentityproviderIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var alias = new[] { "Test-Alias" };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetIdentityproviderIdAsync(alias).ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(1).And.Satisfy(x => x == new Guid("38f56465-ce26-4f25-9745-1791620dc199"));
+    }
+
+    #endregion
+
+    #region AttachAndModifyIdentityProvider
+
+    [Fact]
+    public async Task AttachAndModifyIdentityProvider_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+
+        // Act
+        sut.AttachAndModifyIdentityProvider(new Guid("38f56465-ce26-4f25-9745-1791620dc203"),
+        provider => { provider.ProcessId = Guid.Empty; },
+        provider => { provider.ProcessId = new Guid("44927361-3766-4f07-9f18-860158880d87"); });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<IdentityProvider>().Which.ProcessId.Should().Be(new Guid("44927361-3766-4f07-9f18-860158880d87"));
+        var entry = changedEntries.Single();
+        entry.Entity.Should().BeOfType<IdentityProvider>().Which.ProcessId.Should().Be(new Guid("44927361-3766-4f07-9f18-860158880d87"));
+        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Modified);
     }
 
     #endregion
