@@ -56,4 +56,5 @@ public class Process : IBaseEntity, ILockableEntity
     public virtual CompanyInvitation? CompanyInvitation { get; set; }
     public virtual DimUserCreationData? DimUserCreationData { get; set; }
     public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
+    public virtual IdentityProvider? IdentityProvider { get; private set; }
 }

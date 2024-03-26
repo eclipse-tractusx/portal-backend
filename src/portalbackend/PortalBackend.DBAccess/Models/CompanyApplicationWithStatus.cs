@@ -39,4 +39,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
         string CompanyName,
         IEnumerable<string> Users
     );
+
+    public record ApplicationDeclineData(
+        IEnumerable<Guid> IdentityProviderId,
+        Guid CompanyId,
+        string CompanyName,
+        Guid applicationId,
+        CompanyApplicationStatusId CompanyApplicationStatusId,
+        IEnumerable<InvitationsStatusData> InvitationsStatusDatas,
+        IEnumerable<IdentityStatuData> IdentityStatuDatas,
+        IEnumerable<DocumentStatusData> DocumentStatusDatas
+        );
+
+    public record InvitationsStatusData(Guid InvitationId, InvitationStatusId InvitationStatusId);
+    public record IdentityStatuData(Guid IdentityId, UserStatusId UserStatusId);
+    public record IdpData(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId);
 }

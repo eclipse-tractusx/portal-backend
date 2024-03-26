@@ -68,7 +68,7 @@ try
         .UseSerilog()
         .Build();
 
-    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment, false);
 
     Log.Information("Building keycloak-seeder completed");
 

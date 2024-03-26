@@ -59,4 +59,7 @@ public interface IIdentityProviderRepository
     IAsyncEnumerable<Guid> GetIdpLinkedCompanyUserIds(Guid identityProviderId, Guid companyId);
     IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, Guid identityProviderId);
+    Task<(IdpData? idpData, Guid companyId, Guid companyUserId)> GetIdentityProviderDataForProcessIdAsync(Guid processId);
+    IAsyncEnumerable<Guid> GetIdentityproviderIdAsync(IEnumerable<string> alias);
+    void AttachAndModifyIdentityProvider(Guid identityProviderId, Action<IdentityProvider>? initialize, Action<IdentityProvider> modify);
 }

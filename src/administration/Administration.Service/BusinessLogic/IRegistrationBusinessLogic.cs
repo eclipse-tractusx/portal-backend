@@ -107,4 +107,33 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">the response data</param>
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
+
+    /// Retrigger the TriggerDeleteIdpSharedRealm ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedRealm(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdpSharedServiceAccount ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedServiceAccount(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdentityLinkedUsers ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdentityLinkedUsers(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteCentralIdentityProvider ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteCentralIdentityProvider(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdentityProvider ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdentityProvider(Guid processId);
 }
