@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
@@ -591,5 +592,45 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
+    }
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdentityLinkedUsers(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdentityProvider(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER);
+
+    private async Task TriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    {
+        var nextStep = stepToTrigger switch
+        {
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM,
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT,
+            ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS => ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS,
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => ProcessStepTypeId.TRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER,
+            ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER => ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_PROVIDER,
+            _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
+        };
+
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.IDP_DELETION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.FinalizeProcessStep();
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public static class FlurlErrorHandler
 {
-    public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
+    public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment, bool isProceesWorker)
     {
         FlurlHttp.Configure(settings => settings.OnError = (call) =>
         {
@@ -48,7 +48,8 @@ public static class FlurlErrorHandler
                     HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
                     HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
                     HttpStatusCode.BadRequest => new ArgumentException(message, call.Exception),
-                    _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
+                    _ => isProceesWorker ? new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode, true)
+                        : new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode, false),
                 };
             }
         });

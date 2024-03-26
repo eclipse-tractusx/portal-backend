@@ -343,4 +343,29 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 x.Email != null)
             .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />           
+    public Task<(IdpData? idpData, Guid companyId, Guid companyUserId)> GetIdentityProviderDataForProcessIdAsync(Guid processId) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(process => process.Id == processId)
+            .Select(process => new ValueTuple<IdpData?, Guid, Guid>(new IdpData(
+                process.IdentityProvider!.Id,
+                process.IdentityProvider.IamIdentityProvider!.IamIdpAlias,
+                process.IdentityProvider.IdentityProviderTypeId),
+                process.IdentityProvider.OwnerId,
+                process.IdentityProvider.CompanyUserAssignedIdentityProviders.Select(x => x.CompanyUserId).FirstOrDefault()))
+            .SingleOrDefaultAsync();
+    public IAsyncEnumerable<Guid> GetIdentityproviderIdAsync(IEnumerable<string> alias) =>
+        _context.IamIdentityProviders
+            .AsNoTracking()
+            .Where(identites => alias.Contains(identites.IamIdpAlias))
+            .Select(x => x.IdentityProviderId).ToAsyncEnumerable();
+    public void AttachAndModifyIdentityProvider(Guid identityProviderId, Action<IdentityProvider>? initialize, Action<IdentityProvider> modify)
+    {
+        var identityProvider = new IdentityProvider(identityProviderId, default, default, default, default);
+        initialize?.Invoke(identityProvider);
+        _context.Attach(identityProvider);
+        modify(identityProvider);
+    }
 }
