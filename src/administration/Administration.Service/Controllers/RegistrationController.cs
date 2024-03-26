@@ -432,4 +432,109 @@ public class RegistrationController : ControllerBase
         await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-idpSharedRealm
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-delete-idpSharedRealm")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerDeleteIdpSharedRealm([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDeleteIdpSharedRealm(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-idpSharedServiceAccount
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-delete-idpSharedServiceAccount")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerDeleteIdpSharedServiceAccount([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDeleteIdpSharedServiceAccount(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-identityLinkedUsers
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-delete-identityLinkedUsers")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerDeleteIdentityLinkedUsers([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDeleteIdentityLinkedUsers(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-centralIdentityProvider
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-delete-centralIdentityProvider")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerDeleteCentralIdentityProvider([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDeleteCentralIdentityProvider(processId).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-identityProvider
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "decline_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-delete-identityProvider")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerDeleteIdentityProvider([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDeleteIdentityProvider(processId).ConfigureAwait(false);
+        return NoContent();
+    }
 }

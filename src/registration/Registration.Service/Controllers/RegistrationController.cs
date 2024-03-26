@@ -491,5 +491,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
             var (fileName, content, mediaType) = await _registrationBusinessLogic.GetRegistrationDocumentAsync(documentId);
             return File(content, mediaType, fileName);
         }
+
+        /// <summary>
+        /// Declines the registration verification for the application with the given id
+        /// </summary>
+        /// <param name="applicationId">Id of the application that should be declined</param>
+        /// <remarks>
+        /// Example: POST: /api/registration/application/{applicationId}/declineregistration
+        /// </remarks>
+        /// <response code="204">Successfully declined the application</response>
+        /// <response code="404">Application ID not found.</response>
+        [HttpPost]
+        [Authorize(Roles = "decline_new_partner")]
+        [Authorize(Policy = PolicyTypes.CompanyUser)]
+        [Route("applications/{applicationId}/declineregistration")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<NoContentResult> DeclineApplicationRegistrationAsync([FromRoute] Guid applicationId)
+        {
+            await _registrationBusinessLogic.DeclineApplicationRegistrationAsync(applicationId).ConfigureAwait(false);
+            return NoContent();
+        }
     }
 }

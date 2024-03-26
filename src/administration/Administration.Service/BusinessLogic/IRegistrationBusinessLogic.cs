@@ -92,4 +92,34 @@ public interface IRegistrationBusinessLogic
     /// <param name="documentId">Id of the document to get</param>
     /// <returns>Returns the filename and content of the file</returns>
     Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdpSharedRealm ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedRealm(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdpSharedServiceAccount ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedServiceAccount(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdentityLinkedUsers ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdentityLinkedUsers(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteCentralIdentityProvider ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteCentralIdentityProvider(Guid processId);
+
+    /// <summary>
+    /// Retrigger the TriggerDeleteIdentityProvider ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdentityProvider(Guid processId);
 }

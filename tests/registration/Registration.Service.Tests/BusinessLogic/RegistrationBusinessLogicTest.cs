@@ -3333,4 +3333,133 @@ public class RegistrationBusinessLogicTest
     }
 
     #endregion
+
+    #region DeclineApplicationRegistration
+
+    [Fact]
+    public async Task DeclineApplicationRegistrationAsync_CallsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var companyId = _fixture.Create<Guid>();
+        var IdpIds = _fixture.CreateMany<Guid>(3);
+        var invitationStatusData = _fixture.CreateMany<InvitationsStatusData>(2);
+        var identityStatuData = _fixture.CreateMany<IdentityStatuData>(2);
+        var documentStatusData = new DocumentStatusData[] {
+            new(Guid.NewGuid(),DocumentStatusId.PENDING),
+            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+        };
+        var application = _fixture.Build<CompanyApplication>()
+            .With(x => x.Id, applicationId)
+            .Create();
+        Company? company = null;
+        var applicationDeclineData = new ApplicationDeclineData(
+            IdpIds,
+            companyId,
+            "TestCompany",
+            applicationId,
+            CompanyApplicationStatusId.CREATED,
+            invitationStatusData,
+            identityStatuData,
+            documentStatusData
+        );
+        var options = Options.Create(new RegistrationSettings
+        {
+            ApplicationDeclineStatusIds = new[] { CompanyApplicationStatusId.CREATED }
+        });
+
+        A.CallTo(() => _applicationRepository.GetDeclineApplicationForApplicationId(A<Guid>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns(applicationDeclineData);
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
+            {
+                setOptionalFields.Invoke(application);
+            });
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        var modifiedDocuments = new List<(Document Initial, Document Modified)>();
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentKeyActions) =>
+            {
+                foreach (var x in documentKeyActions)
+                {
+                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Initialize?.Invoke(initial);
+                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Modify(modified);
+                    modifiedDocuments.Add((initial, modified));
+                }
+            });
+
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
+
+        // Act
+        await sut.DeclineApplicationRegistrationAsync(applicationId);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetDeclineApplicationForApplicationId(applicationId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CREATED })))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        // A.CallTo(() => _identityProviderRepository.AttachAndModifyIdentityProvider(A<Guid>._, A<Action<IdentityProvider>>._, A<Action<IdentityProvider>>._))
+        //     .MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>.That.Matches(x => x.Count() == 2)))
+            .MustHaveHappenedOnceExactly();
+
+        modifiedDocuments.Should().HaveCount(2).And.Satisfy(
+            x => x.Initial.Id == documentStatusData[0].DocumentId && x.Initial.DocumentStatusId == documentStatusData[0].StatusId && x.Modified.Id == documentStatusData[0].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.INACTIVE,
+            x => x.Initial.Id == documentStatusData[1].DocumentId && x.Initial.DocumentStatusId == documentStatusData[1].StatusId && x.Modified.Id == documentStatusData[1].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.INACTIVE
+        );
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeclineApplicationRegistrationAsync_ThrowsNotFoundException_ReturnsExpected()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var applicationDeclineData = _fixture.Create<ApplicationDeclineData>();
+        var options = Options.Create(new RegistrationSettings
+        {
+            ApplicationDeclineStatusIds = new[] { CompanyApplicationStatusId.CREATED }
+        });
+
+        A.CallTo(() => _applicationRepository.GetDeclineApplicationForApplicationId(A<Guid>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns<ApplicationDeclineData?>(null);
+
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
+
+        // Act
+        var Act = async () => await sut.DeclineApplicationRegistrationAsync(applicationId);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
+        result.Message.Should().Be($"Application {applicationId} does not exits");
+    }
+
+    #endregion
+
+    [Serializable]
+    public class TestException : Exception
+    {
+        public TestException() { }
+        public TestException(string message) : base(message) { }
+        public TestException(string message, Exception inner) : base(message, inner) { }
+        protected TestException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

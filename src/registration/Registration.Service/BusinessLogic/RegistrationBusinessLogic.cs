@@ -921,4 +921,60 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
+    public async Task DeclineApplicationRegistrationAsync(Guid applicationId)
+    {
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetDeclineApplicationForApplicationId(applicationId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);
+        if (result == null)
+        {
+            throw new NotFoundException($"Application {applicationId} does not exits");
+        }
+        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.IDP_DELETION).Id;
+        foreach (var ipId in result.IdentityProviderId)
+        {
+            _portalRepositories.GetInstance<IIdentityProviderRepository>().AttachAndModifyIdentityProvider(ipId, null, identityProvider =>
+                identityProvider.ProcessId = processId
+            );
+        }
+        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(new (ProcessStepTypeId, ProcessStepStatusId, Guid)[] { (ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM, ProcessStepStatusId.TODO, processId) });
+        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
+        {
+            application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
+            application.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, null, company =>
+        {
+            company.CompanyStatusId = CompanyStatusId.DELETED;
+        });
+        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(result.InvitationsStatusDatas.Select(
+            x =>
+                new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
+                    x.InvitationId,
+                    i => { i.InvitationStatusId = x.InvitationStatusId; },
+                    i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
+        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(result.IdentityStatuDatas.
+            Select(identity => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(identity.IdentityId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
+        _portalRepositories.GetInstance<IDocumentRepository>()
+                       .AttachAndModifyDocuments(
+                           result.DocumentStatusDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
+                               x.DocumentId,
+                               document => document.DocumentStatusId = x.StatusId,
+                               document => document.DocumentStatusId = DocumentStatusId.INACTIVE)));
+        var emailData = await _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ToListAsync().ConfigureAwait(false);
+        foreach (var user in emailData)
+        {
+            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ConflictException($"user {userName} has no assigned email");
+            }
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
+            {
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName",  result.CompanyName)
+            });
+            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
 }

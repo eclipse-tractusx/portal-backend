@@ -101,4 +101,5 @@ public interface IApplicationRepository
 
     Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
     Task<(bool Exists, string? Did, IEnumerable<DateTimeOffset> ProcessStepsDateCreated)> GetDidApplicationId(Guid applicationId);
+    Task<ApplicationDeclineData?> GetDeclineApplicationForApplicationId(Guid applicationId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds);
 }

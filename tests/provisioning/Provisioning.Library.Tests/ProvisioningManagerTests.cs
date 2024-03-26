@@ -182,4 +182,74 @@ public class ProvisioningManagerTests
         displayName.Should().NotBeNullOrWhiteSpace();
         displayName.Should().Be("test");
     }
+
+    #region TriggerDeleteSharedRealm
+
+    [Theory]
+    [InlineData("saidp123")]
+    [InlineData("notValidId")]
+    public async Task TriggerDeleteSharedRealmAsync_ReturnsExpected(string clinetId)
+    {
+        // Arrange
+        const string alias = "idp123";
+        const string id = "123";
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
+            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = clinetId } })
+            .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
+            .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
+        // Act
+        var result = await _sut.TriggerDeleteSharedRealmAsync(alias).ConfigureAwait(false);
+
+        //Assert
+        result.modified.Should().BeFalse();
+        result.nextStepTypeIds.Should().HaveCount(1).And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        if (clinetId != "saidp123")
+        {
+            result.processMessage.Should().Be("Entity not found");
+        }
+        else
+        {
+            result.processMessage.Should().BeNull();
+        }
+    }
+
+    #endregion
+
+    #region
+    [Theory]
+    [InlineData("saidp123")]
+    [InlineData("notValidId")]
+    public async Task TriggerDeleteIdpSharedServiceAccount_ReturnsExpected(string clinetId)
+    {
+        // Arrange
+        const string alias = "idp123";
+        const string id = "123";
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
+            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = clinetId } })
+            .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
+            .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
+        // Act
+        var result = await _sut.TriggerDeleteIdpSharedServiceAccount(alias).ConfigureAwait(false);
+
+        //Assert
+        result.modified.Should().BeFalse();
+        result.nextStepTypeIds.Should().HaveCount(1).And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS);
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        if (clinetId != "saidp123")
+        {
+            result.processMessage.Should().Be("Entity not found");
+        }
+        else
+        {
+            result.processMessage.Should().BeNull();
+        }
+    }
+
+    #endregion
+
 }

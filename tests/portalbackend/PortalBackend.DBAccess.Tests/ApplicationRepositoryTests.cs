@@ -594,6 +594,37 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDeclineApplicationForApplicationId
+
+    [Fact]
+    public async Task GetDeclineApplicationForApplicationId_ReturnsExpected()
+    {
+        // Arrange
+        var companyApplicationStatusIds = new[] {
+            CompanyApplicationStatusId.CREATED,
+            CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER,
+            CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
+            CompanyApplicationStatusId.VERIFY
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetDeclineApplicationForApplicationId(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"), companyApplicationStatusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.CompanyId.Should().Be(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"));
+        result.CompanyName.Should().Be("Onboarded Company");
+        result.IdentityStatuDatas.Should().NotBeNull().And.HaveCount(3).And.Satisfy(
+            x => x.IdentityId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") && x.UserStatusId == UserStatusId.INACTIVE,
+            x => x.IdentityId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94e") && x.UserStatusId == UserStatusId.ACTIVE,
+            x => x.IdentityId == new Guid("8b42e6de-7b59-4217-a63c-198e83d93777") && x.UserStatusId == UserStatusId.ACTIVE);
+    }
+
+    #endregion
+
     private async Task<(IApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();

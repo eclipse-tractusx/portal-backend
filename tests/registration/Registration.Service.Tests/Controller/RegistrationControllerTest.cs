@@ -192,4 +192,18 @@ public class RegistrationControllerTest
         A.CallTo(() => _registrationBusinessLogicFake.GetAllApplicationsForUserWithStatus()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(2);
     }
+
+    [Fact]
+    public async Task DeclineApplicationRegistrationAsync_ReturnsExpectedCalls()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.DeclineApplicationRegistrationAsync(applicationId).ConfigureAwait(false);
+
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.DeclineApplicationRegistrationAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }
