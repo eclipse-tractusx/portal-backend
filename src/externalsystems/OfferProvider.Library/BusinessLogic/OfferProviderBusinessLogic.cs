@@ -52,7 +52,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     /// <inheritdoc />
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProvider(Guid offerSubscriptionId, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderInformation(offerSubscriptionId).ConfigureAwait(false);
+        var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderInformation(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == null)
         {
             throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
@@ -78,7 +78,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             );
             await _offerProviderService
                 .TriggerOfferProvider(autoSetupData, data.AutoSetupUrl!, cancellationToken)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return (
@@ -94,7 +94,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     /// <inheritdoc />
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid offerSubscriptionId, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderCallbackInformation(offerSubscriptionId).ConfigureAwait(false);
+        var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetTriggerProviderCallbackInformation(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
             throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
@@ -128,8 +128,8 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             {
                 throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
             }
-            var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(serviceAccount.TechnicalClientId).ConfigureAwait(false);
-            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false);
+            var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(serviceAccount.TechnicalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
             technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,
                 authData.Secret,
@@ -142,7 +142,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         );
         await _offerProviderService
             .TriggerOfferProviderCallback(callbackData, data.CallbackUrl!, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (
             null,

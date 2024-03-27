@@ -32,11 +32,11 @@ public class CompanyInvitationData
         string email,
         string organisationName)
     {
-        this.UserName = userName;
-        this.FirstName = firstName;
-        this.LastName = lastName;
-        this.Email = email;
-        this.OrganisationName = organisationName;
+        UserName = userName;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        OrganisationName = organisationName;
     }
 
     [JsonPropertyName("userName")]
@@ -62,10 +62,10 @@ public class CompanyInvitationData
 
     public void Deconstruct(out string? userName, out string firstName, out string lastName, out string email, out string organisationName)
     {
-        userName = this.UserName;
-        firstName = this.FirstName;
-        lastName = this.LastName;
-        email = this.Email;
-        organisationName = this.OrganisationName;
+        userName = UserName;
+        firstName = FirstName;
+        lastName = LastName;
+        email = Email;
+        organisationName = OrganisationName;
     }
 }

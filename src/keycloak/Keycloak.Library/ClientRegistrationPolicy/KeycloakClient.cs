@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<IEnumerable<ComponentType>> GetRetrieveProvidersBasePathAsync(string realm) => await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
         .AppendPathSegment("/admin/realms/")
         .AppendPathSegment(realm, true)
         .AppendPathSegment("/client-registration-policy/providers")
         .GetJsonAsync<IEnumerable<ComponentType>>()
-        .ConfigureAwait(false);
+        .ConfigureAwait(ConfigureAwaitOptions.None);
 }

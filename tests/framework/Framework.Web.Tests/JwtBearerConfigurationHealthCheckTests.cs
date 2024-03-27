@@ -63,7 +63,7 @@ public class JwtBearerConfigurationHealthCheckTests
         var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
         // Act
-        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        var result = await sut.CheckHealthAsync(context);
 
         // Assert
         result.Status.Should().Be(HealthStatus.Healthy);
@@ -86,7 +86,7 @@ public class JwtBearerConfigurationHealthCheckTests
         var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
         // Act
-        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        var result = await sut.CheckHealthAsync(context);
 
         // Assert
         result.Status.Should().Be(HealthStatus.Unhealthy);

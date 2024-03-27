@@ -59,7 +59,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
         applicationId = Guid.Empty;
         checklist = null;
 
-        var result = await _checklistRepository.GetChecklistData(processId).ConfigureAwait(false);
+        var result = await _checklistRepository.GetChecklistData(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!result.IsValidProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");
@@ -79,7 +79,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
         if (Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(checklist.Keys).Any())
         {
             var createdEntries = (await _checklistCreationService
-                .CreateMissingChecklistItems(applicationId, checklist.Keys).ConfigureAwait(false)).ToList();
+                .CreateMissingChecklistItems(applicationId, checklist.Keys).ConfigureAwait(ConfigureAwaitOptions.None)).ToList();
 
             if (createdEntries.Any())
             {
@@ -115,7 +115,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
         string? processMessage;
         try
         {
-            (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(false);
+            (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ProcessFunc(stepData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception ex) when (ex is not SystemException)
         {
@@ -128,7 +128,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             }
             else
             {
-                (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(false);
+                (stepStatusId, modifyChecklistEntry, nextStepTypeIds, stepsToSkip, modified, processMessage) = await execution.ErrorFunc(ex, stepData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         }
 

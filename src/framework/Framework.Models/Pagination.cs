@@ -92,7 +92,7 @@ public class Pagination
         ValidatePaginationParameters(page, size, maxSize);
 
         var source = getSource(size * page, size);
-        var count = await source.Count.ConfigureAwait(false);
+        var count = await source.Count.ConfigureAwait(ConfigureAwaitOptions.None);
         var data = await source.Data.ToListAsync().ConfigureAwait(false);
 
         return new Response<T>(
@@ -108,7 +108,7 @@ public class Pagination
     {
         ValidatePaginationParameters(page, size, maxSize);
 
-        var source = await getSource(size * page, size).ConfigureAwait(false);
+        var source = await getSource(size * page, size).ConfigureAwait(ConfigureAwaitOptions.None);
         return source == null
             ? new Response<T>(new Metadata(0, 0, 0, 0), Enumerable.Empty<T>())
             : new Response<T>(

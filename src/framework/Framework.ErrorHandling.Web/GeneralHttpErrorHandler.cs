@@ -83,7 +83,7 @@ public class GeneralHttpErrorHandler
     {
         try
         {
-            await _next(context).ConfigureAwait(false);
+            await _next(context).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception error)
         {
@@ -95,7 +95,7 @@ public class GeneralHttpErrorHandler
             _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(false);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

@@ -58,7 +58,7 @@ public class DimServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<DimService>(_dimSettings, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        var result = await _sut.CreateWalletAsync(companyName, bpn, "https://example.org/did/", CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.CreateWalletAsync(companyName, bpn, "https://example.org/did/", CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -78,7 +78,7 @@ public class DimServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<DimService>(_dimSettings, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.CreateWalletAsync(companyName, bpn, "https://example.org/did/", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateWalletAsync(companyName, bpn, "https://example.org/did/", CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -105,7 +105,7 @@ public class DimServiceTests
         A.CallTo(() => _clientFactory.CreateClient("universalResolver")).Returns(httpClient);
 
         // Act
-        var result = await _sut.ValidateDid(did, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -127,7 +127,7 @@ public class DimServiceTests
         A.CallTo(() => _clientFactory.CreateClient("universalResolver")).Returns(httpClient);
 
         // Act
-        var result = await _sut.ValidateDid(did, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         result.Should().BeFalse();
@@ -146,7 +146,7 @@ public class DimServiceTests
         A.CallTo(() => _clientFactory.CreateClient("universalResolver")).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.ValidateDid(did, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

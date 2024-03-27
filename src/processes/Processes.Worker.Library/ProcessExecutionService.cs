@@ -73,7 +73,7 @@ public class ProcessExecutionService
             var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor>();
             var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
             //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
-            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
+            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(ConfigureAwaitOptions.None);
 
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
@@ -90,18 +90,18 @@ public class ProcessExecutionService
                     }
                     _logger.LogInformation("start processing process {processId} type {processType}", process.Id, process.ProcessTypeId);
 
-                    await foreach (var hasChanged in ExecuteProcess(processExecutor, process, stoppingToken).WithCancellation(stoppingToken).ConfigureAwait(false))
+                    await foreach (var hasChanged in ExecuteProcess(processExecutor, process, stoppingToken).ConfigureAwait(false))
                     {
                         if (hasChanged)
                         {
-                            await executorRepositories.SaveAsync().ConfigureAwait(false);
+                            await executorRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                         }
                         executorRepositories.Clear();
                     }
 
                     if (process.ReleaseLock())
                     {
-                        await executorRepositories.SaveAsync().ConfigureAwait(false);
+                        await executorRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                         executorRepositories.Clear();
                     }
                     _logger.LogInformation("finished processing process {processId}", process.Id);
@@ -122,7 +122,7 @@ public class ProcessExecutionService
 
     private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor processExecutor, Process process, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
+        await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, cancellationToken).ConfigureAwait(false))
         {
             yield return executionResult switch
             {

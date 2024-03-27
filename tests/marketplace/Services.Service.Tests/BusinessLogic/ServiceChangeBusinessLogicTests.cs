@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,7 +53,7 @@ public class ServiceChangeBusinessLogicTests
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         // Act
-        await _sut.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByServiceIdAsync(serviceId);
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(serviceId, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();

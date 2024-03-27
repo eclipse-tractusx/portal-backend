@@ -82,7 +82,7 @@ public class ApplicationActivationService : IApplicationActivationService
     private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
@@ -95,9 +95,9 @@ public class ApplicationActivationService : IApplicationActivationService
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
-        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
-        await SetTheme(iamIdpAliasse).ConfigureAwait(false);
+        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
+        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SetTheme(iamIdpAliasse).ConfigureAwait(ConfigureAwaitOptions.None);
 
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
@@ -123,8 +123,8 @@ public class ApplicationActivationService : IApplicationActivationService
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
 
-        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(false);
-        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
+        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (assignedRoles != null)
         {
@@ -174,14 +174,14 @@ public class ApplicationActivationService : IApplicationActivationService
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(ConfigureAwaitOptions.None);
 
         IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>? assignedRoles = null;
         var invitedUsersData = applicationRepository
             .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
@@ -200,7 +200,7 @@ public class ApplicationActivationService : IApplicationActivationService
             userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
             await _provisioningManager
                 .AddBpnAttributetoUserAsync(iamUserId, Enumerable.Repeat(businessPartnerNumber, 1))
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return assignedRoles;
@@ -225,7 +225,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             var roleNamesToDelete = userData.UserRoleIds
                 .Select(roleId => userRoles[roleId])
@@ -235,7 +235,7 @@ public class ApplicationActivationService : IApplicationActivationService
                     clientRoleData => clientRoleData.Select(y => y.UserRoleText));
 
             await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
             userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
         }
     }

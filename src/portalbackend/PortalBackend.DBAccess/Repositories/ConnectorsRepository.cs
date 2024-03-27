@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -38,7 +37,7 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <param name="portalDbContext">PortalDb context.</param>
     public ConnectorsRepository(PortalDbContext portalDbContext)
     {
-        this._context = portalDbContext;
+        _context = portalDbContext;
     }
 
     /// <inheritdoc/>

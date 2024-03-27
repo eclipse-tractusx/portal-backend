@@ -25,9 +25,6 @@ public class NotFoundException : DetailException
     public NotFoundException() : base() { }
     public NotFoundException(string message) : base(message) { }
     public NotFoundException(string message, Exception inner) : base(message, inner) { }
-    protected NotFoundException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected NotFoundException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

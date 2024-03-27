@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,7 +25,4 @@ public class KeycloakEntityConflictException : Exception
     public KeycloakEntityConflictException() { }
     public KeycloakEntityConflictException(string message) : base(message) { }
     public KeycloakEntityConflictException(string message, System.Exception inner) : base(message, inner) { }
-    protected KeycloakEntityConflictException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }

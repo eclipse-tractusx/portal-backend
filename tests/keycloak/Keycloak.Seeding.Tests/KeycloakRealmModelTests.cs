@@ -31,7 +31,7 @@ public class KeycloakRealmModelTests
         var sut = new SeedDataHandler();
 
         // Act
-        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None).ConfigureAwait(false);
+        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None);
 
         var keycloakRealm = sut.KeycloakRealm;
         var clients = sut.Clients;

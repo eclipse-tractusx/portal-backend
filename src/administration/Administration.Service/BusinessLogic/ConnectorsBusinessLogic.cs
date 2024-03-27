@@ -84,7 +84,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     public async Task<ConnectorData> GetCompanyConnectorData(Guid connectorId)
     {
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForCompany(connectorId, companyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForCompany(connectorId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
@@ -112,7 +112,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var result = await _portalRepositories
             .GetInstance<ICompanyRepository>()
             .GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrEmpty(result.Bpn))
         {
@@ -123,7 +123,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         {
             throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
-        await ValidateTechnicalUser(technicalUserId, companyId).ConfigureAwait(false);
+        await ValidateTechnicalUser(technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
@@ -131,18 +131,18 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             result.Bpn,
             result.SelfDescriptionDocumentId.Value,
             null,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<Guid> CreateManagedConnectorInternalAsync(ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
         var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, subscriptionId, technicalUserId) = connectorInputModel;
-        await CheckLocationExists(location).ConfigureAwait(false);
+        await CheckLocationExists(location).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .CheckOfferSubscriptionWithOfferProvider(subscriptionId, companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!result.Exists)
         {
@@ -175,7 +175,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
         }
 
-        await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(false);
+        await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, companyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
@@ -183,13 +183,13 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             result.ProviderBpn,
             result.SelfDescriptionDocumentId!.Value,
             subscriptionId,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task CheckLocationExists(string location)
     {
         if (!await _portalRepositories.GetInstance<ICountryRepository>()
-                .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(false))
+                .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST, new ErrorParameter[] { new("location", location) });
         }
@@ -203,7 +203,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         }
 
         if (!await _portalRepositories.GetInstance<IServiceAccountRepository>()
-                .CheckActiveServiceAccountExistsForCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(false))
+                .CheckActiveServiceAccountExistsForCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, new ErrorParameter[] { new("technicalUserId", technicalUserId.Value.ToString()), new("companyId", companyId.ToString()) });
         }
@@ -244,9 +244,9 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
         await _sdFactoryBusinessLogic
             .RegisterConnectorAsync(createdConnector.Id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return createdConnector.Id;
     }
 
@@ -255,7 +255,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
     {
         var companyId = _identityData.CompanyId;
         var connectorsRepository = _portalRepositories.GetInstance<IConnectorsRepository>();
-        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(false) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
         if (!result.IsProvidingOrHostCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
@@ -358,7 +358,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
 
         var result = await _portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorDataById(data.ExternalId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -370,8 +370,8 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
         }
 
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -387,7 +387,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             .GetInstance<IConnectorsRepository>();
         var connector = await connectorsRepository
             .GetConnectorUpdateInformation(connectorId, _identityData.CompanyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (connector == null)
         {
@@ -413,7 +413,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             ? connector.Bpn
             : await _portalRepositories.GetInstance<IUserRepository>()
                 .GetCompanyBpnForIamUserAsync(_identityData.IdentityId)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
         if (string.IsNullOrWhiteSpace(bpn))
         {
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
@@ -424,7 +424,7 @@ public class ConnectorsBusinessLogic : IConnectorsBusinessLogic
             con.ConnectorUrl = data.ConnectorUrl;
         });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />

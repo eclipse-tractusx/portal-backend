@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,10 +33,10 @@ public partial class KeycloakClient
 {
     public async Task<EntityDescriptorType?> GetSAMLMetaDataAsync(string realm) =>
         new XmlSerializer(typeof(EntityDescriptorType))
-            .Deserialize(await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+            .Deserialize(await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
                 .AppendPathSegment("/realms/")
                 .AppendPathSegment(realm, true)
                 .AppendPathSegment("/protocol/saml/descriptor")
                 .GetStreamAsync()
-                .ConfigureAwait(false)) as EntityDescriptorType;
+                .ConfigureAwait(ConfigureAwaitOptions.None)) as EntityDescriptorType;
 }

@@ -42,7 +42,7 @@ public class TemplateManager : ITemplateManager
         var template = _settings.Templates.SingleOrDefault(x => x.Name == id)?.Setting ?? throw new NoSuchTemplateException(id);
 
         var body = template.EmailTemplateType.HasValue
-            ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
+            ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(ConfigureAwaitOptions.None)
             : template.Body;
         if (body == null)
         {
@@ -66,7 +66,7 @@ public class TemplateManager : ITemplateManager
 
         try
         {
-            return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(false);
+            return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (IOException ioe)
         {

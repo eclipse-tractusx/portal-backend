@@ -47,7 +47,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateCompanyIdentityProvider_WithValid_ReturnsExpected()
     {
         var identityProviderId = new Guid("38f56465-ce26-4f25-9745-1791620dc198");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         var result = sut.CreateCompanyIdentityProvider(_companyId, identityProviderId);
 
@@ -71,7 +71,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateIamIdentityProvider_WithValid_ReturnsExpected()
     {
         var identityProviderId = new Guid("38f56465-ce26-4f25-9745-1791620dc198");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         var result = sut.CreateIamIdentityProvider(identityProviderId, "idp-999");
 
@@ -99,9 +99,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("38f56465-ce26-4f25-9745-1791620dc201", "ac861325-bc54-4583-bcdc-9e9f2a38ff84", "Shared-Alias", true, IdentityProviderTypeId.SHARED)]
     public async Task GetOwnCompanyIdentityProviderAliasUntrackedAsync_WithValid_ReturnsExpected(Guid identityProviderId, Guid companyId, string alias, bool isOwnOrOwner, IdentityProviderTypeId typeId)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, companyId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, companyId);
 
         // Assert
         result.Alias.Should().Be(alias);
@@ -122,9 +122,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", false, "Test-Alias2", false, false, "Catena-X", new[] { "41fd2ab8-71cd-4546-9bef-a388d91b2542", "41fd2ab8-7123-4546-9bef-a388d91b2999", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
     public async Task GetOwnCompanyIdentityProviderStatusUpdateData_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, bool queryAliase, string alias, bool isOwner, bool companyUsersLinked, string ownerCompanyName, IEnumerable<string>? companyIds)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, companyId, queryAliase).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, companyId, queryAliase);
 
         // Assert
         result.IdentityProviderData.Alias.Should().Be(alias);
@@ -164,9 +164,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", "Test-Alias2", false)]
     public async Task GetOwnCompanyIdentityProviderUpdateData_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, string alias, bool isOwner)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnCompanyIdentityProviderUpdateData(identityProviderId, companyId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderUpdateData(identityProviderId, companyId);
 
         // Assert
         result.Alias.Should().Be(alias);
@@ -185,9 +185,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("38f56465-ce26-4f25-9745-1791620dc200", "41fd2ab8-71cd-4546-9bef-a388d91b2542", "Test-Alias2", false, "Catena-X", new[] { "41fd2ab8-71cd-4546-9bef-a388d91b2542", "41fd2ab8-7123-4546-9bef-a388d91b2999", "3390c2d7-75c1-4169-aa27-6ce00e1f3cdd", "0dcd8209-85e2-4073-b130-ac094fb47106", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88" })]
     public async Task GetOwnCompanyIdentityProviderUpdateDataForDelete_WithValidOwner_ReturnsExpected(Guid identityProviderId, Guid companyId, string alias, bool isOwner, string ownerCompanyName, IEnumerable<string>? companyIds)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, companyId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, companyId);
 
         // Assert
         result.Alias.Should().Be(alias);
@@ -217,9 +217,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetCompanyIdentityProviderCategoryDataUntracked_WithValid_ReturnsExpected()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync();
 
         // Assert
         results.Should().HaveCount(3);
@@ -237,10 +237,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetSingleManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
         result.Should().Match<(Guid IdentityProviderId, string? Alias)>(x => x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc200") && x.Alias == "Test-Alias2");
@@ -250,13 +250,13 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetSingleManagedIdentityProviderAliasDataUntracked_WithCompanyOwningMultipleManagedIdps_Throws()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var Act = () => sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
-        var result = await Assert.ThrowsAsync<InvalidOperationException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<InvalidOperationException>(Act);
         result.Should().NotBeNull();
     }
 
@@ -264,10 +264,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetSingleManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ConfigureAwait(false);
+        var result = await sut.GetSingleManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
 
         // Assert
         result.Should().Be(default((Guid, string?)));
@@ -281,10 +281,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetManagedIdentityProviderAliasDataUntracked_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc200") }).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc200") }).ToListAsync();
 
         // Assert
         result.Should().ContainSingle()
@@ -295,10 +295,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetManagedIdentityProviderAliasDataUntracked_WithOtherCompanyIdentityProviderId_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -308,10 +308,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetManagedIdentityProviderAliasDataUntracked_WithCompanyOwningOwnIdp_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetManagedIdentityProviderAliasDataUntracked(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"), new[] { new Guid("38f56465-ce26-4f25-9745-1791620dc199") }).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -326,7 +326,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var identityProviderId = new Guid("38f56465-ce26-4f25-9745-1791620dc198");
         var identityProviderId2 = new Guid("07543ffd-fac9-436a-b60e-5f599e9bc748");
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         sut.CreateCompanyIdentityProviders(new ValueTuple<Guid, Guid>[]
         {
@@ -354,10 +354,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyNameIdpAliaseUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyNameIdpAliaseUntrackedAsync(new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), null, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameIdpAliaseUntrackedAsync(new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"), null, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED);
 
         // Assert
         result.Should().NotBe(default);
@@ -374,10 +374,10 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyNameIdpAliasUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyNameIdpAliasUntrackedAsync(new Guid("38f56465-ce26-4f25-9745-1791620dc201"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776")).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameIdpAliasUntrackedAsync(new Guid("38f56465-ce26-4f25-9745-1791620dc201"), new Guid("8b42e6de-7b59-4217-a63c-198e83d93776"));
 
         // Assert
         result.Should().NotBe(default);
@@ -397,9 +397,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetOwnIdentityProviderWithConnectedCompanies_WithNotOwned_ReturnsExpected()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
 
         // Assert
         result.Alias.Should().Be("Idp-123");
@@ -413,9 +413,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetOwnIdentityProviderWithConnectedCompanies_WithValid_ReturnsExpected()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc199"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88")).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc199"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88"));
 
         // Assert
         result.Alias.Should().Be("Test-Alias");
@@ -428,9 +428,9 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetOwnIdentityProviderWithConnectedCompanies_WithMultipleValid_ReturnsExpected()
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(new Guid("38f56465-ce26-4f25-9745-1791620dc198"), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
         result.Alias.Should().Be("Idp-123");
@@ -447,14 +447,14 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(IdentityProviderRepository, PortalDbContext)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new IdentityProviderRepository(context);
         return (sut, context);
     }
 
     private async Task<IdentityProviderRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new IdentityProviderRepository(context);
         return sut;
     }

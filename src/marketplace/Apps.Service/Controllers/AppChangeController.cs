@@ -108,7 +108,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
-        await _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, offerDescriptionDatas).ConfigureAwait(false);
+        await _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, offerDescriptionDatas).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -161,7 +161,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await _businessLogic.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(false);
+        await _businessLogic.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -184,7 +184,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -202,7 +202,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ActiveAppDocumentData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
-        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
+        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
 
     /// <summary>
     /// Delete Documet for an active app for given appId for same company as user
@@ -221,7 +221,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeleteMulitipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)
     {
-        await _businessLogic.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
+        await _businessLogic.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -253,7 +253,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> CreateActiveAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(false);
+        await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -58,7 +57,7 @@ public class NetworkRegistrationProcessHelperTests
     public async Task TriggerProcessStep_WithUntriggerableProcessStep_ThrowsConflictException()
     {
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -74,7 +73,7 @@ public class NetworkRegistrationProcessHelperTests
             .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -116,7 +115,7 @@ public class NetworkRegistrationProcessHelperTests
                 });
 
         // Act
-        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId).ConfigureAwait(false);
+        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

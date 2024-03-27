@@ -80,7 +80,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns(new OnboardingServiceProviderCallbackResponseData("https://callback-url.com", "https//auth.url", "test"));
 
         //Act
-        var result = await _logic.GetCallbackAddress().ConfigureAwait(false);
+        var result = await _logic.GetCallbackAddress();
 
         //Assert
         result.CallbackUrl.Should().Be("https://callback-url.com");
@@ -94,7 +94,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns(new OnboardingServiceProviderCallbackResponseData(null, null, null));
 
         //Act
-        var result = await _logic.GetCallbackAddress().ConfigureAwait(false);
+        var result = await _logic.GetCallbackAddress();
 
         //Assert
         result.CallbackUrl.Should().BeNull();
@@ -112,7 +112,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns<(bool, Guid?, OspDetails?)>(default);
 
         //Act
-        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
+        async Task Act() => await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https//auth.url", "test", "Sup3rS3cureTest!"));
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -128,7 +128,7 @@ public class RegistrationStatusBusinessLogicTest
             .Returns((true, null, null));
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https://auth.url", "test", "Sup3rS3cureTest!")).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test.de", "https://auth.url", "test", "Sup3rS3cureTest!"));
 
         //Assert
         A.CallTo(() => _companyRepository.GetCallbackEditData(_identity.CompanyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER))
@@ -160,7 +160,7 @@ public class RegistrationStatusBusinessLogicTest
             });
 
         //Act
-        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test-new.de", "https//auth.url", "test", clientSecret)).ConfigureAwait(false);
+        await _logic.SetCallbackAddress(new OnboardingServiceProviderCallbackRequestData("https://test-new.de", "https//auth.url", "test", clientSecret));
 
         updated.Should().NotBeNull();
 

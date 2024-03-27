@@ -159,7 +159,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers);
@@ -200,9 +200,9 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
-        var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
         error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
     }
 
@@ -251,7 +251,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -301,7 +301,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -349,7 +349,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -396,7 +396,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(1);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -443,7 +443,7 @@ public class IdentityProviderBusinessLogicTests
             _options,
             _logger);
 
-        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         result.Updated.Should().Be(0);
         result.Unchanged.Should().Be(numUsers - 1);
@@ -482,7 +482,7 @@ public class IdentityProviderBusinessLogicTests
             _logger);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(default, IdentityProviderTypeId.OWN, null).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(default, IdentityProviderTypeId.OWN, null);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -505,7 +505,7 @@ public class IdentityProviderBusinessLogicTests
             _logger);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, display).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, display);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -526,7 +526,7 @@ public class IdentityProviderBusinessLogicTests
             _logger);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, "$invalid-character").ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, "$invalid-character");
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -551,7 +551,7 @@ public class IdentityProviderBusinessLogicTests
             _logger);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, null).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.OWN, null);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -576,7 +576,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(_invalidCompanyId);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.MANAGED, null).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.SAML, IdentityProviderTypeId.MANAGED, null);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -598,7 +598,7 @@ public class IdentityProviderBusinessLogicTests
             _logger);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.OIDC, IdentityProviderTypeId.SHARED, null).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol.OIDC, IdentityProviderTypeId.SHARED, null);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -641,7 +641,7 @@ public class IdentityProviderBusinessLogicTests
         var expectedOwner = _companyId;
 
         // Act
-        var result = await sut.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, "test-company").ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, "test-company");
 
         // Assert
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_companyId, A<IEnumerable<CompanyRoleId>>.That.IsSameSequenceAs(companyRoleIds))).MustHaveHappenedOnceExactly();
@@ -710,7 +710,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, string?, IdentityProviderTypeId, IEnumerable<(Guid, IEnumerable<string>)>, string)>(default);
 
         // Act
-        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(invalidId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(invalidId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -735,7 +735,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((false, string.Empty, IdentityProviderTypeId.OWN, Enumerable.Empty<(Guid, IEnumerable<string>)>(), string.Empty));
 
         // Act
-        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -762,7 +762,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(true);
 
         // Act
-        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -794,7 +794,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(true);
 
         // Act
-        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, _companyId)).MustHaveHappenedOnceExactly();
@@ -833,7 +833,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(true);
 
         // Act
-        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test")).MustHaveHappenedOnceExactly();
@@ -895,7 +895,7 @@ public class IdentityProviderBusinessLogicTests
             });
 
         // Act
-        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        await sut.DeleteCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustNotHaveHappened();
@@ -953,7 +953,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProvidersAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProvidersAsync().ToListAsync();
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId)).MustHaveHappenedOnceExactly();
@@ -984,7 +984,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, false, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1008,7 +1008,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1034,7 +1034,7 @@ public class IdentityProviderBusinessLogicTests
             .Throws(new KeycloakEntityNotFoundException("cl1 not existing"));
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         result.Mappers.Should().BeNull();
@@ -1069,7 +1069,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         result.Mappers.Should().HaveCount(3);
@@ -1105,7 +1105,7 @@ public class IdentityProviderBusinessLogicTests
             .Throws(new KeycloakEntityNotFoundException("saml-alias"));
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         result.Mappers.Should().BeNull();
@@ -1134,7 +1134,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
         // Assert
         result.Mappers.Should().HaveCount(2);
@@ -1163,7 +1163,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, (string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?), IEnumerable<(Guid, IEnumerable<string>)>?, bool, string)>(default);
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1188,7 +1188,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((false, (string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null), Enumerable.Empty<(Guid, IEnumerable<string>)>(), false, string.Empty));
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1214,7 +1214,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).Returns(false);
 
         // Act
-        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        async Task Act() => await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1244,7 +1244,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
@@ -1276,7 +1276,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
@@ -1310,7 +1310,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, true).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, true);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, false)).MustHaveHappenedOnceExactly();
@@ -1343,7 +1343,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
@@ -1378,7 +1378,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         A.CallTo(() => _provisioningManager.SetSharedIdentityProviderStatusAsync("cl1", false))
@@ -1410,7 +1410,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false).ConfigureAwait(false);
+        var result = await sut.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, false);
 
         // Assert
         A.CallTo(() => _provisioningManager.SetCentralIdentityProviderStatusAsync("cl1", false))
@@ -1449,7 +1449,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1476,7 +1476,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, string?, IdentityProviderCategoryId, IdentityProviderTypeId, string?)>(default);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1503,7 +1503,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((false, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1531,7 +1531,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1560,7 +1560,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1602,7 +1602,7 @@ public class IdentityProviderBusinessLogicTests
             });
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, cancellationToken).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, cancellationToken);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(A<IdentityProviderEditableConfigOidc>.That.Matches(x => x.Secret == "test" && x.Alias == "cl1" && x.MetadataUrl == "http://new"), cancellationToken))
@@ -1641,7 +1641,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1670,7 +1670,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_SAML, IdentityProviderTypeId.OWN, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1703,7 +1703,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.singleSignOnServiceUrl == "https://sso.com" && x.alias == "cl1")))
@@ -1734,7 +1734,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1763,7 +1763,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, null));
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1796,7 +1796,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateSharedIdentityProviderAsync("cl1", "dis-shared"))
@@ -1831,7 +1831,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, string?, bool)>(default);
 
         // Act
-        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1861,7 +1861,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<string?>(null);
 
         // Act
-        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -1889,7 +1889,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, null, false));
 
         // Act
-        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1917,7 +1917,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", false));
 
         // Act
-        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1948,7 +1948,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(iamUserId);
 
         // Act
-        var result = await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data).ConfigureAwait(false);
+        var result = await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(iamUserId, "cl1"))
@@ -1980,7 +1980,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<(bool, string?, bool)>(default);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2007,7 +2007,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns<string?>(null);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -2032,7 +2032,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, null, false));
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2057,7 +2057,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", false));
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2087,7 +2087,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(Enumerable.Empty<IdentityProviderLink>().ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2120,7 +2120,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(Enumerable.Repeat(new IdentityProviderLink("cl1", iamUserId, "user-name"), 1).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
         result.userName.Should().Be("user-name");
@@ -2153,7 +2153,7 @@ public class IdentityProviderBusinessLogicTests
             .Throws(new KeycloakEntityNotFoundException("just a test"));
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2181,7 +2181,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(iamUserId);
 
         // Act
-        await sut.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        await sut.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId);
 
         // Assert
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(iamUserId, "cl1"))
@@ -2210,7 +2210,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((true, "cl1", true));
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Empty<Guid>(), false).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Empty<Guid>(), false).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -2234,7 +2234,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(Enumerable.Empty<(Guid, string)>().ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Repeat(identityProviderId, 1), false).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyUsersIdentityProviderDataAsync(Enumerable.Repeat(identityProviderId, 1), false).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -2262,7 +2262,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((string.Empty, IdentityProviderCategoryId.KEYCLOAK_OIDC, false, IdentityProviderTypeId.OWN, null, Enumerable.Empty<ConnectedCompanyData>()));
 
         // Act
-        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -2286,7 +2286,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns((null, IdentityProviderCategoryId.KEYCLOAK_OIDC, true, IdentityProviderTypeId.OWN, null, Enumerable.Empty<ConnectedCompanyData>()));
 
         // Act
-        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2312,7 +2312,7 @@ public class IdentityProviderBusinessLogicTests
             .Throws(new KeycloakEntityNotFoundException("cl1 not existing"));
 
         // Act
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         result.DisplayName.Should().BeNull();
@@ -2342,7 +2342,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         result.DisplayName.Should().Be("dis-oidc");
@@ -2371,7 +2371,7 @@ public class IdentityProviderBusinessLogicTests
             .Throws(new KeycloakEntityNotFoundException("saml-alias"));
 
         // Act
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         result.DisplayName.Should().BeNull();
@@ -2402,7 +2402,7 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId).ConfigureAwait(false);
+        var result = await sut.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
         // Assert
         result.DisplayName.Should().Be("dis-saml");

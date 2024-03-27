@@ -55,10 +55,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferProviderDetailsAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -70,10 +70,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferProviderDetailsAsync_WithNotExistingApp_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.APP).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferProviderDetailsAsync(Guid.NewGuid(), OfferTypeId.APP);
 
         // Assert
         offerDetail.Should().BeNull();
@@ -83,10 +83,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferProviderDetailsAsync_WithWrongOfferType_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferProviderDetailsAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), OfferTypeId.SERVICE);
 
         // Assert
         offerDetail.Should().BeNull();
@@ -100,10 +100,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllActiveApps_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offers = await sut.GetAllActiveAppsAsync(null!, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
+        var offers = await sut.GetAllActiveAppsAsync(null!, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
         offers.Should().HaveCount(8).And.Satisfy(
@@ -126,10 +126,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferDetailsByIdAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetOfferDetailsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, null, "de", OfferTypeId.APP).ConfigureAwait(false);
+        var offerDetail = await sut.GetOfferDetailsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, null, "de", OfferTypeId.APP);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -150,7 +150,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateOffer_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var results = sut.CreateOffer("Catena-X", OfferTypeId.APP, offer =>
@@ -176,7 +176,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyOffer_WithExistingOffer_UpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyOffer(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), offer =>
@@ -203,7 +203,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateOfferLicense_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var results = sut.CreateOfferLicenses("110");
@@ -226,7 +226,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyOfferLicense_WithExistingOfferLicense_UpdatesLicenseText()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyOfferLicense(new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"), offerLicense => offerLicense.Licensetext = "666");
@@ -250,7 +250,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferAssignedLicense_WithExisting_RemovesOfferAssignedLicense()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.RemoveOfferAssignedLicense(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b"));
@@ -273,7 +273,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveAppLanguages_WithExisting_RemovesAppLanguages()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.RemoveAppLanguages(new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), "de") });
@@ -296,10 +296,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAppUpdateData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetAppUpdateData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, new[] { "de" }).ConfigureAwait(false);
+        var offerDetail = await sut.GetAppUpdateData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, new[] { "de" });
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -314,7 +314,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AddServiceAssignedServiceTypes_WithExisting_RemovesServiceAssignedServiceType()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.AddServiceAssignedServiceTypes(new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.DATASPACE_SERVICE) });
@@ -336,7 +336,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveServiceAssignedServiceTypes_WithExisting_RemovesServiceAssignedServiceType()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.RemoveServiceAssignedServiceTypes(new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), ServiceTypeId.CONSULTANCY_SERVICE) });
@@ -363,10 +363,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveServices_ReturnsExpectedResult(ServiceOverviewSorting sorting)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(sorting, null, Constants.DefaultLanguage)(0, 15).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(sorting, null, Constants.DefaultLanguage)(0, 15);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -391,10 +391,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveServices_WithExistingServiceAndServiceType_ReturnsExpectedResult(ServiceTypeId? serviceTypeId, int page, int size, int count, int numData)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId, Constants.DefaultLanguage)(page, size).ConfigureAwait(false);
+        var offerDetail = await sut.GetActiveServicesPaginationSource(null, serviceTypeId, Constants.DefaultLanguage)(page, size);
 
         // Assert
         if (count == 0)
@@ -417,14 +417,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailByIdUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
         var technicalUserRoleDatas = new[] {
             new TechnicalUserRoleData(new Guid("9b2755b6-e641-450a-a21d-d90d6e94fa4e"), new []{"test"}),
             new TechnicalUserRoleData(new Guid("8a0cd2e0-ceb6-43db-8753-84f1b4238f00"), new []{"test", "EarthCommerce.Advanced.BuyerRC_QAS2"})
         };
 
         // Act
-        var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "de", _userCompanyId).ConfigureAwait(false);
+        var offerDetail = await sut.GetServiceDetailByIdUntrackedAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "de", _userCompanyId);
 
         // Assert
         offerDetail.Should().NotBeNull()
@@ -448,12 +448,12 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferDeclineDataAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var offerDetail = await sut.GetOfferDeclineDataAsync(
             new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"),
-            OfferTypeId.SERVICE).ConfigureAwait(false);
+            OfferTypeId.SERVICE);
 
         // Assert
         offerDetail.Should().NotBeNull();
@@ -470,10 +470,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetProviderOfferDataWithConsentStatusAsync_APP_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP);
 
         // Assert
         result.IsProviderCompanyUser.Should().BeTrue();
@@ -489,10 +489,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetProviderOfferDataWithConsentStatusAsync_APP_InvalidUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), Guid.NewGuid(), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), Guid.NewGuid(), OfferTypeId.APP);
 
         // Assert
         result.IsProviderCompanyUser.Should().BeFalse();
@@ -503,10 +503,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetProviderOfferDataWithConsentStatusAsync_SERVICE_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), _userCompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetProviderOfferDataWithConsentStatusAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), _userCompanyId, OfferTypeId.SERVICE);
 
         // Assert
         result.IsProviderCompanyUser.Should().BeTrue();
@@ -569,10 +569,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetProvidedOffersData_ReturnsExpectedResult(OfferTypeId offerTypeId, Guid userCompanyId, IEnumerable<string> offerIds, IEnumerable<string> leadPictureIds)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var providerAppData = await sut.GetProvidedOffersData(Enum.GetValues<OfferStatusId>(), offerTypeId, userCompanyId, OfferSorting.DateAsc, null)(0, 10).ConfigureAwait(false);
+        var providerAppData = await sut.GetProvidedOffersData(Enum.GetValues<OfferStatusId>(), offerTypeId, userCompanyId, OfferSorting.DateAsc, null)(0, 10);
 
         // Assert
         if (offerIds.Any())
@@ -610,7 +610,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var addedEntities = addedEntityKeys.Select(x => new AppAssignedUseCase(appId, new Guid(x))).OrderBy(x => x.UseCaseId).ToImmutableArray();
         var removedEntities = removedEntityKeys.Select(x => new AppAssignedUseCase(appId, new Guid(x))).OrderBy(x => x.UseCaseId).ToImmutableArray();
 
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         sut.CreateDeleteAppAssignedUseCases(appId, initialItems, updateItems);
 
@@ -638,7 +638,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetProviderCompanyUserIdForOfferUntrackedAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetProviderCompanyUserIdForOfferUntrackedAsync(new Guid("0ffcb416-1101-4ba6-8d4a-a9dfa31745a4"), _userCompanyId, OfferStatusId.CREATED, OfferTypeId.CORE_COMPONENT);
@@ -656,10 +656,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInReviewAppDataByIdAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), OfferTypeId.APP).ConfigureAwait(false);
+        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA6"), OfferTypeId.APP);
 
         // Assert
         InReviewAppofferDetail.Should().NotBeNull();
@@ -676,10 +676,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInReviewAppDataByIdAsync_InCorrectOfferStatus_ReturnsNullt()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+        var InReviewAppofferDetail = await sut.GetInReviewAppDataByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP);
 
         // Assert
         InReviewAppofferDetail.Should().BeNull();
@@ -693,10 +693,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveOfferDescriptionDataByIdAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         //Act
-        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, _userCompanyId).ConfigureAwait(false);
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, _userCompanyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -710,10 +710,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveOfferDescriptionDataByIdAsync_InvalidUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         //Act
-        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetActiveOfferDescriptionDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP, Guid.NewGuid());
 
         // Assert
         result.Should().NotBeNull();
@@ -736,7 +736,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             ("de", "some long Description in germen, for testing","some short Description in germen for testing")
         };
 
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         //Act
         sut.CreateUpdateDeleteOfferDescriptions(appId, existingOfferDescription, modifedOfferDescription);
@@ -768,7 +768,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             newOfferDescriptionEntry
         };
 
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         //Act
         sut.CreateUpdateDeleteOfferDescriptions(appId, existingOfferDescription, modifedOfferDescription);
@@ -795,7 +795,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         };
         var modifedOfferDescriptions = new[] { ("de", "modified long Description for testing", "modified short Description for testing") };
 
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         //Act
         sut.CreateUpdateDeleteOfferDescriptions(appId, existingOfferDescriptions, modifedOfferDescriptions);
@@ -826,10 +826,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, Guid companyId, bool hasPrivacyPolicies)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferReleaseDataByIdAsync(offerId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferReleaseDataByIdAsync(offerId, OfferTypeId.APP);
 
         // Assert
 
@@ -848,7 +848,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferAssignedLicenses_WithExisting_OfferAssignedLicense()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, Guid)> offerAssignedLicenseData = new[] { (new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new Guid("6ca00fc6-4c82-47d8-8616-059ebe65232b")) };
         // Act
@@ -868,7 +868,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferAssignedUseCases_WithExisting_OfferAssignedUseCase()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, Guid)> offerAssignedUseCaseData = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb510"), new Guid("6909ccc7-37c8-4088-99ab-790f20702460")) };
         // Act
@@ -888,7 +888,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferAssignedPrivacyPolicies_WithExisting_OfferAssignedPrivacyPolicy()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, PrivacyPolicyId)> offerAssignedPrivacyPolicyData = new[] { (new Guid("a9112853-75ac-4967-9844-7478536e5111"), PrivacyPolicyId.COMPANY_DATA) };
         // Act
@@ -908,7 +908,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferAssignedDocuments_WithExisting_OfferAssignedDocument()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, Guid)> offerAssignedDocumentsData = new[] { (new Guid("ac1cf001-7fbc-1f2f-817f-bce0574c000f"), new Guid("0e062e49-54ab-47a3-a217-d3f09fbe0459")) };
         // Act
@@ -928,7 +928,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferTags_WithExisting_OfferTag()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, string)> offerTagsData = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d1"), "Traceability") };
         // Act
@@ -948,7 +948,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOfferDescriptions_WithExisting_OfferDescription()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         IEnumerable<(Guid, string)> offerDescriptionLanguages = new[] { (new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2"), "de") };
         // Act
@@ -968,7 +968,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveOffer_WithExisting_Offer()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.RemoveOffer(new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2"));
@@ -992,10 +992,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAppUntrackedAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId, Guid userCompanyId, OfferStatusId offerStatusId, bool isValidApp, bool isOfferType, bool isOfferStatus, bool isCompanyUser, bool hasData)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act 
-        var result = await sut.GetAppDeleteDataAsync(offerId, offerTypeId, userCompanyId, offerStatusId).ConfigureAwait(false);
+        var result = await sut.GetAppDeleteDataAsync(offerId, offerTypeId, userCompanyId, offerStatusId);
 
         // Assert
         result.IsValidApp.Should().Be(isValidApp);
@@ -1027,10 +1027,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInsertActiveAppUserRoleDataAsync_WithValidUserAndApp_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1044,10 +1044,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInsertActiveAppUserRoleDataAsync_WithNotExistingApp_ReturnsDefault()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetInsertActiveAppUserRoleDataAsync(Guid.NewGuid(), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(Guid.NewGuid(), OfferTypeId.APP);
 
         // Assert
         result.Should().Be(default);
@@ -1057,10 +1057,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInsertActiveAppUserRoleDataAsync_WithNotExistingUser_CompanyUserIdIsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1074,10 +1074,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInsertActiveAppUserRoleDataAsync_WithWrongOfferType_ReturnsDefault()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetInsertActiveAppUserRoleDataAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(default);
@@ -1091,10 +1091,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferAssignedAppLeadImageDocumentsByIdAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferAssignedAppLeadImageDocumentsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferAssignedAppLeadImageDocumentsByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1114,10 +1114,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailsByIdAsync_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceDetailsByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ConfigureAwait(false);
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"));
 
         // Assert
         result.Should().NotBeNull();
@@ -1130,10 +1130,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceDetailsByIdAsync_InCorrectOfferStatus_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceDetailsByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA8")).ConfigureAwait(false);
+        var result = await sut.GetServiceDetailsByIdAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA8"));
 
         // Assert
         result.Should().BeNull();
@@ -1150,10 +1150,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult(IEnumerable<OfferStatusId> statusids, OfferSorting? sorting, string? serviceName, string languagename)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllInReviewStatusServiceAsync(statusids, OfferTypeId.SERVICE, sorting, serviceName, languagename, Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetAllInReviewStatusServiceAsync(statusids, OfferTypeId.SERVICE, sorting, serviceName, languagename, Constants.DefaultLanguage)(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -1172,10 +1172,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllInReviewStatusServiceAsync_ReturnsExpectedResult_WithDateSorting()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.DateDesc, null, "en", Constants.DefaultLanguage)(0, 10).ConfigureAwait(false);
+        var result = await sut.GetAllInReviewStatusServiceAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, OfferSorting.DateDesc, null, "en", Constants.DefaultLanguage)(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -1191,10 +1191,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferStatusDataByIdAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferStatusDataByIdAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1212,10 +1212,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferWithSetupDataById_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferWithSetupDataById(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), _userCompanyId, OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1233,7 +1233,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyAppInstanceSetup_WithAppInstanceSetup_UpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA5"), new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), data =>
@@ -1260,7 +1260,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateAppInstanceSetup_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var results = sut.CreateAppInstanceSetup(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), entity =>
@@ -1288,10 +1288,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetSingleInstanceOfferData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetSingleInstanceOfferData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -1311,10 +1311,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferActiveStatusDataByIdAsync_ReturnsExpectedResult(Guid offerId, OfferTypeId offerTypeId, bool isStatusActive, bool isUserCompanyProvider)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87")).ConfigureAwait(false);
+        var result = await sut.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         // Assert
         result.Should().NotBeNull();
         result.IsStatusActive.Should().Be(isStatusActive);
@@ -1330,10 +1330,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyProvidedServiceStatusDataAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyProvidedServiceStatusDataAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), null, null)(0, 15).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedServiceStatusDataAsync(new[] { OfferStatusId.ACTIVE }, OfferTypeId.SERVICE, new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), null, null)(0, 15);
 
         // Assert
         result!.Data.Should().NotBeNull().And.HaveCount(2).And.Satisfy(
@@ -1350,10 +1350,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountProfileData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"), OfferTypeId.APP);
 
         // Assert
         result.Should().NotBe(default);
@@ -1364,10 +1364,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountProfileData_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var result = await sut.GetServiceAccountProfileData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBe(default);
@@ -1382,10 +1382,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountProfileDataForSubscription_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba")).ConfigureAwait(false);
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
 
         // Assert
         result.Should().NotBe(default);
@@ -1396,10 +1396,10 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountProfileDataForSubscription_WithServiceAccountProfileWithRoles_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d")).ConfigureAwait(false);
+        var result = await sut.GetServiceAccountProfileDataForSubscription(new Guid("92be9d79-4064-422c-bdc8-a12ca7d26e5d"));
 
         // Assert
         result.Should().NotBe(default);
@@ -1420,13 +1420,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             DocumentTypeId.APP_CONTRACT,
             DocumentTypeId.ADDITIONAL_DETAILS
         };
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetActiveOfferDocumentTypeDataOrderedAsync(
             new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
             new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.APP, activeDocumentTypes).ToListAsync().ConfigureAwait(false);
+            OfferTypeId.APP, activeDocumentTypes).ToListAsync();
 
         // Assert
         result.Should().NotBeNull()
@@ -1457,13 +1457,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOfferAssignedAppDocumentsByIdAsync(
             new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
             new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.APP, documentId).ConfigureAwait(false);
+            OfferTypeId.APP, documentId);
 
         // Assert
         result.IsStatusActive.Should().BeTrue();
@@ -1477,13 +1477,13 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var documentId = new Guid("0d68c68c-d689-474c-a3be-8493f99feab5");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOfferAssignedAppDocumentsByIdAsync(
             new("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
             new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
-            OfferTypeId.APP, documentId).ConfigureAwait(false);
+            OfferTypeId.APP, documentId);
 
         // Assert
         result.Should().Be(default);
@@ -1495,14 +1495,14 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<OfferRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new OfferRepository(context);
         return sut;
     }
 
     private async Task<(OfferRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new OfferRepository(context);
         return (sut, context);
     }

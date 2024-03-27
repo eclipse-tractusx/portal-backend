@@ -62,7 +62,7 @@ public class AppChangeControllerTest
             .Returns(appRoleData);
 
         //Act
-        var result = await _controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result = await _controller.AddActiveAppUserRole(appId, appUserRoles);
         foreach (var item in result)
         {
             //Assert
@@ -83,7 +83,7 @@ public class AppChangeControllerTest
             .Returns(offerDescriptionData);
 
         //Act
-        var result = await _controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+        var result = await _controller.GetAppUpdateDescriptionsAsync(appId);
 
         //Assert
         A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._)).MustHaveHappened();
@@ -99,7 +99,7 @@ public class AppChangeControllerTest
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
         //Act
-        var result = await _controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
+        var result = await _controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData);
 
         //Assert
         A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
@@ -115,7 +115,7 @@ public class AppChangeControllerTest
         var cancellationToken = CancellationToken.None;
 
         // Act
-        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken).ConfigureAwait(false);
+        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken);
 
         // Assert
         A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken)).MustHaveHappenedOnceExactly();
@@ -129,7 +129,7 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.DeactivateApp(appId).ConfigureAwait(false);
+        var result = await _controller.DeactivateApp(appId);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId)).MustHaveHappenedOnceExactly();
@@ -145,7 +145,7 @@ public class AppChangeControllerTest
         var data = new UpdateTenantData("http://test.com");
 
         //Act
-        var result = await _controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+        var result = await _controller.UpdateTenantUrl(appId, subscriptionId, data);
 
         //Assert
         A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data)).MustHaveHappened();
@@ -159,7 +159,7 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        await _controller.GetActiveAppDocuments(appId).ConfigureAwait(false);
+        await _controller.GetActiveAppDocuments(appId);
 
         //Assert
         A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
@@ -173,7 +173,7 @@ public class AppChangeControllerTest
         var documentId = _fixture.Create<Guid>();
 
         // Act
-        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentId).ConfigureAwait(false);
+        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentId);
 
         // Assert
         A.CallTo(() => _logic.DeleteActiveAppDocumentAsync(appId, documentId)).MustHaveHappened();
@@ -188,7 +188,7 @@ public class AppChangeControllerTest
         var documentTypeId = DocumentTypeId.APP_IMAGE;
 
         // Act
-        await _controller.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
+        await _controller.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _logic.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None)).MustHaveHappened();

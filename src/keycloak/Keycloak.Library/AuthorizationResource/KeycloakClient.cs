@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,14 +31,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 public partial class KeycloakClient
 {
     public async Task CreateResourceAsync(string realm, string resourceServerId, AuthorizationResource resource) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
             .AppendPathSegment(resourceServerId, true)
             .AppendPathSegment("/authz/resource-server/resource")
             .PostJsonAsync(resource)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<AuthorizationResource>> GetResourcesAsync(string realm, string? resourceServerId = null,
         bool deep = false, int? first = null, int? max = null, string? name = null, string? owner = null,
@@ -56,7 +55,7 @@ public partial class KeycloakClient
             [nameof(uri)] = uri
         };
 
-        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -64,11 +63,11 @@ public partial class KeycloakClient
             .AppendPathSegment("/authz/resource-server/resource")
             .SetQueryParams(queryParams)
             .GetJsonAsync<IEnumerable<AuthorizationResource>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task<AuthorizationResource> GetResourceAsync(string realm, string resourceServerId, string resourceId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -76,10 +75,10 @@ public partial class KeycloakClient
             .AppendPathSegment("/authz/resource-server/resource/")
             .AppendPathSegment(resourceId, true)
             .GetJsonAsync<AuthorizationResource>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task UpdateResourceAsync(string realm, string resourceServerId, string resourceId, AuthorizationResource resource) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -87,10 +86,10 @@ public partial class KeycloakClient
             .AppendPathSegment("/authz/resource-server/resource/")
             .AppendPathSegment(resourceId, true)
             .PutJsonAsync(resource)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteResourceAsync(string realm, string resourceServerId, string resourceId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/clients/")
@@ -98,5 +97,5 @@ public partial class KeycloakClient
             .AppendPathSegment("/authz/resource-server/resource/")
             .AppendPathSegment(resourceId, true)
             .DeleteAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 }

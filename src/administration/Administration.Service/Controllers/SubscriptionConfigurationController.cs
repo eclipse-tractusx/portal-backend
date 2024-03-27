@@ -91,7 +91,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> SetProviderCompanyDetail([FromBody] ProviderDetailData data)
     {
-        await _businessLogic.SetProviderCompanyDetailsAsync(data).ConfigureAwait(false);
+        await _businessLogic.SetProviderCompanyDetailsAsync(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -131,7 +131,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerProvider([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.RetriggerProvider(offerSubscriptionId).ConfigureAwait(false);
+        await _businessLogic.RetriggerProvider(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -152,7 +152,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateClient([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.RetriggerCreateClient(offerSubscriptionId).ConfigureAwait(false);
+        await _businessLogic.RetriggerCreateClient(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -173,7 +173,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateTechnicalUser([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.RetriggerCreateTechnicalUser(offerSubscriptionId).ConfigureAwait(false);
+        await _businessLogic.RetriggerCreateTechnicalUser(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -195,7 +195,7 @@ public class SubscriptionConfigurationController : ControllerBase
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
     public async Task<NoContentResult> RetriggerProviderCallback([FromRoute] Guid offerSubscriptionId)
     {
-        await _businessLogic.RetriggerProviderCallback(offerSubscriptionId).ConfigureAwait(false);
+        await _businessLogic.RetriggerProviderCallback(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

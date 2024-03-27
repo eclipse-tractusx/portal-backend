@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -33,8 +32,8 @@ public class UserRoleInfo
     /// <param name="roles">Role of the User</param>
     public UserRoleInfo(Guid companyUserId, IEnumerable<string> roles)
     {
-        this.CompanyUserId = companyUserId;
-        this.Roles = roles;
+        CompanyUserId = companyUserId;
+        Roles = roles;
     }
 
     /// <summary>

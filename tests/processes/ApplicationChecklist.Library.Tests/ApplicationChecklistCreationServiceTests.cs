@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -58,7 +57,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        var result = await _service.CreateInitialChecklistAsync(ApplicationWithBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithBpnId);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -89,7 +88,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        var result = await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -119,7 +118,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithChecklist).ConfigureAwait(false);
+        await _service.CreateInitialChecklistAsync(ApplicationWithChecklist);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -148,7 +147,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -171,7 +170,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -198,7 +197,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithChecklist, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithChecklist, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(

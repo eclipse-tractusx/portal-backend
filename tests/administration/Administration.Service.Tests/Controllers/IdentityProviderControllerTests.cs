@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -48,7 +47,7 @@ public class IdentityProviderControllerTests
         var cancellationToken = CancellationToken.None;
 
         //Act
-        var result = await this._controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test"), cancellationToken).ConfigureAwait(false);
+        var result = await _controller.UpdateOwnCompanyIdentityProvider(id, new IdentityProviderEditableDetails("test"), cancellationToken);
 
         //Assert
         result.Should().Be(data);
@@ -62,7 +61,7 @@ public class IdentityProviderControllerTests
         var id = Guid.NewGuid();
 
         //Act
-        await this._controller.DeleteOwnCompanyIdentityProvider(id).ConfigureAwait(false);
+        await _controller.DeleteOwnCompanyIdentityProvider(id);
 
         //Assert
         A.CallTo(() => _logic.DeleteCompanyIdentityProviderAsync(id)).MustHaveHappenedOnceExactly();
@@ -75,7 +74,7 @@ public class IdentityProviderControllerTests
         var id = Guid.NewGuid();
 
         //Act
-        await this._controller.GetOwnIdentityProviderWithConnectedCompanies(id).ConfigureAwait(false);
+        await _controller.GetOwnIdentityProviderWithConnectedCompanies(id);
 
         //Assert
         A.CallTo(() => _logic.GetOwnIdentityProviderWithConnectedCompanies(id)).MustHaveHappenedOnceExactly();

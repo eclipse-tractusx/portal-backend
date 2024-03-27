@@ -51,11 +51,11 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetMailingInformationForProcess_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
         var encryptionKey = Convert.FromHexString("7769F42A68708AD145CEE5F5FAFD8734B396C15660A28FE8C6F9BBDB1044986C");
 
         // Act
-        var data = await sut.GetMailingInformationForProcess(_processId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetMailingInformationForProcess(_processId).ToListAsync();
 
         // Assert
         data.Should().ContainSingle().And.Satisfy(x => x.Template == "CredentialRejected" && x.EmailAddress == "test@email.de" && x.EncryptionMode == 1);
@@ -72,10 +72,10 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetMailingInformationForProcess_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetMailingInformationForProcess(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetMailingInformationForProcess(Guid.NewGuid()).ToListAsync();
 
         // Assert
         data.Should().BeEmpty();
@@ -88,7 +88,7 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task CreateMailingInformation_WithValidData_Creates()
     {
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         var mailParameters = _fixture.CreateMany<byte>(64).ToArray();
         var initializationVector = _fixture.CreateMany<byte>(64).ToArray();
@@ -117,7 +117,7 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyMailingInformation()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
         var existingId = Guid.NewGuid();
 
         // Act
@@ -138,14 +138,14 @@ public class MailingInformationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(IMailingInformationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new MailingInformationRepository(context);
         return (sut, context);
     }
 
     private async Task<IMailingInformationRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new MailingInformationRepository(context);
         return sut;
     }

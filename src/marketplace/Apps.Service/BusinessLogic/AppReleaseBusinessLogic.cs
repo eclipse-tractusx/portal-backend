@@ -72,7 +72,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         UploadAppDoc(appId, documentTypeId, document, OfferTypeId.APP, cancellationToken);
 
     private async Task UploadAppDoc(Guid appId, DocumentTypeId documentTypeId, IFormFile document, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, offerTypeId, _settings.UploadAppDocumentTypeIds, OfferStatusId.CREATED, cancellationToken).ConfigureAwait(false);
+        await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, offerTypeId, _settings.UploadAppDocumentTypeIds, OfferStatusId.CREATED, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
     /// <inheritdoc/>
     public Task<IEnumerable<AppRoleData>> AddAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
@@ -84,7 +84,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     private async Task<IEnumerable<AppRoleData>> InsertAppUserRoleAsync(Guid appId, IEnumerable<AppUserRole> userRoles)
     {
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().IsProviderCompanyUserAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().IsProviderCompanyUserAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"app {appId} does not exist");
@@ -97,7 +97,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return roleData;
     }
 
@@ -108,7 +108,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId)
     {
-        return await _offerService.GetProviderOfferAgreementConsentById(appId, OfferTypeId.APP).ConfigureAwait(false);
+        return await _offerService.GetProviderOfferAgreementConsentById(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc/>
@@ -124,7 +124,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.UseCase == null)
         {
             throw new UnexpectedConditionException("usecase should never be null here");
@@ -153,7 +153,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public async Task DeleteAppRoleAsync(Guid appId, Guid roleId)
     {
         var companyId = _identityData.CompanyId;
-        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, companyId, OfferStatusId.CREATED, roleId).ConfigureAwait(false);
+        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, companyId, OfferStatusId.CREATED, roleId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!appUserRole.IsProviderCompanyUser)
         {
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
@@ -167,7 +167,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new NotFoundException($"role {roleId} does not exist");
         }
         _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc/>
@@ -194,7 +194,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
         }
 
-        return this.CreateAppAsync(appRequestModel);
+        return CreateAppAsync(appRequestModel);
     }
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
@@ -202,7 +202,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var companyId = _identityData.CompanyId;
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var appRepository = _portalRepositories.GetInstance<IOfferRepository>();
@@ -235,7 +235,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         try
         {
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
             return appId;
         }
         catch (Exception exception) when (exception.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
@@ -253,7 +253,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appId,
                 companyId,
                 appRequestModel.SupportedLanguageCodes)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (appData is null)
         {
             throw new NotFoundException($"App {appId} does not exists");
@@ -276,7 +276,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (appRequestModel.SalesManagerId.HasValue)
         {
-            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(false);
+            await _offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var newSupportedLanguages = appRequestModel.SupportedLanguageCodes.Except(appData.Languages.Where(x => x.IsMatch).Select(x => x.Shortname));
@@ -319,7 +319,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         _offerService.CreateOrUpdateOfferLicense(appId, appRequestModel.Price, appData.OfferLicense);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static void UpdateAppSupportedLanguages(Guid appId, IEnumerable<string> newSupportedLanguages, IEnumerable<string> languagesToRemove, IOfferRepository appRepository)
@@ -369,7 +369,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public async Task<InReviewAppDetails> GetInReviewAppDetailsByIdAsync(Guid appId)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
-            .GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(false);
+            .GetInReviewAppDataByIdAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -406,7 +406,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public async Task DeleteAppAsync(Guid appId)
     {
         var companyId = _identityData.CompanyId;
-        var (isValidApp, isOfferType, isOfferStatus, isProviderCompanyUser, appData) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDeleteDataAsync(appId, OfferTypeId.APP, companyId, OfferStatusId.CREATED).ConfigureAwait(false);
+        var (isValidApp, isOfferType, isOfferStatus, isProviderCompanyUser, appData) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppDeleteDataAsync(appId, OfferTypeId.APP, companyId, OfferStatusId.CREATED).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidApp)
         {
             throw new NotFoundException($"App {appId} does not exist");
@@ -436,7 +436,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferTags(appData.TagNames.Select(tagName => (appId, tagName)));
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOfferDescriptions(appData.DescriptionLanguageShortNames.Select(languageShortName => (appId, languageShortName)));
         _portalRepositories.GetInstance<IOfferRepository>().RemoveOffer(appId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -460,7 +460,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         var companyId = _identityData.CompanyId;
         var result = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetOfferWithSetupDataById(appId, companyId, OfferTypeId.APP)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
             throw new NotFoundException($"App {appId} does not exist");
 
@@ -472,9 +472,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         await (result.SetupTransferData == null
             ? HandleAppInstanceCreation(appId, data)
-            : HandleAppInstanceUpdate(appId, data, (result.OfferStatus, result.IsUserOfProvidingCompany, result.SetupTransferData, result.AppInstanceData))).ConfigureAwait(false);
+            : HandleAppInstanceUpdate(appId, data, (result.OfferStatus, result.IsUserOfProvidingCompany, result.SetupTransferData, result.AppInstanceData))).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task HandleAppInstanceCreation(Guid appId, AppInstanceSetupData data)
@@ -489,7 +489,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         if (data.IsSingleInstance)
         {
             await _offerSetupService
-                .SetupSingleInstance(appId, data.InstanceUrl!).ConfigureAwait(false);
+                .SetupSingleInstance(appId, data.InstanceUrl!).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -521,20 +521,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
                 appInstance = GetAndValidateSingleAppInstance(result.AppInstanceData);
                 await _offerSetupService
                     .DeleteSingleInstance(appInstance.AppInstanceId, appInstance.ClientId, appInstance.ClientClientId)
-                    .ConfigureAwait(false);
+                    .ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
 
             case true when data.IsSingleInstance:
                 await _offerSetupService
                     .SetupSingleInstance(appId, data.InstanceUrl!)
-                    .ConfigureAwait(false);
+                    .ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
 
             case false when data.IsSingleInstance && existingData.InstanceUrl != data.InstanceUrl:
                 appInstance = GetAndValidateSingleAppInstance(result.AppInstanceData);
                 await _offerSetupService
                     .UpdateSingleInstance(appInstance.ClientClientId, data.InstanceUrl!)
-                    .ConfigureAwait(false);
+                    .ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
         }
     }

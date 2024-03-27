@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -51,7 +50,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var result = sut.CreateClient("test");
@@ -74,7 +73,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemoveClient_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         sut.RemoveClient(new Guid("f032a035-d035-11ec-9d64-0242ac120002"));
@@ -96,7 +95,7 @@ public class ClientRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ClientRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ClientRepository(context);
         return (sut, context);
     }

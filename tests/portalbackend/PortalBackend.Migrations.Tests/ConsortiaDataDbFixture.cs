@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -65,7 +64,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _container.StartAsync()
-            .ConfigureAwait(false);
+            ;
 
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -96,6 +95,6 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _container.DisposeAsync()
-            .ConfigureAwait(false);
+            ;
     }
 }

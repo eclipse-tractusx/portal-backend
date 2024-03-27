@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -49,11 +48,11 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNextIdentityProviderSequenceAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result1 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
-        var result2 = await sut.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false);
+        var result1 = await sut.GetNextIdentityProviderSequenceAsync();
+        var result2 = await sut.GetNextIdentityProviderSequenceAsync();
 
         result1.Should().Be(1);
         result2.Should().Be(2);
@@ -67,11 +66,11 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNextClientSequenceAsync_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result1 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
-        var result2 = await sut.GetNextClientSequenceAsync().ConfigureAwait(false);
+        var result1 = await sut.GetNextClientSequenceAsync();
+        var result2 = await sut.GetNextClientSequenceAsync();
 
         result1.Should().Be(1);
         result2.Should().Be(2);
@@ -89,7 +88,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
         var resetCount = _fixture.Create<int>();
 
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         // Act
         var result = sut.CreateUserPasswordResetInfo(userId, modifiedAt, resetCount);
@@ -114,10 +113,10 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserPasswordResetInfo_ReturnsExpected(Guid companyUserid, int resetCount)
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetUserPasswordResetInfo(companyUserid).ConfigureAwait(false);
+        var result = await sut.GetUserPasswordResetInfo(companyUserid);
 
         result.Should().NotBe(default);
         result!.ResetCount.Should().Be(resetCount);
@@ -128,10 +127,10 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
     {
         var companyUserId = Guid.NewGuid();
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetUserPasswordResetInfo(companyUserId).ConfigureAwait(false);
+        var result = await sut.GetUserPasswordResetInfo(companyUserId);
 
         result.Should().Be(default);
     }
@@ -142,7 +141,7 @@ public class ProvisioningDBAccessTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(IProvisioningDBAccess, ProvisioningDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new ProvisioningDBAccess(context);
         return (sut, context);
     }

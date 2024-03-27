@@ -54,7 +54,7 @@ public class JwtBearerConfigurationHealthCheck : IHealthCheck
     {
         try
         {
-            await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);
+            await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             return HealthCheckResult.Healthy();
         }
         catch (Exception e)

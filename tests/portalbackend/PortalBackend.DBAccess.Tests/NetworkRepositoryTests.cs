@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -47,7 +46,7 @@ public class NetworkRepositoryTests
     public async Task CreateNetworkRegistration_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
         var externalId = Guid.NewGuid().ToString();
         var processId = new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07");
         var ospId = Guid.NewGuid();
@@ -78,10 +77,10 @@ public class NetworkRepositoryTests
     public async Task CheckExternalIdExists_WithValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
         result.Should().BeTrue();
@@ -91,10 +90,10 @@ public class NetworkRepositoryTests
     public async Task CheckExternalIdExists_WithOtherOsp_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), _validCompanyId).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), _validCompanyId);
 
         // Assert
         result.Should().BeFalse();
@@ -104,10 +103,10 @@ public class NetworkRepositoryTests
     public async Task CheckExternalIdExists_WithNotExisting_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckExternalIdExists(Guid.NewGuid().ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.CheckExternalIdExists(Guid.NewGuid().ToString(), new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
         result.Should().BeFalse();
@@ -121,10 +120,10 @@ public class NetworkRepositoryTests
     public async Task GetNetworkRegistrationDataForProcessIdAsync_WithValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetNetworkRegistrationDataForProcessIdAsync(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07")).ConfigureAwait(false);
+        var result = await sut.GetNetworkRegistrationDataForProcessIdAsync(new Guid("0cc208c3-bdf6-456c-af81-6c3ebe14fe07"));
 
         // Assert
         result.Should().Be(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd"));
@@ -138,10 +137,10 @@ public class NetworkRepositoryTests
     public async Task IsValidRegistration_WithValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.IsValidRegistration(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, 1)).ConfigureAwait(false);
+        var result = await sut.IsValidRegistration(new Guid("c5547c9a-6ace-4ab7-9253-af65a66278f2").ToString(), Enumerable.Repeat(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER, 1));
 
         // Assert
         result.RegistrationIdExists.Should().BeTrue();
@@ -159,10 +158,10 @@ public class NetworkRepositoryTests
     public async Task GetSubmitData_WithoutNetworkRegistration_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSubmitData(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd")).ConfigureAwait(false);
+        var result = await sut.GetSubmitData(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
 
         // Assert
         result.Exists.Should().BeTrue();
@@ -175,10 +174,10 @@ public class NetworkRepositoryTests
     public async Task GetSubmitData_WithValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSubmitData(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84")).ConfigureAwait(false);
+        var result = await sut.GetSubmitData(new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
         result.Should().NotBe(default);
@@ -198,10 +197,10 @@ public class NetworkRepositoryTests
     public async Task GetCallbackData_WithValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCallbackData(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
+        var result = await sut.GetCallbackData(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED);
 
         // Assert
         result.Should().NotBe(default);
@@ -216,10 +215,10 @@ public class NetworkRepositoryTests
     public async Task GetCallbackData_WithInValid_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCallbackData(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(false);
+        var result = await sut.GetCallbackData(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED);
 
         // Assert
         result.Should().Be(default);
@@ -236,14 +235,14 @@ public class NetworkRepositoryTests
 
     private async Task<(NetworkRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NetworkRepository(context);
         return (sut, context);
     }
 
     private async Task<NetworkRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NetworkRepository(context);
         return sut;
     }

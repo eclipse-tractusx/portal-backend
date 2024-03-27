@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +43,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(false);
+        var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (data == default)
         {
@@ -88,7 +87,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
                 new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
                 new OnboardingServiceProviderCallbackData(data.ExternalId, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                 cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Empty<ProcessStepTypeId>(), ProcessStepStatusId.DONE, false, null);
     }

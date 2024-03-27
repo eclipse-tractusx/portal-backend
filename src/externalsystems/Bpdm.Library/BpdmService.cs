@@ -51,7 +51,7 @@ public class BpdmService : IBpdmService
     /// <inheritdoc />
     public async Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestData = new BpdmLegalEntityData[]
         {
@@ -118,7 +118,7 @@ public class BpdmService : IBpdmService
 
     public async Task<bool> SetSharingStateToReady(string externalId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var content = new { externalIds = Enumerable.Repeat(externalId, 1) };
         await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/sharing-state/ready", content, Options, cancellationToken)
@@ -128,7 +128,7 @@ public class BpdmService : IBpdmService
 
     public async Task<BpdmLegalEntityOutputData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var data = Enumerable.Repeat(externalId, 1);
         var result = await httpClient.PostAsJsonAsync("/companies/test-company/api/catena/output/business-partners/search", data, Options, cancellationToken)
@@ -137,7 +137,7 @@ public class BpdmService : IBpdmService
         {
             var response = await result.Content
                 .ReadFromJsonAsync<PageOutputResponseBpdmLegalEntityData>(Options, cancellationToken)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
             if (response?.Content?.Count() != 1)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response", true);
@@ -153,7 +153,7 @@ public class BpdmService : IBpdmService
 
     public async Task<BpdmSharingState> GetSharingState(Guid applicationId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var url = $"/companies/test-company/api/catena/sharing-state?externalIds={applicationId}";
         var result = await httpClient.GetAsync(url, cancellationToken)
@@ -162,7 +162,7 @@ public class BpdmService : IBpdmService
         {
             var response = await result.Content
                 .ReadFromJsonAsync<BpdmPaginationSharingStateOutput>(Options, cancellationToken)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
             if (response?.Content?.Count() != 1)
             {
                 throw new ServiceException("Access to sharing state did not return a valid legal entity response", true);

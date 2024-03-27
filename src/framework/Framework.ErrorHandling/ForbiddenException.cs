@@ -25,9 +25,6 @@ public class ForbiddenException : DetailException
     public ForbiddenException() : base() { }
     public ForbiddenException(string message) : base(message) { }
     public ForbiddenException(string message, Exception inner) : base(message, inner) { }
-    protected ForbiddenException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected ForbiddenException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

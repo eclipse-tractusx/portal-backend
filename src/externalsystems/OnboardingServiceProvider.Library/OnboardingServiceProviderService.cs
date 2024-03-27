@@ -46,7 +46,7 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
             ClientSecret = ospDetails.ClientSecret
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(ospDetails.CallbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-onboarding-provider")
             .ConfigureAwait(false);

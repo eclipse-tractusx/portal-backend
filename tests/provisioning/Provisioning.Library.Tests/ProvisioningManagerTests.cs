@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -111,7 +110,7 @@ public class ProvisioningManagerTests
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" }).ConfigureAwait(false);
+        await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" });
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
@@ -135,7 +134,7 @@ public class ProvisioningManagerTests
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
         // Act
-        await _sut.UpdateSharedIdentityProviderAsync(ValidClientName, "displayName").ConfigureAwait(false);
+        await _sut.UpdateSharedIdentityProviderAsync(ValidClientName, "displayName");
 
         // Arrange
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{ValidClientName}")
@@ -159,7 +158,7 @@ public class ProvisioningManagerTests
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
         // Act
-        await _sut.UpdateSharedRealmTheme(ValidClientName, "new-theme").ConfigureAwait(false);
+        await _sut.UpdateSharedRealmTheme(ValidClientName, "new-theme");
 
         // Arrange
         httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{ValidClientName}")
@@ -177,7 +176,7 @@ public class ProvisioningManagerTests
             .WithGetIdentityProviderAsync(alias, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() });
 
         // Act
-        var displayName = await _sut.GetIdentityProviderDisplayName(alias).ConfigureAwait(false);
+        var displayName = await _sut.GetIdentityProviderDisplayName(alias);
 
         // Arrange
         displayName.Should().NotBeNullOrWhiteSpace();

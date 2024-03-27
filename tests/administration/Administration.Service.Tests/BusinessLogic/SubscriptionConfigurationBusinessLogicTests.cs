@@ -85,7 +85,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns(list.ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetProcessStepsForSubscription(OfferSubscriptionId).ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -194,7 +194,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((Guid.Empty, null!));
 
         // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
@@ -229,7 +229,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             });
 
         //Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
@@ -250,7 +250,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -268,7 +268,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
@@ -290,7 +290,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(url!, null);
 
         //Act
-        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData).ConfigureAwait(false);
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -310,7 +310,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
 
         //Act
-        var result = await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        var result = await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         result.Should().NotBeNull();
@@ -324,7 +324,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         await Assert.ThrowsAsync<ConflictException>(Action);
@@ -339,7 +339,7 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
 
         //Act
-        async Task Action() => await _sut.GetProviderCompanyDetailsAsync().ConfigureAwait(false);
+        async Task Action() => await _sut.GetProviderCompanyDetailsAsync();
 
         //Assert
         await Assert.ThrowsAsync<ForbiddenException>(Action);

@@ -53,10 +53,6 @@ public class ServiceException : DetailException
         IsRecoverable = isRecoverable;
     }
 
-    protected ServiceException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-
     protected ServiceException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, HttpStatusCode? httpStatusCode = null, bool isRecoverable = false, Exception? inner = null) : base(errorType, errorCode, parameters, inner)
     {
         StatusCode = httpStatusCode;

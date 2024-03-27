@@ -72,7 +72,7 @@ public class CustodianBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).Returns<string?>(null);
 
         // Act
-        async Task Act() => await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -87,7 +87,7 @@ public class CustodianBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(applicationId)).Returns(ValidBpn);
 
         // Act
-        await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None).ConfigureAwait(false);
+        await _logic.GetWalletByBpnAsync(applicationId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _custodianService.GetWalletByBpnAsync(ValidBpn, A<CancellationToken>._))
@@ -113,7 +113,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().BeNull();
@@ -138,7 +138,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -161,7 +161,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -185,7 +185,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        async Task Act() => await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -207,7 +207,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        async Task Act() => await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -229,7 +229,7 @@ public class CustodianBusinessLogicTests
         SetupForCreateWallet();
 
         // Act
-        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateIdentityWalletAsync(context, CancellationToken.None);
 
         A.CallTo(() => _custodianService.CreateWalletAsync(ValidBpn, ValidCompanyName, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();

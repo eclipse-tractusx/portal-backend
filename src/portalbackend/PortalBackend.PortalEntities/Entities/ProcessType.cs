@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,8 +26,8 @@ public class ProcessType
 {
     private ProcessType()
     {
-        this.Label = null!;
-        this.Processes = new HashSet<Process>();
+        Label = null!;
+        Processes = new HashSet<Process>();
     }
 
     public ProcessType(ProcessTypeId processTypeId) : this()

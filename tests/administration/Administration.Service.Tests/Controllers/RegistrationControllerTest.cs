@@ -63,7 +63,7 @@ public class RegistrationControllerTest
                   .Returns(paginationResponse);
 
         //Act
-        var result = await _controller.GetApplicationDetailsAsync(0, 15, null, null).ConfigureAwait(false);
+        var result = await _controller.GetApplicationDetailsAsync(0, 15, null, null);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyApplicationDetailsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
@@ -81,7 +81,7 @@ public class RegistrationControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await _controller.GetCompanyWithAddressAsync(applicationId);
 
         //Assert
         A.CallTo(() => _logic.GetCompanyWithAddressAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -95,7 +95,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.ApproveApplication(applicationId).ConfigureAwait(false);
+        var result = await _controller.ApproveApplication(applicationId);
 
         //Assert
         A.CallTo(() => _logic.ApproveRegistrationVerification(applicationId)).MustHaveHappenedOnceExactly();
@@ -109,7 +109,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.DeclineApplication(applicationId, new RegistrationDeclineData("test"), CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.DeclineApplication(applicationId, new RegistrationDeclineData("test"), CancellationToken.None);
 
         //Assert
         A.CallTo(() => _logic.DeclineRegistrationVerification(applicationId, "test", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -124,7 +124,7 @@ public class RegistrationControllerTest
         var cancellationToken = CancellationToken.None;
 
         //Act
-        var result = await _controller.ProcessClearinghouseResponse(data, cancellationToken).ConfigureAwait(false);
+        var result = await _controller.ProcessClearinghouseResponse(data, cancellationToken);
 
         //Assert
         A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, cancellationToken)).MustHaveHappenedOnceExactly();
@@ -151,7 +151,7 @@ public class RegistrationControllerTest
             .Returns(list);
 
         //Act
-        var result = await _controller.GetChecklistForApplication(applicationId).ConfigureAwait(false);
+        var result = await _controller.GetChecklistForApplication(applicationId);
 
         //Assert
         A.CallTo(() => _logic.GetChecklistForApplicationAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -167,7 +167,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerClearinghouseChecklist(applicationId).ConfigureAwait(false);
+        var result = await _controller.RetriggerClearinghouseChecklist(applicationId);
 
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
@@ -181,7 +181,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.OverrideClearinghouseChecklist(applicationId).ConfigureAwait(false);
+        var result = await _controller.OverrideClearinghouseChecklist(applicationId);
 
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
@@ -258,7 +258,7 @@ public class RegistrationControllerTest
             .Returns((fileName, content, contentType));
 
         //Act
-        await _controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+        await _controller.GetDocumentContentFileAsync(id);
 
         //Assert
         A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
@@ -271,7 +271,7 @@ public class RegistrationControllerTest
         var data = _fixture.Create<DimWalletData>();
 
         //Act
-        await _controller.ProcessDimResponse("bpn", data, CancellationToken.None).ConfigureAwait(false);
+        await _controller.ProcessDimResponse("bpn", data, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _logic.ProcessDimResponseAsync("bpn", data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -284,7 +284,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerCreateDimWallet(applicationId).ConfigureAwait(false);
+        var result = await _controller.RetriggerCreateDimWallet(applicationId);
 
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)).MustHaveHappenedOnceExactly();
@@ -298,7 +298,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerValidateDid(applicationId).ConfigureAwait(false);
+        var result = await _controller.RetriggerValidateDid(applicationId);
 
         // Assert
         A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)).MustHaveHappenedOnceExactly();

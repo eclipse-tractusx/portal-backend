@@ -146,7 +146,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ApproveApplication([FromRoute] Guid applicationId)
     {
-        await _logic.ApproveRegistrationVerification(applicationId).ConfigureAwait(false);
+        await _logic.ApproveRegistrationVerification(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -171,7 +171,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] RegistrationDeclineData data, CancellationToken cancellationToken)
     {
-        await _logic.DeclineRegistrationVerification(applicationId, data.Comment, cancellationToken).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(applicationId, data.Comment, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -193,7 +193,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseResponse([FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
     {
-        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -216,7 +216,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessDimResponse([FromRoute] string bpn, [FromBody] DimWalletData responseData, CancellationToken cancellationToken)
     {
-        await _logic.ProcessDimResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessDimResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -255,7 +255,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> OverrideClearinghouseChecklist([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -277,7 +277,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerClearinghouseChecklist([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -299,7 +299,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerIdentityWallet([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -321,7 +321,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerSelfDescription([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -344,7 +344,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerBpn([FromRoute] Guid applicationId, [FromQuery] ProcessStepTypeId processTypeId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -366,7 +366,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -385,7 +385,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, contentType, fileName);
     }
 
@@ -407,7 +407,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerCreateDimWallet([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -429,7 +429,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerValidateDid([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

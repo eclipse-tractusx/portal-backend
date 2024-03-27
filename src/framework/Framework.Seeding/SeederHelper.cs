@@ -45,7 +45,7 @@ public static class SeederHelper
         }
 
         var data = new ConcurrentBag<T>();
-        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, cancellationToken))).ConfigureAwait(false);
+        var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, cancellationToken))).ConfigureAwait(ConfigureAwaitOptions.None);
         foreach (var entry in results.SelectMany(item => item))
         {
             data.Add(entry);
@@ -57,12 +57,12 @@ public static class SeederHelper
         };
         await Parallel.ForEachAsync(additionalEnvironments, parallelOptions, async (env, ct) =>
         {
-            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, ct, env))).ConfigureAwait(false);
+            var results = await Task.WhenAll(dataPaths.Select(path => GetDataFromFile<T>(logger, fileName, location, path, ct, env))).ConfigureAwait(ConfigureAwaitOptions.None);
             foreach (var entry in results.SelectMany(item => item))
             {
                 data.Add(entry);
             }
-        }).ConfigureAwait(false);
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return data.ToList();
     }
@@ -75,7 +75,7 @@ public static class SeederHelper
         if (!File.Exists(path))
             return new List<T>();
 
-        var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+        var data = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var list = JsonSerializer.Deserialize<List<T>>(data, Options);
         return list ?? new List<T>();
     }

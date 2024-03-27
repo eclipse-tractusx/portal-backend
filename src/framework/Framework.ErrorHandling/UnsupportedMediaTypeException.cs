@@ -25,9 +25,6 @@ public class UnsupportedMediaTypeException : DetailException
     public UnsupportedMediaTypeException() : base() { }
     public UnsupportedMediaTypeException(string message) : base(message) { }
     public UnsupportedMediaTypeException(string message, Exception inner) : base(message, inner) { }
-    protected UnsupportedMediaTypeException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected UnsupportedMediaTypeException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

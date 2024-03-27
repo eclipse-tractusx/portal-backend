@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,7 +40,7 @@ public class DataInitializationTests : IClassFixture<ConsortiaDataDbFixture>
         var context = _dbTestDbFixture.GetPortalDbContext();
 
         // Act
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
         // Assert
         pendingMigrations.Should().BeEmpty();

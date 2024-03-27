@@ -55,7 +55,7 @@ public class ServiceChangeControllerTest
         var serviceId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.DeactivateService(serviceId).ConfigureAwait(false);
+        var result = await _controller.DeactivateService(serviceId);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByServiceIdAsync(serviceId)).MustHaveHappenedOnceExactly();

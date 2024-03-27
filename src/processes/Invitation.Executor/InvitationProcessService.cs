@@ -68,7 +68,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateCentralIdp(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var orgName = await companyInvitationRepository.GetOrganisationNameForInvitation(invitationId).ConfigureAwait(false);
+        var orgName = await companyInvitationRepository.GetOrganisationNameForInvitation(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(orgName))
         {
@@ -76,7 +76,7 @@ public class InvitationProcessService : IInvitationProcessService
         }
 
         var idpName = await _idpManagement.GetNextCentralIdentityProviderNameAsync().ConfigureAwait(false);
-        await _idpManagement.CreateCentralIdentityProviderAsync(idpName, orgName).ConfigureAwait(false);
+        await _idpManagement.CreateCentralIdentityProviderAsync(idpName, orgName).ConfigureAwait(ConfigureAwaitOptions.None);
         companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x => { x.IdpName = null; }, x => { x.IdpName = idpName; });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, 1), ProcessStepStatusId.DONE, true, null);
@@ -85,14 +85,14 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpServiceAccount(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var idpName = await companyInvitationRepository.GetIdpNameForInvitationId(invitationId).ConfigureAwait(false);
+        var idpName = await companyInvitationRepository.GetIdpNameForInvitationId(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
             throw new ConflictException(IdpNotSetErrorMessage);
         }
 
-        var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(false);
+        var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var (secret, initializationVector, encryptionMode) = Encrypt(clientSecret);
 
@@ -126,14 +126,14 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> AddRealmRoleMappingsToUserAsync(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var serviceAccountUserId = await companyInvitationRepository.GetServiceAccountUserIdForInvitation(invitationId).ConfigureAwait(false);
+        var serviceAccountUserId = await companyInvitationRepository.GetServiceAccountUserIdForInvitation(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(serviceAccountUserId))
         {
             throw new ConflictException("ServiceAccountUserId must not be null");
         }
 
-        await _idpManagement.AddRealmRoleMappingsToUserAsync(serviceAccountUserId).ConfigureAwait(false);
+        await _idpManagement.AddRealmRoleMappingsToUserAsync(serviceAccountUserId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -141,7 +141,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> UpdateCentralIdpUrl(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -180,7 +180,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateCentralIdpOrgMapper(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(invitationId).ConfigureAwait(false);
+        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!exists)
         {
@@ -191,7 +191,7 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException(IdpNotSetErrorMessage);
         }
 
-        await _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync(idpName, orgName).ConfigureAwait(false);
+        await _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync(idpName, orgName).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -199,7 +199,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpRealm(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -215,7 +215,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         await _idpManagement
             .CreateSharedRealmIdpClientAsync(idpName, _settings.InitialLoginTheme, orgName, clientId, secret)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -223,7 +223,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedClient(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (_, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(false);
+        var (_, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -239,7 +239,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         await _idpManagement
             .CreateSharedClientAsync(idpName, clientId, secret)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -247,7 +247,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> EnableCentralIdp(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var idpName = await companyInvitationRepository.GetIdpNameForInvitationId(invitationId).ConfigureAwait(false);
+        var idpName = await companyInvitationRepository.GetIdpNameForInvitationId(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -264,7 +264,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateIdpDatabase(Guid companyInvitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(companyInvitationId).ConfigureAwait(false);
+        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(companyInvitationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
         {
             throw new NotFoundException($"CompanyInvitation {companyInvitationId} does not exist");
@@ -292,7 +292,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateUser(Guid companyInvitationId, CancellationToken cancellationToken)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (exists, applicationId, companyId, companyName, idpInformation, userInformation) = await companyInvitationRepository.GetInvitationUserData(companyInvitationId).ConfigureAwait(false);
+        var (exists, applicationId, companyId, companyName, idpInformation, userInformation) = await companyInvitationRepository.GetInvitationUserData(companyInvitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!exists)
         {

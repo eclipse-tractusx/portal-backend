@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -34,7 +33,7 @@ public class AwaitAllIAsyncEnumerableExtensionTests
     {
         var sut = _fixture.CreateMany<Guid>(10).AsFakeIAsyncEnumerable(out var asyncEnumerator);
 
-        await sut.AwaitAll().ConfigureAwait(false);
+        await sut.AwaitAll();
 
         A.CallTo(() => asyncEnumerator.MoveNextAsync()).MustHaveHappened(11, Times.Exactly);
         A.CallTo(() => asyncEnumerator.Current).MustNotHaveHappened();

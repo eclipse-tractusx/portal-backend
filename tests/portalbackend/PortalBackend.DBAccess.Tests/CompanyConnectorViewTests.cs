@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,10 +42,10 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
     public async Task CompanyConnectorView_GetAll_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.CompanyConnectorView.ToListAsync().ConfigureAwait(false);
+        var result = await sut.CompanyConnectorView.ToListAsync();
         result.Should().HaveCount(10);
     }
 
@@ -55,10 +54,10 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var companyId = new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f88");
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.CompanyConnectorView.SingleOrDefaultAsync(x => x.CompanyId == companyId).ConfigureAwait(false);
+        var result = await sut.CompanyConnectorView.SingleOrDefaultAsync(x => x.CompanyId == companyId);
         result.Should().NotBeNull();
         result!.CompanyId.Should().Be(companyId);
         result.CompanyName.Should().Be("CX-Test-Access");
@@ -68,7 +67,7 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<PortalDbContext> CreateContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return context;
     }
 }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -66,7 +65,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
         }
 
-        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(false);
+        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -80,7 +79,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
     private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
     {
         var data = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(false);
+            .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data is null)
         {
             throw new ConflictException($"Application {applicationId} does not exists.");
@@ -102,7 +101,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             _settings.CallbackUrl,
             overwrite);
 
-        await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(false);
+        await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken)
@@ -114,7 +113,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
                 new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.END_CLEARING_HOUSE,
                 processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
 

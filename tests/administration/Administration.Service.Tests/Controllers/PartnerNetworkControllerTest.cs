@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,7 +40,9 @@ public class PartnerNetworkControllerTest
     }
 
     [Theory]
+#pragma warning disable xUnit1012
     [InlineData(null)]
+#pragma warning restore xUnit1012
     [InlineData("BPNL00000003LLHB", "CAXLBOSCHZZ")]
     public async Task GetAllMemberCompaniesBPN_Test(params string[]? bpnIds)
     {
