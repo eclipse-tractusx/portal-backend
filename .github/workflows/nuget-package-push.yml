@@ -30,10 +30,10 @@ jobs:
         dotnet-version: ['7.0']
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -69,6 +69,6 @@ jobs:
         echo "version=$current_version" >> "$GITHUB_OUTPUT"
 
     - name: Create git tag
-      uses: rickstaa/action-create-tag@v1
+      uses: rickstaa/action-create-tag@a1c7777fcb2fee4f19b0f283ba888afa11678b72 # v1.7.2
       with:
         tag: ${{ steps.nugetPackageVersion.outputs.version }}
