@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// Input model defining all parameters for creating a connector in persistence layer.
 /// </summary>
 /// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector.</param>
+/// <param name="ConnectorUrl"> ConnectorCatalogEndpoint.</param>
 /// <param name="Location">Connector's location country code.</param>
 /// <param name="TechnicalUserId">Id of the technical user.</param>
 public record ConnectorInputModel(
@@ -41,7 +41,7 @@ public record ConnectorInputModel(
 /// Input model defining all parameters for creating a connector in persistence layer.
 /// </summary>
 /// <param name="Name">Display name of the connector.</param>
-/// <param name="ConnectorUrl"> URL of the connector..</param>
+/// <param name="ConnectorUrl"> ConnectorCatalogEndpoint..</param>
 /// <param name="Location">Connector's location country code.</param>
 /// <param name="SubscriptionId">Id of the offer subscription.</param>
 /// <param name="TechnicalUserId">Id of the technical user.</param>

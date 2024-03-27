@@ -59,7 +59,6 @@ public class ConnectorsRepository : IConnectorsRepository
                 con.HostId,
                 con.Host!.Name,
                 con.SelfDescriptionDocumentId,
-                con.SelfDescriptionDocument!.DocumentName,
                 con.CompanyServiceAccountId == null ? null : new TechnicalUserData(
                     con.CompanyServiceAccount!.Id,
                     con.CompanyServiceAccount.Name,
@@ -109,7 +108,6 @@ public class ConnectorsRepository : IConnectorsRepository
                     connector.HostId,
                     connector.Host!.Name,
                     connector.SelfDescriptionDocumentId,
-                    connector.SelfDescriptionDocument!.DocumentName,
                     connector.CompanyServiceAccountId == default ? null : new TechnicalUserData(
                         connector.CompanyServiceAccount!.Id,
                         connector.CompanyServiceAccount.Name,

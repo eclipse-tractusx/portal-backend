@@ -36,7 +36,6 @@ public record ConnectorData(
     Guid? HostId,
     string? HostCompanyName,
     Guid? SelfDescriptionDocumentId,
-    string? DocumentName,
     TechnicalUserData? TechnicalUser,
     string ConnectorUrl
 );
