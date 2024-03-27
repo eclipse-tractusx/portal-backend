@@ -48,24 +48,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
            # Automatically prepare image tags;
@@ -78,7 +78,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-administration-service
@@ -91,7 +91,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -105,24 +105,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
            # Automatically prepare image tags;
@@ -135,7 +135,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-processes-worker
@@ -148,7 +148,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -162,24 +162,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
            # Automatically prepare image tags;
@@ -192,7 +192,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-registration-service
@@ -205,7 +205,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -219,24 +219,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
            # Automatically prepare image tags;
@@ -249,7 +249,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-marketplace-app-service
@@ -262,7 +262,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -276,24 +276,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
            # Automatically prepare image tags;
@@ -306,7 +306,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-portal-migrations
@@ -319,7 +319,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -333,24 +333,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
            # Automatically prepare image tags;
@@ -363,7 +363,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-maintenance-service
@@ -376,7 +376,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -390,24 +390,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
            # Automatically prepare image tags;
@@ -420,7 +420,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-notification-service
@@ -433,7 +433,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -447,24 +447,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
            # Automatically prepare image tags;
@@ -477,7 +477,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-services-service
@@ -490,7 +490,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -504,24 +504,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
            # Automatically prepare image tags;
@@ -534,7 +534,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           file: docker/Dockerfile-provisioning-migrations
@@ -547,7 +547,7 @@ jobs:
       # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub description
         if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -563,7 +563,7 @@ jobs:
         run: echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Check for hotfix version
         id: hf-check
@@ -602,7 +602,7 @@ jobs:
 
       - name: Get token
         id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@v2
+        uses: peter-murray/workflow-application-token-action@dc0413987a085fa17d19df9e47d4677cf81ffef3 # v3.0.0
         with:
           application_id: ${{ secrets.ORG_PORTAL_DISPATCH_APPID }}
           application_private_key: ${{ secrets.ORG_PORTAL_DISPATCH_KEY }}
