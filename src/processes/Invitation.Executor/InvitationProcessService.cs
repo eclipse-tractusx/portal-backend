@@ -101,6 +101,7 @@ public class InvitationProcessService : IInvitationProcessService
                 x.ClientId = null;
                 x.ClientSecret = null;
                 x.ServiceAccountUserId = null;
+                x.IdpName = null;
             },
             x =>
             {
@@ -109,9 +110,8 @@ public class InvitationProcessService : IInvitationProcessService
                 x.InitializationVector = initializationVector;
                 x.EncryptionMode = encryptionMode;
                 x.ServiceAccountUserId = serviceAccountUserId;
+                x.IdpName = idpName;
             });
-
-        companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x => { x.IdpName = null; }, x => { x.IdpName = idpName; });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE, 1), ProcessStepStatusId.DONE, true, null);
     }

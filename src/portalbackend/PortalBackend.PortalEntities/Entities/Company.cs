@@ -75,6 +75,8 @@ public class Company : IBaseEntity
 
     public Guid? SelfDescriptionDocumentId { get; set; }
 
+    public string? DidDocumentLocation { get; set; }
+
     // Navigation properties
     public virtual Address? Address { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
