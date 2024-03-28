@@ -498,4 +498,20 @@ public class ApplicationRepository : IApplicationRepository
                 a.CompanyId,
                 a.ApplicationStatusId))
             .SingleOrDefaultAsync();
+    public Task<ApplicationDeclineData?> GetDeclineApplicationForApplicationId(Guid applicationId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds) =>
+        _dbContext.CompanyApplications
+            .Where(application => application.Id == applicationId && companyApplicationStatusIds.Contains(application.ApplicationStatusId))
+            .Select(application => new ApplicationDeclineData(
+                application.Company!.IdentityProviders.Select(x => x.Id),
+                application.Company!.Id,
+                application.Company!.Name,
+                application.Id,
+                application.ApplicationStatusId,
+                application.Invitations.Select(invitation =>
+                    new InvitationsStatusData(invitation.Id, invitation.InvitationStatusId)),
+                application.Company.Identities.Select(identity =>
+                    new IdentityStatuData(identity.Id, identity.UserStatusId)),
+                application.Company.Identities.Select(cu => cu.CompanyUser!.Documents.Select(document =>
+                    new DocumentStatusData(document.Id, document.DocumentStatusId))).SingleOrDefault()!
+            )).SingleOrDefaultAsync();
 }

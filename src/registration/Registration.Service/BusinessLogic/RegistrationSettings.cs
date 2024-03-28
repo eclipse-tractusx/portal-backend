@@ -79,7 +79,7 @@ public class RegistrationSettings
     /// <summary>
     /// Url to the password resend of the portal
     /// </summary>
-    [Required]
+
     public string PasswordResendAddress { get; set; } = null!;
 }
 

@@ -857,6 +857,215 @@ public class RegistrationBusinessLogicTest
 
     #endregion
 
+    #region RetriggerProcessStepsForIdpDeletion
+
+    [Fact]
+    public async Task RetriggerDeleteIdpSharedRealm_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
+        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _logic.RetriggerDeleteIdpSharedRealm(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdpSharedRealm_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _logic.RetriggerDeleteIdpSharedRealm(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdpSharedServiceAccount_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
+        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdpSharedServiceAccount_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdentityLinkedUsers_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS;
+        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _logic.RetriggerDeleteIdentityLinkedUsers(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdentityLinkedUsers_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _logic.RetriggerDeleteIdentityLinkedUsers(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteCentralIdentityProvider_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
+        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _logic.RetriggerDeleteCentralIdentityProvider(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteCentralIdentityProvider_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _logic.RetriggerDeleteCentralIdentityProvider(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdentityProvider_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER;
+        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_PROVIDER;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _logic.RetriggerDeleteIdentityProvider(process.Id).ConfigureAwait(false);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerDeleteIdentityProvider_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _logic.RetriggerDeleteIdentityProvider(process.Id).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupForUpdateCompanyBpn(ApplicationChecklistEntry? applicationChecklistEntry = null)
@@ -960,6 +1169,15 @@ public class RegistrationBusinessLogicTest
             {
                 modify.Invoke(company);
             });
+    }
+
+    private void SetupFakesForRetrigger(List<ProcessStep> processSteps)
+    {
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+                {
+                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
+                });
     }
 
     #endregion

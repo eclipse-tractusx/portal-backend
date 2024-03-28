@@ -82,5 +82,11 @@
     "process_type_id" : 5,
     "lock_expiry_date" : "2023-03-01 00:00:00.000000 +00:00",
     "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
+  },
+  {
+    "id": "44927361-3766-4f07-9f18-860158880d87",
+    "process_type_id" : 7,
+    "lock_expiry_date" : "2023-03-01 00:00:00.000000 +00:00",
+    "version" : "deadbeef-dead-beef-dead-beefdeadbeef"
   }
 ]
