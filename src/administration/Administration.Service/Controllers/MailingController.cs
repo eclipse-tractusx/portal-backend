@@ -47,17 +47,14 @@ public class MailController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a notification with the given data
+    /// Creates a mail from the given data
     /// </summary>
-    /// <param name="data">Data for the notification</param>
+    /// <param name="data">Data for the mail</param>
     /// <returns>Return NoContent</returns>
-    /// <remarks>Example: POST: /api/notification</remarks>
-    /// <response code="204">Count of the notifications.</response>
-    /// <response code="400">NotificationStatus does not exist.</response>
-    /// <response code="403">IamUserId is not assigned.</response>
-    [HttpDelete]
+    /// <remarks>Example: POST: /api/administration/mail</remarks>
+    [HttpPost]
     [Route("")]
-    [Authorize(Roles = "send_mail")]
+    // [Authorize(Roles = "send_mail")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

@@ -121,7 +121,7 @@ public class IssuerComponentBusinessLogicTests
         result.Modified.Should().BeTrue();
         result.SkipStepTypeIds.Should().BeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
-        result.ModifyChecklistEntry?.Invoke(entry);
+        result.ModifyChecklistEntry!(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
     }
 
@@ -140,7 +140,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(false, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -166,7 +166,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -192,7 +192,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -218,7 +218,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", ValidBpn, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -319,7 +319,7 @@ public class IssuerComponentBusinessLogicTests
         result.Modified.Should().BeTrue();
         result.SkipStepTypeIds.Should().BeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
-        result.ModifyChecklistEntry?.Invoke(entry);
+        result.ModifyChecklistEntry!(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
     }
 
@@ -338,7 +338,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(false, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -364,7 +364,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -390,7 +390,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", null, null));
-        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -416,7 +416,7 @@ public class IssuerComponentBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", ValidBpn, null));
-        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

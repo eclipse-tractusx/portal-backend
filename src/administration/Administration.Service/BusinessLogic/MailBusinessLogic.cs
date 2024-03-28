@@ -26,20 +26,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class MailBusinessLogic : IMailBusinessLogic
+public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingProcessCreation mailingProcessCreation)
+    : IMailBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
-
-    public MailBusinessLogic(IPortalRepositories portalRepositories, IMailingProcessCreation mailingProcessCreation)
-    {
-        _portalRepositories = portalRepositories;
-        _mailingProcessCreation = mailingProcessCreation;
-    }
-
     public async Task SendMail(MailData mailData)
     {
-        var data = await _portalRepositories.GetInstance<IUserRepository>().GetUserMailData(mailData.Requester).ConfigureAwait(false);
+        var data = await portalRepositories.GetInstance<IUserRepository>().GetUserMailData(mailData.Requester).ConfigureAwait(false);
         if (!data.Exists)
         {
             throw NotFoundException.Create(AdministrationMailErrors.USER_NOT_FOUND, new ErrorParameter[] { new("userId", mailData.Requester.ToString()) });
@@ -47,7 +39,7 @@ public class MailBusinessLogic : IMailBusinessLogic
 
         if (data.RecipientMail is not null)
         {
-            _mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters);
+            mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters.ToDictionary(x => x.Key, x => x.Value));
         }
     }
 }

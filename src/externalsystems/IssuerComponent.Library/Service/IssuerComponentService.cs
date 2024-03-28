@@ -27,30 +27,24 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Service;
 
-public class IssuerComponentService : IIssuerComponentService
+public class IssuerComponentService(ITokenService tokenService, IOptions<IssuerComponentSettings> options)
+    : IIssuerComponentService
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    private readonly ITokenService _tokenService;
-    private readonly IssuerComponentSettings _settings;
-
-    public IssuerComponentService(ITokenService tokenService, IOptions<IssuerComponentSettings> options)
-    {
-        _tokenService = tokenService;
-        _settings = options.Value;
-    }
+    private readonly IssuerComponentSettings _settings = options.Value;
 
     public async Task<bool> CreateBpnlCredential(CreateBpnCredentialRequest data, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
-        await httpClient.PostAsJsonAsync("bpn", data, Options, cancellationToken)
+        var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.PostAsJsonAsync("/api/issuer/bpn", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("issuer-component-bpn-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
 
     public async Task<bool> CreateMembershipCredential(CreateMembershipCredentialRequest data, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
-        await httpClient.PostAsJsonAsync("membership", data, Options, cancellationToken)
+        var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
+        await httpClient.PostAsJsonAsync("/api/issuer/membership", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("issuer-component-membership-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }

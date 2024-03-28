@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240416155036_564-AddNewChecklistEntries")]
+    [Migration("20240416161018_564-AddNewChecklistEntries")]
     partial class _564AddNewChecklistEntries
     {
         /// <inheritdoc />

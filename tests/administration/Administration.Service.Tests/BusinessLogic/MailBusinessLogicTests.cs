@@ -67,7 +67,7 @@ public class MailBusinessLogicTests
     public async Task SendMail_WithValid_CallsExpected()
     {
         // Arrange
-        var data = new MailData(UserId, "testTemplate", new Dictionary<string, string>());
+        var data = new MailData(UserId, "testTemplate", Enumerable.Empty<MailParameter>());
         A.CallTo(() => _userRepository.GetUserMailData(UserId)).Returns((true, "test@email.com"));
 
         // Act

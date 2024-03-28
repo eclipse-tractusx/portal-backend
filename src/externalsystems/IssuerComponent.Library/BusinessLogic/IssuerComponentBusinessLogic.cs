@@ -30,29 +30,19 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 
 namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 
-public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
+public class IssuerComponentBusinessLogic(
+    IPortalRepositories repositories,
+    IIssuerComponentService service,
+    IApplicationChecklistService checklistService,
+    IOptions<IssuerComponentSettings> options)
+    : IIssuerComponentBusinessLogic
 {
-    private readonly IPortalRepositories _repositories;
-    private readonly IIssuerComponentService _service;
-    private readonly IApplicationChecklistService _checklistService;
-    private readonly IssuerComponentSettings _settings;
-
-    public IssuerComponentBusinessLogic(
-        IPortalRepositories repositories,
-        IIssuerComponentService service,
-        IApplicationChecklistService checklistService,
-        IOptions<IssuerComponentSettings> options)
-    {
-        _repositories = repositories;
-        _service = service;
-        _checklistService = checklistService;
-        _settings = options.Value;
-    }
+    private readonly IssuerComponentSettings _settings = options.Value;
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateBpnlCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var applicationId = context.ApplicationId;
-        var (exists, holder, businessPartnerNumber, walletInformation) = await _repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
+        var (exists, holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -78,7 +68,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/bpncredential";
         var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber, new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
-        await _service.CreateBpnlCredential(data, cancellationToken).ConfigureAwait(false);
+        await service.CreateBpnlCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             checklist =>
@@ -93,7 +83,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
 
     public async Task StoreBpnlCredential(Guid applicationId, IssuerResponseData data)
     {
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL,
@@ -102,7 +92,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
                 processStepTypeIds: new[] { ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL })
             .ConfigureAwait(false);
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>
@@ -118,7 +108,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateMembershipCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var applicationId = context.ApplicationId;
-        var (exists, holder, businessPartnerNumber, walletInformation) = await _repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
+        var (exists, holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -144,7 +134,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/membershipcredential";
         var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x", new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
-        await _service.CreateMembershipCredential(data, cancellationToken).ConfigureAwait(false);
+        await service.CreateMembershipCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             checklist =>
@@ -159,7 +149,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
 
     public async Task StoreMembershipCredential(Guid applicationId, IssuerResponseData data)
     {
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
@@ -168,7 +158,7 @@ public class IssuerComponentBusinessLogic : IIssuerComponentBusinessLogic
                 processStepTypeIds: new[] { ProcessStepTypeId.START_CLEARING_HOUSE })
             .ConfigureAwait(false);
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>

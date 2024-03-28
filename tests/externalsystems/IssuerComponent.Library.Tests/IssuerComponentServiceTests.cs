@@ -107,7 +107,7 @@ public class IssuerComponentServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.CreateBpnlCredential(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -127,7 +127,7 @@ public class IssuerComponentServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.CreateBpnlCredential(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateBpnlCredential(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -169,7 +169,7 @@ public class IssuerComponentServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.CreateMembershipCredential(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateMembershipCredential(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -189,7 +189,7 @@ public class IssuerComponentServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
 
         // Act
-        async Task Act() => await _sut.CreateMembershipCredential(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateMembershipCredential(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
