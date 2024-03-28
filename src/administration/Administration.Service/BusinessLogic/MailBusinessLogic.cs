@@ -47,7 +47,7 @@ public class MailBusinessLogic : IMailBusinessLogic
 
         if (data.RecipientMail is not null)
         {
-            _mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters);
+            _mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters.ToDictionary(x => x.Key, x => x.Value));
         }
     }
 }
