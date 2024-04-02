@@ -53,7 +53,7 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all company connectors for currently logged in user.
+    /// Retrieves all company registered own connectors and their status.
     /// </summary>
     /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
     /// <param name="size" example="15">Optional query parameter defining the number of connectors listed per page.</param>
@@ -72,7 +72,7 @@ public class ConnectorsController : ControllerBase
         _businessLogic.GetAllCompanyConnectorDatas(page, size);
 
     /// <summary>
-    /// Retrieves all company connectors for currently logged in user.
+    /// Retrieves all registered connectors which are managed connectors of company customers and their status.
     /// </summary>
     /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
     /// <param name="size" example="15">Optional query parameter defining the number of connectors listed per page.</param>
@@ -92,7 +92,7 @@ public class ConnectorsController : ControllerBase
         _businessLogic.GetManagedConnectorForCompany(page, size);
 
     /// <summary>
-    /// Retrieves company connector details for the given connetor id.
+    /// Retrieves connector information for a specific connector by its ID. Note: only company owned connectors can get called.
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector for which the details are to be displayed.</param>
     /// <remarks>Example: GET: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
@@ -110,7 +110,7 @@ public class ConnectorsController : ControllerBase
         _businessLogic.GetCompanyConnectorData(connectorId);
 
     /// <summary>
-    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
+    /// Allows to register owned company connectors (self-hosted/-managed) inside the CX dataspace.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <param name="cancellationToken">Cancellation Token</param>
@@ -133,7 +133,7 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new connector with provided parameters from body, also registers connector at sd factory service.
+    /// Allows to register managed connectors for 3rd parties/customers inside the CX dataspace.
     /// </summary>
     /// <param name="connectorInputModel">Input model of the connector to be created.</param>
     /// <param name="cancellationToken">Cancellation Token</param>
@@ -178,7 +178,7 @@ public class ConnectorsController : ControllerBase
     }
 
     /// <summary>
-    /// post list of bpns or an empty array to retrieve available company connector.
+    /// Retrieve dataspace registered connectors by their registered BPNL or retrieve them all by sending an empty array.
     /// </summary>
     /// <param name="bpns" example="BPNL00000003CRHK">Single or List of Business Partner Number of the company.</param>
     /// <remarks>Example: POST: /api/administration/connectors/discovery</remarks>
@@ -192,7 +192,7 @@ public class ConnectorsController : ControllerBase
         _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
 
     /// <summary>
-    /// Processes the clearinghouse self description push
+    /// Asynchron callback endpoint for the clearinghouse provider to submit the connector SD document.
     /// </summary>
     /// <param name="data">The response data for the self description</param>
     /// <param name="cancellationToken">CancellationToken</param>
