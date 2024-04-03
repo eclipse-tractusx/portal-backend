@@ -99,7 +99,7 @@ public class ServiceAccountController : ControllerBase
     /// <response code="409">Undefined client for service account.</response>
     [HttpGet]
     [Authorize(Roles = "view_tech_user_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}", Name = "GetServiceAccountDetails")]
     [ProducesResponseType(typeof(ServiceAccountConnectorOfferData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

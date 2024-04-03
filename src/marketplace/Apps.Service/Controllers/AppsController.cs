@@ -233,7 +233,7 @@ public class AppsController : ControllerBase
     [Route("/subscription/{subscriptionId}/activate")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -375,7 +375,7 @@ public class AppsController : ControllerBase
     /// <response code="404">No app or subscription found.</response>
     [HttpGet]
     [Authorize(Roles = "app_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [Route("{appId}/subscription/{subscriptionId}/provider")]
     [ProducesResponseType(typeof(AppProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
