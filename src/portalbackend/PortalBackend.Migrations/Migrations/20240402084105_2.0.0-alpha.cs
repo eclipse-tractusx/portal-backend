@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
+using System.Text.Json;
 
 #nullable disable
 
@@ -26,11 +27,68 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class CPLP3383AddNewProcesses : Migration
+    public partial class _200alpha : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_onboarding_service_provider_details",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_offer_subscriptions_process_datas",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "id",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                type: "uuid",
+                nullable: false,
+                defaultValue: Guid.NewGuid());
+
+            migrationBuilder.Sql("UPDATE portal.onboarding_service_provider_details SET id = gen_random_uuid()");
+
+            migrationBuilder.AddColumn<int>(
+                name: "encryption_mode",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<byte[]>(
+                name: "initialization_vector",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                type: "bytea",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "id",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas",
+                type: "uuid",
+                nullable: false,
+                defaultValue: Guid.NewGuid());
+
+            migrationBuilder.Sql("UPDATE portal.offer_subscriptions_process_datas SET id = gen_random_uuid()");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_onboarding_service_provider_details",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                column: "id");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_offer_subscriptions_process_datas",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas",
+                column: "id");
+
             migrationBuilder.CreateTable(
                 name: "company_invitations",
                 schema: "portal",
@@ -66,6 +124,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalSchema: "portal",
                         principalTable: "processes",
                         principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "company_wallet_datas",
+                schema: "portal",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    company_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    did = table.Column<string>(type: "text", nullable: false),
+                    client_id = table.Column<string>(type: "text", nullable: false),
+                    client_secret = table.Column<byte[]>(type: "bytea", nullable: false),
+                    initialization_vector = table.Column<byte[]>(type: "bytea", nullable: true),
+                    encryption_mode = table.Column<int>(type: "integer", nullable: false),
+                    authentication_service_url = table.Column<string>(type: "text", nullable: false),
+                    did_document = table.Column<JsonDocument>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_company_wallet_datas", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_company_wallet_datas_companies_company_id",
+                        column: x => x.company_id,
+                        principalSchema: "portal",
+                        principalTable: "companies",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,6 +197,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         principalColumn: "id");
                 });
 
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "company_certificate_statuses",
+                keyColumn: "id",
+                keyValue: 2,
+                column: "label",
+                value: "INACTIVE");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "company_certificate_type_statuses",
+                keyColumn: "id",
+                keyValue: 2,
+                column: "label",
+                value: "INACTIVE");
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "mailing_statuses",
@@ -128,6 +229,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 columns: new[] { "id", "label" },
                 values: new object[,]
                 {
+                    { 20, "CREATE_DIM_WALLET" },
+                    { 21, "AWAIT_DIM_RESPONSE" },
+                    { 22, "RETRIGGER_CREATE_DIM_WALLET" },
+                    { 23, "VALIDATE_DID_DOCUMENT" },
+                    { 24, "RETRIGGER_VALIDATE_DID_DOCUMENT" },
                     { 301, "SEND_MAIL" },
                     { 302, "RETRIGGER_SEND_MAIL" },
                     { 400, "INVITATION_CREATE_CENTRAL_IDP" },
@@ -165,6 +271,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_onboarding_service_provider_details_company_id",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                column: "company_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_offer_subscriptions_process_datas_offer_subscription_id",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas",
+                column: "offer_subscription_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_company_invitations_application_id",
                 schema: "portal",
                 table: "company_invitations",
@@ -176,6 +296,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal",
                 table: "company_invitations",
                 column: "process_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_company_wallet_datas_company_id",
+                schema: "portal",
+                table: "company_wallet_datas",
+                column: "company_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -200,12 +327,66 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 schema: "portal");
 
             migrationBuilder.DropTable(
+                name: "company_wallet_datas",
+                schema: "portal");
+
+            migrationBuilder.DropTable(
                 name: "mailing_informations",
                 schema: "portal");
 
             migrationBuilder.DropTable(
                 name: "mailing_statuses",
                 schema: "portal");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_onboarding_service_provider_details",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropIndex(
+                name: "ix_onboarding_service_provider_details_company_id",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "pk_offer_subscriptions_process_datas",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas");
+
+            migrationBuilder.DropIndex(
+                name: "ix_offer_subscriptions_process_datas_offer_subscription_id",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 20);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 21);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 22);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 23);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 24);
 
             migrationBuilder.DeleteData(
                 schema: "portal",
@@ -362,6 +543,54 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_types",
                 keyColumn: "id",
                 keyValue: 6);
+
+            migrationBuilder.DropColumn(
+                name: "id",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropColumn(
+                name: "encryption_mode",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropColumn(
+                name: "initialization_vector",
+                schema: "portal",
+                table: "onboarding_service_provider_details");
+
+            migrationBuilder.DropColumn(
+                name: "id",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_onboarding_service_provider_details",
+                schema: "portal",
+                table: "onboarding_service_provider_details",
+                column: "company_id");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "pk_offer_subscriptions_process_datas",
+                schema: "portal",
+                table: "offer_subscriptions_process_datas",
+                column: "offer_subscription_id");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "company_certificate_statuses",
+                keyColumn: "id",
+                keyValue: 2,
+                column: "label",
+                value: "INACTVIE");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "company_certificate_type_statuses",
+                keyColumn: "id",
+                keyValue: 2,
+                column: "label",
+                value: "INACTVIE");
         }
     }
 }
