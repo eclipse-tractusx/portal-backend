@@ -27,27 +27,49 @@ on:
       - '!v*.*.*-framework*'
   workflow_dispatch:
 
-env:
-  IMAGE_NAMESPACE: "tractusx"
-  IMAGE_NAME_ADMINISTRATION: "portal-administration-service"
-  IMAGE_NAME_REGISTRATION: "portal-registration-service"
-  IMAGE_NAME_MARKETPLACE_APP: "portal-marketplace-app-service"
-  IMAGE_NAME_PORTAL_MIGRATIONS: "portal-portal-migrations"
-  IMAGE_NAME_MAINTENANCE: "portal-maintenance-service"
-  IMAGE_NAME_NOTIFICATION: "portal-notification-service"
-  IMAGE_NAME_SERVICES: "portal-services-service"
-  IMAGE_NAME_PROVISIONING_MIGRATIONS: "portal-provisioning-migrations"
-  IMAGE_NAME_PROCESSES_WORKER: "portal-processes-worker"
-
 jobs:
-  administration-service-release:
+  release-images:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
+    strategy:
+      matrix:
+        include:
+          - image: tractusx/portal-administration-service
+            dockerfile: ./docker/Dockerfile-administration-service
+            dockernotice: ./docker/notice-administration-service.md
+          - image: tractusx/portal-registration-service
+            dockerfile: ./docker/Dockerfile-registration-service
+            dockernotice: ./docker/notice-registration-service.md
+          - image: tractusx/portal-marketplace-app-service
+            dockerfile: ./docker/Dockerfile-marketplace-app-service
+            dockernotice: ./docker/notice-marketplace-app-service.md
+          - image: tractusx/portal-services-service
+            dockerfile: ./docker/Dockerfile-services-service
+            dockernotice: ./docker/notice-services-service.md
+          - image: tractusx/portal-notification-service
+            dockerfile: ./docker/Dockerfile-notification-service
+            dockernotice: ./docker/notice-notification-service.md
+          - image: tractusx/portal-processes-worker
+            dockerfile: ./docker/Dockerfile-processes-worker
+            dockernotice: ./docker/notice-processes-worker.md
+          - image: tractusx/portal-maintenance-service
+            dockerfile: ./docker/Dockerfile-maintenance-service
+            dockernotice: ./docker/notice-maintenance-service.md
+          - image: tractusx/portal-portal-migrations
+            dockerfile: ./docker/Dockerfile-portal-migrations
+            dockernotice: ./docker/notice-portal-migrations.md
+          - image: tractusx/portal-provisioning-migrations
+            dockerfile: ./docker/Dockerfile-provisioning-migrations
+            dockernotice: ./docker/notice-provisioning-migrations.md
+          - image: tractusx/portal-iam-seeding
+            dockerfile: ./docker/Dockerfile-iam-seeding
+            dockernotice: ./docker/notice-iam-seeding.md
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
@@ -66,7 +88,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
+          images: ${{ matrix.image }}
            # Automatically prepare image tags;
            # semver patter will generate tags like these for example :v1 :v1.2
           tags: |
@@ -76,11 +98,11 @@ jobs:
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+      - name: Build and push Docker images
+        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
         with:
           context: .
-          file: docker/Dockerfile-administration-service
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
@@ -94,467 +116,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_ADMINISTRATION }}
-          readme-filepath: "./docker/notice-administration-service.md"
-
-  processes-worker-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-processes-worker
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROCESSES_WORKER }}
-          readme-filepath: "./docker/notice-processes-worker.md"
-
-  registration-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-registration-service
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_REGISTRATION }}
-          readme-filepath: "./docker/notice-registration-service.md"
-
-  marketplace-app-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-marketplace-app-service
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MARKETPLACE_APP }}
-          readme-filepath: "./docker/notice-marketplace-app-service.md"
-
-  portal-migrations-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-portal-migrations
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PORTAL_MIGRATIONS }}
-          readme-filepath: "./docker/notice-portal-migrations.md"
-
-  maintenance-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-maintenance-service
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_MAINTENANCE }}
-          readme-filepath: "./docker/notice-maintenance-service.md"
-
-  notification-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-notification-service
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_NOTIFICATION }}
-          readme-filepath: "./docker/notice-notification-service.md"
-
-  services-service-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-services-service
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_SERVICES }}
-          readme-filepath: "./docker/notice-services-service.md"
-
-  provisioning-migrations-release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3.2.0
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
-           # Automatically prepare image tags;
-           # semver patter will generate tags like these for example :v1 :v1.2
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=semver,pattern=v{{major}}.{{minor}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
-        with:
-          context: .
-          file: docker/Dockerfile-provisioning-migrations
-          platforms: linux/amd64, linux/arm64
-          pull: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # https://github.com/peter-evans/dockerhub-description
-      - name: Update Docker Hub description
-        if: github.event_name != 'pull_request'
-        uses: peter-evans/dockerhub-description@e98e4d1628a5f3be2be7c231e50981aee98723ae # v4.0.0
-        with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME_PROVISIONING_MIGRATIONS }}
-          readme-filepath: "./docker/notice-portal-migrations.md"
+          repository: ${{ matrix.image }}
+          readme-filepath: ${{ matrix.dockernotice }}
 
   auth-and-dispatch:
-    needs: [ administration-service-release, registration-service-release, marketplace-app-service-release, portal-migrations-release, maintenance-service-release, notification-service-release, services-service-release, provisioning-migrations-release, processes-worker-release ]
+    needs: release-images
     runs-on: ubuntu-latest
 
     steps:
