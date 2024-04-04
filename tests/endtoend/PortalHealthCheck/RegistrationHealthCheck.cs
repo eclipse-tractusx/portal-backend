@@ -65,7 +65,7 @@ public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -86,7 +86,7 @@ public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -107,7 +107,7 @@ public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -127,7 +127,7 @@ public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
             .StatusCode(200)
             .Extract().Response();
 
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         data.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 }

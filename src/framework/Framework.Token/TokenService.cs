@@ -44,7 +44,7 @@ public class TokenService : ITokenService
             settings.Scope,
             settings.TokenAddress);
 
-        var token = await GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+        var token = await GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -67,7 +67,7 @@ public class TokenService : ITokenService
         using var response = await httpClient.PostAsync(settings.TokenUrl, content, cancellationToken)
             .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
-        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var responseObject = await JsonSerializer.DeserializeAsync<AuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return responseObject?.AccessToken;
     }
@@ -81,7 +81,7 @@ public class TokenService : ITokenService
             settings.TokenAddress,
             settings.GrantType);
 
-        var token = await GetBasicTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(false);
+        var token = await GetBasicTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -104,7 +104,7 @@ public class TokenService : ITokenService
         var response = await authClient.PostAsync(settings.TokenAddress, content, cancellationToken)
             .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
-        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var responseObject = await JsonSerializer.DeserializeAsync<BasicAuthResponse>(responseStream, cancellationToken: cancellationToken).ConfigureAwait(false);
         return responseObject?.AccessToken;
     }

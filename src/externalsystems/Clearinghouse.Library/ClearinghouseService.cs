@@ -39,10 +39,10 @@ public class ClearinghouseService : IClearinghouseService
     /// <inheritdoc />
     public async Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
-            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false)));
+            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
 
         await httpClient.PostAsJsonAsync("/api/v1/validation", data, cancellationToken)
             .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);

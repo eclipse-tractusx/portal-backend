@@ -18,9 +18,11 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Tests;
 
@@ -79,7 +81,7 @@ public class InvitationProcessTypeExecutorTests
             .Returns(_invitationId);
 
         // Act
-        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBeNull();
@@ -97,8 +99,8 @@ public class InvitationProcessTypeExecutorTests
             .Returns(Guid.Empty);
 
         // Act
-        async Task Act() => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        async Task Act() => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {processId} does not exist or is not associated with an company invitation");
@@ -115,10 +117,10 @@ public class InvitationProcessTypeExecutorTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        async Task Act() => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be("companyInvitationId should never be empty here");
@@ -142,7 +144,7 @@ public class InvitationProcessTypeExecutorTests
             .Returns(_invitationId);
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -153,7 +155,7 @@ public class InvitationProcessTypeExecutorTests
         SetupFakes();
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
         executionResult.Modified.Should().BeTrue();
@@ -181,7 +183,7 @@ public class InvitationProcessTypeExecutorTests
             .Returns(invitationId);
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -194,7 +196,7 @@ public class InvitationProcessTypeExecutorTests
             .Throws(error);
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
@@ -218,7 +220,7 @@ public class InvitationProcessTypeExecutorTests
             .Returns(invitationId);
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -231,7 +233,7 @@ public class InvitationProcessTypeExecutorTests
             .Throws(error);
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _invitationProcessService.CreateCentralIdp(invitationId))
@@ -254,7 +256,7 @@ public class InvitationProcessTypeExecutorTests
             .Returns(invitationId);
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -267,7 +269,7 @@ public class InvitationProcessTypeExecutorTests
             .Throws(error);
 
         // Act execute
-        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
         var ex = await Assert.ThrowsAsync<SystemException>(Act);
 
         // Assert execute
@@ -324,7 +326,7 @@ public class InvitationProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act
-        var result = await _executor.IsLockRequested(stepTypeId).ConfigureAwait(false);
+        var result = await _executor.IsLockRequested(stepTypeId);
 
         // Assert
         result.Should().Be(isLocked);
@@ -370,16 +372,4 @@ public class InvitationProcessTypeExecutorTests
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

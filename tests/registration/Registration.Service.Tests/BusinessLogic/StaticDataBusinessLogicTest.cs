@@ -63,7 +63,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllCountries().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCountries().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllCountries())

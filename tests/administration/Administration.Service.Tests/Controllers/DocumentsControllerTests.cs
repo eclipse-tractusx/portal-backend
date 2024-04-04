@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -59,7 +58,7 @@ public class DocumentsControllerTests
             .Returns((fileName, content, contentType));
 
         //Act
-        await _controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+        await _controller.GetDocumentContentFileAsync(id);
 
         //Assert
         A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
@@ -76,7 +75,7 @@ public class DocumentsControllerTests
             .Returns((fileName, content, "application/json"));
 
         //Act
-        await _controller.GetSelfDescriptionDocumentsAsync(id).ConfigureAwait(false);
+        await _controller.GetSelfDescriptionDocumentsAsync(id);
 
         //Assert
         A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id)).MustHaveHappenedOnceExactly();
@@ -92,7 +91,7 @@ public class DocumentsControllerTests
             .Returns(documentData);
 
         //Act
-        await _controller.GetDocumentSeedData(id).ConfigureAwait(false);
+        await _controller.GetDocumentSeedData(id);
 
         //Assert
         A.CallTo(() => _logic.GetSeedData(id)).MustHaveHappenedOnceExactly();
@@ -108,7 +107,7 @@ public class DocumentsControllerTests
             .Returns(("test.json", content));
 
         //Act
-        var result = await _controller.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await _controller.GetFrameDocumentAsync(documentId);
 
         // Assert
         A.CallTo(() => _logic.GetFrameDocumentAsync(documentId)).MustHaveHappenedOnceExactly();

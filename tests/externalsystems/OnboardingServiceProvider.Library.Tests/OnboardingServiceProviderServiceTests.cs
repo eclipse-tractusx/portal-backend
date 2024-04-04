@@ -59,7 +59,7 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -78,10 +78,10 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -98,10 +98,10 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion

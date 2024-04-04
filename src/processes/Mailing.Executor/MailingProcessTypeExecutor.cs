@@ -69,7 +69,7 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.SEND_MAIL => await SendMail().ConfigureAwait(false),
+                ProcessStepTypeId.SEND_MAIL => await SendMail().ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => throw new UnexpectedConditionException($"unexpected processStepTypeId {processStepTypeId} for process {ProcessTypeId.MAILING}")
             };
         }
@@ -95,7 +95,7 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
             await _mailingService.SendMails(
                 mail,
                 DecryptMailParameters(mailParameters, initializationVector, encryptionMode),
-                template).ConfigureAwait(false);
+                template).ConfigureAwait(ConfigureAwaitOptions.None);
 
             mailingRepository.AttachAndModifyMailingInformation(id,
                 i =>

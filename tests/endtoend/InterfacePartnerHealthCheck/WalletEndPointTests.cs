@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -43,7 +42,7 @@ public class WalletEndpointTests : EndToEndTestBase
     public WalletEndpointTests(ITestOutputHelper output) : base(output)
     {
         InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
-        if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(InterfaceHealthCheckTechUserToken))
             throw new Exception("Could not fetch token for interface partner health check");
     }
 
@@ -52,9 +51,9 @@ public class WalletEndpointTests : EndToEndTestBase
     {
         Bpn = $"BPNLTEST{DateTime.Now:DDhhmmss}";
         GetListOfWallets();
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
         CreateWallet(201);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
         CreateWallet(409);
     }
 

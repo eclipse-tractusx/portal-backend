@@ -20,12 +20,14 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -85,7 +87,7 @@ public class MailingProcessTypeExecutorTests
         var processId = Guid.NewGuid();
 
         // Act
-        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBeNull();
@@ -102,7 +104,7 @@ public class MailingProcessTypeExecutorTests
     {
         // Act initialize
         var processId = Guid.NewGuid();
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -121,7 +123,7 @@ public class MailingProcessTypeExecutorTests
         SetupFakes(processId, mailing1, mailing2);
 
         // Act
-        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -142,7 +144,7 @@ public class MailingProcessTypeExecutorTests
         var processId = Guid.NewGuid();
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -157,7 +159,7 @@ public class MailingProcessTypeExecutorTests
             .Throws(error);
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
         executionResult.Modified.Should().BeTrue();
@@ -174,7 +176,7 @@ public class MailingProcessTypeExecutorTests
         var processId = Guid.NewGuid();
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -189,7 +191,7 @@ public class MailingProcessTypeExecutorTests
             .Throws(error);
 
         // Act execute
-        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _executor.ExecuteProcessStep(ProcessStepTypeId.SEND_MAIL, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
         var ex = await Assert.ThrowsAsync<SystemException>(Act);
 
         // Assert execute
@@ -237,7 +239,7 @@ public class MailingProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected()
     {
         // Act
-        var result = await _executor.IsLockRequested(ProcessStepTypeId.SEND_MAIL).ConfigureAwait(false);
+        var result = await _executor.IsLockRequested(ProcessStepTypeId.SEND_MAIL);
 
         // Assert
         result.Should().Be(false);
@@ -284,15 +286,4 @@ public class MailingProcessTypeExecutorTests
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

@@ -35,10 +35,6 @@ public class ControllerArgumentException : DetailException
 
     public string? ParamName { get; }
 
-    protected ControllerArgumentException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-
     protected ControllerArgumentException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, string? paramName = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner)
     {
         ParamName = paramName;

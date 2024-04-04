@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -79,10 +80,10 @@ public class ProcessExecutorTests
     public async Task ExecuteProcess_WithInvalidProcessTypeId_Throws()
     {
         // Arrange
-        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), default, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var Act = async () => await _sut.ExecuteProcess(Guid.NewGuid(), default, CancellationToken.None).ToListAsync();
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be($"processType {default(ProcessTypeId)} is not a registered executable processType.");
@@ -169,7 +170,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -268,7 +269,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -312,7 +313,7 @@ public class ProcessExecutorTests
             .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveCount(1).And.Contain(IProcessExecutor.ProcessExecutionResult.Unmodified);
@@ -380,7 +381,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -496,7 +497,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.
@@ -604,7 +605,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
 
@@ -693,7 +694,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -783,7 +784,7 @@ public class ProcessExecutorTests
             });
 
         // Act
-        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
         result.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -839,14 +840,14 @@ public class ProcessExecutorTests
 
         var Act = async () =>
         {
-            await foreach (var stepResult in _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ConfigureAwait(false))
+            await foreach (var stepResult in _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None))
             {
                 stepResults.Add(stepResult);
             }
         };
 
         // Act
-        var result = await Assert.ThrowsAsync<SystemException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<SystemException>(Act);
 
         // Assert
         stepResults.Should().HaveSameCount(executionResults).And.ContainInOrder(executionResults);
@@ -864,15 +865,4 @@ public class ProcessExecutorTests
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

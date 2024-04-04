@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq.Tests;
@@ -72,11 +73,11 @@ public class NullOrSequenceEqualExtensionsTests
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, new[] { "a", "b", "c", "x" }, new[] { "av", "bv", "cv", "xv" }, false)]
     [InlineData(new[] { "a", "b", "x" }, new[] { "av", "bv", "cv" }, new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, false)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "xv" }, new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, false)]
-    public void NullOrContentEqual_WithKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string> firstValues, IEnumerable<string>? second, IEnumerable<string> secondValues, bool expected)
+    public void NullOrContentEqual_WithKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string>? firstValues, IEnumerable<string>? second, IEnumerable<string>? secondValues, bool expected)
     {
         // Arrange
-        var firstItems = first?.Zip(firstValues, (x, y) => new KeyValuePair<string, string>(x, y));
-        var secondItems = second?.Zip(secondValues, (x, y) => new KeyValuePair<string, string>(x, y));
+        var firstItems = first?.Zip(firstValues ?? throw new UnexpectedConditionException("firstValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
+        var secondItems = second?.Zip(secondValues ?? throw new UnexpectedConditionException("secondValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
 
         // Act
         var result = firstItems.NullOrContentEqual(secondItems);

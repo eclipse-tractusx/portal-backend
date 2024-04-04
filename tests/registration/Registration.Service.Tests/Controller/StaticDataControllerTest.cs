@@ -48,7 +48,7 @@ public class StaticDataControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetCountries().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetCountries().ToListAsync();
 
         // Assert 
         A.CallTo(() => _logic.GetAllCountries()).MustHaveHappenedOnceExactly();

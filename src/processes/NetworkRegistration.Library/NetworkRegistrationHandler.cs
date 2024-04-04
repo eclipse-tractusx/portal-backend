@@ -61,7 +61,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
         var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var ospName = await _portalRepositories.GetInstance<INetworkRepository>().GetOspCompanyName(networkRegistrationId).ConfigureAwait(false);
+        var ospName = await _portalRepositories.GetInstance<INetworkRepository>().GetOspCompanyName(networkRegistrationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (string.IsNullOrWhiteSpace(ospName))
         {
             throw new UnexpectedConditionException("Onboarding Service Provider name must be set");
@@ -89,7 +89,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
 
             try
             {
-                var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(false);
+                var userId = await _provisioningManager.GetUserByUserName(cu.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (!string.IsNullOrWhiteSpace(userId))
                 {
                     userRepository.AttachAndModifyIdentity(cu.CompanyUserId, i =>
@@ -101,11 +101,11 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                             i.UserStatusId = UserStatusId.ACTIVE;
                         });
 
-                    await _userProvisioningService.AssignRolesToNewUserAsync(userRoleRepository, roleData, (userId, cu.CompanyUserId)).ConfigureAwait(false);
+                    await _userProvisioningService.AssignRolesToNewUserAsync(userRoleRepository, roleData, (userId, cu.CompanyUserId)).ConfigureAwait(ConfigureAwaitOptions.None);
                     continue;
                 }
 
-                await _userProvisioningService.HandleCentralKeycloakCreation(new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyUserId, cu.CompanyName, cu.Bpn, null, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)), userRepository, userRoleRepository).ConfigureAwait(false);
+                await _userProvisioningService.HandleCentralKeycloakCreation(new UserCreationRoleDataIdpInfo(cu.FirstName!, cu.LastName!, cu.Email!, roleData, string.Empty, string.Empty, UserStatusId.ACTIVE, true), cu.CompanyUserId, cu.CompanyName, cu.Bpn, null, cu.ProviderLinkData.Select(x => new IdentityProviderLink(x.Alias!, x.ProviderUserId, x.UserName)), userRepository, userRoleRepository).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             catch (Exception e)
             {
@@ -113,7 +113,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
             }
         }
 
-        await CreateMailProcess(GetUserMailInformation(companyAssignedIdentityProviders), ospName).ConfigureAwait(false);
+        await CreateMailProcess(GetUserMailInformation(companyAssignedIdentityProviders), ospName).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             null,
             ProcessStepStatusId.DONE,
@@ -129,7 +129,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         {
             if (!mapping.TryGetValue(idpAlias, out var displayName))
             {
-                displayName = await _provisioningManager.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(false);
+                displayName = await _provisioningManager.GetIdentityProviderDisplayName(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (string.IsNullOrWhiteSpace(displayName))
                 {
                     throw new ConflictException($"DisplayName for idpAlias {idpAlias} couldn't be determined");
@@ -149,7 +149,7 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
                 userData.LastName,
                 await Task.WhenAll(
                     userData.ProviderLinkData.Select(pld =>
-                        GetDisplayName(pld.Alias ?? throw new UnexpectedConditionException("providerLinkData.Alias should never be null here")))).ConfigureAwait(false));
+                        GetDisplayName(pld.Alias ?? throw new UnexpectedConditionException("providerLinkData.Alias should never be null here")))).ConfigureAwait(ConfigureAwaitOptions.None));
         }
     }
 
@@ -191,14 +191,14 @@ public class NetworkRegistrationHandler : INetworkRegistrationHandler
         try
         {
             var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString())
-                .ConfigureAwait(false) ?? throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
-            await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakEntityNotFoundException($"no user found for user {companyUserId}");
+            await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            return await ModifyIdentityAndCreateReturnValues($"deleted user {iamUserId} for company user {companyUserId}").ConfigureAwait(false);
+            return await ModifyIdentityAndCreateReturnValues($"deleted user {iamUserId} for company user {companyUserId}").ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (KeycloakEntityNotFoundException) // we will ignore a not found exception and proceed with the next identity
         {
-            return await ModifyIdentityAndCreateReturnValues($"no user found for company user id {companyUserId}").ConfigureAwait(false);
+            return await ModifyIdentityAndCreateReturnValues($"no user found for company user id {companyUserId}").ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> ModifyIdentityAndCreateReturnValues(string message)

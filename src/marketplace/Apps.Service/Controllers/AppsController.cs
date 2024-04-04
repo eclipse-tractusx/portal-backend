@@ -129,7 +129,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await _appsBusinessLogic.AddFavouriteAppForUserAsync(appId).ConfigureAwait(false);
+        await _appsBusinessLogic.AddFavouriteAppForUserAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -148,7 +148,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveFavouriteAppForCurrentUserAsync([FromRoute] Guid appId)
     {
-        await _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId).ConfigureAwait(false);
+        await _appsBusinessLogic.RemoveFavouriteAppForUserAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -240,7 +240,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ActivateOfferSubscription([FromRoute] Guid subscriptionId)
     {
-        await _appsBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(false);
+        await _appsBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -261,7 +261,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(subscriptionId).ConfigureAwait(false);
+        await _appsBusinessLogic.UnsubscribeOwnCompanyAppSubscriptionAsync(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -315,7 +315,7 @@ public class AppsController : ControllerBase
     [PublicUrl(CompanyRoleId.APP_PROVIDER)]
     public async Task<NoContentResult> StartAutoSetupAppProcess([FromBody] OfferAutoSetupData data)
     {
-        await _appsBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
+        await _appsBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -335,7 +335,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ActivateSingleInstance([FromRoute] Guid offerSubscriptionId)
     {
-        await _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(false);
+        await _appsBusinessLogic.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -360,7 +360,7 @@ public class AppsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<FileResult> GetAppDocumentContentAsync([FromRoute] Guid appId, [FromRoute] Guid documentId, CancellationToken cancellationToken)
     {
-        var (content, contentType, fileName) = await _appsBusinessLogic.GetAppDocumentContentAsync(appId, documentId, cancellationToken).ConfigureAwait(false);
+        var (content, contentType, fileName) = await _appsBusinessLogic.GetAppDocumentContentAsync(appId, documentId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, contentType, fileName);
     }
 

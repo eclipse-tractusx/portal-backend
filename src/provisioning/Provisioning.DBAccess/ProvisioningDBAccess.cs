@@ -35,14 +35,14 @@ public class ProvisioningDBAccess : IProvisioningDBAccess
     public async Task<int> GetNextClientSequenceAsync()
     {
         var nextSequence = _dbContext.ClientSequences.Add(new ClientSequence()).Entity;
-        await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+        await _dbContext.SaveChangesAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return nextSequence.SequenceId;
     }
 
     public async Task<int> GetNextIdentityProviderSequenceAsync()
     {
         var nextSequence = _dbContext.IdentityProviderSequences.Add(new IdentityProviderSequence()).Entity;
-        await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+        await _dbContext.SaveChangesAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return nextSequence.SequenceId;
     }
 

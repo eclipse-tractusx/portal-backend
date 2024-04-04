@@ -44,33 +44,33 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"{testEntry.CompanyDetailData?.Name}_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
 
-        var (companyToken, applicationId) = await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName).ConfigureAwait(false);
+        var (companyToken, applicationId) = await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
         companyToken.Should().NotBeNull();
         applicationId.Should().NotBeNull();
 
-        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData).ConfigureAwait(false);
+        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData);
         companyDetailData.Name.Should().Be(userCompanyName);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
         var roleSubmissionResult =
-            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles).ConfigureAwait(false);
+            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles);
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
-        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName).ConfigureAwait(false);
+        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
 
-        await Task.Delay(3000).ConfigureAwait(false);
-        var status = await RegistrationEndpointHelper.SubmitRegistration().ConfigureAwait(false);
+        await Task.Delay(3000);
+        var status = await RegistrationEndpointHelper.SubmitRegistration();
         status.Should().BeTrue();
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
-        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName).ConfigureAwait(false);
+        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
         applicationDetails.Should().NotBeNull();
         applicationDetails!.CompanyApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
         applicationDetails.ApplicationId.ToString().Should().Be(applicationId);
 
-        await Task.Delay(3000).ConfigureAwait(false);
-        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress().ConfigureAwait(false);
+        await Task.Delay(3000);
+        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress();
         storedCompanyDetailData.Should().NotBeNull();
     }
 
@@ -87,9 +87,9 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"{testEntry.CompanyDetailData.Name}_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
         await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
-        await Task.Delay(3000).ConfigureAwait(false);
-        await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData).ConfigureAwait(false);
-        await RegistrationEndpointHelper.UpdateCompanyDetailData(testEntry.UpdateCompanyDetailData).ConfigureAwait(false);
+        await Task.Delay(3000);
+        await RegistrationEndpointHelper.SetCompanyDetailData(testEntry.CompanyDetailData);
+        await RegistrationEndpointHelper.UpdateCompanyDetailData(testEntry.UpdateCompanyDetailData);
     }
 
     [Fact(DisplayName = "Company Registration with manual data input & additional user invite")]
@@ -99,16 +99,16 @@ public class RegistrationScenarios : EndToEndTestBase
         var userCompanyName = $"Test-Catena-X_{now:s}";
         userCompanyName = userCompanyName.Replace(":", "").Replace("_", "");
         await RegistrationEndpointHelper.ExecuteInvitation(userCompanyName);
-        await Task.Delay(10000).ConfigureAwait(false);
-        await RegistrationEndpointHelper.InviteNewUser().ConfigureAwait(false);
+        await Task.Delay(10000);
+        await RegistrationEndpointHelper.InviteNewUser();
     }
 
     [Theory(DisplayName = "Company Registration by BPN")]
     [MemberData(nameof(GetDataEntriesForRegistrationWithBpn))]
     public async Task CompanyRegistration_ByBpn(TestDataRegistrationModel testEntry)
     {
-        var bpn = await RegistrationEndpointHelper.GetBpn().ConfigureAwait(false);
-        var bpdmCompanyDetailData = await RegistrationEndpointHelper.GetCompanyBpdmDetailData(bpn).ConfigureAwait(false);
+        var bpn = await RegistrationEndpointHelper.GetBpn();
+        var bpdmCompanyDetailData = await RegistrationEndpointHelper.GetCompanyBpdmDetailData(bpn);
 
         var now = DateTime.Now;
         var userCompanyName = bpdmCompanyDetailData.Name + $"{now:s}";
@@ -118,29 +118,29 @@ public class RegistrationScenarios : EndToEndTestBase
         companyToken.Should().NotBeNullOrEmpty();
         applicationId.Should().NotBeNullOrEmpty();
 
-        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(bpdmCompanyDetailData).ConfigureAwait(false);
+        var companyDetailData = await RegistrationEndpointHelper.SetCompanyDetailData(bpdmCompanyDetailData);
         companyDetailData.Name.Should().Be(userCompanyName);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
         var roleSubmissionResult =
-            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles).ConfigureAwait(false);
+            await RegistrationEndpointHelper.SubmitCompanyRoleConsentToAgreements(testEntry.CompanyRoles);
         int.Parse(roleSubmissionResult).Should().BeGreaterThan(0);
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
-        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName).ConfigureAwait(false);
+        await RegistrationEndpointHelper.UploadDocument_WithEmptyTitle(testEntry.DocumentTypeId, testEntry.DocumentName);
 
-        await Task.Delay(3000).ConfigureAwait(false);
-        var status = await RegistrationEndpointHelper.SubmitRegistration().ConfigureAwait(false);
+        await Task.Delay(3000);
+        var status = await RegistrationEndpointHelper.SubmitRegistration();
         status.Should().BeTrue();
-        await Task.Delay(3000).ConfigureAwait(false);
+        await Task.Delay(3000);
 
-        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName).ConfigureAwait(false);
+        var applicationDetails = await RegistrationEndpointHelper.GetApplicationDetails(userCompanyName);
         applicationDetails.Should().NotBeNull();
         applicationDetails?.CompanyApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
         applicationDetails?.ApplicationId.ToString().Should().Be(applicationId);
 
-        await Task.Delay(3000).ConfigureAwait(false);
-        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress().ConfigureAwait(false);
+        await Task.Delay(3000);
+        var storedCompanyDetailData = await RegistrationEndpointHelper.GetCompanyWithAddress();
         storedCompanyDetailData.Should().NotBeNull();
     }
 

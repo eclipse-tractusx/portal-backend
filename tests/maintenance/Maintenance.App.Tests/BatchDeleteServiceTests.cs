@@ -25,7 +25,6 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests;
@@ -38,7 +37,9 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly IFixture _fixture;
 
+#pragma warning disable xUnit1041
     public BatchDeleteServiceTests(TestDbFixture testDbFixture)
+#pragma warning restore xUnit1041
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -52,10 +53,10 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
     public async Task ExecuteAsync_WithOldDocumentsAndAssigned_Removes()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        await sut.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        await sut.StartAsync(CancellationToken.None);
 
         // Assert
         true.Should().BeTrue();
@@ -71,7 +72,7 @@ public class BatchDeleteServiceTests : IAssemblyFixture<TestDbFixture>
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
 
         var serviceProvider = _fixture.Create<IServiceProvider>();
         A.CallTo(() => serviceProvider.GetService(typeof(PortalDbContext))).Returns(context);

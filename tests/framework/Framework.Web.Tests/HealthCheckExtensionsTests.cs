@@ -77,7 +77,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Healthy" && x.Error == null);
@@ -109,7 +109,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Unhealthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Unhealthy" && x.Error == error.Message);
@@ -138,7 +138,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
@@ -167,7 +167,7 @@ public class HealthCheckExtensionsTests
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
@@ -187,17 +187,17 @@ public class HealthCheckExtensionsTests
 
     private static async Task<HealthResponse?> GetHealthResponse(WebApplication app)
     {
-        await app.StartAsync().ConfigureAwait(false);
+        await app.StartAsync();
         try
         {
             using var httpClient = new HttpClient();
-            using var result = await httpClient.GetAsync("http://localhost:5000/health").ConfigureAwait(false);
-            await using var responseStream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options).ConfigureAwait(false);
+            using var result = await httpClient.GetAsync("http://localhost:5000/health");
+            await using var responseStream = await result.Content.ReadAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options);
         }
         finally
         {
-            await app.StopAsync().ConfigureAwait(false);
+            await app.StopAsync();
         }
     }
 

@@ -116,7 +116,7 @@ public class MandatoryIdentityClaimHandlerTests
         var sut = new MandatoryIdentityClaimHandler(_claimsIdentityDataBuilder, _portalRepositories, _logger);
 
         // Act
-        await sut.HandleAsync(context).ConfigureAwait(false);
+        await sut.HandleAsync(context);
 
         // Assert
         context.HasSucceeded.Should().Be(success);

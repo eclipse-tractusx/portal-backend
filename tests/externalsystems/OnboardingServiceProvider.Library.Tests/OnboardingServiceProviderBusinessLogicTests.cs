@@ -83,7 +83,7 @@ public class OnboardingServiceProviderBusinessLogicTests
         var Act = () => _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(A<OspTriggerDetails>._, A<OnboardingServiceProviderCallbackData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         result.Message.Should().Be($"data should never be default here (networkRegistrationId: {networkRegistrationId})");
@@ -98,7 +98,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((null, _fixture.Create<string>(), null, Guid.NewGuid(), _fixture.CreateMany<string>()));
 
         // Act
-        var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(A<OspTriggerDetails>._, A<OnboardingServiceProviderCallbackData>._, A<CancellationToken>._))
@@ -119,7 +119,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), _fixture.CreateMany<string>(2)));
 
         // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -138,7 +138,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -165,7 +165,7 @@ public class OnboardingServiceProviderBusinessLogicTests
             .Returns((details, externalId, Bpn, applicationId, processStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED ? Enumerable.Repeat("this is a test", 1) : Enumerable.Empty<string>()));
 
         // Act
-        var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.TriggerProviderCallback(networkRegistrationId, processStepTypeId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _onboardingServiceProviderService.TriggerProviderCallback(

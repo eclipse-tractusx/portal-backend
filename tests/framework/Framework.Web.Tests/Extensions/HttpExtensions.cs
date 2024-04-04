@@ -27,12 +27,12 @@ public static class HttpExtensions
 {
     public static async Task<T> GetResultFromContent<T>(this HttpResponseMessage response)
     {
-        using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var responseStream = await response.Content.ReadAsStreamAsync();
         var options = new JsonSerializerOptions
         {
             Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
         };
-        return await JsonSerializer.DeserializeAsync<T>(responseStream, options).ConfigureAwait(false) ?? throw new InvalidOperationException();
+        return await JsonSerializer.DeserializeAsync<T>(responseStream, options) ?? throw new InvalidOperationException();
     }
 
     public static HttpContent ToJsonContent(this object data, JsonSerializerOptions options, string contentType)

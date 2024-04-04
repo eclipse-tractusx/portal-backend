@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -37,7 +36,6 @@ public class PublicUrlServiceProviderTests : BasePublicUrlTests<ServicesControll
     public async Task OpenInformationController_WithServiceProvider_ReturnsCorrectAmount()
     {
         await OpenInformationController_ReturnsCorrectAmount(1,
-            x => x.HttpMethods == "GET" && x.Url == "api/test/{serviceid}/subscription/{subscriptionid}/provider")
-            .ConfigureAwait(false);
+            x => x.HttpMethods == "GET" && x.Url == "api/test/{serviceid}/subscription/{subscriptionid}/provider");
     }
 }

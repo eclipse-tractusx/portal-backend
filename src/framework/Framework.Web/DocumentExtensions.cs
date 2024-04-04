@@ -31,7 +31,7 @@ public static class DocumentExtensions
         using var sha512 = SHA512.Create();
         using var ms = new MemoryStream((int)document.Length);
 
-        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+        await document.CopyToAsync(ms, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var hash = sha512.ComputeHash(ms);
         var documentContent = ms.GetBuffer();
         if (ms.Length != document.Length || documentContent.Length != document.Length)

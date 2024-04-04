@@ -139,7 +139,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustNotHaveHappened();
@@ -183,7 +183,7 @@ public class ApplicationActivationTests
         _settings.EndTime = TimeSpan.FromHours(8);
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -242,7 +242,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -324,7 +324,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -392,7 +392,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -457,7 +457,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
@@ -543,7 +543,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -620,7 +620,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -666,7 +666,7 @@ public class ApplicationActivationTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -696,7 +696,7 @@ public class ApplicationActivationTests
             .Returns<(Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?)>(default);
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -721,7 +721,7 @@ public class ApplicationActivationTests
             }.ToImmutableDictionary(),
             Enumerable.Empty<ProcessStepTypeId>());
 
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);

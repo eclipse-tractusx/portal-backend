@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,7 +45,7 @@ public class BasePublicUrlTests<TController, TSeeding> : IClassFixture<Integrati
         var endpoint = new InformationEndpoints(client);
 
         // Act
-        var response = await endpoint.Get().ConfigureAwait(false);
+        var response = await endpoint.Get();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

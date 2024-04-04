@@ -71,7 +71,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
     {
         _companyInvitationId = Guid.Empty;
 
-        var result = await _portalRepositories.GetInstance<ICompanyInvitationRepository>().GetCompanyInvitationForProcessId(processId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyInvitationRepository>().GetCompanyInvitationForProcessId(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == Guid.Empty)
         {
             throw new NotFoundException($"process {processId} does not exist or is not associated with an company invitation");
@@ -102,25 +102,25 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
                 ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP => await _invitationProcessService.CreateCentralIdp(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => await _invitationProcessService.CreateSharedIdpServiceAccount(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_ADD_REALM_ROLE => await _invitationProcessService.AddRealmRoleMappingsToUserAsync(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => await _invitationProcessService.UpdateCentralIdpUrl(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => await _invitationProcessService.CreateCentralIdpOrgMapper(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM => await _invitationProcessService.CreateSharedIdpRealm(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT => await _invitationProcessService.CreateSharedClient(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => await _invitationProcessService.EnableCentralIdp(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => await _invitationProcessService.CreateIdpDatabase(_companyInvitationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.INVITATION_CREATE_USER => await _invitationProcessService.CreateUser(_companyInvitationId, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => throw new UnexpectedConditionException($"Execution for {processStepTypeId} is currently not supported.")
             };
         }

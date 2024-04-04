@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -64,7 +63,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllUseCase().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllUseCase().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllUseCase())
@@ -89,7 +88,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLicenseType().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLicenseType().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
@@ -111,7 +110,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLanguage().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllLanguage())
@@ -131,7 +130,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetCertificateTypes())
@@ -151,7 +150,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOperatorBpns().ToListAsync();
 
         // Assert
         A.CallTo(() => _companyRepository.GetOperatorBpns())
@@ -172,7 +171,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetDidDocument("bpn").ConfigureAwait(false);
+        var result = await sut.GetDidDocument("bpn");
 
         // Assert
         result.Should().Be(jsonDocument);
@@ -185,10 +184,10 @@ public class StaticDataBusinessLogicTest
         A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
             .Returns(new ValueTuple<bool, JsonDocument>(false, null!));
         var sut = new StaticDataBusinessLogic(_portalRepositories);
-        async Task Act() => await sut.GetDidDocument("bpn").ConfigureAwait(false);
+        async Task Act() => await sut.GetDidDocument("bpn");
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be("The did document does not exist");

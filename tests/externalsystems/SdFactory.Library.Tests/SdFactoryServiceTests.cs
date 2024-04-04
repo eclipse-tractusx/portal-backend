@@ -79,7 +79,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None);
 
         // Assert
         _documents.Should().BeEmpty();
@@ -95,7 +95,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -117,7 +117,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None);
 
         // Assert
         _documents.Should().BeEmpty();
@@ -133,7 +133,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);

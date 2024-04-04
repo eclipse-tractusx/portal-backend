@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -55,7 +54,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -63,7 +62,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();
@@ -74,7 +73,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Inactive_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -82,7 +81,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();
@@ -93,7 +92,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_Active_Inactive_Deleted_WithValidIamUser_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -101,7 +100,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             _validCompanyUser,
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.DELETED },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().NotBeNull();
@@ -112,7 +111,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOwnCompanyAppUsersPaginationSourceAsync_WithNotExistingIamUser_ReturnsNull()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetOwnCompanyAppUsersPaginationSourceAsync(
@@ -120,7 +119,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
             Guid.NewGuid(),
             new[] { OfferSubscriptionStatusId.ACTIVE },
             new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
-            new CompanyUserFilter(null, null, null, null, null))(0, 15).ConfigureAwait(false);
+            new CompanyUserFilter(null, null, null, null, null))(0, 15);
 
         // Assert
         result.Should().BeNull();
@@ -134,14 +133,14 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithValidData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
             new Guid("9b957704-3505-4445-822c-d7ef80f27fcd"), new List<Guid>
             {
                 new ("58f897ec-0aad-4588-8ffa-5f45d6638632") // CX Admin
-            }).ToListAsync().ConfigureAwait(false);
+            }).ToListAsync();
 
         // Assert
         result.Should().HaveCount(1);
@@ -151,14 +150,14 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceProviderCompanyUserWithRoleIdAsync_WithNotExistingRole_ReturnsEmptyList()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut.GetServiceProviderCompanyUserWithRoleIdAsync(
             new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4"), new List<Guid>
             {
                 Guid.NewGuid()
-            }).ToListAsync().ConfigureAwait(false);
+            }).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -172,12 +171,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyUserWithRoleIdForCompany_WithExistingUserForRole_ReturnsExpectedUserId()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut
             .GetCompanyUserWithRoleIdForCompany(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
-            .ToListAsync().ConfigureAwait(false);
+            .ToListAsync();
 
         // Assert
         result.Should().HaveCount(1)
@@ -188,12 +187,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyUserWithRoleIdForCompany_WithExistingUserForRole_WithoutCompanyId_ReturnsExpectedUserId()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut
             .GetCompanyUserWithRoleId(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") })
-            .ToListAsync().ConfigureAwait(false);
+            .ToListAsync();
 
         // Assert
         result.Should().HaveCount(3)
@@ -208,12 +207,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyUserEmailForCompanyAndRoleId_WithExistingUserForRole_ReturnsExpectedEmail()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut
             .GetCompanyUserEmailForCompanyAndRoleId(new[] { new Guid("58f897ec-0aad-4588-8ffa-5f45d6638632") }, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))
-            .ToListAsync().ConfigureAwait(false);
+            .ToListAsync();
 
         // Assert
         result.Should().HaveCount(1)
@@ -230,12 +229,12 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyBpnForIamUserAsync_WithExistingUser_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut
             .GetCompanyBpnForIamUserAsync(_validCompanyUser)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         result.Should().NotBeNull();
@@ -253,10 +252,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("a16e73b9-5277-4b69-9f8d-3b227495dfea", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, false, null, null, null)]
     public async Task GetAppAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? offerName, string? firstName, string? lastName)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         var iamUserData = await sut.GetAppAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, userCompanyId)
-            .ConfigureAwait(false);
+            ;
 
         if (found)
         {
@@ -284,10 +283,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     [InlineData("9b957704-3505-4445-822c-d7ef80f27fcd", "deadbeef-dead-beef-dead-beefdeadbeef", ValidUserCompanyId, false, false, false, null, null)]
     public async Task GetCoreOfferAssignedIamClientUserDataUntrackedAsync_ReturnsExpected(Guid offerId, Guid companyUserId, Guid userCompanyId, bool found, bool validOffer, bool sameCompany, string? firstName, string? lastName)
     {
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         var iamUserData = await sut.GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, userCompanyId)
-            .ConfigureAwait(false);
+            ;
 
         if (found)
         {
@@ -311,13 +310,13 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserDetailsUntrackedAsync_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
         var userRoleIds = new[]{
             new Guid("efc20368-9e82-46ff-b88f-6495b9810255"),
             new Guid("efc20368-9e82-46ff-b88f-6495b9810254")};
 
         // Act
-        var result = await sut.GetUserDetailsUntrackedAsync(new("ac1cf001-7fbc-1f2f-817f-bce058019992"), userRoleIds).ConfigureAwait(false);
+        var result = await sut.GetUserDetailsUntrackedAsync(new("ac1cf001-7fbc-1f2f-817f-bce058019992"), userRoleIds);
 
         // Assert
         result.Should().NotBeNull();
@@ -341,10 +340,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllFavouriteAppsForUserUntrackedAsync_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllFavouriteAppsForUserUntrackedAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllFavouriteAppsForUserUntrackedAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.NotBeEmpty()
@@ -362,10 +361,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetApplicationsWithStatusUntrackedAsync_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetApplicationsWithStatusUntrackedAsync(new("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetApplicationsWithStatusUntrackedAsync(new("41fd2ab8-71cd-4546-9bef-a388d91b2542")).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.Satisfy(x =>
@@ -389,7 +388,7 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AddCompanyUserAssignedIdentityProvider_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var results = sut.AddCompanyUserAssignedIdentityProvider(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020006"), new Guid("ac1cf001-7fbc-1f2f-817f-bce057770015"), "123", "testuser");
@@ -416,10 +415,10 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserAssignedIdentityProviderForNetworkRegistration_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetUserAssignedIdentityProviderForNetworkRegistration(new Guid("67ace0a9-b6df-438b-935a-fe858b8598dd")).ToListAsync();
 
         // Assert
         results.Should().ContainSingle()
@@ -433,14 +432,14 @@ public class UserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(UserRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new UserRepository(context);
         return (sut, context);
     }
 
     private async Task<UserRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new UserRepository(context);
         return sut;
     }

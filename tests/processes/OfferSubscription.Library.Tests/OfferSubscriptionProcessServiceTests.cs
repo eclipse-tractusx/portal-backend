@@ -83,7 +83,7 @@ public class OfferSubscriptionProcessServiceTests
             });
 
         // Act
-        var result = await _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true).ConfigureAwait(false);
+        var result = await _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Assert
         result.Should().NotBeNull();
@@ -112,7 +112,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         ;
 
         // Assert
@@ -137,7 +137,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         ;
 
         // Assert
@@ -160,7 +160,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         ;
 
         // Assert
@@ -185,7 +185,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         ;
 
         // Assert
@@ -209,7 +209,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be("processSteps should never be null here");
@@ -234,7 +234,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be("processSteps should never have any other status than TODO here");
@@ -259,7 +259,7 @@ public class OfferSubscriptionProcessServiceTests
         var Act = () => _service.VerifySubscriptionAndProcessSteps(subscriptionId, processStepTypeId, processStepTypeIds, true);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"offer subscription {subscriptionId}, process step {processStepTypeId} is not eligible to run");

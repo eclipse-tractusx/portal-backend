@@ -73,7 +73,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -92,10 +92,10 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -111,10 +111,10 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion
@@ -135,7 +135,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -154,10 +154,10 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -173,10 +173,10 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion

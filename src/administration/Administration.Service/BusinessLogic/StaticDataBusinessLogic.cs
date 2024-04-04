@@ -64,7 +64,7 @@ public class StaticDataBusinessLogic : IStaticDataBusinessLogic
 
     public async Task<JsonDocument> GetDidDocument(string bpn)
     {
-        var (exists, didDocument) = await _portalRepositories.GetInstance<ICompanyRepository>().GetDidDocumentById(bpn).ConfigureAwait(false);
+        var (exists, didDocument) = await _portalRepositories.GetInstance<ICompanyRepository>().GetDidDocumentById(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
         {
             throw new NotFoundException("The did document does not exist");

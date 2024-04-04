@@ -93,7 +93,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be("BpdmData should never be null here");
     }
 
@@ -116,7 +116,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Application {applicationId} does not exists.");
     }
 
@@ -139,7 +139,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("BusinessPartnerNumber is already set");
     }
 
@@ -162,7 +162,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Alpha2Code must not be empty");
     }
 
@@ -185,7 +185,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("City must not be empty");
     }
 
@@ -208,7 +208,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("StreetName must not be empty");
     }
 
@@ -228,7 +228,7 @@ public class BpdmBusinessLogicTests
         SetupFakesForTrigger();
 
         // Act
-        var result = await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -262,7 +262,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"CompanyApplication {applicationId} does not exist");
     }
 
@@ -283,7 +283,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be($"not found");
     }
 
@@ -301,7 +301,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity();
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().BeNull();
@@ -331,7 +331,7 @@ public class BpdmBusinessLogicTests
         Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be($"ErrorCode: Code 43, ErrorMessage: This is a test sharing state error");
     }
 
@@ -356,7 +356,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -388,7 +388,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -426,7 +426,7 @@ public class BpdmBusinessLogicTests
         var logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, options);
 
         // Act
-        var result = await logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -457,7 +457,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);

@@ -75,8 +75,8 @@ public class UserProvisioningService : IUserProvisioningService
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
-                await HandleCentralKeycloakCreation(user, companyUserId, companyName, businessPartnerNumber, identity, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1), userRepository, userRolesRepository).ConfigureAwait(false);
+                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(ConfigureAwaitOptions.None);
+                await HandleCentralKeycloakCreation(user, companyUserId, companyName, businessPartnerNumber, identity, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1), userRepository, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -88,7 +88,7 @@ public class UserProvisioningService : IUserProvisioningService
                 error = new UnexpectedConditionException($"failed to create companyUser for provider userid {user.UserId}, username {user.UserName} while not throwing any error");
             }
 
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
             yield return new(companyUserId, user.UserName, nextPassword, error);
         }
@@ -96,7 +96,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task HandleCentralKeycloakCreation(UserCreationRoleDataIdpInfo user, Guid companyUserId, string companyName, string? businessPartnerNumber, Identity? identity, IEnumerable<IdentityProviderLink> identityProviderLinks, IUserRepository userRepository, IUserRolesRepository userRolesRepository)
     {
-        var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, identityProviderLinks).ConfigureAwait(false);
+        var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, identityProviderLinks).ConfigureAwait(ConfigureAwaitOptions.None);
         if (identity == null)
         {
             userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
@@ -109,7 +109,7 @@ public class UserProvisioningService : IUserProvisioningService
             identity.UserStatusId = user.UserStatusId;
         }
 
-        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, (centralUserId, companyUserId)).ConfigureAwait(false);
+        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, (centralUserId, companyUserId)).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks)
@@ -126,12 +126,12 @@ public class UserProvisioningService : IUserProvisioningService
                 organisationName: companyName,
                 businessPartnerNumber: businessPartnerNumber
             )
-        ).ConfigureAwait(false);
+        ).ConfigureAwait(ConfigureAwaitOptions.None);
 
         foreach (var identityProviderLink in identityProviderLinks)
         {
             await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId,
-                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(false);
+                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return centralUserId;
@@ -147,7 +147,7 @@ public class UserProvisioningService : IUserProvisioningService
     {
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
+        var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyUserId != Guid.Empty)
         {
             return (null, companyUserId);
@@ -192,7 +192,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, Guid companyUserId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, companyUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {companyUserId} does not exist");
@@ -216,7 +216,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(companyUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(companyUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw applicationId == null
@@ -263,7 +263,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                var userId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false);
+                var userId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (userId != null && await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userId).AnyAsync(link =>
                     alias == link.Alias && (user.UserId == link.UserId || user.UserName == link.UserName)).ConfigureAwait(false))
                 {

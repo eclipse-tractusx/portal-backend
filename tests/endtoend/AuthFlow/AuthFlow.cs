@@ -52,13 +52,13 @@ public class AuthFlow
 
     private async Task<List<CentralidpCompany>> StartCentralIdp()
     {
-        var queryParams = new Dictionary<string, object>
+        var queryParams = new KeyValuePair<string, object>[]
         {
-            { "client_id", "Cl2-CX-Portal" },
-            { "redirect_uri", _basePortalUrl },
-            { "response_mode", "fragment" },
-            { "response_type", "code" },
-            { "scope", "openid" },
+            new("client_id", "Cl2-CX-Portal"),
+            new("redirect_uri", _basePortalUrl),
+            new("response_mode", "fragment"),
+            new("response_type", "code"),
+            new("scope", "openid"),
         };
         var response = Given()
             .DisableSslCertificateValidation()
@@ -69,7 +69,7 @@ public class AuthFlow
             .StatusCode(200)
             .Extract()
             .Response();
-        var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var htmlString = await response.Content.ReadAsStringAsync();
         var doc = new HtmlDocument();
         doc.LoadHtml(htmlString);
         _cookies = response.Headers.GetValues("Set-Cookie").ToList();
@@ -111,7 +111,7 @@ public class AuthFlow
         request.Headers.Add("Cookie",
             $"{_cookies?[0].Split(";")[0]}; {_cookies?[1].Split(";")[0]}; {_cookies?[2].Split(";")[0]}");
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
         var companySharedIdpUrl = response.Headers.Location?.AbsoluteUri;
         if (companySharedIdpUrl is null)
         {
@@ -129,8 +129,8 @@ public class AuthFlow
         request.Headers.Add("Accept-Language", RequestHeaderAcceptLanguage);
         request.Headers.Add("Accept-Encoding", RequestHeaderAcceptEncoding);
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
-        var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
+        var htmlString = await response.Content.ReadAsStringAsync();
         var doc = new HtmlDocument();
         doc.LoadHtml(htmlString);
         var authUrl = doc.DocumentNode.Descendants("form").Single().Attributes.AttributesWithName("action").Single()
@@ -160,7 +160,7 @@ public class AuthFlow
         request.Headers.Add("Origin", "null");
         request.Content = formContent;
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
         var authCodeOrUpdatePasswordUrl = response.Headers.Location?.AbsoluteUri;
         if (authCodeOrUpdatePasswordUrl is null)
         {
@@ -180,7 +180,7 @@ public class AuthFlow
         request.Headers.Add("Cookie",
             $"{_cookies?[0].Split(";")[0]}; {_cookies?[1].Split(";")[0]}; {_cookies?[2].Split(";")[0]}");
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
         var tokenUri = new UriBuilder($"{HttpUtility.HtmlDecode(response.Headers.Location?.AbsoluteUri)}");
         var r = new Regex(@"code=([\S]*)", RegexOptions.IgnoreCase);
         return r.Matches(tokenUri.Uri.AbsoluteUri).First().Groups[1].Value;
@@ -196,8 +196,8 @@ public class AuthFlow
         request.Headers.Add("Cookie",
             $"{_cookies?[0].Split(";")[0]}; {_cookies?[1].Split(";")[0]}; {_cookies?[2].Split(";")[0]}");
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
-        var htmlString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
+        var htmlString = await response.Content.ReadAsStringAsync();
         var doc = new HtmlDocument();
         doc.LoadHtml(htmlString);
         var updatePasswordUrl = doc.DocumentNode.Descendants("form").Single().Attributes.AttributesWithName("action")
@@ -229,7 +229,7 @@ public class AuthFlow
         request.Headers.Add("Origin", "null");
         request.Content = formContent;
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
         var centralIdpUrl = response.Headers.Location?.AbsoluteUri;
         if (centralIdpUrl is null)
         {
@@ -257,8 +257,8 @@ public class AuthFlow
         request.Headers.Add("Referer", TestResources.BasePortalUrl);
         request.Content = formContent;
 
-        using var response = await _client.SendAsync(request).ConfigureAwait(false);
-        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        using var response = await _client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
         var token = DataHandleHelper.DeserializeData<Token>(content)?.AccessToken;
         if (token is null)
         {
@@ -270,25 +270,25 @@ public class AuthFlow
 
     public async Task<string> GetAccessToken(string username, string password)
     {
-        var companies = await StartCentralIdp().ConfigureAwait(false);
-        var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies).ConfigureAwait(false);
-        var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl).ConfigureAwait(false);
+        var companies = await StartCentralIdp();
+        var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies);
+        var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl);
         var authenticateInCentralIdpUrl =
-            await AuthenticateInSharedIdp(authUrlFromSharedIdp, username, password).ConfigureAwait(false);
-        var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl).ConfigureAwait(false);
-        return await GetTokenWithAuthCode(authCode).ConfigureAwait(false);
+            await AuthenticateInSharedIdp(authUrlFromSharedIdp, username, password);
+        var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl);
+        return await GetTokenWithAuthCode(authCode);
     }
 
     public async Task<string> UpdatePasswordAndGetAccessToken(string username, string password, string newPassword)
     {
-        var companies = await StartCentralIdp().ConfigureAwait(false);
-        var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies).ConfigureAwait(false);
-        var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl).ConfigureAwait(false);
-        var forwardUpdatePasswordUrl = await AuthenticateInSharedIdp(authUrlFromSharedIdp, username, password).ConfigureAwait(false);
-        var updatePasswordUrl = await GetUpdatePasswordUrl(forwardUpdatePasswordUrl).ConfigureAwait(false);
+        var companies = await StartCentralIdp();
+        var sharedIdpCompanyUrl = await GetCompanySharedIdpUrl(companies);
+        var authUrlFromSharedIdp = await GetAuthUrlFromSharedIdp(sharedIdpCompanyUrl);
+        var forwardUpdatePasswordUrl = await AuthenticateInSharedIdp(authUrlFromSharedIdp, username, password);
+        var updatePasswordUrl = await GetUpdatePasswordUrl(forwardUpdatePasswordUrl);
         var authenticateInCentralIdpUrl =
-            await UpdatePassword(updatePasswordUrl, username, password, newPassword).ConfigureAwait(false);
-        var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl).ConfigureAwait(false);
-        return await GetTokenWithAuthCode(authCode).ConfigureAwait(false);
+            await UpdatePassword(updatePasswordUrl, username, password, newPassword);
+        var authCode = await GetAuthCodeFromCentralIdp(authenticateInCentralIdpUrl);
+        return await GetTokenWithAuthCode(authCode);
     }
 }

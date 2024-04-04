@@ -68,7 +68,7 @@ public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await response.Content.ReadAsStringAsync();
 
         result.Should().NotBeNullOrEmpty("Error: Response body is null or empty");
     }
@@ -92,7 +92,7 @@ public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await response.Content.ReadAsStringAsync();
         result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -115,7 +115,7 @@ public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await response.Content.ReadAsStringAsync();
         result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -138,7 +138,7 @@ public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await response.Content.ReadAsStringAsync();
         result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
@@ -161,7 +161,7 @@ public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
             .Extract()
             .Response();
 
-        var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var result = await response.Content.ReadAsStringAsync();
         result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 }

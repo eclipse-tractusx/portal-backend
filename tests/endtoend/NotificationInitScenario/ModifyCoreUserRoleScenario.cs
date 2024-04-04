@@ -51,13 +51,13 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     public async Task Scenario_HappyPath_AssignAndUnassignCoreUserRoles()
     {
         await GetPortalUserToken();
-        _companyUserId = await GetCompanyUserId().ConfigureAwait(false);
+        _companyUserId = await GetCompanyUserId();
 
         _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
 
-        var assignedRoles = await GetUserAssignedRoles().ConfigureAwait(false);
-        var roleToModify = await GetRandomRoleToModify(assignedRoles).ConfigureAwait(false);
+        var assignedRoles = await GetUserAssignedRoles();
+        var roleToModify = await GetRandomRoleToModify(assignedRoles);
 
         ModifyCoreUserRoles_AssignRole(assignedRoles, roleToModify);
         var notificationAddContent = GetNotificationCreated(NotificationTypeId.ROLE_UPDATE_CORE_OFFER);
@@ -86,7 +86,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
     {
         var newRoles = new List<string>();
 
-        var existingRoles = await GetCoreOfferRolesNames().ConfigureAwait(false);
+        var existingRoles = await GetCoreOfferRolesNames();
         foreach (var t in existingRoles)
         {
             newRoles.AddRange(from t1 in assignedRoles where t != t1 select t);
@@ -111,7 +111,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<List<OfferRoleInfos>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var data = DataHandleHelper.DeserializeData<List<OfferRoleInfos>>(await response.Content.ReadAsStringAsync());
         if (data == null)
             throw new Exception("Cannot fetch core user roles");
         var roleNames = new List<string>();
@@ -185,7 +185,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         var companyUserDetails = DataHandleHelper.DeserializeData<CompanyUserDetails>(data);
         if (companyUserDetails is null)
         {
@@ -219,7 +219,7 @@ public class ModifyCoreUserRoleScenario : EndToEndTestBase
             .And()
             .Extract()
             .Response();
-        var data = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var data = await response.Content.ReadAsStringAsync();
         var assignedRoles = DataHandleHelper.DeserializeData<CompanyUserDetails>(data)?.AssignedRoles.First().UserRoles
             .ToList();
         return assignedRoles ?? new List<string>();

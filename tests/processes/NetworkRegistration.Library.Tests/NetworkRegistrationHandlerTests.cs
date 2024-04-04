@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -91,7 +90,7 @@ public class NetworkRegistrationHandlerTests
             .Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -121,7 +120,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -147,7 +146,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -181,7 +180,7 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -223,7 +222,7 @@ public class NetworkRegistrationHandlerTests
             .Returns("DisplayName for Idp2");
 
         // Act
-        var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         A.CallTo(() => _userProvisioningService.HandleCentralKeycloakCreation(A<UserCreationRoleDataIdpInfo>._, user1.CompanyUserId, A<string>._, A<string>._, null, A<IEnumerable<IdentityProviderLink>>._, A<IUserRepository>._, A<IUserRolesRepository>._))
@@ -273,7 +272,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -308,7 +307,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -343,7 +342,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -380,7 +379,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();

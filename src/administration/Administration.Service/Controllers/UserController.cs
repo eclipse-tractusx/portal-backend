@@ -124,7 +124,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
     {
-        var result = await _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate).ConfigureAwait(false);
+        var result = await _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetOwnCompanyUserDetails), new { companyUserId = result }, result);
     }
 

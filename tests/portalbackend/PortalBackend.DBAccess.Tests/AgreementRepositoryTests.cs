@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -50,12 +49,11 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckAgreementExistsAsync_WithExistingEntry_ReturnsTrue()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE)
-            .ConfigureAwait(false);
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf"), OfferTypeId.SERVICE);
 
         // Assert
         results.Should().BeTrue();
@@ -65,12 +63,11 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckAgreementExistsAsync_WithInvalidSubscription_ReturnsFalse()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE)
-            .ConfigureAwait(false);
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), Guid.NewGuid(), OfferTypeId.SERVICE);
 
         // Assert
         results.Should().BeFalse();
@@ -80,12 +77,11 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckAgreementExistsAsync_WithInvalidOfferType_ReturnsFalse()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var results = await sut
-            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP)
-            .ConfigureAwait(false);
+            .CheckAgreementExistsForSubscriptionAsync(new Guid("979a29b1-40c2-4169-979c-43c3156dbf64"), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.APP);
 
         // Assert
         results.Should().BeFalse();
@@ -95,10 +91,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckAgreementExistsAsync_WithInvalidGuid_ReturnsFalse()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.CheckAgreementExistsForSubscriptionAsync(Guid.NewGuid(), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.SERVICE).ConfigureAwait(false);
+        var results = await sut.CheckAgreementExistsForSubscriptionAsync(Guid.NewGuid(), new Guid("28149c6d-833f-49c5-aea2-ab6a5a37f462"), OfferTypeId.SERVICE);
 
         // Assert
         results.Should().BeFalse();
@@ -112,10 +108,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetActiveServices_ReturnsExpectedAppCount()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetAgreementsForCompanyRolesUntrackedAsync().ToListAsync();
 
         // Assert
         results.Should().NotBeNullOrEmpty();
@@ -130,10 +126,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferAgreementDataForIamUser_WithExistingUser_ReturnsExpectedCount()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetOfferAgreementDataForOfferId(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"), OfferTypeId.SERVICE).ToListAsync();
 
         // Assert
         results.Should().ContainSingle()
@@ -147,10 +143,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferAgreementDataForIamUser_WithNotExistingUser_ReturnsEmptyList()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferAgreementDataForOfferId(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOfferAgreementDataForOfferId(Guid.NewGuid(), OfferTypeId.SERVICE).ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -165,10 +161,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAgreementIdsForOfferAsync_WithExistingAgreementForOffer_ReturnsExpected()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea")).ToListAsync();
 
         // Assert
         result.Should().ContainSingle()
@@ -181,10 +177,10 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAgreementIdsForOfferAsync_WithNonExistingAgreementForOffer_ReturnsEmpty()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAgreementIdsForOfferAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA4")).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -194,7 +190,7 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(AgreementRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new AgreementRepository(context);
         return (sut, context);
     }

@@ -47,7 +47,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task CreateCompanyInvitation_WithValidData_Creates()
     {
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
         var processId = Guid.NewGuid();
 
         var invitation = sut.CreateCompanyInvitation("tony", "stark", "tony@stark.com", "stark industry", processId, x =>
@@ -72,10 +72,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyInvitationForProcessId_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetCompanyInvitationForProcessId(_processId).ConfigureAwait(false);
+        var data = await sut.GetCompanyInvitationForProcessId(_processId);
 
         // Assert
         data.Should().Be(_invitationId);
@@ -85,10 +85,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyInvitationForProcessId_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetCompanyInvitationForProcessId(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetCompanyInvitationForProcessId(Guid.NewGuid());
 
         // Assert
         data.Should().Be(Guid.Empty);
@@ -102,10 +102,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOrganisationNameForInvitation_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetOrganisationNameForInvitation(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetOrganisationNameForInvitation(_invitationId);
 
         // Assert
         data.Should().Be("stark industry");
@@ -115,10 +115,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOrganisationNameForInvitation_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetOrganisationNameForInvitation(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetOrganisationNameForInvitation(Guid.NewGuid());
 
         // Assert
         data.Should().BeNull();
@@ -132,10 +132,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInvitationUserData_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetInvitationUserData(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetInvitationUserData(_invitationId);
 
         // Assert
         data.Exists.Should().BeTrue();
@@ -147,10 +147,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInvitationUserData_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetInvitationUserData(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetInvitationUserData(Guid.NewGuid());
 
         // Assert
         data.Exists.Should().BeFalse();
@@ -164,7 +164,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyCompanyInvitation()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
         var existingId = Guid.NewGuid();
 
         // Act
@@ -187,10 +187,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetIdpNameForInvitationId_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetIdpNameForInvitationId(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetIdpNameForInvitationId(_invitationId);
 
         // Assert
         data.Should().Be("test idp");
@@ -200,10 +200,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetIdpNameForInvitationId_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetIdpNameForInvitationId(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetIdpNameForInvitationId(Guid.NewGuid());
 
         // Assert
         data.Should().BeNull();
@@ -217,10 +217,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUpdateCentralIdpUrlData_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUpdateCentralIdpUrlData(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetUpdateCentralIdpUrlData(_invitationId);
 
         // Assert
         data.OrgName.Should().Be("stark industry");
@@ -236,10 +236,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetIdpAndOrgNameAsync_WithExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetIdpAndOrgName(_invitationId).ConfigureAwait(false);
+        var data = await sut.GetIdpAndOrgName(_invitationId);
 
         // Assert
         data.Exists.Should().BeTrue();
@@ -251,10 +251,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetInvitationIdpCreationData_WithoutExistingForProcessId_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetIdpAndOrgName(Guid.NewGuid()).ConfigureAwait(false);
+        var data = await sut.GetIdpAndOrgName(Guid.NewGuid());
 
         // Assert
         data.Exists.Should().BeFalse();
@@ -266,14 +266,14 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ICompanyInvitationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new CompanyInvitationRepository(context);
         return (sut, context);
     }
 
     private async Task<ICompanyInvitationRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new CompanyInvitationRepository(context);
         return sut;
     }

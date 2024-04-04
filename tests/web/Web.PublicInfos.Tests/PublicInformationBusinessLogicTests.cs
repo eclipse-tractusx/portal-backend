@@ -64,7 +64,7 @@ public class PublicInformationBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(_participantCompany);
 
         // Act
-        var result = await _sut.GetPublicUrls().ConfigureAwait(false);
+        var result = await _sut.GetPublicUrls();
 
         // Assert
         result.Should().HaveCount(1).And.Satisfy(x => x.HttpMethods == "GET" && x.Url == "all");
@@ -77,7 +77,7 @@ public class PublicInformationBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(_appProviderCompany);
 
         // Act
-        var result = await _sut.GetPublicUrls().ConfigureAwait(false);
+        var result = await _sut.GetPublicUrls();
 
         // Assert
         result.Should().HaveCount(3).And.Satisfy(

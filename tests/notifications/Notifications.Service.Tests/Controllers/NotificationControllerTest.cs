@@ -67,7 +67,7 @@ public class NotificationControllerTest
             .Returns(paginationResponse);
 
         //Act
-        var result = await _controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>()).ConfigureAwait(false);
+        var result = await _controller.GetNotifications(isRead: isRead, notificationTypeId: typeId, notificationTopicId: topicId, onlyDueDate: onlyDueDate, sorting: sorting, doneState: doneState, searchTypeIds: Enumerable.Empty<NotificationTypeId>());
 
         //Assert
         A.CallTo(() => _logic.GetNotificationsAsync(0, 15, A<NotificationFilters>.That.Matches(x => x.IsRead == isRead && x.TypeId == typeId && x.TopicId == topicId && x.OnlyDueDate == onlyDueDate && x.Sorting == sorting && x.DoneState == doneState), SearchSemanticTypeId.AND)).MustHaveHappenedOnceExactly();
@@ -85,7 +85,7 @@ public class NotificationControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.GetNotification(notificationId).ConfigureAwait(false);
+        var result = await _controller.GetNotification(notificationId);
 
         //Assert
         A.CallTo(() => _logic.GetNotificationDetailDataAsync(notificationId)).MustHaveHappenedOnceExactly();
@@ -101,7 +101,7 @@ public class NotificationControllerTest
             .Returns(data);
 
         //Act
-        var result = await _controller.NotificationCountDetails().ConfigureAwait(false);
+        var result = await _controller.NotificationCountDetails();
 
         //Assert
         A.CallTo(() => _logic.GetNotificationCountDetailsAsync()).MustHaveHappenedOnceExactly();
@@ -116,7 +116,7 @@ public class NotificationControllerTest
         var notificationId = Guid.NewGuid();
 
         //Act
-        var result = await _controller.SetNotificationToRead(notificationId).ConfigureAwait(false);
+        var result = await _controller.SetNotificationToRead(notificationId);
 
         //Assert
         A.CallTo(() => _logic.SetNotificationStatusAsync(notificationId, true)).MustHaveHappenedOnceExactly();
@@ -130,7 +130,7 @@ public class NotificationControllerTest
         var notificationId = Guid.NewGuid();
 
         //Act
-        var result = await _controller.DeleteNotification(notificationId).ConfigureAwait(false);
+        var result = await _controller.DeleteNotification(notificationId);
 
         //Assert
         A.CallTo(() => _logic.DeleteNotificationAsync(notificationId)).MustHaveHappenedOnceExactly();
