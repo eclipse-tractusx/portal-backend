@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -57,7 +59,7 @@ public record CompanyWithAddressData(
     string ZipCode,
     [property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
     [property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
-    IEnumerable<UniqueIdentifierData> UniqueIds
+    IEnumerable<CompanyUniqueIdData> UniqueIds
 );
 
 /// <summary>

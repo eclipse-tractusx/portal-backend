@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
@@ -128,7 +129,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new UniqueIdentifierData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
         );
     }
 
