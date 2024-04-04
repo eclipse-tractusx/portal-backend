@@ -23,10 +23,12 @@ on:
     branches: [main, dev]
     paths:
       - 'src/**'
+      - 'tests/**'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'src/**'
+      - 'tests/**'
   workflow_dispatch:
 
 jobs:
