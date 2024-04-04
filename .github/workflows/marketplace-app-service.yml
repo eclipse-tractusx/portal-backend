@@ -80,7 +80,7 @@ jobs:
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
-          file: docker/Dockerfile-marketplace-app-service
+          file: ./docker/Dockerfile-marketplace-app-service
           platforms: linux/amd64, linux/arm64
           pull: true
           push: ${{ github.event_name != 'pull_request' }}
@@ -95,7 +95,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
           repository: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
-          readme-filepath: "./docker/notice-marketplace-app-service.md"
+          readme-filepath: ./docker/notice-marketplace-app-service.md
 
   auth-and-dispatch:
     needs: build-and-push-image
