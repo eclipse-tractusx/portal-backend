@@ -169,13 +169,21 @@ public class RegistrationBusinessLogicTest
 
     #region GetCompanyWithAddressAsync
 
-    [Fact]
-    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE124356789")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE233456789")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE123124145")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "213800WSGIIZCXF1P572")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "54930084UKLVMY22DS16")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "5493000IBP32UQZ0KL24")]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult(UniqueIdentifierId identifierIdType, string companyUniqueIds)
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
             .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
+            .With(x => x.CompanyIdentifiers, Enumerable.Repeat(new ValueTuple<UniqueIdentifierId, string>(identifierIdType, companyUniqueIds), 1))
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
@@ -202,6 +210,7 @@ public class RegistrationBusinessLogicTest
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
         result.UniqueIds.Should().HaveSameCount(data.CompanyIdentifiers);
+        result.UniqueIds.Should().AllSatisfy(u => u.Should().Match<CompanyUniqueIdData>(u => u.UniqueIdentifierId == identifierIdType && u.Value == companyUniqueIds));
     }
 
     [Fact]
