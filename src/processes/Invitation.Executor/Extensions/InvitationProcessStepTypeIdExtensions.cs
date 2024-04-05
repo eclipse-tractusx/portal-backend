@@ -35,7 +35,6 @@ public static class InvitationProcessStepTypeIdExtensions
             ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM },
             ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_CLIENT },
             ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP },
-            ProcessStepTypeId.INVITATION_SEND_MAIL => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL },
             ProcessStepTypeId.INVITATION_CREATE_USER => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER },
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP },
             _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process Invitation")

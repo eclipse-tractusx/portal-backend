@@ -65,7 +65,6 @@ public class InvitationProcessTypeExecutorTests
             ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.INVITATION_CREATE_USER,
-            ProcessStepTypeId.INVITATION_SEND_MAIL
         };
     }
 
@@ -322,7 +321,6 @@ public class InvitationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL, false)]
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act

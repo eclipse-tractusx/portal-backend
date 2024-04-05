@@ -474,51 +474,6 @@ public class InvitationBusinessLogicTests
 
     #endregion
 
-    #region RetriggerInvitationSendMail
-
-    [Fact]
-    public async Task RetriggerInvitationSendMail_CallsExpected()
-    {
-        // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
-        var processStepTypeId = ProcessStepTypeId.INVITATION_SEND_MAIL;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
-        var processStepId = Guid.NewGuid();
-        SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, verifyProcessData));
-
-        // Act
-        await _sut.RetriggerInvitationSendMail(process.Id);
-
-        // Assert
-        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task RetriggerInvitationSendMail_WithNotExistingProcess_ThrowsException()
-    {
-        // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
-        var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _sut.RetriggerInvitationSendMail(process.Id);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"process {process.Id} does not exist");
-    }
-
-    #endregion
-
     #region Setup
 
     private void SetupFakesForInvite(List<Process> processes, List<ProcessStep> processSteps, List<CompanyInvitation> invitations)
