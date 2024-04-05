@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -173,14 +174,12 @@ public class RegistrationBusinessLogicTest
 
     #region GetCompanyWithAddressAsync
 
-    
     [Theory]
     [InlineData(UniqueIdentifierId.VAT_ID, "DE124356789")]
-    [InlineData(UniqueIdentifierId.VAT_ID, "DE233456789")]
-    [InlineData(UniqueIdentifierId.VAT_ID, "DE123124145")]
-    [InlineData(UniqueIdentifierId.LEI_CODE, "213800WSGIIZCXF1P572")]
     [InlineData(UniqueIdentifierId.LEI_CODE, "54930084UKLVMY22DS16")]
-    [InlineData(UniqueIdentifierId.LEI_CODE, "5493000IBP32UQZ0KL24")]
+    [InlineData(UniqueIdentifierId.EORI, "DE123456789012345")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB123456")]
+    [InlineData(UniqueIdentifierId.VIES, "ATU99999999")]
     public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult(UniqueIdentifierId identifierIdType, string companyUniqueIds)
     {
         // Arrange
