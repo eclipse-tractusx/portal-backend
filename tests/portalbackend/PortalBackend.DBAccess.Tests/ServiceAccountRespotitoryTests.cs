@@ -294,7 +294,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
             .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
-                && x.IsOwner == false && x.IsProvider == true);
+                && !x.IsOwner && x.IsProvider);
     }
 
     [Fact]
