@@ -236,7 +236,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         if (expected > 0)
         {
             result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
-            result.Data.First().IsOwner.Should().BeFalse();
+            result.Data.First().IsOwner.Should().BeTrue();
+            result.Data.First().IsProvider.Should().BeFalse();
         }
     }
 
@@ -292,7 +293,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED);
+            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
+                && x.IsOwner == false && x.IsProvider == true);
     }
 
     [Fact]
