@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
@@ -173,13 +174,19 @@ public class RegistrationBusinessLogicTest
 
     #region GetCompanyWithAddressAsync
 
-    [Fact]
-    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE124356789")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "54930084UKLVMY22DS16")]
+    [InlineData(UniqueIdentifierId.EORI, "DE123456789012345")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB123456")]
+    [InlineData(UniqueIdentifierId.VIES, "ATU99999999")]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult(UniqueIdentifierId identifierIdType, string companyUniqueIds)
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
             .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
+            .With(x => x.CompanyIdentifiers, Enumerable.Repeat(new ValueTuple<UniqueIdentifierId, string>(identifierIdType, companyUniqueIds), 1))
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
@@ -206,6 +213,7 @@ public class RegistrationBusinessLogicTest
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
         result.UniqueIds.Should().HaveSameCount(data.CompanyIdentifiers);
+        result.UniqueIds.Should().AllSatisfy(u => u.Should().Match<CompanyUniqueIdData>(u => u.UniqueIdentifierId == identifierIdType && u.Value == companyUniqueIds));
     }
 
     [Fact]
