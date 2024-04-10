@@ -515,4 +515,16 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 a.CompanyId,
                 a.ApplicationStatusId))
             .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => new ValueTuple<bool, string?, string?>(
+                true,
+                ca.Company!.CompanyWalletData == null
+                    ? null
+                    : ca.Company!.CompanyWalletData!.Did,
+                ca.Company.BusinessPartnerNumber
+            ))
+            .SingleOrDefaultAsync();
 }

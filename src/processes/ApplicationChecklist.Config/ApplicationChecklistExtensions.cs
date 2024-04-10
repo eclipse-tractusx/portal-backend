@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
@@ -41,7 +42,8 @@ public static class ApplicationChecklistExtensions
             .AddClearinghouseService(section.GetSection("Clearinghouse"))
             .AddSdFactoryService(section.GetSection("SdFactory"))
             .AddDimService(section.GetSection("Dim"))
-            .AddIssuerComponentService(section.GetSection("IssuerComponent"));
+            .AddIssuerComponentService(section.GetSection("IssuerComponent"))
+            .AddBpnDidResolver(section.GetSection("BpnDidResolver"));
 
     public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section) =>
         services

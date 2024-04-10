@@ -192,9 +192,9 @@ public class DimBusinessLogic : IDimBusinessLogic
                 ProcessStepStatusId.DONE,
                 checklist =>
                 {
-                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
                 },
-                [ProcessStepTypeId.REQUEST_BPN_CREDENTIAL],
+                [ProcessStepTypeId.TRANSMIT_BPN_DID],
                 null,
                 true,
                 null);
