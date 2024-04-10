@@ -65,7 +65,8 @@
     "application_status_id": 8,
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
     "company_application_type_id": 1,
-    "last_editor_id": null
+    "last_editor_id": null,
+    "checklist_process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece"
   },
   {
     "id": "6b2d1263-c073-4a48-bfaf-704dc154ca9c",

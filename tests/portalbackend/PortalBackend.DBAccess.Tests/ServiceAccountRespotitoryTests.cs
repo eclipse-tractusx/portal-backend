@@ -34,7 +34,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
-    private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201006");
+    private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201007");
 
     public ServiceAccountRepositoryTests(TestDbFixture testDbFixture)
     {
@@ -124,7 +124,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBe(default);
-        result!.ClientClientId.Should().Be("sa-cl5-custodian-1");
+        result!.ClientClientId.Should().Be("sa-cl5-custodian-2");
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-1", true, UserStatusId.ACTIVE)(0, 10);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-2", true, UserStatusId.ACTIVE)(0, 10);
 
         // Assert
         result!.Count.Should().Be(1);
@@ -277,7 +277,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-1", null, UserStatusId.ACTIVE)(0, 10);
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-2", null, UserStatusId.ACTIVE)(0, 10);
 
         // Assert
         result!.Count.Should().Be(1);
@@ -295,7 +295,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null, UserStatusId.ACTIVE)(0, 10);
 
         // Assert
-        result!.Count.Should().Be(11);
+        result!.Count.Should().Be(10);
         result.Data.Should().HaveCount(10);
     }
 
