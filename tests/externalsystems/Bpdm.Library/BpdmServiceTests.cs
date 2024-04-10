@@ -152,12 +152,33 @@ public class BpdmServiceTests
 
     #region FetchInputLegalEntity
 
-    [Fact]
-    public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
+    [Theory]
+    [InlineData("DE234567890", "EU_VAT_ID_DE")]
+    [InlineData("CZ12345678", "EU_VAT_ID_CZ")]
+    [InlineData("PL1234567890", "EU_VAT_ID_PL")]
+    [InlineData("BE1234567890", "EU_VAT_ID_BE")]
+    [InlineData("CHE123456789", "EU_VAT_ID_CH")]
+    [InlineData("DK12345678", "EU_VAT_ID_DK")]
+    [InlineData("ES12345678", "EU_VAT_ID_ES")]
+    [InlineData("GB12345678", "EU_VAT_ID_GB")]
+    [InlineData("NO12345678", "EU_VAT_ID_NO")]
+    [InlineData("FR12345678901", "EU_VAT_ID_FR")]
+    [InlineData("CHE-123.456.789", "CH_UID")]
+    [InlineData("12345678901", "FR_SIREN")]
+    [InlineData("ATU12345678", "EU_VAT_ID_AT")]
+    [InlineData("12345678", "DE_BNUM")]
+    [InlineData("12345678", "CZ_ICO")]
+    [InlineData("1234567890", "BE_ENT_NO")]
+    [InlineData("12345678", "CVR_DK")]
+    [InlineData("12345678", "ID_CRN")]
+    [InlineData("12345678", "NO_ORGID")]
+    [InlineData("12345678", "LEI_ID")]
+    [InlineData("283329464", "DUNS_ID")]
+    public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected(string identifierValue, string identifierType)
     {
         // Arrange
         const string externalId = "0bf60442-09a8-4f09-811b-8854626ed5a6";
-        const string json = @"{
+        var json = @"{
             ""totalElements"": 1,
             ""totalPages"": 1,
             ""page"": 0,
@@ -169,8 +190,8 @@ public class BpdmServiceTests
                     ],
                     ""identifiers"": [
                         {
-                            ""value"": ""DE234567890"",
-                            ""type"": ""EU_VAT_ID_DE"",
+                            ""value"": ""replaceTestValue"",
+                            ""type"": ""replaceTestType"",
                             ""issuingBody"": null
                         }
                     ],
@@ -220,6 +241,8 @@ public class BpdmServiceTests
                 }
             ]
         }";
+
+        json = json.Replace("replaceTestValue", identifierValue).Replace("replaceTestType", identifierType);
 
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
