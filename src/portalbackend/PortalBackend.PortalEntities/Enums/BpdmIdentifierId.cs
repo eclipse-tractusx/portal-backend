@@ -42,4 +42,5 @@ public enum BpdmIdentifierId
     ID_CRN = 18,
     NO_ORGID = 19,
     LEI_ID = 20,
+    DUNS_ID = 21,
 }
