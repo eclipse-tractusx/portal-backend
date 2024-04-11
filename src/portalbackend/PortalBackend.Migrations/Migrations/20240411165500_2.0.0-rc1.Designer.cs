@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240411163814_618-bpdm-identifier")]
-    partial class _618bpdmidentifier
+    [Migration("20240411165500_2.0.0-rc1")]
+    partial class _200rc1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
