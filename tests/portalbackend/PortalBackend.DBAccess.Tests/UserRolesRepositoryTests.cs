@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -182,6 +183,39 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetActiveAppRoles
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_InActiveApp_returnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP, Constants.DefaultLanguage).ToListAsync();
+
+        // Assert
+        data.Should().HaveCount(1).And.Satisfy(x => x.isActiveApp == false && x.activeAppRoleDetails.Role == "Company Admin");
+
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ActiveApp_returnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"), OfferTypeId.APP, Constants.DefaultLanguage).ToListAsync();
+
+        // Assert
+        data.Should().HaveCount(2).And.Satisfy(
+            x => x.isActiveApp == true && x.activeAppRoleDetails.Role == "EarthCommerce.AdministratorRC_QAS2",
+            x => x.isActiveApp == true && x.activeAppRoleDetails.Role == "EarthCommerce.Advanced.BuyerRC_QAS2");
+
+    }
+
+    #endregion
     private async Task<IUserRolesRepository> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();

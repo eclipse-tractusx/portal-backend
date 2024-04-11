@@ -256,4 +256,22 @@ public class AppChangeController : ControllerBase
         await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets the client roles for the given active app.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
+    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
+    /// <returns>Returns the client roles for the given active app.</returns>
+    /// <remarks>Example: GET: /api/apps/AppChange/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Returns the client roles.</response>
+    /// <response code="400">The language does not exist.</response>
+    /// <response code="404">The app was not found.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("{appId}/roles")]
+    [ProducesResponseType(typeof(OfferRoleInfos), StatusCodes.Status200OK)]
+    public IAsyncEnumerable<ActiveAppRoleDetails> GetActiveAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
+        _businessLogic.GetActiveAppRolesAsync(appId, languageShortName);
 }

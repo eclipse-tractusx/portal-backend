@@ -1147,4 +1147,51 @@ public class AppChangeBusinessLogicTest
 
     #endregion
 
+    #region GetActiveAppRoles
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_Throws_ConflictException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = new[] { (false, _fixture.Create<ActiveAppRoleDetails>()) };
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(appId, OfferTypeId.APP, "en"))
+            .Returns(activeAppRoleDetails.ToAsyncEnumerable());
+
+        // Act
+        async Task Act() => await _sut.GetActiveAppRolesAsync(appId, "en").ToListAsync();
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
+        result.Message.Should().Be($"App {appId} is InActive");
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var userRole1 = new ActiveAppRoleDetails("TestRole1", new[]{
+            new ActiveAppUserRoleDescription("en", "TestRole1 description")
+        });
+        var userRole2 = new ActiveAppRoleDetails("TestRole2", new[]{
+            new ActiveAppUserRoleDescription("en", "TestRole2 description")
+        });
+        var activeAppRoleDetails = new[] {
+            (true,userRole1),
+            (true, userRole2)
+        };
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(appId, OfferTypeId.APP, "en"))
+            .Returns(activeAppRoleDetails.ToAsyncEnumerable());
+
+        // Act
+        var result = await _sut.GetActiveAppRolesAsync(appId, "en").ToListAsync();
+
+        // Assert
+        result.Should().NotBeNull().And.HaveCount(2).And.Satisfy(x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
+        x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
+    }
+
+    #endregion
+
 }

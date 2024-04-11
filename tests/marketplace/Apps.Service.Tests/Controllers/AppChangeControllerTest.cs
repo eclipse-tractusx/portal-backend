@@ -193,4 +193,22 @@ public class AppChangeControllerTest
         // Assert
         A.CallTo(() => _logic.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None)).MustHaveHappened();
     }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = _fixture.CreateMany<ActiveAppRoleDetails>(5);
+
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(A<Guid>._, A<string>._))
+         .Returns(activeAppRoleDetails.ToAsyncEnumerable());
+
+        // Act
+        var result = await _controller.GetActiveAppRolesAsync(appId, "en").ToListAsync();
+
+        // Assert
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(A<Guid>._, A<string>._)).MustHaveHappened();
+        result.Should().HaveSameCount(activeAppRoleDetails);
+    }
 }

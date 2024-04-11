@@ -275,4 +275,19 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(instance => technicalUserProfileClient == instance.IamClient!.ClientClientId)
             .SelectMany(instance => instance.App!.UserRoles.Select(role => role.Id))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<(bool isActiveApp, ActiveAppRoleDetails activeAppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string languageShortName) =>
+        _dbContext.UserRoles
+            .AsNoTracking()
+            .Where(roles => roles.Offer!.Id == offerId && roles.Offer.OfferTypeId == offerTypeId)
+            .Select(roles => new ValueTuple<bool, ActiveAppRoleDetails>(
+                roles.Offer!.OfferStatusId == OfferStatusId.ACTIVE,
+                new ActiveAppRoleDetails(
+                    roles.UserRoleText,
+                    roles.UserRoleDescriptions.Where(description => description.LanguageShortName == languageShortName)
+                        .Select(description => new ActiveAppUserRoleDescription(
+                            description.LanguageShortName,
+                            description.Description)))
+            )).ToAsyncEnumerable();
 }
