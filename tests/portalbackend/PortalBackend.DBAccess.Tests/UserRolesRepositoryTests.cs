@@ -195,7 +195,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetActiveAppRolesAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
-        data.Should().HaveCount(1).And.Satisfy(x => x.isActiveApp == false && x.activeAppRoleDetails.Role == "Company Admin");
+        data.Should().HaveCount(1).And.Satisfy(x => !x.isActiveApp && x.activeAppRoleDetails.Role == "Company Admin");
 
     }
 
@@ -210,8 +210,8 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Should().HaveCount(2).And.Satisfy(
-            x => x.isActiveApp == true && x.activeAppRoleDetails.Role == "EarthCommerce.AdministratorRC_QAS2",
-            x => x.isActiveApp == true && x.activeAppRoleDetails.Role == "EarthCommerce.Advanced.BuyerRC_QAS2");
+            x => x.isActiveApp && x.activeAppRoleDetails.Role == "EarthCommerce.AdministratorRC_QAS2",
+            x => x.isActiveApp && x.activeAppRoleDetails.Role == "EarthCommerce.Advanced.BuyerRC_QAS2");
 
     }
 
