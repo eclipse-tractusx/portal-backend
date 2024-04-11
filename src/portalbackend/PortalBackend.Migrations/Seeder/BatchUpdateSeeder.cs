@@ -151,6 +151,14 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.SelfDescriptionDocumentId = entry.SelfDescriptionDocumentId;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        await SeedTable<CompanyApplication>("company_applications",
+            x => x.Id,
+            x => x.dbEntity.ChecklistProcessId == null,
+            (dbEntry, entry) =>
+            {
+                dbEntry.ChecklistProcessId = entry.ChecklistProcessId;
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
