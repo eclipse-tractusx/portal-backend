@@ -350,5 +350,109 @@
     "process_id": "09d27ace-342d-47b2-8080-125f59fea6b0",
     "date_created": "2023-02-21 08:15:20.479000 +00:00",
     "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3940",
+    "process_step_type_id": 2,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3941",
+    "process_step_type_id": 3,
+    "process_step_status_id": 4,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3942",
+    "process_step_type_id": 14,
+    "process_step_status_id": 3,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3943",
+    "process_step_type_id": 4,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3944",
+    "process_step_type_id": 1,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3945",
+    "process_step_type_id": 11,
+    "process_step_status_id": 1,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3946",
+    "process_step_type_id": 5,
+    "process_step_status_id": 1,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3947",
+    "process_step_type_id": 7,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3948",
+    "process_step_type_id": 19,
+    "process_step_status_id": 1,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd3949",
+    "process_step_type_id": 10,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd394a",
+    "process_step_type_id": 18,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd394b",
+    "process_step_type_id": 12,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
+  },
+  {
+    "id": "ad06aefd-6b37-455d-b26e-2a8feccd394c",
+    "process_step_type_id": 9,
+    "process_step_status_id": 2,
+    "process_id": "4d3676ae-c4fd-4a5c-a13e-5764ee1c4ece",
+    "date_created": "2023-02-21 08:15:20.479000 +00:00",
+    "date_last_changed": null
   }
 ]

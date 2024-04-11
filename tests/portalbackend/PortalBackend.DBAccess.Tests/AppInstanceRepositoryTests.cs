@@ -126,7 +126,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetAssignedServiceAccounts(instanceId).ToListAsync();
 
         result.Should().HaveCount(1)
-            .And.ContainSingle().Which.Should().Be(new Guid("7e85a0b8-0001-ab67-10d1-0ef508201006"));
+            .And.ContainSingle().Which.Should().Be(new Guid("7e85a0b8-0001-ab67-10d1-0ef508201007"));
     }
 
     [Fact]
