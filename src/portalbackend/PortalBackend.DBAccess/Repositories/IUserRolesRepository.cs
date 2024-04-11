@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -70,4 +71,12 @@ public interface IUserRolesRepository
 
     IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetRolesForClient(string technicalUserProfileClient);
+
+    /// <summary>
+    /// Gets userRoles for an offerId
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="languageShortName"></param>
+    /// <returns></returns>
+    Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName);
 }

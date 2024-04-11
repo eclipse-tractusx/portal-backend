@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -362,4 +363,19 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <inheritdoc />
     public async Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken) =>
         await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, OfferTypeId.APP, _settings.UploadActiveAppDocumentTypeIds, OfferStatusId.ACTIVE, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync(Guid appId, string? languageShortName)
+    {
+        var (isValid, isActive, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveAppRolesAsync(appId, OfferTypeId.APP, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!isValid)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        if (!isActive)
+        {
+            throw new ConflictException($"App {appId} is not Active");
+        }
+        return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
+    }
 }

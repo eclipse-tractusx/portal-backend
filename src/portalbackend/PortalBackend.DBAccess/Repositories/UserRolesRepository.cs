@@ -275,4 +275,30 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(instance => technicalUserProfileClient == instance.IamClient!.ClientClientId)
             .SelectMany(instance => instance.App!.UserRoles.Select(role => role.Id))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
+        _dbContext.Offers
+            .AsNoTracking()
+            .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new
+            {
+                Active = offer.OfferStatusId == OfferStatusId.ACTIVE,
+                Roles = offer.UserRoles
+            })
+            .Select(x => new ValueTuple<bool, bool, IEnumerable<ActiveAppRoleDetails>?>(
+                true,
+                x.Active,
+                x.Active
+                    ? x.Roles.Select(role =>
+                        new ActiveAppRoleDetails(
+                            role.UserRoleText,
+                            role.UserRoleDescriptions.Where(description =>
+                                (languageShortName != null && description.LanguageShortName == languageShortName) ||
+                                    description.LanguageShortName == defaultLanguageShortName)
+                                .Select(description => new ActiveAppUserRoleDescription(
+                                    description.LanguageShortName,
+                                    description.Description))))
+                    : null))
+            .SingleOrDefaultAsync();
 }

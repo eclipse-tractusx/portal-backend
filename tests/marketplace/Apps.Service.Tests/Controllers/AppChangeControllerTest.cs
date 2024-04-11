@@ -20,7 +20,6 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
@@ -29,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -192,5 +192,26 @@ public class AppChangeControllerTest
 
         // Assert
         A.CallTo(() => _logic.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var language = _fixture.Create<string>();
+        var activeAppRoleDetails = _fixture.CreateMany<ActiveAppRoleDetails>(5).ToImmutableArray();
+
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(A<Guid>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        var result = await _controller.GetActiveAppRolesAsync(appId, language);
+
+        // Assert
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(appId, language))
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(activeAppRoleDetails)
+            .And.ContainInOrder(activeAppRoleDetails);
     }
 }
