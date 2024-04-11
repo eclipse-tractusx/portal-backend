@@ -170,14 +170,14 @@
     "description": "BPDM Sharing Input Consumer - description tbd"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "de",
-    "description": "Anzeigen der in der Pool-Datenbank verfügbaren Geschäftspartnerdaten."
+    "description": "BPDM Pool Admin - Beschreibung tbd"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "en",
-    "description": "View business partner data available in the pool database."
+    "description": "BPDM Pool Admin - description tbd"
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
