@@ -228,5 +228,15 @@
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
     "description": "BPDM Sharing Input Manager - description tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "language_short_name": "de",
+    "description": "BPDM Pool Consumer - Beschreibung tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "language_short_name": "en",
+    "description": "BPDM Pool Consumer - description tbd"
   }
 ]

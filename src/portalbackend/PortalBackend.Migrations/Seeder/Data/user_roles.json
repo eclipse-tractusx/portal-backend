@@ -142,5 +142,11 @@
     "user_role": "BPDM Sharing Input Manager",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "user_role": "BPDM Pool Consumer",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
   }
 ]
