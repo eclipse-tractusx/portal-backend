@@ -99,5 +99,5 @@ public interface IAppChangeBusinessLogic
     /// </summary>
     /// <param name="appId">Id of the offer</param>
     /// <param name="languageShortName"></param>
-    IAsyncEnumerable<ActiveAppRoleDetails> GetActiveAppRolesAsync(Guid appId, string? languageShortName);
+    Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync(Guid appId, string? languageShortName);
 }

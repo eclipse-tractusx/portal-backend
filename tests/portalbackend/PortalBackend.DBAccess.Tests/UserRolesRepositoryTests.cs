@@ -168,10 +168,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var userRoleConfig = new[]{
-            new UserRoleConfig("not-existing-client", new []
-            {
+            new UserRoleConfig("not-existing-client",
+            [
                 "Company Admin"
-            })};
+            ])};
         var sut = await CreateSut();
 
         // Act
@@ -186,33 +186,51 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetActiveAppRoles
 
     [Fact]
-    public async Task GetActiveAppRolesAsync_InActiveApp_returnsExpected()
+    public async Task GetActiveAppRolesAsync_NonExistingApp_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetActiveAppRolesAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP, Constants.DefaultLanguage).ToListAsync();
+        var data = await sut.GetActiveAppRolesAsync(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
 
         // Assert
-        data.Should().HaveCount(1).And.Satisfy(x => !x.isActiveApp && x.activeAppRoleDetails.Role == "Company Admin");
-
+        data.IsValid.Should().BeFalse();
+        data.IsActive.Should().BeFalse();
+        data.AppRoleDetails.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetActiveAppRolesAsync_ActiveApp_returnsExpected()
+    public async Task GetActiveAppRolesAsync_InActiveApp_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetActiveAppRolesAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"), OfferTypeId.APP, Constants.DefaultLanguage).ToListAsync();
+        var data = await sut.GetActiveAppRolesAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
 
         // Assert
-        data.Should().HaveCount(2).And.Satisfy(
-            x => x.isActiveApp && x.activeAppRoleDetails.Role == "EarthCommerce.AdministratorRC_QAS2",
-            x => x.isActiveApp && x.activeAppRoleDetails.Role == "EarthCommerce.Advanced.BuyerRC_QAS2");
+        data.IsValid.Should().BeTrue();
+        data.IsActive.Should().BeFalse();
+        data.AppRoleDetails.Should().BeNull();
+    }
 
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ActiveApp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
+
+        // Assert
+        data.IsValid.Should().BeTrue();
+        data.IsActive.Should().BeTrue();
+        data.AppRoleDetails.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.Role == "EarthCommerce.AdministratorRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
+                x => x.Role == "EarthCommerce.Advanced.BuyerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"));
     }
 
     #endregion

@@ -277,17 +277,28 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(bool isActiveApp, ActiveAppRoleDetails activeAppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string languageShortName) =>
-        _dbContext.UserRoles
+    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
+        _dbContext.Offers
             .AsNoTracking()
-            .Where(roles => roles.Offer!.Id == offerId && roles.Offer.OfferTypeId == offerTypeId)
-            .Select(roles => new ValueTuple<bool, ActiveAppRoleDetails>(
-                roles.Offer!.OfferStatusId == OfferStatusId.ACTIVE,
-                new ActiveAppRoleDetails(
-                    roles.UserRoleText,
-                    roles.UserRoleDescriptions.Where(description => description.LanguageShortName == languageShortName)
-                        .Select(description => new ActiveAppUserRoleDescription(
-                            description.LanguageShortName,
-                            description.Description)))
-            )).ToAsyncEnumerable();
+            .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new
+            {
+                Active = offer.OfferStatusId == OfferStatusId.ACTIVE,
+                Roles = offer.UserRoles
+            })
+            .Select(x => new ValueTuple<bool, bool, IEnumerable<ActiveAppRoleDetails>?>(
+                true,
+                x.Active,
+                x.Active
+                    ? x.Roles.Select(role =>
+                        new ActiveAppRoleDetails(
+                            role.UserRoleText,
+                            role.UserRoleDescriptions.Where(description =>
+                                (languageShortName != null && description.LanguageShortName == languageShortName) ||
+                                    description.LanguageShortName == defaultLanguageShortName)
+                                .Select(description => new ActiveAppUserRoleDescription(
+                                    description.LanguageShortName,
+                                    description.Description))))
+                    : null))
+            .SingleOrDefaultAsync();
 }

@@ -365,15 +365,17 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         await _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, document, OfferTypeId.APP, _settings.UploadActiveAppDocumentTypeIds, OfferStatusId.ACTIVE, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ActiveAppRoleDetails> GetActiveAppRolesAsync(Guid appId, string? languageShortName)
+    public async Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync(Guid appId, string? languageShortName)
     {
-        await foreach (var result in _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveAppRolesAsync(appId, OfferTypeId.APP, languageShortName ?? Constants.DefaultLanguage))
+        var (isValid, isActive, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveAppRolesAsync(appId, OfferTypeId.APP, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!isValid)
         {
-            if (!result.isActiveApp)
-            {
-                throw new ConflictException($"App {appId} is InActive");
-            }
-            yield return result.activeAppRoleDetails;
+            throw new NotFoundException($"App {appId} does not exist");
         }
+        if (!isActive)
+        {
+            throw new ConflictException($"App {appId} is not Active");
+        }
+        return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
     }
 }

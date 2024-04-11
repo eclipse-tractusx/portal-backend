@@ -78,5 +78,5 @@ public interface IUserRolesRepository
     /// <param name="offerId"></param>
     /// <param name="languageShortName"></param>
     /// <returns></returns>
-    IAsyncEnumerable<(bool isActiveApp, ActiveAppRoleDetails activeAppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string languageShortName);
+    Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName);
 }

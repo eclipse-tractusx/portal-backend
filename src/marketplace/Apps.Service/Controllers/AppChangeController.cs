@@ -271,7 +271,7 @@ public class AppChangeController : ControllerBase
     [Authorize(Roles = "view_client_roles")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/roles")]
-    [ProducesResponseType(typeof(OfferRoleInfos), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<ActiveAppRoleDetails> GetActiveAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
+    [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
         _businessLogic.GetActiveAppRolesAsync(appId, languageShortName);
 }
