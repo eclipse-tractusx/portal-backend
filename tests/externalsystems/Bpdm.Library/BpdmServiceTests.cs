@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -261,6 +262,8 @@ public class BpdmServiceTests
         result.Should().NotBeNull();
         result.ExternalId.Should().Be(externalId);
         result.LegalEntity?.Bpnl.Should().Be("BPNL00000007QGTF");
+        result.Identifiers.Should().ContainSingle()
+            .Which.Should().Match<BpdmIdentifier>(x => x.Type == Enum.Parse<BpdmIdentifierId>(identifierType) && x.Value == identifierValue);
     }
 
     [Fact]
