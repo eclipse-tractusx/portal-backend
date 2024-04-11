@@ -220,13 +220,13 @@
     "description": "BPDM Sharing Admin - description"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "de",
-    "description": "Zugriff auf das BPDM Gate - lesend & schreibend."
+    "description": "BPDM Sharing Input Manager - Beschreibung tbd"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
-    "description": "Access to the BPDM Gate Read & Write data."
+    "description": "BPDM Sharing Input Manager - description"
   }
 ]
