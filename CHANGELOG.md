@@ -2,6 +2,67 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 1.9.0
+
+### Change
+* **Backend Logic**
+  * Save the error details of the clearinghouse service inside the portal db of application checklist/process worker
+* **Apps Services**
+  * updated backend logic of `PUT /api/apps/AppReleaseProcess/{appId}/submit` to allow the submission without defined/configured technical user profile
+* **Administration Service**
+  * remove obsolte endpoint `GET /api/user/app/{appId}/roles`
+  * remove obsolte endpoint `PUT /api/user/app/{appId}/roles`
+  * added connector url inside the response body of `GET /api/administration/Connectors`
+  * added connector url inside the response body of `GET /api/administration/Connectors/managed`
+  * added connector url inside the response body of `GET /api/administration/Connectors/{connectorID}`
+
+### Feature
+* **Certificate Management (Administration Service)**
+  * released new endpoint to delete company owned company certificates `DELETE /api/administration/companydata/companyCertificate/document/{documentId}`
+  * released new endpoint to view other companies certificates via the document ID `GET /api/administration/companydata/companyCertificates/documents/{documentId}`
+  * released specific document endpoint to fetch owned company certificates by documentID `GET /api/administration/companydata/companyCertificates/{documentId}`
+* **Registration Process Worker**
+  * implemented new backend logic for the process step "IDENTITY_WALLET_CREATION" by separating the step logic (bpm credential creation separated and payload changed) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added retrigger endpoint to restarted a failed dim wallet setup step
+  * added postback endpoint to receive the did document and authentication information ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* **Agreement Status**
+  * updated logic of POST and GET agreement endpoint (apps service) to only consider active agreements
+  * updated logic of POST and GET agreement endpoint (services service) to only consider active agreements
+  * enhanced response body payload by adding "mandatory" agreement flag inside the endpoint `GET /api/registration/companyRoleAgreementData`
+* **Seeding Data updated**
+  * new technical user profiles for BPDM services released inside the seeding files
+* **Business Process Worker**
+  * added new backend worker for invitations to run the invitation steps asynchron
+  * added mailing worker and moved all backedn functions for sending emails into the worker
+* Email Templates
+  * Enabled email service for create user account under owned IdP as well as for migration of an user account from any IdP to a ownedIdP
+
+### Technical Support
+* adjusted the get_current_version script to only return the tag name
+* Swagger updates (endpoint documentation, payload examples and allowed values)
+* Sonar findings fixed
+* Codeql findings fixed
+* Introduce codeql scan
+* Removed veracode workflow
+* Changed the CompanyInvitationData to class instead of record
+* Removed unused deprecated packages
+* Improved workflows and docs (readme, contribution doc, eclipse dash tool workflow, sonar workflow run etc.)
+* upgrades gh actions and change to pinned actions full length commit sha
+* Migration merge from 1.8.0 RC-x to 2.0.0
+* upgraded all services and jobs to .net 8
+* upgraded nuget packages
+* adjusted runtime version for docker images
+* add dependabot.yml file
+
+### Bugfix
+* adjusted endpoint `GET api/administration/serviceaccount/owncompany/serviceaccounts` to filter for active service accounts by default
+* fixed backend logic of the endpont `POST /api/administration/companydata/companyCertificate` - document sttaus is now automatically set tok "locked" with the document upload
+* endpoint `POST /api/administration/connectors/discovery` was running on an empty response when calling the endpoint without a body (instead of an empty array). Backend behavior fixed to allow both calls
+* corrected mail template that's send out after the network registration from 'CredentialRejected' to 'OspWelcomeMail'
+* fixed GetCompanyWithAddressAsync
+  * use identifier.Value instead of repeating its type
+  * use CompanyUniqueIdData instead of UniqueIdentifierData
+
 ## 1.8.0
 
 ### Change
