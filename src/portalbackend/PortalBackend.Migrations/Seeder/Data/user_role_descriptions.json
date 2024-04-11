@@ -160,14 +160,14 @@
     "description": "Technical user to generate 3rd party registrations by onboarding service provider companies."
   },
   {
-    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "de",
-    "description": "Ermöglicht das Anzeigen und Hinzufügen von Geschäftspartnerdaten über das eigene Service gate."
+    "description": "BPDM Sharing Input Consumer - Beschreibung tbd"
   },
   {
-    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "en",
-    "description": "Allows to view and add business partner data via the owned service gate."
+    "description": "BPDM Sharing Input Consumer - description tbd"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
