@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,7 +25,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
@@ -37,7 +38,7 @@ public class ProcessExecutionService
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly ProcessExecutionServiceSettings _settings;
+    private readonly TimeSpan _lockExpiryTime;
     private readonly ILogger<ProcessExecutionService> _logger;
 
     /// <summary>
@@ -55,7 +56,7 @@ public class ProcessExecutionService
     {
         _serviceScopeFactory = serviceScopeFactory;
         _dateTimeProvider = dateTimeProvider;
-        _settings = options.Value;
+        _lockExpiryTime = new TimeSpan(options.Value.LockExpirySeconds * 10000000L);
         _logger = logger;
     }
 
@@ -72,12 +73,11 @@ public class ProcessExecutionService
             var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor>();
             var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
             //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
-            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(false);
+            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(ConfigureAwaitOptions.None);
 
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IPortalRepositories>();
 
-            var lockExpiryTime = new TimeSpan(_settings.LockExpirySeconds * 10000000L);
             var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds(), _dateTimeProvider.OffsetNow);
             await foreach (var process in activeProcesses.WithCancellation(stoppingToken).ConfigureAwait(false))
             {
@@ -90,46 +90,18 @@ public class ProcessExecutionService
                     }
                     _logger.LogInformation("start processing process {processId} type {processType}", process.Id, process.ProcessTypeId);
 
-                    bool EnsureLock()
+                    await foreach (var hasChanged in ExecuteProcess(processExecutor, process, stoppingToken).ConfigureAwait(false))
                     {
-                        if (process.IsLocked())
+                        if (hasChanged)
                         {
-                            return false;
-                        }
-                        var isLocked = process.TryLock(_dateTimeProvider.OffsetNow.Add(lockExpiryTime));
-                        if (!isLocked)
-                        {
-                            throw new UnexpectedConditionException("process TryLock should never fail here");
-                        }
-                        return true;
-                    }
-
-                    bool UpdateVersion()
-                    {
-                        if (!process.IsLocked())
-                        {
-                            process.UpdateVersion();
-                        }
-                        return true;
-                    }
-
-                    await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, stoppingToken).WithCancellation(stoppingToken).ConfigureAwait(false))
-                    {
-                        if (executionResult switch
-                        {
-                            IProcessExecutor.ProcessExecutionResult.LockRequested => EnsureLock(),
-                            IProcessExecutor.ProcessExecutionResult.SaveRequested => UpdateVersion(),
-                            _ => false
-                        })
-                        {
-                            await executorRepositories.SaveAsync().ConfigureAwait(false);
+                            await executorRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                         }
                         executorRepositories.Clear();
                     }
 
                     if (process.ReleaseLock())
                     {
-                        await executorRepositories.SaveAsync().ConfigureAwait(false);
+                        await executorRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                         executorRepositories.Clear();
                     }
                     _logger.LogInformation("finished processing process {processId}", process.Id);
@@ -146,5 +118,40 @@ public class ProcessExecutionService
             Environment.ExitCode = 1;
             _logger.LogError(ex, "processing failed with following Exception {ExceptionMessage}", ex.Message);
         }
+    }
+
+    private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor processExecutor, Process process, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, cancellationToken).ConfigureAwait(false))
+        {
+            yield return executionResult switch
+            {
+                IProcessExecutor.ProcessExecutionResult.LockRequested => EnsureLock(process),
+                IProcessExecutor.ProcessExecutionResult.SaveRequested => UpdateVersion(process),
+                _ => false
+            };
+        }
+    }
+
+    private bool EnsureLock(ILockableEntity entity)
+    {
+        if (entity.IsLocked())
+        {
+            return false;
+        }
+        if (!entity.TryLock(_dateTimeProvider.OffsetNow.Add(_lockExpiryTime)))
+        {
+            throw new UnexpectedConditionException("process TryLock should never fail here");
+        }
+        return true;
+    }
+
+    private static bool UpdateVersion(ILockableEntity entity)
+    {
+        if (!entity.IsLocked())
+        {
+            entity.UpdateVersion();
+        }
+        return true;
     }
 }

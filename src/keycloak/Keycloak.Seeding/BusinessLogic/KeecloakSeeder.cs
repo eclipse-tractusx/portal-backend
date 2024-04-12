@@ -53,17 +53,17 @@ public class KeycloakSeeder : IKeycloakSeeder
     {
         foreach (var dataPath in _settings.DataPathes)
         {
-            await _seedData.Import(dataPath, cancellationToken).ConfigureAwait(false);
-            await _realmUpdater.UpdateRealm(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _rolesUpdater.UpdateRealmRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _clientsUpdater.UpdateClients(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _rolesUpdater.UpdateClientRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _usersUpdater.UpdateUsers(_settings.InstanceName, _settings.ExcludedUserAttributes, cancellationToken).ConfigureAwait(false);
-            await _clientScopesUpdater.UpdateClientScopes(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _clientScopeMapperUpdater.UpdateClientScopeMapper(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
-            await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(false);
+            await _seedData.Import(dataPath, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _realmUpdater.UpdateRealm(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _rolesUpdater.UpdateRealmRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _clientsUpdater.UpdateClients(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _rolesUpdater.UpdateClientRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _usersUpdater.UpdateUsers(_settings.InstanceName, _settings.ExcludedUserAttributes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _clientScopesUpdater.UpdateClientScopes(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _clientScopeMapperUpdater.UpdateClientScopeMapper(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 }

@@ -23,12 +23,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -36,7 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly UserSettings _settings;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
@@ -45,19 +46,19 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// Constructor.
     /// </summary>
     /// <param name="userProvisioningService">User Provisioning Service</param>
-    /// <param name="mailingService">Mailing Service</param>
+    /// <param name="mailingProcessCreation">The mailingProcessCreation</param>
     /// <param name="identityService">Access to the identity Service</param>
     /// <param name="errorMessageService">ErrorMessage Service</param>
     /// <param name="settings">Settings</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
-        IMailingService mailingService,
+        IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
-        _mailingService = mailingService;
+        _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _settings = settings.Value;
@@ -73,7 +74,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameIdpAliasData(identityProviderId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -128,6 +129,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+
         await foreach (var result in
             _userProvisioningService
                 .CreateOwnCompanyIdpUsersAsync(
@@ -152,25 +155,15 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>()
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "nameCreatedBy", nameCreatedBy },
-                { "url", _settings.Portal.BasePortalAddress },
-            };
+                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
+                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+                KeyValuePair.Create("idpAlias", displayName)
+            });
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserExternalIdpTemplate", mailParameters);
 
-            var mailTemplates = new[] { "NewUserOwnIdpTemplate" };
-
-            Exception? mailError;
-            try
-            {
-                await _mailingService.SendMails(userCreationInfo.Email, mailParameters, mailTemplates).ConfigureAwait(false);
-                mailError = null;
-            }
-            catch (Exception e)
-            {
-                mailError = e;
-            }
-            yield return (result.CompanyUserId, result.UserName, result.Password, mailError);
+            yield return (result.CompanyUserId, result.UserName, result.Password, null);
         }
     }
 
@@ -206,7 +199,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(false);
+        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -260,7 +253,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             unknownRoles => _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, companyId),
             out var roleDataTask))
         {
-            var roleData = await roleDataTask!.ConfigureAwait(false);
+            var roleData = await roleDataTask!.ConfigureAwait(ConfigureAwaitOptions.None);
             if (roleData != null)
             {
                 validRoleData.AddRange(roleData);

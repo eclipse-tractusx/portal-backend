@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,13 +25,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
 
@@ -43,26 +42,26 @@ public class ApplicationActivationService : IApplicationActivationService
     private readonly IPortalRepositories _portalRepositories;
     private readonly INotificationService _notificationService;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IMailingService _mailingService;
     private readonly IDateTimeProvider _dateTime;
     private readonly ICustodianService _custodianService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ApplicationActivationSettings _settings;
 
     public ApplicationActivationService(
         IPortalRepositories portalRepositories,
         INotificationService notificationService,
         IProvisioningManager provisioningManager,
-        IMailingService mailingService,
         IDateTimeProvider dateTime,
         ICustodianService custodianService,
+        IMailingProcessCreation mailingProcessCreation,
         IOptions<ApplicationActivationSettings> options)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _provisioningManager = provisioningManager;
-        _mailingService = mailingService;
         _dateTime = dateTime;
         _custodianService = custodianService;
+        _mailingProcessCreation = mailingProcessCreation;
         _settings = options.Value;
     }
 
@@ -83,7 +82,7 @@ public class ApplicationActivationService : IApplicationActivationService
     private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(false);
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
@@ -96,9 +95,9 @@ public class ApplicationActivationService : IApplicationActivationService
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(false);
-        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(false);
-        await SetTheme(iamIdpAliasse).ConfigureAwait(false);
+        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
+        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SetTheme(iamIdpAliasse).ConfigureAwait(ConfigureAwaitOptions.None);
 
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
@@ -124,19 +123,22 @@ public class ApplicationActivationService : IApplicationActivationService
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
 
-        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(false);
-        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(false);
+        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (assignedRoles != null)
         {
-            var unassignedClientRoles = _settings.ApplicationApprovalInitialRoles
+            _settings.ApplicationApprovalInitialRoles
                 .Select(initialClientRoles => (
-                    initialClientRoles.ClientId,
-                    Roles: initialClientRoles.UserRoleNames.Except(assignedRoles[initialClientRoles.ClientId])))
-                .Where(clientRoles => clientRoles.Roles.Any());
-
-            unassignedClientRoles.IfAny(unassigned =>
-                throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Roles)}]"))}"));
+                    Initial: initialClientRoles,
+                    AssignedRoles: assignedRoles[initialClientRoles.ClientId]))
+                .Select(x => (
+                    x.Initial.ClientId,
+                    Unassigned: x.Initial.UserRoleNames.Except(x.AssignedRoles.Roles),
+                    x.AssignedRoles.Error))
+                .Where(clientRoles => clientRoles.Unassigned.Any())
+                .IfAny(unassigned =>
+                    throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Unassigned)}], error: {clientRoles.Error}"))}"));
         }
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
@@ -167,27 +169,27 @@ public class ApplicationActivationService : IApplicationActivationService
             now >= startTime && now <= endTime;
     }
 
-    private async Task<IDictionary<string, IEnumerable<string>>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    private async Task<IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
     {
         var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
         var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(false);
+        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        IDictionary<string, IEnumerable<string>>? assignedRoles = null;
+        IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>? assignedRoles = null;
         var invitedUsersData = applicationRepository
             .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
         await foreach (var userData in invitedUsersData.ConfigureAwait(false))
         {
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             assignedRoles = await _provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
-                .ToDictionaryAsync(assigned => assigned.Client, assigned => assigned.Roles)
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error))
                 .ConfigureAwait(false);
 
             foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
-                                                                        assignedRoles[roleData.ClientClientId].Contains(roleData.UserRoleText)))
+                                                                        assignedRoles[roleData.ClientClientId].Roles.Contains(roleData.UserRoleText)))
             {
                 userRolesRepository.CreateIdentityAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
             }
@@ -198,7 +200,7 @@ public class ApplicationActivationService : IApplicationActivationService
             userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
             await _provisioningManager
                 .AddBpnAttributetoUserAsync(iamUserId, Enumerable.Repeat(businessPartnerNumber, 1))
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return assignedRoles;
@@ -223,7 +225,7 @@ public class ApplicationActivationService : IApplicationActivationService
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             var roleNamesToDelete = userData.UserRoleIds
                 .Select(roleId => userRoles[roleId])
@@ -233,7 +235,7 @@ public class ApplicationActivationService : IApplicationActivationService
                     clientRoleData => clientRoleData.Select(y => y.UserRoleText));
 
             await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
             userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
         }
     }
@@ -258,18 +260,17 @@ public class ApplicationActivationService : IApplicationActivationService
                 continue;
             }
 
-            var mailParameters = new Dictionary<string, string>
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                { "userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email },
-                { "companyName", companyName },
-                { "bpn", businessPartnerNumber },
-                { "homeUrl", _settings.PortalHomeAddress },
-                { "passwordResendUrl", _settings.PasswordResendAddress },
-                { "companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress },
-                { "dataspaceUrl", _settings.DataspaceAddress }
-            };
-
-            await _mailingService.SendMails(user.Email, mailParameters, new[] { "EmailRegistrationWelcomeTemplate" }).ConfigureAwait(false);
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                KeyValuePair.Create("companyName", companyName),
+                KeyValuePair.Create("bpn", businessPartnerNumber),
+                KeyValuePair.Create("homeUrl", _settings.PortalHomeAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+                KeyValuePair.Create("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
+                KeyValuePair.Create("dataspaceUrl", _settings.DataspaceAddress)
+            });
+            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
 
         if (failedUserNames.Any())

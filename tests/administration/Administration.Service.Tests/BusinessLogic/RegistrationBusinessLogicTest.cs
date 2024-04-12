@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,20 +23,25 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -60,6 +64,7 @@ public class RegistrationBusinessLogicTest
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
@@ -69,16 +74,15 @@ public class RegistrationBusinessLogicTest
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly IMailingService _mailingService;
     private readonly IDocumentRepository _documentRepository;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly IDimBusinessLogic _dimBusinessLogic;
+    private readonly IOptions<RegistrationSettings> _options;
 
     public RegistrationBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
@@ -87,16 +91,17 @@ public class RegistrationBusinessLogicTest
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
-        var options = A.Fake<IOptions<RegistrationSettings>>();
+        _options = A.Fake<IOptions<RegistrationSettings>>();
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
-        A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => _options.Value).Returns(settings);
 
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
+        _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
         _checklistService = A.Fake<IApplicationChecklistService>();
-        _mailingService = A.Fake<IMailingService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
@@ -108,7 +113,7 @@ public class RegistrationBusinessLogicTest
 
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, options, _mailingService, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _provisioningManager, logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _provisioningManager, _mailingProcessCreation, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -123,7 +128,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -140,7 +145,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 1 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -157,7 +162,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed).ConfigureAwait(false);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
@@ -169,19 +174,25 @@ public class RegistrationBusinessLogicTest
 
     #region GetCompanyWithAddressAsync
 
-    [Fact]
-    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult()
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE124356789")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "54930084UKLVMY22DS16")]
+    [InlineData(UniqueIdentifierId.EORI, "DE123456789012345")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB123456")]
+    [InlineData(UniqueIdentifierId.VIES, "ATU99999999")]
+    public async Task GetCompanyWithAddressAsync_WithDefaultRequest_GetsExpectedResult(UniqueIdentifierId identifierIdType, string companyUniqueIds)
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
             .With(x => x.AgreementsData, _fixture.CreateMany<AgreementsData>(20))
+            .With(x => x.CompanyIdentifiers, Enumerable.Repeat(new ValueTuple<UniqueIdentifierId, string>(identifierIdType, companyUniqueIds), 1))
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
 
         // Act
-        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -202,6 +213,7 @@ public class RegistrationBusinessLogicTest
         result.AgreementsRoleData.Should().HaveSameCount(data.AgreementsData.DistinctBy(ad => ad.CompanyRoleId));
         result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
         result.UniqueIds.Should().HaveSameCount(data.CompanyIdentifiers);
+        result.UniqueIds.Should().AllSatisfy(u => u.Should().Match<CompanyUniqueIdData>(u => u.UniqueIdentifierId == identifierIdType && u.Value == companyUniqueIds));
     }
 
     [Fact]
@@ -210,23 +222,23 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         var data = _fixture.Build<CompanyUserRoleWithAddress>()
-            .With(x => x.Shortname, (string?)null)
-            .With(x => x.BusinessPartnerNumber, (string?)null)
-            .With(x => x.City, (string?)null)
-            .With(x => x.StreetName, (string?)null)
-            .With(x => x.CountryAlpha2Code, (string?)null)
-            .With(x => x.Region, (string?)null)
-            .With(x => x.Streetadditional, (string?)null)
-            .With(x => x.Streetnumber, (string?)null)
-            .With(x => x.Zipcode, (string?)null)
-            .With(x => x.CountryDe, (string?)null)
+            .With(x => x.Shortname, default(string?))
+            .With(x => x.BusinessPartnerNumber, default(string?))
+            .With(x => x.City, default(string?))
+            .With(x => x.StreetName, default(string?))
+            .With(x => x.CountryAlpha2Code, default(string?))
+            .With(x => x.Region, default(string?))
+            .With(x => x.Streetadditional, default(string?))
+            .With(x => x.Streetnumber, default(string?))
+            .With(x => x.Zipcode, default(string?))
+            .With(x => x.CountryDe, default(string?))
             .With(x => x.InvitedCompanyUserData, _fixture.CreateMany<Guid>().Select(id => new InvitedCompanyUserData(id, null, null, null)))
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId))
             .Returns(data);
 
         // Act
-        var result = await _logic.GetCompanyWithAddressAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyWithAddressAsync(applicationId);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyUserRoleWithAddressUntrackedAsync(applicationId)).MustHaveHappenedOnceExactly();
@@ -244,8 +256,8 @@ public class RegistrationBusinessLogicTest
             r.StreetNumber == "" &&
             r.ZipCode == ""
         );
-        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData);
-        result.InvitedUserData.Should().AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));
+        result.InvitedUserData.Should().HaveSameCount(data.InvitedCompanyUserData)
+            .And.AllSatisfy(u => u.Should().Match<InvitedUserData>(u => u.FirstName == "" && u.LastName == "" && u.Email == ""));
     }
 
     #endregion
@@ -259,7 +271,7 @@ public class RegistrationBusinessLogicTest
         var bpn = "123";
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -274,7 +286,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -288,7 +300,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -302,7 +314,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -316,28 +328,35 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
     }
 
-    [Fact]
-    public async Task UpdateCompanyBpnAsync_WithValidData_CallsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task UpdateCompanyBpnAsync_WithUseDimWalletFalse_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedProcessStepTypeId)
     {
         // Arrange
+        var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
+        A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, _provisioningManager, null!, null!);
 
         // Act
-        await _logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn).ConfigureAwait(false);
+        await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
 
         // Assert
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(CompanyId, null, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, null, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == expectedProcessStepTypeId)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -353,7 +372,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _clearinghouseBusinessLogic.ProcessEndClearinghouse(ApplicationId, data, A<CancellationToken>._))
@@ -369,7 +388,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -385,7 +404,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -396,26 +415,32 @@ public class RegistrationBusinessLogicTest
 
     #region SetRegistrationVerification
 
-    [Fact]
-    public async Task SetRegistrationVerification_WithApproval_CallsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task SetRegistrationVerification_WithApproval_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedTypeId)
     {
         // Arrange
+        var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await _logic.ApproveRegistrationVerification(IdWithBpn).ConfigureAwait(false);
+        await logic.ApproveRegistrationVerification(IdWithBpn);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
             A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
             null,
             A<Action<ApplicationChecklistEntry>>._,
-            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.CREATE_IDENTITY_WALLET) == 1)))
+            A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == expectedTypeId) == 1)))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -427,13 +452,14 @@ public class RegistrationBusinessLogicTest
         SetupForApproveRegistrationVerification(entry);
 
         // Act
-        await _logic.ApproveRegistrationVerification(IdWithoutBpn).ConfigureAwait(false);
+        await _logic.ApproveRegistrationVerification(IdWithoutBpn);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         entry.Comment.Should().BeNull();
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, null, A<Action<ApplicationChecklistEntry>>._, null)).MustHaveHappenedOnceExactly();
     }
 
@@ -452,7 +478,7 @@ public class RegistrationBusinessLogicTest
         SetupForDeclineRegistrationVerification(entry, application, company, checklistStatusId, idpTypeId);
 
         // Act
-        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(IdWithBpn, comment, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -488,8 +514,8 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
-            .Returns(default((Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)));
-        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+            .Returns<(Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)>(default);
+        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -531,7 +557,7 @@ public class RegistrationBusinessLogicTest
                 }));
 
         // Act
-        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Assert
         A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(companyId, sharedIdpId)).MustHaveHappenedOnceExactly();
@@ -552,9 +578,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("idp3")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("idp3")).MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user1, sharedIdpId) }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user2, managedIdpId) }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<ValueTuple<Guid, Guid>>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user3, ownIdpId) }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user1, sharedIdpId) }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user2, managedIdpId) }))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(user3, ownIdpId) }))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -567,10 +593,10 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var applicationId = _fixture.Create<Guid>();
         A.CallTo(() => _applicationRepository.GetApplicationChecklistData(applicationId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>>());
+            .Returns<(bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>)>(default);
 
         //Act
-        async Task Act() => await _logic.GetChecklistForApplicationAsync(applicationId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetChecklistForApplicationAsync(applicationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -582,7 +608,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var applicationId = _fixture.Create<Guid>();
-        var list = new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?>[]
+        var list = new (ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)[]
         {
             new(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE, null),
             new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE, null),
@@ -595,10 +621,10 @@ public class RegistrationBusinessLogicTest
             ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET
         };
         A.CallTo(() => _applicationRepository.GetApplicationChecklistData(applicationId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>>(true, list, processSteps));
+            .Returns((true, list, processSteps));
 
         //Act
-        var result = await _logic.GetChecklistForApplicationAsync(applicationId).ConfigureAwait(false);
+        var result = await _logic.GetChecklistForApplicationAsync(applicationId);
 
         // Assert
         result.Should().NotBeNull().And.NotBeEmpty().And.HaveCount(5);
@@ -625,7 +651,7 @@ public class RegistrationBusinessLogicTest
             .Throws(new ConflictException("Test"));
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -635,6 +661,8 @@ public class RegistrationBusinessLogicTest
     [Theory]
     [InlineData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT, ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO)]
     [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS)]
@@ -652,8 +680,7 @@ public class RegistrationBusinessLogicTest
             new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
             Guid.NewGuid(),
             typeId,
-            new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
-                .ToImmutableDictionary(),
+            ImmutableDictionary.Create<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>(),
             Enumerable.Empty<ProcessStep>());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(applicationId,
                 typeId,
@@ -672,7 +699,7 @@ public class RegistrationBusinessLogicTest
             });
 
         //Act
-        await _logic.TriggerChecklistAsync(applicationId, typeId, stepId).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context,
@@ -699,7 +726,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, companyId, true));
 
         // Act
-        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, companyId, A<CancellationToken>._))
@@ -713,10 +740,10 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
-            .Returns(((bool, Guid, bool))default);
+            .Returns<(bool, Guid, bool)>(default);
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -732,7 +759,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, Guid.NewGuid(), false));
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -771,7 +798,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, typeId, stepId).ConfigureAwait(false);
+        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -791,10 +818,10 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
-            .ReturnsLazily(() => new Document(documentId, content, content, "test.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+            .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
 
         // Act
-        var result = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await _logic.GetDocumentAsync(documentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -807,14 +834,33 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
-            .ReturnsLazily(() => (Document?)null);
+            .Returns<Document?>(null);
 
         // Act
-        async Task Act() => await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetDocumentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be($"Document {documentId} does not exist");
+    }
+
+    #endregion
+
+    #region ProcessDimResponseAsync
+
+    [Fact]
+    public async Task ProcessDimResponseAsync_WithValidData_CallsExpected()
+    {
+        // Arrange
+        var data = new DimWalletData($"did:web:test123:{BusinessPartnerNumber}", _fixture.Create<JsonDocument>(), new AuthenticationDetail("https://example.org", "test123", "test123"));
+
+        // Act
+        await _logic.ProcessDimResponseAsync(BusinessPartnerNumber, data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _dimBusinessLogic.ProcessDimResponse(BusinessPartnerNumber, data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -833,37 +879,36 @@ public class RegistrationBusinessLogicTest
         }
 
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, ValidBpn))
-            .ReturnsLazily(() => new (bool, bool, string?, Guid)[]
+            .Returns(new (bool, bool, string?, Guid)[]
             {
                 new (true, true, null, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(NotExistingApplicationId, ValidBpn))
-            .ReturnsLazily(() => new (bool, bool, string?, Guid)[]
+            .Returns(new (bool, bool, string?, Guid)[]
             {
                 new (false, true, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithoutBpn, AlreadyTakenBpn))
-            .ReturnsLazily(() => new (bool, bool, string?, Guid)[]
+            .Returns(new (bool, bool, string?, Guid)[]
             {
                 new (true, true, ValidBpn, CompanyId),
                 new (false, true, AlreadyTakenBpn, Guid.NewGuid())
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(ActiveApplicationCompanyId, ValidBpn))
-            .ReturnsLazily(() => new (bool, bool, string?, Guid)[]
+            .Returns(new (bool, bool, string?, Guid)[]
             {
-                new (true, false, ValidBpn, CompanyId)
+                (true, false, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
         A.CallTo(() => _userRepository.GetBpnForIamUserUntrackedAsync(IdWithBpn, ValidBpn))
-            .ReturnsLazily(() => new (bool, bool, string?, Guid)[]
+            .Returns(new (bool, bool, string?, Guid)[]
             {
-                new (true, true, ValidBpn, CompanyId)
+                (true, true, ValidBpn, CompanyId)
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>
-            {
-                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null) }
-            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
+            Enumerable.Empty<ProcessStep>()));
     }
 
     private void SetupForApproveRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry)
@@ -875,15 +920,13 @@ public class RegistrationBusinessLogicTest
             });
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>
-            {
-                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.IN_PROGRESS, null) }
-            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, (ApplicationChecklistEntryStatusId.IN_PROGRESS, default(string?))) }),
+            Enumerable.Empty<ProcessStep>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>
-            {
-                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null) }
-            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
+            Enumerable.Empty<ProcessStep>()));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId, IdentityProviderTypeId idpTypeId)
@@ -895,15 +938,13 @@ public class RegistrationBusinessLogicTest
             });
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>
-            {
-                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(checklistStatusId, null) }
-            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (checklistStatusId, default(string?))) }),
+            Enumerable.Empty<ProcessStep>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .ReturnsLazily(() => new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>
-            {
-                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null) }
-            }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
+            Enumerable.Empty<ProcessStep>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
             .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId, Enumerable.Repeat(UserId, 1)), 1), Enumerable.Repeat(UserId, 1)));

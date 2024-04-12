@@ -17,9 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -59,18 +59,18 @@ public class CreateNewTestAppScenario : EndToEndTestBase
     {
         _portalUserToken = await new AuthFlow(_portalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
-        var newAppRequest = GetAppRequestModel(testEntry.AppRequestModel);
+        var newAppRequest = await GetAppRequestModel(testEntry.AppRequestModel);
 
-        var appId = CreateNewAppInStatusCreated(newAppRequest);
+        var appId = await CreateNewAppInStatusCreated(newAppRequest);
         appId.Should().NotBeEmpty();
 
-        var appDetailWithStatus = GetAppDetailWithStatus(appId);
+        var appDetailWithStatus = await GetAppDetailWithStatus(appId);
         ValidateStorageOfAppDetailData(newAppRequest, appDetailWithStatus).Should().BeTrue();
 
-        var agreementData = GetAgreementData();
+        var agreementData = await GetAgreementData();
         var agreementDataIds = agreementData.Select(t => t.AgreementId).ToList();
 
-        var signedConsentStatusData = SignConsentAgreement(appId, agreementDataIds);
+        var signedConsentStatusData = await SignConsentAgreement(appId, agreementDataIds);
 
         signedConsentStatusData.Should().AllSatisfy(x =>
         {
@@ -78,16 +78,16 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             agreementDataIds.Should().Contain(x.AgreementId);
         });
 
-        var uploadDocumentResult = UploadAppDocumentOrImage(appId, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, testEntry.DocumentName);
+        var uploadDocumentResult = await UploadAppDocumentOrImage(appId, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, testEntry.DocumentName);
         uploadDocumentResult.Should().BeEmpty();
 
-        var uploadImageResult = UploadAppDocumentOrImage(appId, DocumentTypeId.APP_IMAGE, testEntry.ImageName);
+        var uploadImageResult = await UploadAppDocumentOrImage(appId, DocumentTypeId.APP_IMAGE, testEntry.ImageName);
         uploadImageResult.Should().BeEmpty();
 
-        var uploadLeadImageResult = UploadAppDocumentOrImage(appId, DocumentTypeId.APP_LEADIMAGE, testEntry.ImageName);
+        var uploadLeadImageResult = await UploadAppDocumentOrImage(appId, DocumentTypeId.APP_LEADIMAGE, testEntry.ImageName);
         uploadLeadImageResult.Should().BeEmpty();
 
-        var appRoleDatas = AddRoleAndRoleDescriptionForApp(appId, testEntry.AppUserRoles);
+        var appRoleDatas = await AddRoleAndRoleDescriptionForApp(appId, testEntry.AppUserRoles);
         var appRoleDataNames = appRoleDatas.Select(data => data.RoleName);
 
         testEntry.AppUserRoles.Should().AllSatisfy(t =>
@@ -95,7 +95,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             appRoleDataNames.Should().Contain(t.Role);
         });
 
-        var technicalUserProfiles = GetTechnicalUserProfiles();
+        var technicalUserProfiles = await GetTechnicalUserProfiles();
 
         var userRoleIds = technicalUserProfiles.Select(t => t.UserRoleId).ToList();
 
@@ -140,7 +140,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
     #region Scenario functions
 
     //POST: /api/apps/appreleaseprocess/createapp
-    private string CreateNewAppInStatusCreated(AppRequestModel newAppRequest)
+    private async Task<string> CreateNewAppInStatusCreated(AppRequestModel newAppRequest)
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -156,18 +156,18 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        return response.Content.ReadAsStringAsync().Result.Replace("\"", "");
+        return (await response.Content.ReadAsStringAsync()).Replace("\"", "");
     }
 
-    private AppRequestModel GetAppRequestModel(AppRequestModel? testData)
+    private async Task<AppRequestModel> GetAppRequestModel(AppRequestModel? testData)
     {
         if (testData is null)
         {
             throw new Exception("No app request model in test data provided. Please check.");
         }
-        var privacyPolicies = GetAvailablePrivacyPolicies();
-        var languageTags = GetAppLanguageTags();
-        var useCases = GetUseCases();
+        var privacyPolicies = await GetAvailablePrivacyPolicies();
+        var languageTags = await GetAppLanguageTags();
+        var useCases = await GetUseCases();
 
         if (languageTags.IsNullOrEmpty() || useCases.IsNullOrEmpty())
         {
@@ -192,7 +192,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
     }
 
     //GET: /api/apps/appreleaseprocess/{appId}/appStatus
-    private AppProviderResponse? GetAppDetailWithStatus(string appId)
+    private async Task<AppProviderResponse?> GetAppDetailWithStatus(string appId)
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -206,12 +206,12 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        return DataHandleHelper.DeserializeData<AppProviderResponse>(response.Content.ReadAsStringAsync().Result);
+        return DataHandleHelper.DeserializeData<AppProviderResponse>(await response.Content.ReadAsStringAsync());
     }
 
     //POST: /api/apps/appreleaseprocess/consent/{appId}/agreementConsents - sign the agreements
 
-    private List<ConsentStatusData> SignConsentAgreement(string appId, List<Guid> consentAgreementIds)
+    private async Task<List<ConsentStatusData>> SignConsentAgreement(string appId, List<Guid> consentAgreementIds)
     {
         var agreementConsentStatuses = consentAgreementIds
             .Select(agr => new AgreementConsentStatus(agr, ConsentStatusId.ACTIVE)).ToList();
@@ -231,7 +231,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        var signConsentAgreement = DataHandleHelper.DeserializeData<List<ConsentStatusData>>(response.Content.ReadAsStringAsync().Result);
+        var signConsentAgreement = DataHandleHelper.DeserializeData<List<ConsentStatusData>>(await response.Content.ReadAsStringAsync());
         if (signConsentAgreement == null)
             throw new Exception($"Could not fetch consent status data from {endpoint}");
         return signConsentAgreement;
@@ -239,7 +239,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
 
     //PUT: /api/apps/AppReleaseProcess/updateappdoc/{appId}/documentType/{documentType}/documents
 
-    private string UploadAppDocumentOrImage(string appId, DocumentTypeId documentType, string documentOrImageName)
+    private Task<string> UploadAppDocumentOrImage(string appId, DocumentTypeId documentType, string documentOrImageName)
     {
         documentOrImageName.Should().NotBeNullOrEmpty($"No document with type {documentType} provided, but required for tests case.");
 
@@ -257,12 +257,12 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(204)
             .Extract()
             .Response();
-        return response.Content.ReadAsStringAsync().Result;
+        return response.Content.ReadAsStringAsync();
     }
 
     //POST: /api/apps/appreleaseprocess/{appId}/role
 
-    private List<AppRoleData> AddRoleAndRoleDescriptionForApp(string appId, List<AppUserRole> appUserRoles)
+    private async Task<List<AppRoleData>> AddRoleAndRoleDescriptionForApp(string appId, List<AppUserRole> appUserRoles)
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -277,7 +277,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        return DataHandleHelper.DeserializeData<List<AppRoleData>>(response.Content.ReadAsStringAsync().Result) ?? new List<AppRoleData>();
+        return DataHandleHelper.DeserializeData<List<AppRoleData>>(await response.Content.ReadAsStringAsync()) ?? new List<AppRoleData>();
     }
 
     //PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles - select the technical user profile - important keep the uuid of the technical user inside the request body empty
@@ -325,7 +325,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
 
     //GET: /api/apps/appreleaseprocess/privacyPolicies - get a list of available privacyPolicies (needed for the POST call /createapp)
 
-    private PrivacyPolicyData GetAvailablePrivacyPolicies()
+    private async Task<PrivacyPolicyData> GetAvailablePrivacyPolicies()
     {
         var endpoint = $"{EndPoint}/appreleaseprocess/privacyPolicies";
         var response = Given()
@@ -340,7 +340,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        var availablePrivacyPolicies = DataHandleHelper.DeserializeData<PrivacyPolicyData>(response.Content.ReadAsStringAsync().Result);
+        var availablePrivacyPolicies = DataHandleHelper.DeserializeData<PrivacyPolicyData>(await response.Content.ReadAsStringAsync());
         if (availablePrivacyPolicies is null)
         {
             throw new Exception($"Cannot create app request model as privacy policies cannot be fetched from {endpoint}.");
@@ -350,7 +350,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
 
     //GET: /api/administration/staticdata/languagetags - get a list of available language tags (needed for the POST call /createapp)
 
-    private List<LanguageData> GetAppLanguageTags()
+    private async Task<List<LanguageData>> GetAppLanguageTags()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -365,11 +365,11 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        return DataHandleHelper.DeserializeData<List<LanguageData>>(response.Content.ReadAsStringAsync().Result) ?? new List<LanguageData>();
+        return DataHandleHelper.DeserializeData<List<LanguageData>>(await response.Content.ReadAsStringAsync()) ?? new List<LanguageData>();
     }
 
     //GET: /api/administration/staticdata/usecases - get a list of available language tags (needed for the POST call /createapp)
-    private List<UseCaseData> GetUseCases()
+    private async Task<List<UseCaseData>> GetUseCases()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -384,12 +384,12 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        return DataHandleHelper.DeserializeData<List<UseCaseData>>(response.Content.ReadAsStringAsync().Result) ?? new List<UseCaseData>();
+        return DataHandleHelper.DeserializeData<List<UseCaseData>>(await response.Content.ReadAsStringAsync()) ?? new List<UseCaseData>();
     }
 
     //GET: /api/apps/appreleaseprocess/agreementData - get a list of agreements (need to get signed as part of the POST /agreementConsents call)
 
-    private List<AgreementDocumentData> GetAgreementData()
+    private async Task<List<AgreementDocumentData>> GetAgreementData()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -403,11 +403,11 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        return DataHandleHelper.DeserializeData<List<AgreementDocumentData>>(response.Content.ReadAsStringAsync().Result) ?? new List<AgreementDocumentData>();
+        return DataHandleHelper.DeserializeData<List<AgreementDocumentData>>(await response.Content.ReadAsStringAsync()) ?? new List<AgreementDocumentData>();
     }
 
     //GET: api/administration/serviceaccount/user/roles - get a list of technical user profiles (needed for the POST call /technical-user-profiles)
-    private List<UserRoleWithDescription> GetTechnicalUserProfiles()
+    private async Task<List<UserRoleWithDescription>> GetTechnicalUserProfiles()
     {
         var response = Given()
             .DisableSslCertificateValidation()
@@ -422,7 +422,7 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             .Extract()
             .Response();
 
-        return DataHandleHelper.DeserializeData<List<UserRoleWithDescription>>(response.Content.ReadAsStringAsync().Result) ?? new List<UserRoleWithDescription>();
+        return DataHandleHelper.DeserializeData<List<UserRoleWithDescription>>(await response.Content.ReadAsStringAsync()) ?? new List<UserRoleWithDescription>();
     }
 
     #endregion

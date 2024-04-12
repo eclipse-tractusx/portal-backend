@@ -31,23 +31,23 @@ public partial class ProvisioningManager
 {
     public async Task UpdateSharedRealmUserAsync(string realm, string userId, string firstName, string lastName, string email)
     {
-        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
-        var user = await sharedKeycloak.GetUserAsync(realm, userId).ConfigureAwait(false);
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(ConfigureAwaitOptions.None);
+        var user = await sharedKeycloak.GetUserAsync(realm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
         user.FirstName = firstName;
         user.LastName = lastName;
         user.Email = email;
-        await sharedKeycloak.UpdateUserAsync(realm, userId, user).ConfigureAwait(false);
+        await sharedKeycloak.UpdateUserAsync(realm, userId, user).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
     {
-        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(false);
+        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (user.FirstName != firstName || user.LastName != lastName || user.Email != email)
         {
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Email = email;
-            await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(false);
+            await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -55,7 +55,7 @@ public partial class ProvisioningManager
     {
         try
         {
-            return (await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(false)).SingleOrDefault(user => user.UserName == userName)?.Id;
+            return (await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(user => user.UserName == userName)?.Id;
         }
         catch (FlurlHttpException ex)
         {
@@ -74,26 +74,26 @@ public partial class ProvisioningManager
 
     public async Task DeleteSharedRealmUserAsync(string realm, string userId)
     {
-        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
-        await sharedKeycloak.DeleteUserAsync(realm, userId).ConfigureAwait(false);
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(ConfigureAwaitOptions.None);
+        await sharedKeycloak.DeleteUserAsync(realm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public Task DeleteCentralRealmUserAsync(string userId) =>
         _CentralIdp.DeleteUserAsync(_Settings.CentralRealm, userId);
 
     public async Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId) =>
-        (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
+        (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
             .SingleOrDefault(federatedIdentity => federatedIdentity.IdentityProvider == identityProvider)
             ?.UserId;
 
     public async IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId)
     {
-        foreach (var federatedIdentity in await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(false))
+        foreach (var federatedIdentity in await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             yield return new IdentityProviderLink(
-                federatedIdentity.IdentityProvider,
-                federatedIdentity.UserId,
-                federatedIdentity.UserName);
+                federatedIdentity.IdentityProvider ?? throw new KeycloakInvalidResponseException("identity_provider of ferderated_identity is null"),
+                federatedIdentity.UserId ?? throw new KeycloakInvalidResponseException("user_id of ferderated_identity is null"),
+                federatedIdentity.UserName ?? throw new KeycloakInvalidResponseException("user_name of ferderated_identity is null"));
         }
     }
 
@@ -117,14 +117,14 @@ public partial class ProvisioningManager
 
     public async Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile)
     {
-        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(false);
+        var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(ConfigureAwaitOptions.None);
         var newUser = CloneUser(_Settings.SharedUser);
         newUser.UserName = profile.UserName;
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
         newUser.Email = profile.Email;
         newUser.Credentials ??= profile.Password == null ? null : Enumerable.Repeat(new Credentials { Type = "Password", Value = profile.Password }, 1);
-        return await CreateAndRetrieveUserIdMappingError(sharedKeycloak, realm, newUser).ConfigureAwait(false);
+        return await CreateAndRetrieveUserIdMappingError(sharedKeycloak, realm, newUser).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
@@ -142,30 +142,32 @@ public partial class ProvisioningManager
         return CreateAndRetrieveUserIdMappingError(_CentralIdp, _Settings.CentralRealm, newUser);
     }
 
+    private static readonly string ParamUserName = "userName";
+    private static readonly string ParamRealm = "realm";
     private static async Task<string> CreateAndRetrieveUserIdMappingError(Keycloak.Library.KeycloakClient keycloak, string realm, User newUser)
     {
         if (newUser.UserName == null)
-            throw ControllerArgumentException.Create(ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, new ErrorParameter[] { new("userName", "null"), new("realm", realm) });
+            throw ControllerArgumentException.Create(ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, new ErrorParameter[] { new(ParamUserName, "null"), new(ParamRealm, realm) });
 
         string? newUserId;
         try
         {
-            newUserId = await keycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(false);
+            newUserId = await keycloak.CreateAndRetrieveUserIdAsync(realm, newUser).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception error)
         {
             throw error switch
             {
-                KeycloakEntityConflictException => ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                KeycloakEntityNotFoundException => NotFoundException.Create(ProvisioningServiceErrors.USER_CREATION_NOTFOUND, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                ArgumentException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_ARGUMENT, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error),
-                ServiceException serviceException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, serviceException.StatusCode, serviceException.IsRecoverable, error),
-                _ => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) }, error)
+                KeycloakEntityConflictException => ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                KeycloakEntityNotFoundException => NotFoundException.Create(ProvisioningServiceErrors.USER_CREATION_NOTFOUND, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                ArgumentException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_ARGUMENT, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error),
+                ServiceException serviceException => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, serviceException.StatusCode, serviceException.IsRecoverable, error),
+                _ => ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) }, error)
             };
         }
         if (newUserId == null)
         {
-            throw ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, new ErrorParameter[] { new("userName", newUser.UserName), new("realm", realm) });
+            throw ServiceException.Create(ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, new ErrorParameter[] { new(ParamUserName, newUser.UserName), new(ParamRealm, realm) });
         }
         return newUserId;
     }

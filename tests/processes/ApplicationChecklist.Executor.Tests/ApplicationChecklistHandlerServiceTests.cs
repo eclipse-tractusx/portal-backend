@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,7 +21,9 @@ using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
@@ -36,6 +37,7 @@ public class ChecklistHandlerServiceTests
     private readonly ICustodianBusinessLogic _custodianBusinessLogic;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
+    private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IApplicationActivationService _applicationActivationService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IFixture _fixture;
@@ -51,6 +53,7 @@ public class ChecklistHandlerServiceTests
         _custodianBusinessLogic = A.Fake<ICustodianBusinessLogic>();
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
+        _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
         _applicationActivationService = A.Fake<IApplicationActivationService>();
         _checklistService = A.Fake<IApplicationChecklistService>();
     }
@@ -59,6 +62,7 @@ public class ChecklistHandlerServiceTests
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER)]
     [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
+    [InlineData(ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP)]
@@ -103,6 +107,9 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.CREATE_IDENTITY_WALLET:
                 A.CallTo(() => _custodianBusinessLogic.CreateIdentityWalletAsync(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
+            case ProcessStepTypeId.CREATE_DIM_WALLET:
+                A.CallTo(() => _dimBusinessLogic.CreateDimWalletAsync(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
             case ProcessStepTypeId.START_CLEARING_HOUSE:
                 A.CallTo(() => _clearinghouseBusinessLogic.HandleClearinghouse(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
@@ -138,6 +145,14 @@ public class ChecklistHandlerServiceTests
                 execution.ErrorFunc.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)).MustHaveHappenedOnceExactly();
                 break;
+            case ProcessStepTypeId.CREATE_DIM_WALLET:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.VALIDATE_DID_DOCUMENT:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)).MustHaveHappenedOnceExactly();
+                break;
             case ProcessStepTypeId.START_CLEARING_HOUSE:
                 execution.ErrorFunc.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
@@ -164,6 +179,8 @@ public class ChecklistHandlerServiceTests
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL)]
     [InlineData(ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)]
     [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
@@ -174,12 +191,6 @@ public class ChecklistHandlerServiceTests
     public void GetProcessStepExecution_InvalidStep_Throws(ProcessStepTypeId stepTypeId)
     {
         // Arrange
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-            Guid.NewGuid(),
-            stepTypeId,
-            _fixture.Create<IDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary(),
-            _fixture.CreateMany<ProcessStepTypeId>());
-
         var sut = CreateSut();
 
         var Act = () => sut.GetProcessStepExecution(stepTypeId);
@@ -199,17 +210,7 @@ public class ChecklistHandlerServiceTests
             _custodianBusinessLogic,
             _clearinghouseBusinessLogic,
             _sdFactoryBusinessLogic,
+            _dimBusinessLogic,
             _applicationActivationService,
             _checklistService);
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

@@ -100,4 +100,5 @@ public interface IApplicationRepository
     Task<(Guid CompanyId, string CompanyName, Guid? NetworkRegistrationProcessId, IEnumerable<(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId, IEnumerable<Guid> LinkedCompanyUserIds)> Idps, IEnumerable<Guid> CompanyUserIds)> GetCompanyIdNameForSubmittedApplication(Guid applicationId);
 
     Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
+    Task<(bool Exists, string? Did, IEnumerable<DateTimeOffset> ProcessStepsDateCreated)> GetDidApplicationId(Guid applicationId);
 }

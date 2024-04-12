@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using ConnectorData = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models.ConnectorData;
 
@@ -64,9 +65,7 @@ public class ConnectorsBusinessLogicTests
     public ConnectorsBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _countryRepository = A.Fake<ICountryRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
@@ -115,7 +114,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ConnectorData>?)new Pagination.Source<ConnectorData>(data.Length, data.Skip(skip).Take(take))));
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetAllCompanyConnectorDatas(page, size);
@@ -141,7 +140,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -157,7 +156,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", saId);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -179,7 +178,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -194,7 +193,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -208,7 +207,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "invalid", null);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -223,7 +222,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(CompanyWithoutBpnId);
 
         // Act
-        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -237,7 +236,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -256,7 +255,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -273,7 +272,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
@@ -288,7 +287,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", _validOfferSubscriptionId, null);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -311,7 +310,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -330,7 +329,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -349,7 +348,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -368,7 +367,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -385,7 +384,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -405,7 +404,7 @@ public class ConnectorsBusinessLogicTests
         SetupTechnicalIdentity();
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -420,7 +419,7 @@ public class ConnectorsBusinessLogicTests
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, saId);
 
         // Act
-        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -446,10 +445,10 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
-            .Returns((connectorId, (Guid?)null));
+            .Returns((connectorId, null));
 
         // Act
-        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
@@ -465,10 +464,10 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
-            .Returns(((Guid, Guid?))default);
+            .Returns<(Guid, Guid?)>(default);
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -486,7 +485,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorId, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -537,7 +536,7 @@ public class ConnectorsBusinessLogicTests
                 modify.Invoke(identity);
             });
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
@@ -564,7 +563,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
-        var userId = id == null ? (Guid?)null : new Guid(id);
+        var userId = id == null ? default(Guid?) : new Guid(id);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId));
 
@@ -583,7 +582,7 @@ public class ConnectorsBusinessLogicTests
                 setOptionalFields.Invoke(connector);
             });
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
@@ -608,7 +607,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -632,7 +631,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -653,7 +652,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
@@ -672,7 +671,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -688,7 +687,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -701,10 +700,10 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns((DeleteConnectorData)default!);
+            .Returns(default(DeleteConnectorData));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -720,7 +719,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -744,7 +743,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -770,7 +769,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -793,7 +792,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ManagedConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)new Pagination.Source<ManagedConnectorData>(data.Length, data.Skip(skip).Take(take))));
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(page, size);
@@ -813,7 +812,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int _, int _) => Task.FromResult((Pagination.Source<ManagedConnectorData>?)null));
+            .Returns((int _, int _) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(null));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(0, 10);
@@ -838,10 +837,10 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
-            .Returns((ConnectorUpdateInformation?)null);
+            .Returns<ConnectorUpdateInformation?>(null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"));
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -860,7 +859,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de")).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"));
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -879,7 +878,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -900,7 +899,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -917,13 +916,13 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.IsHostCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
-            .With(x => x.Bpn, (string?)null)
+            .With(x => x.Bpn, default(string?))
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -945,10 +944,10 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
         A.CallTo(() => _userRepository.GetCompanyBpnForIamUserAsync(_identity.IdentityId))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -980,7 +979,7 @@ public class ConnectorsBusinessLogicTests
             });
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de")).ConfigureAwait(false);
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -1014,15 +1013,38 @@ public class ConnectorsBusinessLogicTests
             }.ToAsyncEnumerable());
 
         //Act
-        var result = await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync().ConfigureAwait(false);
+        var result = await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync();
 
         //Assert
         A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(A<IEnumerable<string>>.That.IsSameSequenceAs(bpns.Select(x => x.ToUpper())))).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.Satisfy(
         x => x.Bpn == "BPNL00000002CRHL" && x.ConnectorEndpoint.Count() == 1 && x.ConnectorEndpoint.Contains("www.googlr5.com"),
         x => x.Bpn == "BPNL00000003CRHL" && x.ConnectorEndpoint.Count() == 2 && x.ConnectorEndpoint.Contains("www.googlr0.com") && x.ConnectorEndpoint.Contains("www.googlr1.com"),
-        x => x.Bpn == "BPNL00000004CRHL" && x.ConnectorEndpoint.Count() == 3 && x.ConnectorEndpoint.Contains("www.googlr2.com") && x.ConnectorEndpoint.Contains("www.googlr3.com") && x.ConnectorEndpoint.Contains("www.googlr4.com")
-);
+        x => x.Bpn == "BPNL00000004CRHL" && x.ConnectorEndpoint.Count() == 3 && x.ConnectorEndpoint.Contains("www.googlr2.com") && x.ConnectorEndpoint.Contains("www.googlr3.com") && x.ConnectorEndpoint.Contains("www.googlr4.com"));
+    }
+
+    [Fact]
+    public async Task GetCompanyConnectorEndPoint_WithNull_ReturnsExpectedResult()
+    {
+        //Arrange
+        A.CallTo(() => _connectorsRepository.GetConnectorEndPointDataAsync(A<IEnumerable<string>>._))
+            .Returns(new[] {
+                (BusinessPartnerNumber: "BPNL00000002CRHL", ConnectorEndPoint: "www.googlr5.com"),
+                (BusinessPartnerNumber: "BPNL00000003CRHL", ConnectorEndPoint: "www.googlr0.com"),
+                (BusinessPartnerNumber: "BPNL00000003CRHL", ConnectorEndPoint: "www.googlr1.com"),
+                (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr2.com"),
+                (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr3.com"),
+                (BusinessPartnerNumber: "BPNL00000004CRHL", ConnectorEndPoint: "www.googlr4.com")
+            }.ToAsyncEnumerable());
+
+        //Act
+        var result = await _logic.GetCompanyConnectorEndPointAsync(null).ToListAsync();
+
+        //Assert
+        result.Should().HaveCount(3).And.Satisfy(
+        x => x.Bpn == "BPNL00000002CRHL" && x.ConnectorEndpoint.Count() == 1 && x.ConnectorEndpoint.Contains("www.googlr5.com"),
+        x => x.Bpn == "BPNL00000003CRHL" && x.ConnectorEndpoint.Count() == 2 && x.ConnectorEndpoint.Contains("www.googlr0.com") && x.ConnectorEndpoint.Contains("www.googlr1.com"),
+        x => x.Bpn == "BPNL00000004CRHL" && x.ConnectorEndpoint.Count() == 3 && x.ConnectorEndpoint.Contains("www.googlr2.com") && x.ConnectorEndpoint.Contains("www.googlr3.com") && x.ConnectorEndpoint.Contains("www.googlr4.com"));
     }
 
     [Fact]
@@ -1037,7 +1059,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(new[] { (BusinessPartnerNumber: "CAXLBOSCHZZ", ConnectorEndPoint: "www.googlr.com") }.ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _logic.GetCompanyConnectorEndPointAsync(bpns).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1057,7 +1079,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data.ToAsyncEnumerable());
 
         // Act
-        var result = await _logic.GetConnectorOfferSubscriptionData(null).ToListAsync().ConfigureAwait(false);
+        var result = await _logic.GetConnectorOfferSubscriptionData(null).ToListAsync();
 
         // Assert
         result.Should().HaveCount(data.Count());
@@ -1077,7 +1099,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorData, false));
 
         // Act
-        async Task Act() => await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetCompanyConnectorData(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1090,10 +1112,10 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
-            .Returns(new ValueTuple<ConnectorData, bool>());
+            .Returns<(ConnectorData, bool)>(default);
 
         // Act
-        async Task Act() => await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+        async Task Act() => await _logic.GetCompanyConnectorData(connectorId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1112,7 +1134,7 @@ public class ConnectorsBusinessLogicTests
             .Returns((connectorData, true));
 
         // Act
-        var result = await _logic.GetCompanyConnectorData(connectorId).ConfigureAwait(false);
+        var result = await _logic.GetCompanyConnectorData(connectorId);
 
         // Assert
         result.Name.Should().Be("Test Connector");
@@ -1158,7 +1180,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, _identity.CompanyId))
             .Returns((_fixture.Create<ConnectorInformationData>(), true));
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(A<Guid>.That.Not.Matches(x => x == ExistingConnectorId), _identity.CompanyId))
-            .Returns(((ConnectorInformationData, bool))default);
+            .Returns<(ConnectorInformationData, bool)>(default);
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((_fixture.Create<ConnectorInformationData>(), false));
 

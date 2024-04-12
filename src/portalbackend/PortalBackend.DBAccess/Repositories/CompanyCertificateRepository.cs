@@ -46,7 +46,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 x.Id == certificateTypeId);
 
     /// <inheritdoc />
-    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields)
+    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null)
     {
         var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
         setOptionalFields?.Invoke(companyCertificate);
@@ -99,4 +99,46 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 companyCertificate.ValidTill
                 ))
         .SingleOrDefaultAsync();
+
+    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists, bool IsStatusLocked)> GetCompanyCertificateDocumentDataAsync(Guid documentId, DocumentTypeId documentTypeId) =>
+            _context.Documents
+            .Where(x => x.Id == documentId &&
+                   x.DocumentTypeId == documentTypeId)
+            .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true, x.DocumentStatusId == DocumentStatusId.LOCKED))
+        .SingleOrDefaultAsync();
+
+    public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyId) =>
+            _context.Documents
+            .AsNoTracking()
+            .Where(x => x.Id == documentId)
+            .Select(document => new ValueTuple<Guid, DocumentStatusId, IEnumerable<Guid>, bool>(
+                    document.Id,
+                    document.DocumentStatusId,
+                    document.CompanyCertificates.Where(x => x.CompanyCertificateStatusId != CompanyCertificateStatusId.INACTIVE).Select(x => x.Id),
+                    document.CompanyUser!.Identity!.CompanyId == companyId))
+            .SingleOrDefaultAsync();
+
+    public void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields)
+    {
+        var entity = new CompanyCertificate(id, default, default, default, Guid.Empty, Guid.Empty);
+        initialize?.Invoke(entity);
+        _context.Attach(entity);
+        updateFields.Invoke(entity);
+    }
+
+    public void AttachAndModifyCompanyCertificateDocumentDetails(Guid id, Action<Document>? initialize, Action<Document> updateFields)
+    {
+        var entity = new Document(id, null!, null!, null!, default, default, default, default);
+        initialize?.Invoke(entity);
+        _context.Attach(entity);
+        updateFields.Invoke(entity);
+    }
+
+    public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyId, DocumentTypeId documentTypeId) =>
+        _context.Documents
+        .Where(x => x.Id == documentId &&
+               x.DocumentTypeId == documentTypeId &&
+               x.CompanyUser!.Identity!.CompanyId == companyId)
+        .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true))
+    .SingleOrDefaultAsync();
 }

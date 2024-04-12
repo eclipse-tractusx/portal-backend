@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -58,7 +57,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             _resultComposer.Create());
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._)).Returns(
-            _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<ValueTuple<Guid, string>>() }).Create());
+            _sharedIdpComposer.With(x => x.IdpAliase, new[] { _fixture.Create<(Guid, string)>() }).Create());
     }
 
     #region GetCompanyNameIdpAliasData
@@ -68,7 +67,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
     }
@@ -80,14 +79,14 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             .Returns(_resultComposer.With(
                 x => x.CompanyUser,
                     _fixture.Build<(Guid CompanyUserId, string? FirstName, string? LastName, string? Email)>()
-                        .With(x => x.FirstName, (string?)null)
-                        .With(x => x.LastName, (string?)null)
-                        .With(x => x.Email, (string?)null)
+                        .With(x => x.FirstName, default(string?))
+                        .With(x => x.LastName, default(string?))
+                        .With(x => x.Email, default(string?))
                         .Create())
                 .Create());
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
         result.NameCreatedBy.Should().Be("Dear User");
@@ -103,7 +102,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId).ConfigureAwait(false);
+        async Task Act() => await sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"user {_companyUserId} does not exist");
@@ -116,7 +115,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             .Returns(_resultComposer.With(
                 x => x.IdentityProvider,
                     _fixture.Build<(string? IdpAlias, bool IsSharedIdp)>()
-                        .With(x => x.IdpAlias, (string?)null)
+                        .With(x => x.IdpAlias, default(string?))
                         .Create())
                 .Create());
 
@@ -137,7 +136,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             .Returns(_resultComposer.With(
                 x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
-                        .With(x => x.CompanyName, (string?)null)
+                        .With(x => x.CompanyName, default(string?))
                         .With(x => x.CompanyId, companyId)
                         .Create())
                 .Create());
@@ -146,7 +145,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameIdpAliasData(_identityProviderId, _companyUserId);
 
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be($"assertion failed: companyName of company {companyId} should never be null here");
     }
 
@@ -159,7 +158,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
-        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
     }
@@ -168,11 +167,10 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     public async void TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
     {
         // Arrange
-        var data = new ValueTuple<(Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>>(
-            new ValueTuple<Guid, string?, string?>(Guid.NewGuid(), _fixture.Create<string>(), _fixture.Create<string>()),
-            new ValueTuple<Guid, string?, string?, string?>(Guid.NewGuid(), null, null, null),
-            _fixture.CreateMany<ValueTuple<Guid, string>>(1)
-
+        var data = (
+            (Guid.NewGuid(), _fixture.Create<string?>(), _fixture.Create<string?>()),
+            (Guid.NewGuid(), default(string?), default(string?), default(string?)),
+            _fixture.CreateMany<(Guid, string)>(1)
         );
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
@@ -182,7 +180,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
         // Assert
-        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId).ConfigureAwait(false);
+        var result = await sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).MustHaveHappened();
         result.Should().NotBeNull();
         result.NameCreatedBy.Should().Be("Dear User");
@@ -190,7 +188,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
     {
-        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>) notfound = default;
+        var notfound = default(((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>));
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
@@ -199,14 +197,14 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"user {_companyUserId} does not exist");
     }
 
     [Fact]
     public async void TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
     {
-        ((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>) notfound = default;
+        var notfound = default(((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>));
 
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(notfound);
@@ -217,7 +215,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId, applicationId);
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"user {_companyUserId} is not associated with application {applicationId}");
     }
 
@@ -231,7 +229,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be($"user {_companyUserId} is not associated with any shared idp");
     }
 
@@ -245,7 +243,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be($"user {_companyUserId} is associated with more than one shared idp");
     }
 
@@ -258,7 +256,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
             .Returns(_sharedIdpComposer
                 .With(x => x.Company,
                     _fixture.Build<(Guid CompanyId, string? CompanyName, string? BusinessPartnerNumber)>()
-                        .With(x => x.CompanyName, (string?)null)
+                        .With(x => x.CompanyName, default(string?))
                         .With(x => x.CompanyId, companyId)
                         .Create())
                 .Create());
@@ -267,7 +265,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
 
         Task Act() => sut.GetCompanyNameSharedIdpAliasData(_companyUserId);
 
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be($"assertion failed: companyName of company {companyId} should never be null here");
     }
 

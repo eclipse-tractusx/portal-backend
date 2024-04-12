@@ -71,9 +71,7 @@ public class AppChangeBusinessLogicTest
     public AppChangeBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -144,7 +142,6 @@ public class AppChangeBusinessLogicTest
     {
         //Arrange
         var appId = _fixture.Create<Guid>();
-        var companyId = _fixture.Create<Guid>();
         var appName = _fixture.Create<string>();
         var appAssignedRoleDesc = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
         var clientIds = new[] { "client" };
@@ -180,7 +177,7 @@ public class AppChangeBusinessLogicTest
             .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
 
         //Act
-        var result = await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
+        var result = await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
 
         //Assert
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP)).MustHaveHappened();
@@ -244,9 +241,9 @@ public class AppChangeBusinessLogicTest
         var clientIds = new[] { "client" };
         A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP))
             .Returns((true, appName, Guid.NewGuid(), clientIds));
-        var existingOffer = _fixture.Create<Offer>();
+
         //Act
-        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
+        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -270,7 +267,7 @@ public class AppChangeBusinessLogicTest
             .Returns((true, appName, null, clientIds));
 
         //Act
-        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc).ConfigureAwait(false);
+        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -287,13 +284,12 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, offerDescription));
 
         // Act
-        var result = await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        var result = await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         result.Should().NotBeNull();
@@ -307,10 +303,10 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
+            .Returns<(bool, bool, IEnumerable<LocalizedDescription>?)>(default);
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -323,13 +319,12 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((false, true, offerDescription));
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -342,13 +337,12 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var offerDescription = _fixture.CreateMany<LocalizedDescription>(3);
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: offerDescription);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, false, offerDescription));
 
         // Act
-        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -360,15 +354,14 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>?)null);
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.GetAppUpdateDescriptionByIdAsync(appId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         result.Message.Should().Be("offerDescriptionDatas should never be null here");
 
     }
@@ -386,10 +379,9 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)updateDescriptionData);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, updateDescriptionData));
         var existingOffer = _fixture.Create<Offer>();
         existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
@@ -399,7 +391,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData).ConfigureAwait(false);
+        await _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
 
         // Assert
         A.CallTo(() => _offerRepository.CreateUpdateDeleteOfferDescriptions(appId, A<IEnumerable<LocalizedDescription>>._, A<IEnumerable<(string, string, string)>>.That.IsSameSequenceAs(updateDescriptionData.Select(x => new ValueTuple<string, string, string>(x.LanguageCode, x.LongDescription, x.ShortDescription)))))
@@ -416,16 +408,15 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
 
         // Assert
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         result.Message.Should().Be("offerDescriptionDatas should never be null here");
 
     }
@@ -439,16 +430,15 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: true, IsProviderCompanyUser: false, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((true, false, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
 
     }
@@ -462,16 +452,15 @@ public class AppChangeBusinessLogicTest
             new LocalizedDescription("en", _fixture.Create<string>(), _fixture.Create<string>()),
             new LocalizedDescription("de", _fixture.Create<string>(), _fixture.Create<string>())
             };
-        var appDescriptionData = (IsStatusActive: false, IsProviderCompanyUser: true, OfferDescriptionDatas: (IEnumerable<LocalizedDescription>)null!);
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-            .Returns(appDescriptionData);
+            .Returns((false, true, default(IEnumerable<LocalizedDescription>?)));
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be($"App {appId} is in InCorrect Status");
 
     }
@@ -487,13 +476,13 @@ public class AppChangeBusinessLogicTest
             };
 
         A.CallTo(() => _offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, _identity.CompanyId))
-             .Returns(((bool IsStatusActive, bool IsProviderCompanyUser, IEnumerable<LocalizedDescription> OfferDescriptionDatas))default);
+            .Returns<(bool, bool, IEnumerable<LocalizedDescription>?)>(default);
 
         // Act
         var Act = () => _sut.CreateOrUpdateAppDescriptionByIdAsync(appId, updateDescriptionData);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"App {appId} does not exist.");
 
     }
@@ -566,7 +555,7 @@ public class AppChangeBusinessLogicTest
         var Act = () => _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
         result.Message.Should().Be($"Document type not supported. File must match contentTypes :{string.Join(",", appLeadImageContentTypes.Select(x => x.MapToMediaType()))}");
     }
 
@@ -584,7 +573,7 @@ public class AppChangeBusinessLogicTest
         var Act = () => _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be("offerStatus is in incorrect State");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
@@ -603,7 +592,7 @@ public class AppChangeBusinessLogicTest
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be($"Company {CompanyId} is not the provider company of App {appId}");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
@@ -616,13 +605,13 @@ public class AppChangeBusinessLogicTest
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
 
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
-            .Returns(default((bool, bool, IEnumerable<DocumentStatusData>)));
+            .Returns<(bool, bool, IEnumerable<DocumentStatusData>)>(default);
 
         // Act
         async Task Act() => await _sut.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"App {appId} does not exist.");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
@@ -638,7 +627,7 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
 
         // Act
-        await _sut.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(false);
+        await _sut.DeactivateOfferByAppIdAsync(appId);
 
         // Assert
         A.CallTo(() => _offerService.DeactivateOfferIdAsync(appId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -689,7 +678,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
@@ -743,7 +732,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustHaveHappenedOnceExactly();
@@ -794,7 +783,7 @@ public class AppChangeBusinessLogicTest
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, data.Url, A<string>._)).MustNotHaveHappened();
@@ -818,7 +807,7 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _identity.CompanyId))
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
         // Act
-        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, oldUrl, A<string>._)).MustNotHaveHappened();
@@ -837,7 +826,7 @@ public class AppChangeBusinessLogicTest
         var subscriptionId = _fixture.Create<Guid>();
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -858,10 +847,10 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
         A.CallTo(() => _offerSubscriptionsRepository.GetUpdateUrlDataAsync(appId, subscriptionId, _identity.CompanyId))
-            .Returns((OfferUpdateUrlData?)null);
+            .Returns<OfferUpdateUrlData?>(null);
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -887,7 +876,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", true, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -913,7 +902,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, false, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -939,7 +928,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.PENDING, new OfferUpdateUrlSubscriptionDetailData(detailId, clientClientId, oldUrl)));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -963,7 +952,7 @@ public class AppChangeBusinessLogicTest
             .Returns(new OfferUpdateUrlData("testApp", false, true, Guid.Empty, subscribingCompany, OfferSubscriptionStatusId.ACTIVE, null));
 
         // Act
-        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateTenantUrlAsync(appId, subscriptionId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1000,7 +989,7 @@ public class AppChangeBusinessLogicTest
             .Returns(documentData);
 
         // Act
-        var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
+        var result = await _sut.GetActiveAppDocumentTypeDataAsync(appId);
 
         // Assert
         A.CallTo(() => _offerRepository.GetActiveOfferDocumentTypeDataOrderedAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<IEnumerable<DocumentTypeId>>._)).MustHaveHappened();
@@ -1022,7 +1011,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = new DocumentStatusData(documentId, DocumentStatusId.PENDING);
 
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
@@ -1045,7 +1033,7 @@ public class AppChangeBusinessLogicTest
             });
 
         // Act
-        await _sut.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
+        await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId)).MustHaveHappenedOnceExactly();
@@ -1065,13 +1053,13 @@ public class AppChangeBusinessLogicTest
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
-            .Returns(((bool, bool, DocumentTypeId, DocumentStatusId))default);
+            .Returns<(bool, bool, DocumentTypeId, DocumentStatusId)>(default);
 
         // Act
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"Document {documentId} for App {appId} does not exist.");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
@@ -1084,7 +1072,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((false, true, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
@@ -1092,7 +1079,7 @@ public class AppChangeBusinessLogicTest
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be("offerStatus is in incorrect State");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
@@ -1105,7 +1092,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, true, DocumentTypeId.CX_FRAME_CONTRACT, DocumentStatusId.LOCKED));
 
@@ -1113,7 +1099,7 @@ public class AppChangeBusinessLogicTest
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be($"document {documentId} does not have a valid documentType");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
@@ -1126,7 +1112,6 @@ public class AppChangeBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var documentId = _fixture.Create<Guid>();
-        var documentStatusData = _fixture.Create<DocumentStatusData>();
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(A<Guid>._, A<Guid>._, OfferTypeId.APP, A<Guid>._))
             .Returns((true, false, DocumentTypeId.APP_CONTRACT, DocumentStatusId.LOCKED));
 
@@ -1134,7 +1119,7 @@ public class AppChangeBusinessLogicTest
         async Task Act() => await _sut.DeleteActiveAppDocumentAsync(appId, documentId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
@@ -1154,10 +1139,83 @@ public class AppChangeBusinessLogicTest
         var documentTypeId = DocumentTypeId.APP_IMAGE;
 
         // Act
-        await _sut.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _offerDocumentService.UploadDocumentAsync(appId, documentTypeId, file, OfferTypeId.APP, A<IEnumerable<UploadDocumentConfig>>._, OfferStatusId.ACTIVE, CancellationToken.None)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetActiveAppRoles
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_Throws_NotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = default((bool, bool, IEnumerable<ActiveAppRoleDetails>));
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(A<Guid>._, A<OfferTypeId>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        Task Act() => _sut.GetActiveAppRolesAsync(appId, null);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
+        result.Message.Should().Be($"App {appId} does not exist");
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(appId, OfferTypeId.APP, null, "en"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_Throws_ConflictException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = (true, false, _fixture.CreateMany<ActiveAppRoleDetails>());
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(A<Guid>._, A<OfferTypeId>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        Task Act() => _sut.GetActiveAppRolesAsync(appId, "de");
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
+        result.Message.Should().Be($"App {appId} is not Active");
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(appId, OfferTypeId.APP, "de", "en"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var userRole1 = new ActiveAppRoleDetails("TestRole1", [
+            new ActiveAppUserRoleDescription("en", "TestRole1 description")
+        ]);
+        var userRole2 = new ActiveAppRoleDetails("TestRole2", [
+            new ActiveAppUserRoleDescription("en", "TestRole2 description")
+        ]);
+        var activeAppRoleDetails = (true, true, new[] {
+            userRole1,
+            userRole2
+        });
+
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(A<Guid>._, A<OfferTypeId>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        var result = await _sut.GetActiveAppRolesAsync(appId, "de");
+
+        // Assert
+        result.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
+                x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
+        A.CallTo(() => _userRolesRepository.GetActiveAppRolesAsync(appId, OfferTypeId.APP, "de", "en"))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

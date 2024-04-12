@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -66,7 +65,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     SubscriptionStatusSorting.CompanyNameDesc => (IEnumerable<Offer> o) => o.OrderByDescending(offer => offer.ProviderCompany!.Name),
                     SubscriptionStatusSorting.OfferIdAsc => (IEnumerable<Offer> o) => o.OrderBy(offer => offer.Id),
                     SubscriptionStatusSorting.OfferIdDesc => (IEnumerable<Offer> o) => o.OrderByDescending(offer => offer.Id),
-                    _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                    _ => null
                 },
                 g => new OfferCompanySubscriptionStatusData
                 {
@@ -391,7 +390,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.RequesterId,
                 new ValueTuple<bool, string?>(x.Offer.AppInstanceSetup != null && x.Offer.AppInstanceSetup.IsSingleInstance, x.Offer.AppInstanceSetup!.InstanceUrl),
                 x.Offer!.AppInstances.Select(ai => ai.Id),
-                x.OfferSubscriptionProcessData != null,
+                x.OfferSubscriptionProcessData!.Id,
                 x.Offer.SalesManagerId,
                 x.Offer.ProviderCompanyId,
                 x.Offer.OfferTypeId == OfferTypeId.APP && (x.Offer.AppInstanceSetup == null || !x.Offer.AppInstanceSetup!.IsSingleInstance) ?
@@ -465,11 +464,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl) =>
-        _context.OfferSubscriptionsProcessDatas.Add(new OfferSubscriptionProcessData(offerSubscriptionId, offerUrl)).Entity;
+        _context.OfferSubscriptionsProcessDatas.Add(new OfferSubscriptionProcessData(Guid.NewGuid(), offerSubscriptionId, offerUrl)).Entity;
 
     /// <inheritdoc />
-    public void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId) =>
-        _context.Remove(new OfferSubscriptionProcessData(offerSubscriptionId, null!));
+    public void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionProcessDataId) =>
+        _context.Remove(new OfferSubscriptionProcessData(offerSubscriptionProcessDataId, Guid.Empty, null!));
 
     /// <inheritdoc />
     public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>

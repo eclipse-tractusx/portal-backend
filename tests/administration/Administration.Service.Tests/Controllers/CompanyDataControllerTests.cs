@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -40,7 +39,7 @@ public class CompanyDataControllerTests
     {
         _fixture = new Fixture();
         _logic = A.Fake<ICompanyDataBusinessLogic>();
-        this._controller = new CompanyDataController(_logic);
+        _controller = new CompanyDataController(_logic);
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public class CompanyDataControllerTests
             .Returns(companyAddressDetailData);
 
         // Act
-        var result = await this._controller.GetOwnCompanyDetailsAsync().ConfigureAwait(false);
+        var result = await _controller.GetOwnCompanyDetailsAsync();
 
         // Assert
         result.Should().BeOfType<CompanyAddressDetailData>();
@@ -68,7 +67,7 @@ public class CompanyDataControllerTests
             .Returns(companyRoleConsentDatas);
 
         // Act
-        await this._controller.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync();
+        await _controller.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync();
 
         // Assert
         A.CallTo(() => _logic.GetCompanyAssigendUseCaseDetailsAsync()).MustHaveHappenedOnceExactly();
@@ -83,7 +82,7 @@ public class CompanyDataControllerTests
             .Returns(true);
 
         // Act
-        var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
+        var result = await _controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData);
 
         // Assert
         A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
@@ -100,7 +99,7 @@ public class CompanyDataControllerTests
             .Returns(false);
 
         // Act
-        var result = await this._controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
+        var result = await _controller.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData);
 
         // Assert
         A.CallTo(() => _logic.CreateCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
@@ -115,7 +114,7 @@ public class CompanyDataControllerTests
         var useCaseData = _fixture.Create<UseCaseIdDetails>();
 
         // Act
-        var result = await this._controller.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData).ConfigureAwait(false);
+        var result = await _controller.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData);
 
         // Assert
         A.CallTo(() => _logic.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseData.useCaseId)).MustHaveHappenedOnceExactly();
@@ -132,7 +131,7 @@ public class CompanyDataControllerTests
             .Returns(companyRoleConsentDatas);
 
         // Act
-        await this._controller.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
+        await _controller.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
         A.CallTo(() => _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName)).MustHaveHappenedOnceExactly();
@@ -145,7 +144,7 @@ public class CompanyDataControllerTests
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
 
         // Act
-        var result = await this._controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        var result = await _controller.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         A.CallTo(() => _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails)).MustHaveHappenedOnceExactly();
@@ -160,7 +159,7 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
-        var result = await _controller.GetUseCaseParticipation(null).ConfigureAwait(false);
+        var result = await _controller.GetUseCaseParticipation(null);
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync(null)).MustHaveHappenedOnceExactly();
@@ -175,7 +174,7 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
 
         // Act
-        var result = await _controller.GetUseCaseParticipation("de").ConfigureAwait(false);
+        var result = await _controller.GetUseCaseParticipation("de");
 
         // Assert
         A.CallTo(() => _logic.GetUseCaseParticipationAsync("de")).MustHaveHappenedOnceExactly();
@@ -190,7 +189,7 @@ public class CompanyDataControllerTests
             .Returns(_fixture.CreateMany<SsiCertificateData>(5));
 
         // Act
-        var result = await _controller.GetSsiCertificationData().ConfigureAwait(false);
+        var result = await _controller.GetSsiCertificationData();
 
         // Assert
         A.CallTo(() => _logic.GetSsiCertificatesAsync()).MustHaveHappenedOnceExactly();
@@ -205,7 +204,7 @@ public class CompanyDataControllerTests
         var data = new UseCaseParticipationCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
-        await _controller.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
+        await _controller.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _logic.CreateUseCaseParticipation(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -219,7 +218,7 @@ public class CompanyDataControllerTests
         var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
 
         // Act
-        await _controller.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        await _controller.CreateSsiCertificate(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _logic.CreateSsiCertificate(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -232,7 +231,7 @@ public class CompanyDataControllerTests
         var credentialId = Guid.NewGuid();
 
         // Act
-        await _controller.ApproveCredential(credentialId, CancellationToken.None).ConfigureAwait(false);
+        await _controller.ApproveCredential(credentialId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _logic.ApproveCredential(credentialId, A<CancellationToken>._))
@@ -246,7 +245,7 @@ public class CompanyDataControllerTests
         var credentialId = Guid.NewGuid();
 
         // Act
-        await _controller.RejectCredential(credentialId).ConfigureAwait(false);
+        await _controller.RejectCredential(credentialId);
 
         // Assert
         A.CallTo(() => _logic.RejectCredential(credentialId))
@@ -266,7 +265,7 @@ public class CompanyDataControllerTests
             .Returns(paginationResponse);
 
         //Act
-        var result = await this._controller.GetCredentials(companySsiDetailStatusId: companySsiDetailStatusId, credentialTypeId: credentialTypeId, companyName: companyName, sorting: sorting).ConfigureAwait(false);
+        var result = await _controller.GetCredentials(companySsiDetailStatusId: companySsiDetailStatusId, credentialTypeId: credentialTypeId, companyName: companyName, sorting: sorting);
 
         //Assert
         A.CallTo(() => _logic.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, sorting)).MustHaveHappenedOnceExactly();
@@ -282,7 +281,7 @@ public class CompanyDataControllerTests
             .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         //Act
-        var result = await this._controller.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _controller.GetCertificateTypes().ToListAsync();
 
         //Assert
         result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -50,10 +49,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetCompanyIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<UniqueIdentifierId>? expectedIds, bool validCountry)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyIdentifiers(countryCode).ConfigureAwait(false);
+        var result = await sut.GetCompanyIdentifiers(countryCode);
 
         // Assert
         result.IsValidCountryCode.Should().Be(validCountry);
@@ -81,18 +80,20 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetCountryAssignedIdentifiers_ReturnsExpectedResult(string countryCode, IEnumerable<BpdmIdentifierId> bpdmIdentifiers, IEnumerable<BpdmIdentifierId>? expectedBpdmIds, IEnumerable<UniqueIdentifierId>? expectedUniqueIds, bool validCountry)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCountryAssignedIdentifiers(bpdmIdentifiers, countryCode).ConfigureAwait(false);
+        var result = await sut.GetCountryAssignedIdentifiers(bpdmIdentifiers, countryCode);
 
         // Assert
         result.IsValidCountry.Should().Be(validCountry);
         if (result.IsValidCountry)
         {
-            var expectedIds = (IEnumerable<(BpdmIdentifierId BpdmId, UniqueIdentifierId UniqueId)>)expectedBpdmIds!.Zip(expectedUniqueIds!);
-            result.Identifiers.Should().NotBeNull();
-            result.Identifiers.Should().HaveSameCount(expectedIds);
+            expectedBpdmIds.Should().NotBeNull();
+            expectedUniqueIds.Should().NotBeNull();
+            var expectedIds = expectedBpdmIds!.Zip(expectedUniqueIds!);
+            result.Identifiers.Should().NotBeNull()
+                .And.HaveSameCount(expectedIds);
             result.Identifiers.OrderBy(item => item).Should().ContainInOrder(expectedIds?.OrderBy(item => item));
         }
         else
@@ -107,10 +108,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceTypeData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetServiceTypeData().ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetServiceTypeData().ToListAsync();
 
         // Assert
         results.Should().HaveCount(2);
@@ -120,10 +121,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetLicenseTypeData_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetLicenseTypeData().ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetLicenseTypeData().ToListAsync();
 
         // Assert
         results.Should().HaveCount(2);
@@ -135,10 +136,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetAllLanguages_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLanguage().ToListAsync();
 
         // Assert
         result.Should().HaveCount(10).And.Satisfy(
@@ -163,10 +164,10 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetCertificateTypes_ReturnsExpectedResult()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var results = await sut.GetCertificateTypes().ToListAsync();
 
         // Assert
         results.Should().HaveCount(12);
@@ -176,17 +177,17 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task GetCertificateTypes_WithInactiveCertificateType_ReturnsExpectedResult()
     {
         // Arrange
-        var (context, sut) = await CreateSutWithContext().ConfigureAwait(false);
+        var (context, sut) = await CreateSutWithContext();
         var active = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.ACTIVE);
-        var inactive = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.INACTVIE);
+        var inactive = new CompanyCertificateTypeAssignedStatus(CompanyCertificateTypeId.ISO_15504_SPICE, CompanyCertificateTypeStatusId.INACTIVE);
         context.Remove(active);
         context.Add(inactive);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
 
         try
         {
             // Act
-            var results = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+            var results = await sut.GetCertificateTypes().ToListAsync();
 
             // Assert
             results.Should().HaveCount(11);
@@ -195,7 +196,7 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
         {
             context.Remove(inactive);
             context.Add(active);
-            await context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync();
         }
     }
 
@@ -205,14 +206,14 @@ public class StaticDataRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     private async Task<StaticDataRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new StaticDataRepository(context);
         return sut;
     }
 
     private async Task<(PortalDbContext, StaticDataRepository)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new StaticDataRepository(context);
         return (context, sut);
     }

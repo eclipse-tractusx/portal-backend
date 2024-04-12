@@ -93,4 +93,11 @@ public interface IAppChangeBusinessLogic
     /// <param name="document"></param>
     /// <param name="cancellationToken"></param>
     Task CreateActiveAppDocumentAsync(Guid appId, DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets user roles for an active app id
+    /// </summary>
+    /// <param name="appId">Id of the offer</param>
+    /// <param name="languageShortName"></param>
+    Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync(Guid appId, string? languageShortName);
 }

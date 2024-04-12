@@ -160,24 +160,24 @@
     "description": "Technical user to generate 3rd party registrations by onboarding service provider companies."
   },
   {
-    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "de",
-    "description": "Ermöglicht das Anzeigen und Hinzufügen von Geschäftspartnerdaten über das eigene Service gate."
+    "description": "BPDM Sharing Input Consumer - Beschreibung tbd"
   },
   {
-    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
+    "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "en",
-    "description": "Allows to view and add business partner data via the owned service gate."
+    "description": "BPDM Sharing Input Consumer - description tbd"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "de",
-    "description": "Anzeigen der in der Pool-Datenbank verfügbaren Geschäftspartnerdaten."
+    "description": "BPDM Pool Admin - Beschreibung tbd"
   },
   {
-    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51162",
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "en",
-    "description": "View business partner data available in the pool database."
+    "description": "BPDM Pool Admin - description tbd"
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
@@ -200,33 +200,43 @@
     "description": "Technical user to access catena-x membership information."
   },
   {
-    "user_role_id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
+    "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "de",
-    "description": "Anzeigen, hinzufügen und löschen von Geschäftspartnerdatensätzen aus dem Geschäftspartner-Datenpool."
+    "description": "BPDM Sharing Output Consumer - Beschreibung tbd"
   },
   {
-    "user_role_id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
+    "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "en",
-    "description": "View, add and delete business partner records from the business partner data pool."
+    "description": "BPDM Sharing Output Consumer - description tbd"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e6",
+    "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
     "language_short_name": "de",
-    "description": "Zugriff auf das BPDM Gate - lesend."
+    "description": "BPDM Sharing Admin - Beschreibung tbd"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e6",
+    "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
     "language_short_name": "en",
-    "description": "Access to the BPDM Gate Read data."
+    "description": "BPDM Sharing Admin - description"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "de",
-    "description": "Zugriff auf das BPDM Gate - lesend & schreibend."
+    "description": "BPDM Sharing Input Manager - Beschreibung tbd"
   },
   {
-    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
-    "description": "Access to the BPDM Gate Read & Write data."
+    "description": "BPDM Sharing Input Manager - description tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "language_short_name": "de",
+    "description": "BPDM Pool Consumer - Beschreibung tbd"
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "language_short_name": "en",
+    "description": "BPDM Pool Consumer - description tbd"
   }
 ]

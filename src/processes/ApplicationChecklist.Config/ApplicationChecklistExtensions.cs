@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
@@ -38,7 +39,8 @@ public static class ApplicationChecklistExtensions
             .AddBpdmService(section.GetSection("Bpdm"))
             .AddCustodianService(section.GetSection("Custodian"))
             .AddClearinghouseService(section.GetSection("Clearinghouse"))
-            .AddSdFactoryService(section.GetSection("SdFactory"));
+            .AddSdFactoryService(section.GetSection("SdFactory"))
+            .AddDimService(section.GetSection("Dim"));
 
     public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services) =>
         services

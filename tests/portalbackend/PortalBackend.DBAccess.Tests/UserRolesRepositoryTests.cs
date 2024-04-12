@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -50,13 +50,13 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCoreOfferRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync();
 
         // Assert
-        data.Should().HaveCount(9);
+        data.Should().HaveCount(12);
     }
 
     #endregion
@@ -73,10 +73,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         };
 
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync();
 
         // Assert
         data.Should().HaveCount(2);
@@ -91,10 +91,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUserRolesByClientId_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync();
 
         // Assert
         data.Should().HaveCount(1);
@@ -111,10 +111,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetRolesForClient_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetRolesForClient("Cl1-CX-Registration").ToListAsync();
 
         // Assert
         data.Should().HaveCount(3);
@@ -128,13 +128,13 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetServiceAccountRolesAsync_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
-        data.Should().HaveCount(9);
+        data.Should().HaveCount(12);
         data.Should().OnlyHaveUniqueItems();
     }
 
@@ -151,10 +151,10 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
             {
                 "Company Admin"
             })};
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync();
 
         // Assert
         data.Should().HaveCount(1);
@@ -168,14 +168,14 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var userRoleConfig = new[]{
-            new UserRoleConfig("not-existing-client", new []
-            {
+            new UserRoleConfig("not-existing-client",
+            [
                 "Company Admin"
-            })};
-        var sut = await CreateSut().ConfigureAwait(false);
+            ])};
+        var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync().ConfigureAwait(false);
+        var data = await sut.GetUserRoleDataUntrackedAsync(userRoleConfig).ToListAsync();
 
         // Assert
         data.Should().BeEmpty();
@@ -183,9 +183,60 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetActiveAppRoles
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_NonExistingApp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
+
+        // Assert
+        data.IsValid.Should().BeFalse();
+        data.IsActive.Should().BeFalse();
+        data.AppRoleDetails.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_InActiveApp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
+
+        // Assert
+        data.IsValid.Should().BeTrue();
+        data.IsActive.Should().BeFalse();
+        data.AppRoleDetails.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ActiveApp_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetActiveAppRolesAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"), OfferTypeId.APP, "de", Constants.DefaultLanguage);
+
+        // Assert
+        data.IsValid.Should().BeTrue();
+        data.IsActive.Should().BeTrue();
+        data.AppRoleDetails.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.Role == "EarthCommerce.AdministratorRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"),
+                x => x.Role == "EarthCommerce.Advanced.BuyerRC_QAS2" && x.Descriptions.Count() == 2 && x.Descriptions.Any(x => x.LanguageCode == "de") && x.Descriptions.Any(x => x.LanguageCode == "en"));
+    }
+
+    #endregion
     private async Task<IUserRolesRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new UserRolesRepository(context);
     }
 }

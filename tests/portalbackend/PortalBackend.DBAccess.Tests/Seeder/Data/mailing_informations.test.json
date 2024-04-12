@@ -1,0 +1,12 @@
+[
+  {
+    "id": "dd28cd9d-fd8a-4225-9254-2aabecc82470",
+    "process_id": "44927361-3766-4f07-9f18-860158880d86",
+    "email": "test@email.de",
+    "template": "CredentialRejected",
+    "mailing_status_id": 1,
+    "mail_parameters": "gb2FVMfdE06kq7tY/b0iCeAJiYAktW+99RaTF9BlNNtsZLV5DDn6vJSDn4XovXviM16ZqM+B7Bxm6btufh6rfYGbXhqbJ+U5YwzW82WdMWw=",
+    "initialization_vector": "ehGUJhkI3HP5Y61hiY2QqQ==",
+    "encryption_mode": 1
+  }
+]

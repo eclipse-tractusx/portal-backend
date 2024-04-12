@@ -24,10 +24,14 @@ using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Dependen
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
+using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
@@ -43,6 +47,7 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
+                .AddMailingAndTemplateManager(hostContext.Configuration)
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
@@ -53,7 +58,10 @@ try
                 .AddApplicationChecklistCreation()
                 .AddApplicationActivation(hostContext.Configuration)
                 .AddConfigurationProcessIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration);
+                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
+                .AddMailingProcessExecutor()
+                .AddInvitationProcessExecutor(hostContext.Configuration)
+                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"));
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
@@ -71,7 +79,7 @@ try
         .Build();
     Log.Information("Building worker completed");
 
-    var tokenSource = new CancellationTokenSource();
+    using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
     {
         Log.Information("Canceling...");
@@ -81,7 +89,7 @@ try
 
     Log.Information("Start processing");
     var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
-    await workerInstance.ExecuteAsync(tokenSource.Token).ConfigureAwait(false);
+    await workerInstance.ExecuteAsync(tokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.None);
     Log.Information("Execution finished shutting down");
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))

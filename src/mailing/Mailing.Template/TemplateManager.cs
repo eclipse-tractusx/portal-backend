@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -38,12 +37,12 @@ public class TemplateManager : ITemplateManager
         _settings = templateSettings.Value;
     }
 
-    public async Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters)
+    public async Task<Mail> ApplyTemplateAsync(string id, IReadOnlyDictionary<string, string> parameters)
     {
         var template = _settings.Templates.SingleOrDefault(x => x.Name == id)?.Setting ?? throw new NoSuchTemplateException(id);
 
         var body = template.EmailTemplateType.HasValue
-            ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(false)
+            ? await GetTemplateStringFromType(template.EmailTemplateType.Value).ConfigureAwait(ConfigureAwaitOptions.None)
             : template.Body;
         if (body == null)
         {
@@ -59,19 +58,15 @@ public class TemplateManager : ITemplateManager
 
     private static async Task<string> GetTemplateStringFromType(EmailTemplateType type)
     {
-        var path = typeof(EmailTemplateType)?
-            .GetMember(type.ToString())?
-            .FirstOrDefault(m => m.DeclaringType == typeof(EmailTemplateType))?
-            .GetCustomAttribute<PathAttribute>()?.Path;
-
-        if (path == null)
-        {
-            throw new NoSuchTemplateException(type.ToString());
-        }
+        var path =
+            Array.Find(
+                typeof(EmailTemplateType).GetMember(type.ToString()) ?? throw new NoSuchTemplateException(type.ToString()),
+                m => m.DeclaringType == typeof(EmailTemplateType))?
+            .GetCustomAttribute<PathAttribute>()?.Path ?? throw new NoSuchTemplateException(type.ToString());
 
         try
         {
-            return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(false);
+            return await File.ReadAllTextAsync(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/EmailTemplates/" + path).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (IOException ioe)
         {
@@ -79,7 +74,7 @@ public class TemplateManager : ITemplateManager
         }
     }
 
-    private static string ReplaceValues(string template, IDictionary<string, string> parameters) =>
+    private static string ReplaceValues(string template, IReadOnlyDictionary<string, string> parameters) =>
         _templateMatcherExpression.Replace(
             template,
             m => parameters.TryGetValue(m.Groups[1].Value, out var value) ? value : "null");

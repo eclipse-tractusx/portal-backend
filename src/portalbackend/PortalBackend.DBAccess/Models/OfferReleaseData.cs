@@ -40,7 +40,6 @@ public record OfferReleaseData(
     bool IsDescriptionLongNotSet,
     bool IsDescriptionShortNotSet,
     bool HasUserRoles,
-    bool HasTechnicalUserProfiles,
     bool HasPrivacyPolicies,
     IEnumerable<(Guid DocumentId, DocumentStatusId StatusId, DocumentTypeId DocumentTypeId)> DocumentDatas
 );

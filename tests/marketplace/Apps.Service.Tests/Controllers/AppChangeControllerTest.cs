@@ -20,7 +20,6 @@
 using AutoFixture;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
@@ -29,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -62,7 +62,7 @@ public class AppChangeControllerTest
             .Returns(appRoleData);
 
         //Act
-        var result = await _controller.AddActiveAppUserRole(appId, appUserRoles).ConfigureAwait(false);
+        var result = await _controller.AddActiveAppUserRole(appId, appUserRoles);
         foreach (var item in result)
         {
             //Assert
@@ -83,10 +83,12 @@ public class AppChangeControllerTest
             .Returns(offerDescriptionData);
 
         //Act
-        var result = await _controller.GetAppUpdateDescriptionsAsync(appId).ConfigureAwait(false);
+        var result = await _controller.GetAppUpdateDescriptionsAsync(appId);
 
         //Assert
         A.CallTo(() => _logic.GetAppUpdateDescriptionByIdAsync(A<Guid>._)).MustHaveHappened();
+        result.Should().NotBeNull()
+            .And.ContainInOrder(offerDescriptionData);
     }
 
     [Fact]
@@ -97,7 +99,7 @@ public class AppChangeControllerTest
         var offerDescriptionData = _fixture.CreateMany<LocalizedDescription>(3);
 
         //Act
-        var result = await _controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData).ConfigureAwait(false);
+        var result = await _controller.CreateOrUpdateAppDescriptionsByIdAsync(appId, offerDescriptionData);
 
         //Assert
         A.CallTo(() => _logic.CreateOrUpdateAppDescriptionByIdAsync(A<Guid>._, A<IEnumerable<LocalizedDescription>>._)).MustHaveHappened();
@@ -110,14 +112,13 @@ public class AppChangeControllerTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("Test Image", "TestImage.jpeg", "image/jpeg");
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(A<Guid>._, A<IFormFile>._, CancellationToken.None))
-            .ReturnsLazily(() => Task.CompletedTask);
+        var cancellationToken = CancellationToken.None;
 
         // Act
-        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None).ConfigureAwait(false);
+        var result = await _controller.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken);
 
         // Assert
-        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, CancellationToken.None)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, file, cancellationToken)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 
@@ -128,10 +129,11 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        var result = await _controller.DeactivateApp(appId).ConfigureAwait(false);
+        var result = await _controller.DeactivateApp(appId);
 
         //Assert
         A.CallTo(() => _logic.DeactivateOfferByAppIdAsync(appId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 
     [Fact]
@@ -143,7 +145,7 @@ public class AppChangeControllerTest
         var data = new UpdateTenantData("http://test.com");
 
         //Act
-        var result = await _controller.UpdateTenantUrl(appId, subscriptionId, data).ConfigureAwait(false);
+        var result = await _controller.UpdateTenantUrl(appId, subscriptionId, data);
 
         //Assert
         A.CallTo(() => _logic.UpdateTenantUrlAsync(appId, subscriptionId, data)).MustHaveHappened();
@@ -157,7 +159,7 @@ public class AppChangeControllerTest
         var appId = _fixture.Create<Guid>();
 
         //Act
-        await _controller.GetActiveAppDocuments(appId).ConfigureAwait(false);
+        await _controller.GetActiveAppDocuments(appId);
 
         //Assert
         A.CallTo(() => _logic.GetActiveAppDocumentTypeDataAsync(appId)).MustHaveHappened();
@@ -171,7 +173,7 @@ public class AppChangeControllerTest
         var documentId = _fixture.Create<Guid>();
 
         // Act
-        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentId).ConfigureAwait(false);
+        await _controller.DeleteMulitipleActiveAppDocumentsAsync(appId, documentId);
 
         // Assert
         A.CallTo(() => _logic.DeleteActiveAppDocumentAsync(appId, documentId)).MustHaveHappened();
@@ -186,9 +188,30 @@ public class AppChangeControllerTest
         var documentTypeId = DocumentTypeId.APP_IMAGE;
 
         // Act
-        await _controller.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None).ConfigureAwait(false);
+        await _controller.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _logic.CreateActiveAppDocumentAsync(appId, documentTypeId, file, CancellationToken.None)).MustHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetActiveAppRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var language = _fixture.Create<string>();
+        var activeAppRoleDetails = _fixture.CreateMany<ActiveAppRoleDetails>(5).ToImmutableArray();
+
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(A<Guid>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        var result = await _controller.GetActiveAppRolesAsync(appId, language);
+
+        // Assert
+        A.CallTo(() => _logic.GetActiveAppRolesAsync(appId, language))
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(activeAppRoleDetails)
+            .And.ContainInOrder(activeAppRoleDetails);
     }
 }

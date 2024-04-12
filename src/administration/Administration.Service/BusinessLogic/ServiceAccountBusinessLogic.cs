@@ -68,7 +68,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, new ErrorParameter[] { new("companyId", companyId.ToString()) });
@@ -85,9 +85,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         }
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
-        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, new[] { result.Bpn }, companyServiceAccountTypeId, false, true).ConfigureAwait(false);
+        var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, new[] { result.Bpn }, companyServiceAccountTypeId, false, true).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return new ServiceAccountDetails(
             serviceAccountId,
             clientId,
@@ -103,7 +103,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
     {
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
         var companyId = _identityData.CompanyId;
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, new ErrorParameter[] { new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString()) });
@@ -124,7 +124,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         // serviceAccount
         if (!string.IsNullOrWhiteSpace(result.ClientClientId))
         {
-            await _provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(false);
+            await _provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         _portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
@@ -142,7 +142,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 });
         }
 
-        return await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        return await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId)
@@ -158,9 +158,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, new ErrorParameter[] { new("serviceAccountId", serviceAccountId.ToString()) });
         }
 
-        var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(result.ClientClientId).ConfigureAwait(false);
+        var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false);
+        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ServiceAccountConnectorOfferData(
             result.ServiceAccountId,
             result.ClientClientId,
@@ -189,7 +189,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, new ErrorParameter[] { new("serviceAccountId", serviceAccountId.ToString()) });
         }
-        var authData = await _provisioningManager.ResetCentralClientAuthDataAsync(result.ClientClientId).ConfigureAwait(false);
+        var authData = await _provisioningManager.ResetCentralClientAuthDataAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ServiceAccountDetails(
             result.ServiceAccountId,
             result.ClientClientId,
@@ -215,7 +215,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
 
         var companyId = _identityData.CompanyId;
         var serviceAccountRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(false);
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, new ErrorParameter[] { new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString()) });
@@ -234,9 +234,9 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
             new ClientConfigData(
                 serviceAccountDetails.Name,
                 serviceAccountDetails.Description,
-                serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(false);
+                serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(false);
+        var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(
             serviceAccountId,
@@ -251,7 +251,7 @@ public class ServiceAccountBusinessLogic : IServiceAccountBusinessLogic
                 sa.Description = serviceAccountDetails.Description;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new ServiceAccountDetails(
             result.ServiceAccountId,

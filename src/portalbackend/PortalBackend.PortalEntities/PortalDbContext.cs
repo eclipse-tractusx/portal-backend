@@ -114,6 +114,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
     public virtual DbSet<CompanyIdentityProvider> CompanyIdentityProviders { get; set; } = default!;
+    public virtual DbSet<CompanyInvitation> CompanyInvitations { get; set; } = default!;
     public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
@@ -154,6 +155,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<LanguageLongName> LanguageLongNames { get; set; } = default!;
     public virtual DbSet<LicenseType> LicenseTypes { get; set; } = default!;
     public virtual DbSet<MediaType> MediaTypes { get; set; } = default!;
+    public virtual DbSet<MailingInformation> MailingInformations { get; set; } = default!;
+    public virtual DbSet<MailingStatus> MailingStatuses { get; set; } = default!;
     public virtual DbSet<NetworkRegistration> NetworkRegistrations { get; set; } = default!;
     public virtual DbSet<Notification> Notifications { get; set; } = default!;
     public virtual DbSet<NotificationTypeAssignedTopic> NotificationTypeAssignedTopics { get; set; } = default!;
@@ -204,6 +207,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRoleCollectionRolesView> CompanyRoleCollectionRolesView { get; set; } = default!;
     public virtual DbSet<AgreementStatus> AgreementStatuses { get; set; } = default!;
     public virtual DbSet<AgreementView> AgreementView { get; set; } = default!;
+    public virtual DbSet<CompanyWalletData> CompanyWalletDatas { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -424,15 +428,6 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasAuditV1Triggers<Offer, AuditOffer20231115>();
-        });
-
-        modelBuilder.Entity<OfferSubscriptionProcessData>(entity =>
-        {
-            entity.HasKey(x => x.OfferSubscriptionId);
-
-            entity.HasOne(x => x.OfferSubscription)
-                .WithOne(x => x.OfferSubscriptionProcessData)
-                .HasForeignKey<OfferSubscriptionProcessData>(x => x.OfferSubscriptionId);
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
@@ -874,7 +869,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<IdentityAssignedRole>(entity =>
         {
-            entity.HasKey(e => new { IdentityId = e.IdentityId, e.UserRoleId });
+            entity.HasKey(e => new { e.IdentityId, e.UserRoleId });
 
             entity
                 .HasOne(d => d.UserRole)
@@ -1498,15 +1493,11 @@ public class PortalDbContext : DbContext
                   .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
         });
 
-        modelBuilder.Entity<OnboardingServiceProviderDetail>(entity =>
-        {
-            entity.HasKey(x => x.CompanyId);
-
-            entity.HasOne(x => x.Company)
-                .WithOne(x => x.OnboardingServiceProviderDetail)
-                .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<OnboardingServiceProviderDetail>()
+            .HasOne(x => x.Company)
+            .WithOne(x => x.OnboardingServiceProviderDetail)
+            .HasForeignKey<OnboardingServiceProviderDetail>(x => x.CompanyId)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<NetworkRegistration>(entity =>
         {
@@ -1548,19 +1539,56 @@ public class PortalDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<Document>(entity =>
+        modelBuilder.Entity<Document>()
+            .HasAuditV1Triggers<Document, AuditDocument20231115>();
+
+        modelBuilder.Entity<CompanyInvitation>(entity =>
         {
-            entity.HasAuditV1Triggers<Document, AuditDocument20231115>();
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.Application)
+                .WithOne(x => x.CompanyInvitation)
+                .HasForeignKey<CompanyInvitation>(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.CompanyInvitation)
+                .HasForeignKey<CompanyInvitation>(x => x.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
         modelBuilder.Entity<AgreementStatus>()
             .HasData(
                 Enum.GetValues(typeof(AgreementStatusId))
                     .Cast<AgreementStatusId>()
                     .Select(e => new AgreementStatus(e))
             );
+
         modelBuilder.Entity<AgreementView>()
             .ToView("agreement_view", "portal")
             .HasNoKey();
+
+        modelBuilder.Entity<MailingStatus>()
+            .HasData(
+                Enum.GetValues(typeof(MailingStatusId))
+                    .Cast<MailingStatusId>()
+                    .Select(e => new MailingStatus(e))
+            );
+
+        modelBuilder.Entity<MailingInformation>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.MailingInformation)
+                .HasForeignKey<MailingInformation>(x => x.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.MailingStatus)
+                .WithMany(x => x.MailingInformations)
+                .HasForeignKey(x => x.MailingStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
     }
 
     /// <inheritdoc />

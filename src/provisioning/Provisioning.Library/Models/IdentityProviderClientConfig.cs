@@ -20,14 +20,5 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models
 {
-    public class IdentityProviderClientConfig
-    {
-        public IdentityProviderClientConfig(string RedirectUri, string JwksUrl)
-        {
-            this.RedirectUri = RedirectUri;
-            this.JwksUrl = JwksUrl;
-        }
-        public string RedirectUri;
-        public string JwksUrl;
-    }
+    public record IdentityProviderClientConfig(string RedirectUri, string JwksUrl);
 }

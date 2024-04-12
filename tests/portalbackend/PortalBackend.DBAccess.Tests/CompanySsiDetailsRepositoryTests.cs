@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,7 +51,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetUseCaseParticipationForCompany(_validCompanyId, "en").ToListAsync();
 
         // Assert
         result.Should().HaveCount(5);
@@ -80,7 +79,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null, null, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null, null, null).ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -105,7 +104,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(CompanySsiDetailStatusId.PENDING, null, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(CompanySsiDetailStatusId.PENDING, null, null).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(4);
@@ -126,7 +125,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null, VerifiedCredentialTypeId.PCF_FRAMEWORK, null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null, VerifiedCredentialTypeId.PCF_FRAMEWORK, null).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.ContainSingle().Which.CompanyId.Should().Be(_validCompanyId);
@@ -140,7 +139,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetAllCredentialDetails(null, null, "Service").ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllCredentialDetails(null, null, "Service").ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.ContainSingle().Which.CompanyId.Should().Be(new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
@@ -158,7 +157,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiCertificates(_validCompanyId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetSsiCertificates(_validCompanyId).ToListAsync();
 
         // Assert
         result.Should().ContainSingle()
@@ -199,7 +198,7 @@ public class CompanySsiDetailsRepositoryTests
             {
                 ssi.VerifiedCredentialExternalTypeUseCaseDetailId = new("1268a76a-ca19-4dd8-b932-01f24071d561");
             });
-        async Task Act() => await context.SaveChangesAsync().ConfigureAwait(false);
+        async Task Act() => await context.SaveChangesAsync();
 
         // Act
         var ex = await Assert.ThrowsAsync<DbUpdateException>(Act);
@@ -219,7 +218,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckSsiDetailsExistsForCompany(_validCompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560")).ConfigureAwait(false);
+        var result = await sut.CheckSsiDetailsExistsForCompany(_validCompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560"));
 
         // Assert
         result.Should().BeTrue();
@@ -232,7 +231,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckSsiDetailsExistsForCompany(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560")).ConfigureAwait(false);
+        var result = await sut.CheckSsiDetailsExistsForCompany(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560"));
 
         // Assert
         result.Should().BeFalse();
@@ -245,7 +244,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckSsiDetailsExistsForCompany(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.CERTIFICATE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560")).ConfigureAwait(false);
+        var result = await sut.CheckSsiDetailsExistsForCompany(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.CERTIFICATE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d560"));
 
         // Assert
         result.Should().BeFalse();
@@ -258,7 +257,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckSsiDetailsExistsForCompany(_validCompanyId, VerifiedCredentialTypeId.BEHAVIOR_TWIN_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d562")).ConfigureAwait(false);
+        var result = await sut.CheckSsiDetailsExistsForCompany(_validCompanyId, VerifiedCredentialTypeId.BEHAVIOR_TWIN_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, new Guid("1268a76a-ca19-4dd8-b932-01f24071d562"));
 
         // Assert
         result.Should().BeFalse();
@@ -280,7 +279,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(detailId, typeId).ConfigureAwait(false);
+        var result = await sut.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(detailId, typeId);
 
         // Assert
         result.Should().Be(exists);
@@ -301,7 +300,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckSsiCertificateType(typeId).ConfigureAwait(false);
+        var result = await sut.CheckSsiCertificateType(typeId);
 
         // Assert
         result.Should().Be(expectedResult);
@@ -318,7 +317,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiApprovalData(new("9f5b9934-4014-4099-91e9-7b1aee696b03")).ConfigureAwait(false);
+        var result = await sut.GetSsiApprovalData(new("9f5b9934-4014-4099-91e9-7b1aee696b03"));
 
         // Assert
         result.exists.Should().BeTrue();
@@ -334,7 +333,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiApprovalData(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetSsiApprovalData(Guid.NewGuid());
 
         // Assert
         result.exists.Should().BeFalse();
@@ -351,7 +350,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiRejectionData(new("9f5b9934-4014-4099-91e9-7b1aee696b03")).ConfigureAwait(false);
+        var result = await sut.GetSsiRejectionData(new("9f5b9934-4014-4099-91e9-7b1aee696b03"));
 
         // Assert
         result.Exists.Should().BeTrue();
@@ -366,7 +365,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetSsiRejectionData(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetSsiRejectionData(Guid.NewGuid());
 
         // Assert
         result.Should().Be(default);
@@ -380,7 +379,6 @@ public class CompanySsiDetailsRepositoryTests
     public async Task CreateCredentialDetails_WithValidData_ReturnsExpected()
     {
         // Arrange
-        var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act
@@ -402,7 +400,6 @@ public class CompanySsiDetailsRepositoryTests
     public async Task CreateCredentialDetails_WithNoChanges_ReturnsExpected()
     {
         // Arrange
-        var now = DateTimeOffset.UtcNow;
         var (sut, context) = await CreateSutWithContext();
 
         // Act
@@ -434,7 +431,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCertificateTypes(_validCompanyId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes(_validCompanyId).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -447,7 +444,7 @@ public class CompanySsiDetailsRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCertificateTypes(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes(Guid.NewGuid()).ToListAsync();
 
         // Assert
         result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
@@ -459,13 +456,13 @@ public class CompanySsiDetailsRepositoryTests
 
     private async Task<CompanySsiDetailsRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new CompanySsiDetailsRepository(context);
     }
 
     private async Task<(CompanySsiDetailsRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return (new CompanySsiDetailsRepository(context), context);
     }
 

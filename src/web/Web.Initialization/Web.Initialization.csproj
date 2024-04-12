@@ -21,7 +21,7 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Web.Initialization</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Web.Initialization</RootNamespace>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -31,6 +31,7 @@
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
+    <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />
     <ProjectReference Include="..\Web.Identity\Web.Identity.csproj" />
     <ProjectReference Include="..\Web.PublicInfos\Web.PublicInfos.csproj" />
   </ItemGroup>

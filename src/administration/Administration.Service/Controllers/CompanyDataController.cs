@@ -96,7 +96,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-        await _logic.CreateCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(false)
+        await _logic.CreateCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None)
             ? StatusCode((int)HttpStatusCode.Created)
             : NoContent();
 
@@ -117,7 +117,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
     {
-        await _logic.RemoveCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(false);
+        await _logic.RemoveCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -238,7 +238,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
     {
-        await _logic.CreateUseCaseParticipation(data, cancellationToken).ConfigureAwait(false);
+        await _logic.CreateUseCaseParticipation(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -264,7 +264,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateSsiCertificate([FromForm] SsiCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await _logic.CreateSsiCertificate(data, cancellationToken).ConfigureAwait(false);
+        await _logic.CreateSsiCertificate(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -289,7 +289,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateCompanyCertificate([FromForm] CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await _logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(false);
+        await _logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -326,10 +326,77 @@ public class CompanyDataController : ControllerBase
     [Authorize(Roles = "view_certificates")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(Pagination.Response<ServiceOverviewData>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Pagination.Response<CompanyCertificateData>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CompanyCertificateStatusId? certificateStatus = null, [FromQuery] CompanyCertificateTypeId? certificateType = null) =>
         _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
+
+    /// <summary>
+    /// Retrieves a specific company certificate document for the given documentid and companyuserid.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET /api/administration/companydata/companyCertificates/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>   
+    /// <response code="404">The document was not found.</response>    
+    [HttpGet]
+    [Route("companyCertificates/{documentId}")]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> GetCompanyCertificateSpecificDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentByCompanyIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return File(content, mediaType, fileName);
+    }
+
+    /// <summary>
+    /// Retrieves a specific company certificate document for the given id.
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
+    /// <returns>Returns the file.</returns>
+    /// <remarks>Example: GET /api/administration/companydata/companyCertificates/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3</remarks>
+    /// <response code="200">Returns the file.</response>
+    /// <response code="403">The document which is not in status "ACTIVE".</response>
+    /// <response code="404">The document was not found.</response>
+    /// <response code="503">document Content is null.</response>
+    [HttpGet]
+    [Route("companyCertificates/documents/{documentId}")]
+    [Authorize(Roles = "view_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> GetCompanyCertificateDocumentContentFileAsync([FromRoute] Guid documentId)
+    {
+        var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return File(content, mediaType, fileName);
+    }
+
+    /// <summary>
+    /// Deletes the company certificate with the given id
+    /// </summary>
+    /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3"></param>
+    /// <returns></returns>
+    /// <remarks>Example: Delete: /api/administration/companydata/companyCertificate/document/{documentId}</remarks>
+    /// <response code="200">Successfully deleted the company certificate</response>
+    /// <response code="400">Incorrect document state</response>
+    /// <response code="403">The user is not assigned with the Company.</response>    
+    [HttpDelete]
+    [Authorize(Roles = "delete_certificates")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("companyCertificate/document/{documentId}")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<int> DeleteCompanyCertificate([FromRoute] Guid documentId) =>
+        _logic.DeleteCompanyCertificateAsync(documentId);
 
     /// <summary>
     /// Gets all outstanding, existing and inactive credentials
@@ -378,7 +445,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> ApproveCredential([FromRoute] Guid credentialId, CancellationToken cts)
     {
-        await _logic.ApproveCredential(credentialId, cts).ConfigureAwait(false);
+        await _logic.ApproveCredential(credentialId, cts).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -400,7 +467,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RejectCredential([FromRoute] Guid credentialId)
     {
-        await _logic.RejectCredential(credentialId).ConfigureAwait(false);
+        await _logic.RejectCredential(credentialId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -145,7 +146,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ApproveApplication([FromRoute] Guid applicationId)
     {
-        await _logic.ApproveRegistrationVerification(applicationId).ConfigureAwait(false);
+        await _logic.ApproveRegistrationVerification(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -170,7 +171,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> DeclineApplication([FromRoute] Guid applicationId, [FromBody] RegistrationDeclineData data, CancellationToken cancellationToken)
     {
-        await _logic.DeclineRegistrationVerification(applicationId, data.Comment, cancellationToken).ConfigureAwait(false);
+        await _logic.DeclineRegistrationVerification(applicationId, data.Comment, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -192,7 +193,30 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseResponse([FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
     {
-        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the dim middlelayer response
+    /// </summary>
+    /// <param name="bpn">BusinessPartnerNumber for dim</param>
+    /// <param name="responseData">Response data from dim</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/dim/{bpn}
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the clearing_house process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the bpn.</response>
+    [HttpPost]
+    [Authorize(Roles = "store_didDocument")]
+    [Route("dim/{bpn}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessDimResponse([FromRoute] string bpn, [FromBody] DimWalletData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessDimResponseAsync(bpn, responseData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -231,7 +255,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> OverrideClearinghouseChecklist([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -253,7 +277,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> RetriggerClearinghouseChecklist([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -275,7 +299,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerIdentityWallet([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -297,7 +321,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerSelfDescription([FromRoute] Guid applicationId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -320,7 +344,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> TriggerBpn([FromRoute] Guid applicationId, [FromQuery] ProcessStepTypeId processTypeId)
     {
-        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(false);
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, processTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -342,7 +366,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(false);
+        await _logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -361,7 +385,51 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        var (fileName, content, contentType) = await _logic.GetDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, contentType, fileName);
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/{applicationId}/retrigger-create-dim-wallet
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("application/{applicationId}/retrigger-create-dim-wallet")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateDimWallet([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the last failed step 
+    /// </summary>
+    /// <param name="applicationId" example="">Id of the application that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/application/{applicationId}/retrigger-validate-did
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
+    /// <response code="404">No application found for the applicationId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("application/{applicationId}/retrigger-validate-did")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerValidateDid([FromRoute] Guid applicationId)
+    {
+        await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
     }
 }

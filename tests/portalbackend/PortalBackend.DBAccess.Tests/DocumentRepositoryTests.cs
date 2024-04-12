@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -53,7 +52,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CreateDocument_ReturnsExpectedDocument()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
         var test = "This is just test content";
         var content = Encoding.UTF8.GetBytes(test);
 
@@ -85,10 +84,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUploadedDocumentsAsync_ReturnsExpectedDocuments(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId, int count)
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, companyUserId).ConfigureAwait(false);
+        var results = await sut.GetUploadedDocumentsAsync(applicationId, documentTypeId, companyUserId);
 
         // Assert
         results.Should().NotBe(default);
@@ -100,10 +99,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUploadedDocumentsAsync_InvalidApplication_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, new("ac1cf001-7fbc-1f2f-817f-bce058019990")).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(Guid.NewGuid(), DocumentTypeId.CX_FRAME_CONTRACT, new("ac1cf001-7fbc-1f2f-817f-bce058019990"));
 
         // Assert
         result.Should().Be(default);
@@ -113,10 +112,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUploadedDocumentsAsync_InvalidUser_ReturnsExpected()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetUploadedDocumentsAsync(new Guid("6b2d1263-c073-4a48-bfaf-704dc154ca9e"), DocumentTypeId.CX_FRAME_CONTRACT, Guid.NewGuid());
 
         // Assert
         result.Should().NotBe(default);
@@ -132,10 +131,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataAndIsCompanyUserAsync_WithValidData_ReturnsExpectedDocument()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), _userCompanyId).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), _userCompanyId);
 
         // Assert
         result.Should().NotBe(default);
@@ -148,10 +147,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataAndIsCompanyUserAsync_WithWrongUserData_ReturnsIsUserInCompanyFalse()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), new("220330ac-170d-4e22-8d72-9467ed042149")).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(new Guid("00000000-0000-0000-0000-000000000001"), new("220330ac-170d-4e22-8d72-9467ed042149"));
 
         // Assert
         result.Should().NotBe(default);
@@ -164,10 +163,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataAndIsCompanyUserAsync_WithNotExistingDocument_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), _userCompanyId).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataAndIsCompanyUserAsync(Guid.NewGuid(), _userCompanyId);
 
         // Assert
         result.Should().Be(default);
@@ -181,10 +180,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataByIdAndTypeAsync_WithValidData_ReturnsExpectedDocument()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_LEADIMAGE);
 
         // Assert
         result.Should().NotBe(default);
@@ -196,10 +195,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataByIdAndTypeAsync_WithWrongType_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_IMAGE).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(new Guid("00000000-0000-0000-0000-000000000001"), DocumentTypeId.APP_IMAGE);
 
         // Assert
         result.Should().Be(default);
@@ -209,10 +208,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentDataByIdAndTypeAsync_WithNotExistingDocument_ReturnsDefault()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentDataByIdAndTypeAsync(Guid.NewGuid(), DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(false);
+        var result = await sut.GetDocumentDataByIdAndTypeAsync(Guid.NewGuid(), DocumentTypeId.APP_LEADIMAGE);
 
         // Assert
         result.Should().Be(default);
@@ -226,7 +225,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyDocument_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         // Act
         sut.AttachAndModifyDocument(Guid.NewGuid(),
@@ -237,28 +236,29 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should()
-            .BeOfType<PortalEntities.Entities.Document>()
-                .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Document>()
+            .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
 
     [Fact]
     public async Task AttachAndModifyDocument_NoUpdate()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
+        var id = Guid.NewGuid();
 
         // Act
-        sut.AttachAndModifyDocument(Guid.NewGuid(),
+        sut.AttachAndModifyDocument(id,
             docstatusId => { docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; },
             docstatusId => { docstatusId.DocumentStatusId = DocumentStatusId.LOCKED; });
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeFalse();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Document>()
+            .Which.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
     }
 
     #endregion
@@ -269,7 +269,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyDocuments_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         var documentData = new (Guid DocumentId, Action<Document>?, Action<Document>)[] {
             (Guid.NewGuid(), null, document => document.DocumentStatusId = DocumentStatusId.LOCKED),
@@ -299,10 +299,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentSeedDataByIdAsync_ReturnsExpectedDocuments()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetDocumentSeedDataByIdAsync(new Guid("00000000-0000-0000-0000-000000000001")).ConfigureAwait(false);
+        var results = await sut.GetDocumentSeedDataByIdAsync(new Guid("00000000-0000-0000-0000-000000000001"));
 
         // Assert
         results.Should().NotBeNull();
@@ -315,10 +315,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetDocumentSeedDataByIdAsync_NotExistingId_ReturnsNull()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentSeedDataByIdAsync(Guid.NewGuid()).ConfigureAwait(false);
+        var result = await sut.GetDocumentSeedDataByIdAsync(Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -337,10 +337,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetOfferImageDocumentContentAsync_ReturnsExpectedResult(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, bool isDocumentExisting, bool isLinkedToOffer, bool isValidDocumentType, bool isValidOfferType, bool isInactive)
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIds, offerTypeId, CancellationToken.None);
 
         // Assert
         if (isDocumentExisting)
@@ -350,7 +350,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
             result.IsValidDocumentType.Should().Be(isValidDocumentType);
             result.IsValidOfferType.Should().Be(isValidOfferType);
             result.IsInactive.Should().Be(isInactive);
-            if (isDocumentExisting && isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
+            if (isLinkedToOffer && isValidDocumentType && isValidOfferType && !isInactive)
             {
                 result.Content.Should().NotBeNull();
             }
@@ -370,10 +370,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var documentId = new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b2");
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOfferDocumentsAsync(documentId, new("41fd2ab8-71cd-4546-9bef-a388d91b2542"), new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP).ConfigureAwait(false);
+        var result = await sut.GetOfferDocumentsAsync(documentId, new("41fd2ab8-71cd-4546-9bef-a388d91b2542"), new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_CONTRACT }, OfferTypeId.APP);
 
         // Assert
         result.Should().NotBeNull();
@@ -391,7 +391,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemovedDocument_WithExistingDocument()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
         var documentId = new Guid("184cde16-52d4-4865-81f6-b5b45e3c9051");
 
         // Act
@@ -413,7 +413,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task RemovedDocuments_WithExisting_Document()
     {
         // Arrange
-        var (sut, context) = await CreateSut().ConfigureAwait(false);
+        var (sut, context) = await CreateSut();
 
         IEnumerable<Guid> documentIds = new[] { (new Guid("184cde16-52d4-4865-81f6-b5b45e3c9051")) };
         // Act
@@ -433,10 +433,10 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetRegistrationDocumentAsync__ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetDocumentAsync(new Guid("00000000-0000-0000-0000-000000000002"), new[] { DocumentTypeId.CX_FRAME_CONTRACT }).ConfigureAwait(false);
+        var result = await sut.GetDocumentAsync(new Guid("00000000-0000-0000-0000-000000000002"), new[] { DocumentTypeId.CX_FRAME_CONTRACT });
 
         // Assert
         result.Should().NotBe(default);
@@ -455,13 +455,13 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
             CompanyApplicationStatusId.CONFIRMED,
             CompanyApplicationStatusId.DECLINED
         };
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
         var result = await sut.GetDocumentDetailsForApplicationUntrackedAsync(
             new Guid("9685f744-9d90-4102-a949-fcd0bb86f954"),
             new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"),
-            applicationStatusIds).ConfigureAwait(false);
+            applicationStatusIds);
 
         // Assert
         result.Should().NotBeNull();
@@ -479,7 +479,7 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(DocumentRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new DocumentRepository(context);
         return (sut, context);
     }

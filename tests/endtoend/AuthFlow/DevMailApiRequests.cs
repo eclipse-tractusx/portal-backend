@@ -31,16 +31,16 @@ public class DevMailApiRequests
 
     private DevMailboxData? _devMailboxData;
 
-    public string? FetchPassword()
+    public async Task<string?> FetchPassword()
     {
-        var emails = CheckMailbox();
+        var emails = await CheckMailbox();
         var index = emails.Result.FindIndex(item => item.Value.Contains("Password required"));
         string? password = null;
 
         if (index < 0)
             throw new Exception("Authentication flow failed: email with password could not be found.");
         var byteArray = Encoding.ASCII.GetBytes(emails.Result[index].Value);
-        var stream = new MemoryStream(byteArray);
+        using var stream = new MemoryStream(byteArray);
         var message = MimeMessage.Load(stream);
 
         var doc = new HtmlDocument();
@@ -62,7 +62,7 @@ public class DevMailApiRequests
         return password;
     }
 
-    public DevMailboxData GenerateRandomEmailAddress()
+    public async Task<DevMailboxData> GenerateRandomEmailAddress()
     {
         const string Endpoint = "/mailbox";
         var data = Given()
@@ -74,7 +74,7 @@ public class DevMailApiRequests
             .StatusCode(200)
             .Extract()
             .Response();
-        _devMailboxData = DataHandleHelper.DeserializeData<DevMailboxData>(data.Content.ReadAsStringAsync().Result);
+        _devMailboxData = DataHandleHelper.DeserializeData<DevMailboxData>(await data.Content.ReadAsStringAsync());
         if (_devMailboxData is null)
         {
             throw new Exception($"Could not get mail address from {Endpoint}, response was null/empty.");
@@ -82,7 +82,7 @@ public class DevMailApiRequests
         return _devMailboxData;
     }
 
-    private DevMailboxContent CheckMailbox()
+    private async Task<DevMailboxContent> CheckMailbox()
     {
         var messageIds = GetMessageIds();
         var endpoint = $"/mailbox/{_devMailboxData?.Result.Name}/messages";
@@ -100,7 +100,7 @@ public class DevMailApiRequests
             .Extract()
             .Response();
 
-        var emails = DataHandleHelper.DeserializeData<DevMailboxContent>(data.Content.ReadAsStringAsync().Result);
+        var emails = DataHandleHelper.DeserializeData<DevMailboxContent>(await data.Content.ReadAsStringAsync());
         if (emails is null)
         {
             throw new Exception($"Could not mails from {endpoint}, response data was null.");
@@ -124,7 +124,7 @@ public class DevMailApiRequests
             .Body("$.result");
     }
 
-    private string[] GetMessageIds()
+    private async Task<string[]> GetMessageIds()
     {
         var endpoint = $"/mailbox/{_devMailboxData?.Result.Name}";
         var data = Given()
@@ -140,7 +140,7 @@ public class DevMailApiRequests
             .Extract()
             .Response();
 
-        var messageIds = DataHandleHelper.DeserializeData<DevMailboxMessageIds>(data.Content.ReadAsStringAsync().Result);
+        var messageIds = DataHandleHelper.DeserializeData<DevMailboxMessageIds>(await data.Content.ReadAsStringAsync());
         if (messageIds is null)
         {
             throw new Exception($"Could not messageIds from {endpoint}, response data was null.");

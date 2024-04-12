@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -102,7 +101,7 @@ public class ClearinghouseBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.NewGuid(), stepTypeId, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -126,7 +125,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -149,7 +148,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -172,7 +171,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -198,7 +197,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForHandleStartClearingHouse();
 
         // Act
-        var result = await _logic.HandleClearinghouse(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().NotBeNull();
@@ -223,12 +222,12 @@ public class ClearinghouseBusinessLogicTests
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var data = _fixture.Build<ClearinghouseResponseData>()
             .With(x => x.Status, ClearinghouseResponseStatus.CONFIRM)
-            .With(x => x.Message, (string?)null)
+            .With(x => x.Message, default(string?))
             .Create();
         SetupForProcessClearinghouseResponse(entry);
 
         // Act
-        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_SELF_DESCRIPTION_LP) == 1))).MustHaveHappenedOnceExactly();
@@ -249,7 +248,7 @@ public class ClearinghouseBusinessLogicTests
         SetupForProcessClearinghouseResponse(entry);
 
         // Act
-        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None).ConfigureAwait(false);
+        await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
@@ -265,14 +264,14 @@ public class ClearinghouseBusinessLogicTests
     private void SetupForHandleStartClearingHouse()
     {
         A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated), A<CancellationToken>._))
-            .ReturnsLazily(() => new WalletData("Name", ValidBpn, ValidDid, DateTime.UtcNow, false, null));
+            .Returns(new WalletData("Name", ValidBpn, ValidDid, DateTime.UtcNow, false, null));
         A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(IdWithCustodianUnavailable, A<CancellationToken>._))
-            .ReturnsLazily(() => (WalletData?)null);
+            .Returns<WalletData?>(null);
         A.CallTo(() => _custodianBusinessLogic.GetWalletByBpnAsync(A<Guid>.That.Not.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated || x == IdWithCustodianUnavailable), A<CancellationToken>._))
-            .ReturnsLazily(() => new WalletData("Name", ValidBpn, null, DateTime.UtcNow, false, null));
+            .Returns(new WalletData("Name", ValidBpn, null, DateTime.UtcNow, false, null));
 
         var participantDetailsWithoutBpn = _fixture.Build<ParticipantDetails>()
-            .With(x => x.Bpn, (string?)null)
+            .With(x => x.Bpn, default(string?))
             .Create();
         var clearinghouseDataWithoutBpn = _fixture.Build<ClearinghouseData>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
@@ -290,13 +289,13 @@ public class ClearinghouseBusinessLogicTests
             .Create();
 
         A.CallTo(() => _applicationRepository.GetClearinghouseDataForApplicationId(IdWithoutBpn))
-            .ReturnsLazily(() => clearinghouseDataWithoutBpn);
+            .Returns(clearinghouseDataWithoutBpn);
         A.CallTo(() => _applicationRepository.GetClearinghouseDataForApplicationId(IdWithBpn))
-            .ReturnsLazily(() => clearinghouseData);
+            .Returns(clearinghouseData);
         A.CallTo(() => _applicationRepository.GetClearinghouseDataForApplicationId(IdWithApplicationCreated))
-            .ReturnsLazily(() => chDataWithApplicationCreated);
+            .Returns(chDataWithApplicationCreated);
         A.CallTo(() => _applicationRepository.GetClearinghouseDataForApplicationId(A<Guid>.That.Not.Matches(x => x == IdWithoutBpn || x == IdWithBpn || x == IdWithApplicationCreated || x == IdWithCustodianUnavailable)))
-            .ReturnsLazily(() => (ClearinghouseData?)null);
+            .Returns<ClearinghouseData?>(null);
     }
 
     private void SetupForProcessClearinghouseResponse(ApplicationChecklistEntry applicationChecklistEntry)

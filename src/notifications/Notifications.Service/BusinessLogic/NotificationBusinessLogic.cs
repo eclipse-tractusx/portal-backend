@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -58,7 +57,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");
@@ -91,7 +90,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task SetNotificationStatusAsync(Guid notificationId, bool isRead)
     {
-        var isReadFlag = await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(false);
+        var isReadFlag = await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<INotificationRepository>().AttachAndModifyNotification(notificationId, notification =>
             {
@@ -102,21 +101,21 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
                 notification.IsRead = isRead;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task DeleteNotificationAsync(Guid notificationId)
     {
-        await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(false);
+        await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<INotificationRepository>().DeleteNotification(notificationId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<bool> CheckNotificationExistsAndValidateReceiver(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default || !result.IsNotificationExisting)
         {
             throw new NotFoundException($"Notification {notificationId} does not exist.");

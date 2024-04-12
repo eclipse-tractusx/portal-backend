@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -63,9 +64,7 @@ public class ServiceAccountBusinessLogicTests
     public ServiceAccountBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _userRepository = A.Fake<IUserRepository>();
@@ -100,7 +99,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        var result = await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         result.Should().NotBeNull();
@@ -118,7 +117,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -134,7 +133,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -153,7 +152,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -173,7 +172,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos).ConfigureAwait(false);
+        async Task Act() => await sut.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfos);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -196,7 +195,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
 
         // Assert
         result.Should().NotBeNull();
@@ -213,7 +212,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -229,7 +228,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -248,7 +247,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId).ConfigureAwait(false);
+        var result = await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId);
 
         // Assert
         result.Should().NotBeNull();
@@ -265,7 +264,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(ValidServiceAccountId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -281,7 +280,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.ResetOwnCompanyServiceAccountSecretAsync(invalidServiceAccountId);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -301,7 +300,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data).ConfigureAwait(false);
+        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data);
 
         // Assert
         result.Should().NotBeNull();
@@ -317,7 +316,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -335,7 +334,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(Guid.NewGuid(), data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(Guid.NewGuid(), data);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -352,12 +351,12 @@ public class ServiceAccountBusinessLogicTests
         SetupUpdateOwnCompanyServiceAccountDetails();
         var invalidServiceAccountId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(invalidServiceAccountId, ValidCompanyId))
-            .Returns((CompanyServiceAccountWithRoleDataClientId?)null);
+            .Returns<CompanyServiceAccountWithRoleDataClientId?>(null);
         var data = new ServiceAccountEditableDetails(invalidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId, data);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -378,7 +377,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(InactiveServiceAccount, data).ConfigureAwait(false);
+        async Task Act() => await sut.UpdateOwnCompanyServiceAccountDetailsAsync(InactiveServiceAccount, data);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -397,13 +396,13 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, userStatusId))
-            .Returns((int skip, int take) => Task.FromResult((Pagination.Source<CompanyServiceAccountData>?)new Pagination.Source<CompanyServiceAccountData>(data.Count(), data.Skip(skip).Take(take))));
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive).ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive);
 
         // Assert
         result.Should().NotBeNull();
@@ -424,7 +423,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(serviceAccountId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -440,7 +439,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -456,7 +455,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -482,7 +481,7 @@ public class ServiceAccountBusinessLogicTests
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId).ConfigureAwait(false);
+        await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
 
         // Assert
         if (withClient)
@@ -497,7 +496,8 @@ public class ServiceAccountBusinessLogicTests
         }
 
         identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
-        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(_userRoleIds.Select(userRoleId => new ValueTuple<Guid, Guid>(ValidServiceAccountId, userRoleId))))).MustHaveHappenedOnceExactly();
+        var validServiceAccountUserRoleIds = _userRoleIds.Select(userRoleId => (ValidServiceAccountId, userRoleId));
+        A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(validServiceAccountUserRoleIds))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -518,7 +518,7 @@ public class ServiceAccountBusinessLogicTests
         IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
 
         // Assert
         A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<string>._)).MustHaveHappenedOnceExactly();
@@ -541,7 +541,7 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _companyRepository.GetBpnAndTechnicalUserRoleIds(ValidCompanyId, ClientId))
             .Returns((ValidBpn, new[] { UserRoleId1, UserRoleId2 }));
         A.CallTo(() => _companyRepository.GetBpnAndTechnicalUserRoleIds(A<Guid>.That.Not.Matches(x => x == ValidCompanyId), ClientId))
-            .Returns(((string?, IEnumerable<Guid>))default);
+            .Returns<(string?, IEnumerable<Guid>)>(default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, true, null))
             .Returns((ClientId, new ServiceAccountData(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Guid.NewGuid(), Enumerable.Empty<UserRoleData>()));
@@ -585,7 +585,7 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns(data);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, A<Guid>.That.Not.Matches(x => x == ValidCompanyId)))
-            .Returns((CompanyServiceAccountWithRoleDataClientId?)null);
+            .Returns<CompanyServiceAccountWithRoleDataClientId?>(null);
 
         A.CallTo(() => _provisioningManager.ResetCentralClientAuthDataAsync(A<string>._))
             .Returns(authData);
@@ -601,9 +601,9 @@ public class ServiceAccountBusinessLogicTests
             .Returns(data);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
                 A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), ValidCompanyId))
-            .Returns((CompanyServiceAccountDetailedData?)null);
+            .Returns<CompanyServiceAccountDetailedData?>(null);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, A<Guid>.That.Not.Matches(x => x == ValidCompanyId)))
-            .Returns((CompanyServiceAccountDetailedData?)null);
+            .Returns<CompanyServiceAccountDetailedData?>(null);
     }
 
     private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null)
@@ -611,7 +611,7 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.INACTIVE, OfferStatusId: OfferSubscriptionStatusId.PENDING));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?))default);
+            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
 
         if (identity != null)
         {
@@ -643,7 +643,7 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.ACTIVE, OfferStatusId: OfferSubscriptionStatusId.PENDING));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?))default);
+            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -654,7 +654,7 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.ACTIVE));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns(((IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId))default);
+            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);

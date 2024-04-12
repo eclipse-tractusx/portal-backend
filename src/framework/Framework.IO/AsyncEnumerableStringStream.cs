@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +43,7 @@ public sealed class AsyncEnumerableStringStream : Stream
         get { throw new NotSupportedException(); }
         set { throw new NotSupportedException(); }
     }
-    public override long Seek(long offset, System.IO.SeekOrigin origin) => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
     public override void Flush() => throw new NotSupportedException();
     public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();

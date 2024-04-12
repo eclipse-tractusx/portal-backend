@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using RestAssured.Response.Logging;
 using Xunit;
@@ -47,7 +46,7 @@ public class SdFactoryEndpointTests : EndToEndTestBase
     [Fact]
     public void InterfaceHealthCheck_SdDocCreation()
     {
-        if (_interfaceHealthCheckTechUserToken.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(_interfaceHealthCheckTechUserToken))
             throw new Exception("Could not fetch token for interface partner health check");
 
         var body = DataHandleHelper.SerializeData(

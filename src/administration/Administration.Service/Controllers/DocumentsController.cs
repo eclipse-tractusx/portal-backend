@@ -70,7 +70,7 @@ public class DocumentsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await _businessLogic.GetDocumentAsync(documentId).ConfigureAwait(false);
+        var (fileName, content, mediaType) = await _businessLogic.GetDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, mediaType, fileName);
     }
 
@@ -90,7 +90,7 @@ public class DocumentsController : ControllerBase
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
     public async Task<ActionResult> GetSelfDescriptionDocumentsAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await _businessLogic.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(false);
+        var (fileName, content, mediaType) = await _businessLogic.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, mediaType, fileName);
     }
 

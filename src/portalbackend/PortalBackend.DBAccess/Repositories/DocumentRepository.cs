@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -37,7 +36,7 @@ public class DocumentRepository : IDocumentRepository
     /// <param name="dbContext">PortalDb context.</param>
     public DocumentRepository(PortalDbContext dbContext)
     {
-        this._dbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     /// <inheritdoc />
@@ -62,8 +61,9 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
-            .Select(document => ((Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser))
-                new(document.Id,
+            .Select(document =>
+                new ValueTuple<Guid, DocumentStatusId, IEnumerable<Guid>, bool>(
+                    document.Id,
                     document.DocumentStatusId,
                     document.Consents.Select(consent => consent.Id),
                     document.CompanyUserId == companyUserId))
@@ -92,14 +92,14 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdWithCompanyUserCheckAsync(Guid documentId, Guid companyUserId) =>
-        this._dbContext.Documents
+        _dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUserId == companyUserId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, Guid userCompanyId) =>
-        this._dbContext.Documents
+        _dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new
             {
@@ -126,7 +126,7 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
-        this._dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+        _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
@@ -243,7 +243,7 @@ public class DocumentRepository : IDocumentRepository
         _dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
 
     public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
-        this._dbContext.Documents
+        _dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<byte[], string, bool, MediaTypeId>(x.DocumentContent, x.DocumentName, documentTypeIds.Contains(x.DocumentTypeId), x.MediaTypeId))
             .SingleOrDefaultAsync();

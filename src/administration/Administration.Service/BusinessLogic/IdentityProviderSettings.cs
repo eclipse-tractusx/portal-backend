@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -27,7 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class IdentityProviderSettings
 {
     public IdentityProviderCsvSettings CsvSettings { get; init; } = null!;
+
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> DeactivateIdpRoles { get; init; } = null!;
+
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> DeleteIdpRoles { get; init; } = null!;
 
     public bool Validate()
@@ -87,6 +92,7 @@ public static class IdentityProviderSettingsExtension
     {
         services.AddOptions<IdentityProviderSettings>()
             .Bind(section)
+            .ValidateDistinctValues(section)
             .Validate(x => x.Validate())
             .ValidateOnStart();
         return services;

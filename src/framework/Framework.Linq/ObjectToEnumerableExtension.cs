@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,16 +25,11 @@ public static class ObjectToEnumerableExtension
 {
     public static IEnumerable<object> ToIEnumerable(this object value)
     {
-        var enumerator = value?.GetType().GetMethod("GetEnumerator")?.Invoke(value, null) ?? throw new ArgumentException($"object instance does not implement IEnumerable ({value?.GetType()})");
-        var moveNext = enumerator?.GetType().GetMethod("MoveNext") ?? throw new UnexpectedConditionException("method 'moveNext' should never be null here");
-        var current = enumerator?.GetType().GetProperty("Current")?.GetMethod ?? throw new UnexpectedConditionException("property 'Current' should never be null here");
-        while (true)
+        var enumerator = value.GetType().GetMethod("GetEnumerator")?.Invoke(value, null) ?? throw new ArgumentException($"object instance does not implement IEnumerable ({value.GetType()})");
+        var moveNext = enumerator.GetType().GetMethod("MoveNext") ?? throw new UnexpectedConditionException("method 'moveNext' should never be null here");
+        var current = enumerator.GetType().GetProperty("Current")?.GetMethod ?? throw new UnexpectedConditionException("property 'Current' should never be null here");
+        while ((moveNext.Invoke(enumerator, null) ?? throw new UnexpectedConditionException($"failed to enumerate object {value}: moveNext should never return null here")) is true)
         {
-            var hasNext = moveNext.Invoke(enumerator, null) ?? throw new UnexpectedConditionException($"failed to enumerate object {value}: moveNext should never return null here");
-            if (hasNext is not true)
-            {
-                yield break;
-            }
             yield return current.Invoke(enumerator, null) ?? throw new UnexpectedConditionException($"failed to enumerate object {value}: Current should never return null here");
         }
     }

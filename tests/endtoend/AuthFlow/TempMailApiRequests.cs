@@ -33,9 +33,9 @@ public class TempMailApiRequests
 
     private readonly Secrets _secrets = new();
 
-    public string? FetchPassword()
+    public async Task<string?> FetchPassword()
     {
-        var passwordMessage = GetPasswordMessage();
+        var passwordMessage = await GetPasswordMessage();
         string? password = null;
 
         if (passwordMessage == null)
@@ -59,9 +59,9 @@ public class TempMailApiRequests
         return password;
     }
 
-    private TempMailMessageData GetPasswordMessage()
+    private async Task<TempMailMessageData> GetPasswordMessage()
     {
-        var hashedEmailAddress = CreateMd5();
+        var hashedEmailAddress = await CreateMd5();
         var endpoint = $"{EndPoint}/mail/id/{hashedEmailAddress}";
         var data = Given()
             .DisableSslCertificateValidation()
@@ -75,7 +75,7 @@ public class TempMailApiRequests
             .Extract()
             .Response();
         var messages =
-            DataHandleHelper.DeserializeData<List<TempMailMessageData>>(data.Content.ReadAsStringAsync().Result);
+            DataHandleHelper.DeserializeData<List<TempMailMessageData>>(await data.Content.ReadAsStringAsync());
         if (messages is null)
         {
             throw new Exception($"Could not get password message from {endpoint}, response was null/empty.");
@@ -84,7 +84,7 @@ public class TempMailApiRequests
         return passwordMessage;
     }
 
-    public string GetDomain()
+    public async Task<string> GetDomain()
     {
         var endpoint = $"{EndPoint}/domains";
         var response = Given()
@@ -99,7 +99,7 @@ public class TempMailApiRequests
             .Extract()
             .Response();
 
-        var data = DataHandleHelper.DeserializeData<string[]>(response.Content.ReadAsStringAsync().Result);
+        var data = DataHandleHelper.DeserializeData<string[]>(await response.Content.ReadAsStringAsync());
         if (data is null || data.Length < 1)
         {
             throw new Exception($"Could not get domain from {endpoint}, response data was null.");
@@ -108,9 +108,9 @@ public class TempMailApiRequests
     }
 
     //https://stackoverflow.com/questions/11454004/calculate-a-md5-hash-from-a-string
-    private string CreateMd5()
+    private async Task<string> CreateMd5()
     {
-        var emailAddress = ApiTestUsername + GetDomain();
+        var emailAddress = ApiTestUsername + await GetDomain();
         using (var md5 = MD5.Create())
         {
             var inputBytes = Encoding.ASCII.GetBytes(emailAddress);

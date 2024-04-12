@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -109,7 +108,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateOrUpdateAppDescriptionsByIdAsync([FromRoute] Guid appId, [FromBody] IEnumerable<LocalizedDescription> offerDescriptionDatas)
     {
-        await _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, offerDescriptionDatas).ConfigureAwait(false);
+        await _businessLogic.CreateOrUpdateAppDescriptionByIdAsync(appId, offerDescriptionDatas).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -162,7 +161,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateApp([FromRoute] Guid appId)
     {
-        await _businessLogic.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(false);
+        await _businessLogic.DeactivateOfferByAppIdAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -185,7 +184,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> UpdateTenantUrl([FromRoute] Guid appId, [FromRoute] Guid subscriptionId, [FromBody] UpdateTenantData data)
     {
-        await _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(false);
+        await _businessLogic.UpdateTenantUrlAsync(appId, subscriptionId, data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -203,7 +202,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ActiveAppDocumentData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActiveAppDocumentData> GetActiveAppDocuments([FromRoute] Guid appId) =>
-        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(false);
+        await _businessLogic.GetActiveAppDocumentTypeDataAsync(appId).ConfigureAwait(ConfigureAwaitOptions.None);
 
     /// <summary>
     /// Delete Documet for an active app for given appId for same company as user
@@ -222,7 +221,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeleteMulitipleActiveAppDocumentsAsync([FromRoute] Guid appId, [FromRoute] Guid documentId)
     {
-        await _businessLogic.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(false);
+        await _businessLogic.DeleteActiveAppDocumentAsync(appId, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -254,7 +253,25 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<NoContentResult> CreateActiveAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
     {
-        await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(false);
+        await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets the client roles for the given active app.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
+    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
+    /// <returns>Returns the client roles for the given active app.</returns>
+    /// <remarks>Example: GET: /api/apps/AppChange/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Returns the client roles.</response>
+    /// <response code="400">The language does not exist.</response>
+    /// <response code="404">The app was not found.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("{appId}/roles")]
+    [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
+        _businessLogic.GetActiveAppRolesAsync(appId, languageShortName);
 }

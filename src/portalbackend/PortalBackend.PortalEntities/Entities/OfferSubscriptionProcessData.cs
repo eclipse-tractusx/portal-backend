@@ -17,17 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class OfferSubscriptionProcessData
+public class OfferSubscriptionProcessData : IBaseEntity
 {
-    public OfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl)
+    public OfferSubscriptionProcessData(Guid id, Guid offerSubscriptionId, string offerUrl)
     {
+        Id = id;
         OfferSubscriptionId = offerSubscriptionId;
         OfferUrl = offerUrl;
     }
 
-    public Guid OfferSubscriptionId { get; set; }
+    public Guid Id { get; private set; }
+
+    public Guid OfferSubscriptionId { get; private set; }
 
     public string OfferUrl { get; set; }
 

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,7 +35,6 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<ServicesController, 
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
     {
-        await OpenInformationController_ReturnsCorrectAmount(0)
-            .ConfigureAwait(false);
+        await OpenInformationController_ReturnsCorrectAmount(0);
     }
 }

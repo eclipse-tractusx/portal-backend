@@ -19,7 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyUserIdentityProviderProcessTransferData(
+public record CompanyUserIdentityProviderProcessData(
     Guid CompanyUserId,
     string? FirstName,
     string? LastName,

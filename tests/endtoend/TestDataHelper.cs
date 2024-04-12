@@ -17,8 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Text.Json;
@@ -43,7 +43,7 @@ public class TestDataHelper
             "ServiceAccountsCUDScenarios" + Path.DirectorySeparatorChar + fileName);
 
         var jsonData = File.ReadAllText(filePath);
-        var testData = JsonSerializer.Deserialize<List<Dictionary<string, Object>>>(jsonData);
+        var testData = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonData);
         if (testData.IsNullOrEmpty())
             throw new Exception("Incorrect format of test data for service account scenarios");
         var testDataSet = FetchTestData(testData!);
@@ -55,23 +55,23 @@ public class TestDataHelper
         var filePath = Path.Combine(GetTestDataDirectory(), "CreateAppScenario" + Path.DirectorySeparatorChar + fileName);
 
         var jsonData = File.ReadAllText(filePath);
-        var testData = JsonSerializer.Deserialize<List<Dictionary<string, Object>>>(jsonData);
+        var testData = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonData);
         if (testData.IsNullOrEmpty())
             throw new Exception("Incorrect format of test data for service account scenarios");
         var testDataSet = FetchTestDataForCreateApp(testData!);
         return testDataSet;
     }
 
-    private static List<TestDataModelCreateApp> FetchTestDataForCreateApp(List<Dictionary<string, Object>> testData)
+    private static List<TestDataModelCreateApp> FetchTestDataForCreateApp(List<Dictionary<string, object>> testData)
     {
         var testDataSet = new List<TestDataModelCreateApp>();
-        foreach (var unused in testData)
+        foreach (var data in testData)
         {
             List<AppUserRole>? appUserRoles = null;
             AppRequestModel? appRequestModel = null;
             string? documentName = null;
             string? imageName = null;
-            foreach (var pair in testData.SelectMany(o => o))
+            foreach (var pair in data)
             {
                 var jsonString = pair.Value.ToString();
                 switch (pair.Key)
@@ -83,33 +83,19 @@ public class TestDataHelper
                         appUserRoles = DataHandleHelper.DeserializeData<List<AppUserRole>>(jsonString ?? "[]");
                         break;
                     case "documentName":
-                        if (!jsonString.IsNullOrEmpty())
-                        {
-                            documentName = GetTestDataDirectory() + Path.DirectorySeparatorChar + "CreateAppScenario" +
-                                           Path.DirectorySeparatorChar + pair.Value;
-                        }
-                        else
-                        {
-                            documentName = "";
-                        }
-
+                        documentName = jsonString.IsNullOrEmpty()
+                            ? ""
+                            : GetTestDataDirectory() + Path.DirectorySeparatorChar + "CreateAppScenario" + Path.DirectorySeparatorChar + pair.Value;
                         break;
                     case "imageName":
-                        if (!jsonString.IsNullOrEmpty())
-                        {
-                            imageName = GetTestDataDirectory() + Path.DirectorySeparatorChar + "CreateAppScenario" +
-                                        Path.DirectorySeparatorChar + pair.Value;
-                        }
-                        else
-                        {
-                            imageName = "";
-                        }
-
+                        imageName = jsonString.IsNullOrEmpty()
+                            ? ""
+                            : GetTestDataDirectory() + Path.DirectorySeparatorChar + "CreateAppScenario" + Path.DirectorySeparatorChar + pair.Value;
                         break;
                 }
             }
 
-            testDataSet.Add(new TestDataModelCreateApp(appRequestModel, appUserRoles!, documentName!, imageName!));
+            testDataSet.Add(new TestDataModelCreateApp(appRequestModel, appUserRoles ?? throw new Exception("invalid testdata, appUserRoles must not be null"), documentName ?? throw new Exception("invalid testdata, documentName must not be null"), imageName ?? throw new Exception("invalid testdata, imageName must not be null")));
         }
 
         return testDataSet;
@@ -121,7 +107,7 @@ public class TestDataHelper
             "RegistrationScenarios" + Path.DirectorySeparatorChar + fileName);
 
         var jsonData = File.ReadAllText(filePath);
-        var testData = DataHandleHelper.DeserializeData<List<Dictionary<string, Object>>>(jsonData);
+        var testData = DataHandleHelper.DeserializeData<List<Dictionary<string, object>>>(jsonData);
         if (testData.IsNullOrEmpty())
         {
             throw new Exception($"Could not get testdata from {fileName}, maybe empty.");
@@ -137,7 +123,7 @@ public class TestDataHelper
             "RegistrationScenarios" + Path.DirectorySeparatorChar + fileName);
 
         var jsonData = File.ReadAllText(filePath);
-        var testData = DataHandleHelper.DeserializeData<List<Dictionary<string, Object>>>(jsonData);
+        var testData = DataHandleHelper.DeserializeData<List<Dictionary<string, object>>>(jsonData);
         if (testData.IsNullOrEmpty())
         {
             throw new Exception($"Could not get testdata from {fileName}, maybe empty.");
@@ -147,7 +133,7 @@ public class TestDataHelper
         return testDataSet;
     }
 
-    private static List<string[]> FetchTestData(List<Dictionary<string, Object>> testData)
+    private static List<string[]> FetchTestData(List<Dictionary<string, object>> testData)
     {
         var testDataSet = new List<string[]>();
         foreach (var pair in testData.SelectMany(obj => obj))
@@ -167,7 +153,7 @@ public class TestDataHelper
     }
 
     private static List<TestDataRegistrationModel> FetchTestDataForRegistrationScenarios(
-        List<Dictionary<string, Object>> testData)
+        List<Dictionary<string, object>> testData)
     {
         var testDataSet = new List<TestDataRegistrationModel>();
         foreach (var obj in testData)

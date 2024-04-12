@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -42,10 +41,10 @@ public class CompanyRoleCollectionRolesViewTests : IAssemblyFixture<TestDbFixtur
     public async Task CompanyRoleCollectionRolesView_GetAll_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.CompanyRoleCollectionRolesView.ToListAsync().ConfigureAwait(false);
+        var result = await sut.CompanyRoleCollectionRolesView.ToListAsync();
         result.Should().HaveCount(26);
     }
 
@@ -55,10 +54,10 @@ public class CompanyRoleCollectionRolesViewTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var clientName = "technical_roles_management";
         var userRole = "Dataspace Discovery";
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.CompanyRoleCollectionRolesView.FirstOrDefaultAsync(x => x.ClientName == clientName && x.UserRole == userRole).ConfigureAwait(false);
+        var result = await sut.CompanyRoleCollectionRolesView.FirstOrDefaultAsync(x => x.ClientName == clientName && x.UserRole == userRole);
         result.Should().NotBeNull();
         result!.ClientName.Should().Be(clientName);
         result.CollectionName.Should().Be("Operator");
@@ -67,7 +66,7 @@ public class CompanyRoleCollectionRolesViewTests : IAssemblyFixture<TestDbFixtur
 
     private async Task<PortalDbContext> CreateContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return context;
     }
 }

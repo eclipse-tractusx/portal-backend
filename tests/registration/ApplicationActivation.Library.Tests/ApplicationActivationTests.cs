@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -31,7 +30,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Tests;
@@ -63,10 +64,10 @@ public class ApplicationActivationTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRolesRepository _rolesRepository;
     private readonly IProcessStepRepository _processStepRepository;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly List<Notification> _notifications = new();
     private readonly List<Guid> _notifiedUserIds = new();
     private readonly INotificationService _notificationService;
-    private readonly IMailingService _mailingService;
     private readonly IProvisioningManager _provisioningManager;
     private readonly ApplicationActivationSettings _settings;
     private readonly ApplicationActivationService _sut;
@@ -76,17 +77,15 @@ public class ApplicationActivationTests
     public ApplicationActivationTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _rolesRepository = A.Fake<IUserRolesRepository>();
-        _mailingService = A.Fake<IMailingService>();
         _notificationService = A.Fake<INotificationService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _custodianService = A.Fake<ICustodianService>();
@@ -115,7 +114,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _mailingService, _dateTimeProvider, _custodianService, options);
+        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _mailingProcessCreation, options);
     }
 
     #region HandleApplicationActivation
@@ -140,7 +139,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustNotHaveHappened();
@@ -184,7 +183,7 @@ public class ApplicationActivationTests
         _settings.EndTime = TimeSpan.FromHours(8);
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -243,7 +242,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -259,7 +258,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
@@ -324,7 +324,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
@@ -341,7 +341,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
@@ -368,15 +369,8 @@ public class ApplicationActivationTests
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
-        var processSteps = new List<ProcessStep>();
         var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .Create();
-        var company = _fixture.Build<Company>()
-            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
-            .Create();
         SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
         SetupForDelete();
 
@@ -398,7 +392,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -463,7 +457,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
@@ -549,7 +543,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -562,7 +556,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustNotHaveHappened();
         _notifications.Should().BeEmpty();
         _notifiedUserIds.Should().BeEmpty();
@@ -625,11 +620,11 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin]");
+        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin], error: ");
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
@@ -645,7 +640,8 @@ public class ApplicationActivationTests
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>._)).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
@@ -670,7 +666,7 @@ public class ApplicationActivationTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -697,10 +693,10 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns(((Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?))default);
+            .Returns<(Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?)>(default);
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -725,7 +721,7 @@ public class ApplicationActivationTests
             }.ToImmutableDictionary(),
             Enumerable.Empty<ProcessStepTypeId>());
 
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -989,11 +985,11 @@ public class ApplicationActivationTests
             .Returns(CentralUserId3);
 
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (Client: x.ClientId, Roles: x.UserRoleNames)).ToAsyncEnumerable());
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
 
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1, businessPartnerNumbers))
             .Returns(Task.CompletedTask);
@@ -1035,17 +1031,16 @@ public class ApplicationActivationTests
                 Guid _,
                 bool? done) =>
             {
-                foreach (var notificationData in notifications)
-                {
-                    var notification = new Notification(Guid.NewGuid(), Guid.NewGuid(),
-                        DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
-                    {
-                        CreatorUserId = creatorId,
-                        Content = notificationData.content,
-                        Done = done
-                    };
-                    _notifications.Add(notification);
-                }
+                _notifications.AddRange(
+                    notifications.Select(notificationData =>
+                        new Notification(Guid.NewGuid(), Guid.NewGuid(),
+                            DateTimeOffset.UtcNow, notificationData.notificationTypeId, false)
+                        {
+                            CreatorUserId = creatorId,
+                            Content = notificationData.content,
+                            Done = done
+                        }));
+
                 return CreateNotificationsUserIds(new[] {
                     CompanyUserId1,
                     CompanyUserId2,

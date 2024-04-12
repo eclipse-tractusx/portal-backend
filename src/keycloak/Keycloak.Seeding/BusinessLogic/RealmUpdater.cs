@@ -46,7 +46,7 @@ public class RealmUpdater : IRealmUpdater
         Realm keycloakRealm;
         try
         {
-            keycloakRealm = await keycloak.GetRealmAsync(realm, cancellationToken).ConfigureAwait(false);
+            keycloakRealm = await keycloak.GetRealmAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (KeycloakEntityNotFoundException)
         {
@@ -55,7 +55,7 @@ public class RealmUpdater : IRealmUpdater
                 Id = seedRealm.Id,
                 _Realm = seedRealm.Realm
             };
-            await keycloak.ImportRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
+            await keycloak.ImportRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (!CompareRealm(keycloakRealm, seedRealm)) // defaultRole and IdentityProviders are not compared as they cannot be updated through realm
@@ -130,7 +130,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.UserManagedAccessAllowed = seedRealm.UserManagedAccessAllowed;
             keycloakRealm.PasswordPolicy = seedRealm.PasswordPolicy;
 
-            await keycloak.UpdateRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(false);
+            await keycloak.UpdateRealmAsync(realm, keycloakRealm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

@@ -25,9 +25,6 @@ public class ConflictException : DetailException
     public ConflictException() : base() { }
     public ConflictException(string message) : base(message) { }
     public ConflictException(string message, Exception inner) : base(message, inner) { }
-    protected ConflictException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected ConflictException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

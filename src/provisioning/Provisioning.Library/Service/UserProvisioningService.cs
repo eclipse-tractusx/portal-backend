@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -74,8 +75,8 @@ public class UserProvisioningService : IUserProvisioningService
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(false);
-                await HandleCentralKeycloakCreation(user, companyUserId, companyName, businessPartnerNumber, identity, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1), userRepository, userRolesRepository).ConfigureAwait(false);
+                var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(ConfigureAwaitOptions.None);
+                await HandleCentralKeycloakCreation(user, companyUserId, companyName, businessPartnerNumber, identity, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1), userRepository, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -87,7 +88,7 @@ public class UserProvisioningService : IUserProvisioningService
                 error = new UnexpectedConditionException($"failed to create companyUser for provider userid {user.UserId}, username {user.UserName} while not throwing any error");
             }
 
-            await _portalRepositories.SaveAsync().ConfigureAwait(false);
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
             yield return new(companyUserId, user.UserName, nextPassword, error);
         }
@@ -95,7 +96,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task HandleCentralKeycloakCreation(UserCreationRoleDataIdpInfo user, Guid companyUserId, string companyName, string? businessPartnerNumber, Identity? identity, IEnumerable<IdentityProviderLink> identityProviderLinks, IUserRepository userRepository, IUserRolesRepository userRolesRepository)
     {
-        var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, identityProviderLinks).ConfigureAwait(false);
+        var centralUserId = await CreateCentralUserWithProviderLinks(companyUserId, user, companyName, businessPartnerNumber, identityProviderLinks).ConfigureAwait(ConfigureAwaitOptions.None);
         if (identity == null)
         {
             userRepository.AttachAndModifyIdentity(companyUserId, null, cu =>
@@ -108,7 +109,7 @@ public class UserProvisioningService : IUserProvisioningService
             identity.UserStatusId = user.UserStatusId;
         }
 
-        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, (centralUserId, companyUserId)).ConfigureAwait(false);
+        await AssignRolesToNewUserAsync(userRolesRepository, user.RoleDatas, (centralUserId, companyUserId)).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task<string> CreateCentralUserWithProviderLinks(Guid companyUserId, UserCreationRoleDataIdpInfo user, string companyName, string? businessPartnerNumber, IEnumerable<IdentityProviderLink> identityProviderLinks)
@@ -125,12 +126,12 @@ public class UserProvisioningService : IUserProvisioningService
                 organisationName: companyName,
                 businessPartnerNumber: businessPartnerNumber
             )
-        ).ConfigureAwait(false);
+        ).ConfigureAwait(ConfigureAwaitOptions.None);
 
         foreach (var identityProviderLink in identityProviderLinks)
         {
             await _provisioningManager.AddProviderUserLinkToCentralUserAsync(centralUserId,
-                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(false);
+                    new IdentityProviderLink(identityProviderLink.Alias, identityProviderLink.UserId, identityProviderLink.UserName)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return centralUserId;
@@ -146,7 +147,7 @@ public class UserProvisioningService : IUserProvisioningService
     {
         var businessPartnerRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
 
-        var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(false);
+        var companyUserId = await ValidateDuplicateIdpUsersAsync(userRepository, alias, user, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyUserId != Guid.Empty)
         {
             return (null, companyUserId);
@@ -191,7 +192,7 @@ public class UserProvisioningService : IUserProvisioningService
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameIdpAliasData(Guid identityProviderId, Guid companyUserId)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, companyUserId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliasUntrackedAsync(identityProviderId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ControllerArgumentException($"user {companyUserId} does not exist");
@@ -208,14 +209,14 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"assertion failed: companyName of company {company.CompanyId} should never be null here");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
+        var createdByName = NameHelper.CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, "Dear User");
 
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, identityProvider.IdpAlias, identityProviderId, identityProvider.IsSharedIdp), createdByName);
     }
 
     public async Task<(CompanyNameIdpAliasData IdpAliasData, string NameCreatedBy)> GetCompanyNameSharedIdpAliasData(Guid companyUserId, Guid? applicationId = null)
     {
-        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(companyUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetCompanyNameIdpAliaseUntrackedAsync(companyUserId, applicationId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw applicationId == null
@@ -239,31 +240,10 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ConflictException($"user {companyUserId} is associated with more than one shared idp");
         }
 
-        var createdByName = CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email);
+        var createdByName = NameHelper.CreateNameString(companyUser.FirstName, companyUser.LastName, companyUser.Email, "Dear User");
 
         var idpAlias = idpAliase.First();
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.IdentityProviderId, true), createdByName);
-    }
-
-    private static string CreateNameString(string? firstName, string? lastName, string? email)
-    {
-        var sb = new StringBuilder();
-        if (firstName != null)
-        {
-            sb.Append(firstName);
-        }
-
-        if (lastName != null)
-        {
-            sb.AppendFormat((firstName == null ? "{0}" : ", {0}"), lastName);
-        }
-
-        if (email != null)
-        {
-            sb.AppendFormat((firstName == null && lastName == null) ? "{0}" : " ({0})", email);
-        }
-
-        return firstName == null && lastName == null && email == null ? "Dear User" : sb.ToString();
     }
 
     public Task<string> GetIdentityProviderDisplayName(string idpAlias) =>
@@ -283,7 +263,7 @@ public class UserProvisioningService : IUserProvisioningService
 
             try
             {
-                var userId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false);
+                var userId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (userId != null && await _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(userId).AnyAsync(link =>
                     alias == link.Alias && (user.UserId == link.UserId || user.UserName == link.UserName)).ConfigureAwait(false))
                 {
@@ -315,7 +295,7 @@ public class UserProvisioningService : IUserProvisioningService
                     userRolesRepository.CreateIdentityAssignedRole(userdata.CompanyUserId, roleId);
                 }
 
-                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}"));
+                messages.AddRange(clientRoleNames[assigned.Client].Except(assigned.Roles).Select(roleName => $"clientId: {assigned.Client}, role: {roleName}, error: {assigned.Error?.Message}"));
             }
 
             if (messages.Any())
@@ -353,7 +333,7 @@ public class UserProvisioningService : IUserProvisioningService
 
         if (invalid.Any())
         {
-            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{String.Join(", ", invalid)}]");
+            throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{string.Join(", ", invalid)}]");
         }
     }
 }

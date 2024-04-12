@@ -81,6 +81,30 @@ public class UserRolesRepository : IUserRolesRepository
                 userRole.UserRoleText))
             .ToAsyncEnumerable();
 
+    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
+    {
+        foreach (var clientRole in clientRoles)
+        {
+            await foreach (var userRoleData in _dbContext.UserRoles
+                .AsNoTracking()
+                .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
+                .Select(userRole => new
+                {
+                    Id = userRole.Id,
+                    Text = userRole.UserRoleText
+                })
+                .AsAsyncEnumerable()
+                .ConfigureAwait(false))
+            {
+                yield return new UserRoleData(
+                    userRoleData.Id,
+                    clientRole.ClientId,
+                    userRoleData.Text
+                );
+            }
+        }
+    }
+
     public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
     {
         foreach (var clientRole in clientRoles)
@@ -137,29 +161,6 @@ public class UserRolesRepository : IUserRolesRepository
                 x.IsAssignable
             ))
             .ToAsyncEnumerable();
-
-    public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
-    {
-        foreach (var clientRole in clientRoles)
-        {
-            await foreach (var userRoleData in _dbContext.UserRoles
-                .AsNoTracking()
-                .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
-                .Select(userRole => new
-                {
-                    Id = userRole.Id,
-                    Text = userRole.UserRoleText
-                })
-                .AsAsyncEnumerable())
-            {
-                yield return new UserRoleData(
-                    userRoleData.Id,
-                    clientRole.ClientId,
-                    userRoleData.Text
-                );
-            }
-        }
-    }
 
     public IAsyncEnumerable<UserRoleData> GetOwnCompanyPortalUserRoleDataUntrackedAsync(string clientId, IEnumerable<string> roles, Guid companyId) =>
         _dbContext.UserRoles
@@ -274,4 +275,30 @@ public class UserRolesRepository : IUserRolesRepository
             .Where(instance => technicalUserProfileClient == instance.IamClient!.ClientClientId)
             .SelectMany(instance => instance.App!.UserRoles.Select(role => role.Id))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />
+    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
+        _dbContext.Offers
+            .AsNoTracking()
+            .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new
+            {
+                Active = offer.OfferStatusId == OfferStatusId.ACTIVE,
+                Roles = offer.UserRoles
+            })
+            .Select(x => new ValueTuple<bool, bool, IEnumerable<ActiveAppRoleDetails>?>(
+                true,
+                x.Active,
+                x.Active
+                    ? x.Roles.Select(role =>
+                        new ActiveAppRoleDetails(
+                            role.UserRoleText,
+                            role.UserRoleDescriptions.Where(description =>
+                                (languageShortName != null && description.LanguageShortName == languageShortName) ||
+                                    description.LanguageShortName == defaultLanguageShortName)
+                                .Select(description => new ActiveAppUserRoleDescription(
+                                    description.LanguageShortName,
+                                    description.Description))))
+                    : null))
+            .SingleOrDefaultAsync();
 }

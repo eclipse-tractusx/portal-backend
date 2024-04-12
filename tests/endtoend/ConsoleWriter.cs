@@ -27,7 +27,7 @@ public class ConsoleWriter : StringWriter
 
     public ConsoleWriter(ITestOutputHelper output)
     {
-        this._output = output;
+        _output = output;
     }
 
     public override void WriteLine(string? m)

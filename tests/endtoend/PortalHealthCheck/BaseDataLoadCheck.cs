@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using RestAssured.Response.Logging;
 using Xunit;
@@ -29,40 +28,38 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 [Trait("Category", "PortalHC")]
 [TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer", "EndToEnd.Tests")]
 [Collection("PortalHC")]
-public class BaseDataLoadCheck : EndToEndTestBase
+public class BaseDataLoadCheck : EndToEndTestBase, IAsyncLifetime
 {
     private const string EndPoint = "/api/administration";
 
     private static readonly string BaseUrl = TestResources.BasePortalBackendUrl;
     private static readonly Secrets Secrets = new();
-    private static string? PortalUserToken;
     private static readonly string PortalUserCompanyName = TestResources.PortalUserCompanyName;
+    private string? _portalUserToken;
 
     public BaseDataLoadCheck(ITestOutputHelper output) : base(output)
     {
     }
 
-    [Fact]
-    public async Task GetAccessToken() // in order to just get token once, ensure that method name is alphabetically before other tests cases
+    public async Task InitializeAsync()
     {
-        PortalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
+        _portalUserToken = await new AuthFlow(PortalUserCompanyName).GetAccessToken(Secrets.PortalUserName,
             Secrets.PortalUserPassword);
-
-        PortalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
     }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     // GET: /api/administration/staticdata/usecases
     [Fact]
     public async Task GetUseCaseData()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken();
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/usecases")
             .Then()
@@ -71,21 +68,22 @@ public class BaseDataLoadCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        response.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Error: Response body is null or empty");
+        var result = await response.Content.ReadAsStringAsync();
+
+        result.Should().NotBeNullOrEmpty("Error: Response body is null or empty");
     }
 
     //     GET: /api/administration/staticdata/languagetags
     [Fact]
     public async Task GetAppLanguageTags()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken();
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/languagetags")
             .Then()
@@ -94,21 +92,21 @@ public class BaseDataLoadCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        response.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response body is null or empty");
+        var result = await response.Content.ReadAsStringAsync();
+        result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     //     GET: /api/administration/staticdata/licenseType
     [Fact]
     public async Task GetAllLicenseTypes()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken();
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/staticdata/licenseType")
             .Then()
@@ -117,21 +115,21 @@ public class BaseDataLoadCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        response.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response body is null or empty");
+        var result = await response.Content.ReadAsStringAsync();
+        result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     //     GET: api/administration/user/owncompany/users
     [Fact]
     public async Task GetCompanyUserData()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken();
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/user/owncompany/users?page=0&size=5")
             .Then()
@@ -140,21 +138,21 @@ public class BaseDataLoadCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        response.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response body is null or empty");
+        var result = await response.Content.ReadAsStringAsync();
+        result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 
     //     GET: api/administration/companydata/ownCompanyDetails
     [Fact]
     public async Task GetOwnCompanyDetails()
     {
-        if (PortalUserToken.IsNullOrEmpty())
-            await GetAccessToken();
+        _portalUserToken.Should().NotBeNullOrEmpty("Token for the portal user could not be fetched correctly");
 
         var response = Given()
             .DisableSslCertificateValidation()
             .Header(
                 "authorization",
-                $"Bearer {PortalUserToken}")
+                $"Bearer {_portalUserToken}")
             .When()
             .Get($"{BaseUrl}{EndPoint}/companydata/ownCompanyDetails")
             .Then()
@@ -163,6 +161,7 @@ public class BaseDataLoadCheck : EndToEndTestBase
             .Extract()
             .Response();
 
-        response.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response body is null or empty");
+        var result = await response.Content.ReadAsStringAsync();
+        result.Should().NotBeNullOrEmpty("Response body is null or empty");
     }
 }

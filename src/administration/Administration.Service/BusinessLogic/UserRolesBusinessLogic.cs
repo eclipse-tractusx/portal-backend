@@ -67,7 +67,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             async () =>
             {
                 var result = await _portalRepositories.GetInstance<IUserRepository>()
-                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, companyId).ConfigureAwait(false);
+                    .GetCoreOfferAssignedIamClientUserDataUntrackedAsync(offerId, companyUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
                 return result == null
                     ? null
                     : new OfferIamUserData(
@@ -116,22 +116,13 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                 }, _options), NotificationTypeId.ROLE_UPDATE_APP_OFFER);
             });
 
-    [Obsolete("to be replaced by endpoint UserRolesBusinessLogic.ModifyAppUserRolesAsync. Remove as soon frontend is adjusted")]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRoleAsync(Guid appId, UserRoleInfo userRoleInfo) =>
-        ModifyUserRolesInternal(
-            () => _portalRepositories.GetInstance<IUserRepository>()
-                .GetAppAssignedIamClientUserDataUntrackedAsync(appId, userRoleInfo.CompanyUserId, _identityData.CompanyId),
-            (Guid companyUserId, IEnumerable<string> roles, Guid offerId) => _portalRepositories.GetInstance<IUserRolesRepository>()
-                .GetAssignedAndMatchingAppRoles(companyUserId, roles, offerId).Select(x => new UserRoleModificationData(x.UserRoleText, x.RoleId, x.IsAssigned, true)),
-            appId, userRoleInfo.CompanyUserId, userRoleInfo.Roles, _identityData.CompanyId, null);
-
     private async Task<IEnumerable<UserRoleWithId>> ModifyUserRolesInternal(
         Func<Task<OfferIamUserData?>> getIamUserData,
         Func<Guid, IEnumerable<string>, Guid, IAsyncEnumerable<UserRoleModificationData>> getUserRoleModificationData,
         Guid offerId, Guid companyUserId, IEnumerable<string> roles, Guid adminCompanyId,
         Func<(Guid OfferId, string OfferName, string? Firstname, string? Lastname, IEnumerable<string> RemovedRoles, IEnumerable<string> AddedRoles), (string Content, NotificationTypeId NotificationTypeId)>? getNotificationData)
     {
-        var result = await getIamUserData().ConfigureAwait(false);
+        var result = await getIamUserData().ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"user {companyUserId} not found");
@@ -158,7 +149,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             throw new ConflictException("OfferName must be set here.");
         }
 
-        var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(false) ?? throw new ConflictException($"user {companyUserId} is not associated with any iamUser");
+        var iamUserId = await _provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {companyUserId} is not associated with any iamUser");
 
         var distinctRoles = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToImmutableList();
         var existingRoles = await getUserRoleModificationData(companyUserId, distinctRoles, offerId).ToListAsync().ConfigureAwait(false);
@@ -171,12 +162,12 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         var rolesToAdd = existingRoles.Where(role => !role.IsAssigned && role.IsAssignable);
         var rolesToDelete = existingRoles.Where(role => role.IsAssigned).ExceptBy(distinctRoles, role => role.CompanyUserRoleText).ToImmutableList();
 
-        var rolesAdded = await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, iamUserId).ConfigureAwait(false);
+        var rolesAdded = await AddRoles(companyUserId, result.IamClientIds, rolesToAdd, iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         var rolesNotAdded = rolesToAdd.ExceptBy(rolesAdded.Select(role => role.CompanyUserRoleId), role => role.CompanyUserRoleId);
 
         if (rolesToDelete.Any())
         {
-            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, iamUserId).ConfigureAwait(false);
+            await DeleteRoles(companyUserId, result.IamClientIds, rolesToDelete, iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (getNotificationData != null)
@@ -198,7 +189,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
                 });
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         return rolesNotAdded.Select(x => new UserRoleWithId(x.CompanyUserRoleText, x.CompanyUserRoleId));
     }
@@ -211,13 +202,14 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
             // Assign the roles in keycloak, check if all roles were added foreach client, if not throw an exception with the client and the roles that were not assigned. 
             .Select(assigned => (
                 Client: assigned.Client,
-                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText)))
+                UnassingedRoles: rolesToAdd.ExceptBy(assigned.Roles, toAdd => toAdd.CompanyUserRoleText),
+                Error: assigned.Error))
             .Where(x => x.UnassingedRoles.Any())
             .IfAny(async unassigned =>
                 throw new ServiceException($"The following roles could not be added to the clients: \n {string.Join(
                         "\n",
                         await unassigned
-                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}")
+                            .Select(item => $"Client: {item.Client}, Roles: {string.Join(", ", item.UnassingedRoles.Select(r => r.CompanyUserRoleText))}, Error: {item.Error?.Message}")
                             .ToListAsync()
                             .ConfigureAwait(false))}"))
             .ConfigureAwait(false);
@@ -232,7 +224,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
     {
         var roleNamesToDelete = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToDelete.Select(x => x.CompanyUserRoleText));
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
             new IdentityAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }

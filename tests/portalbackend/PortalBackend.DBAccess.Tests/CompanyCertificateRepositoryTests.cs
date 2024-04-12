@@ -54,7 +54,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.CheckCompanyCertificateType(typeId).ConfigureAwait(false);
+        var result = await sut.CheckCompanyCertificateType(typeId);
 
         // Assert
         result.Should().Be(exists);
@@ -92,10 +92,10 @@ public class CompanyCertificateRepositoryTests
     public async Task GetAllCertificates_ReturnsExpectedResult(CertificateSorting sorting)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(sorting, null, null, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(0, 15);
 
         // Assert
         companyCertificateDetail.Should().NotBeNull();
@@ -115,14 +115,14 @@ public class CompanyCertificateRepositoryTests
     [Theory]
     [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.AEO_CTPAT_Security_Declaration, 0, 2, 1, 1)]
     [InlineData(CompanyCertificateStatusId.ACTIVE, CompanyCertificateTypeId.ISO_9001, 0, 2, 1, 1)]
-    [InlineData(CompanyCertificateStatusId.INACTVIE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
+    [InlineData(CompanyCertificateStatusId.INACTIVE, CompanyCertificateTypeId.IATF, 0, 2, 0, 0)]
     public async Task GetAllCertificates_WithExistingCompanyCertificateAndCertificateType_ReturnsExpectedResult(CompanyCertificateStatusId companyCertificateStatusId, CompanyCertificateTypeId companyCertificateTypeId, int page, int size, int count, int numData)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size).ConfigureAwait(false);
+        var companyCertificateDetail = await sut.GetActiveCompanyCertificatePaginationSource(null, companyCertificateStatusId, companyCertificateTypeId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"))(page, size);
 
         // Assert
         if (count == 0)
@@ -148,7 +148,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01643");
 
         // Assert
         result.Should().NotBe(Guid.Empty);
@@ -162,7 +162,7 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644").ConfigureAwait(false);
+        var result = await sut.GetCompanyIdByBpn("BPNL07800HZ01644");
 
         // Assert
         result.Should().Be(Guid.Empty);
@@ -175,10 +175,152 @@ public class CompanyCertificateRepositoryTests
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyCertificateData(Guid.NewGuid()).ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region GetCompanyCertificateDocumentByCompanyUserIdContentFile
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyUserIdContentFile_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9752d"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"), DocumentTypeId.COMPANY_CERTIFICATE);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("AdditionalServiceDetails3.pdf");
+        result.MediaTypeId.Should().Be(MediaTypeId.PDF);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyUserIdContentFile_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid.NewGuid(), Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region GetCompanyCertificateDocumentContentFile
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentContentFile_WithValidData_ReturnsExpectedDocument()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751f"), DocumentTypeId.COMPANY_CERTIFICATE);
+
+        // Assert
+        result.Should().NotBe(default);
+        result.FileName.Should().Be("AdditionalServiceDetails2.pdf");
+        result.MediaTypeId.Should().Be(MediaTypeId.PDF);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentContentFile_WithNotExistingDocument_ReturnsDefault()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetCompanyCertificateDocumentDataAsync(Guid.NewGuid(), DocumentTypeId.COMPANY_CERTIFICATE);
+
+        // Assert
+        result.Should().Be(default);
+    }
+
+    #endregion
+
+    #region DeleteCertificate
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentDetailsForIdUntrackedAsync_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542"));
+
+        // Assert
+        companyCertificateDetail.Should().NotBeNull();
+        companyCertificateDetail.IsSameCompany.Should().Be(true);
+        companyCertificateDetail.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentDetailsForIdUntrackedAsync_ReturnsInvalidExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var companyCertificateDetail = await sut.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751e"), new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2544"));
+
+        // Assert
+        companyCertificateDetail.Should().NotBeNull();
+        companyCertificateDetail.IsSameCompany.Should().Be(false);
+    }
+
+    [Fact]
+    public async Task CompanyCertificateDetailsModify_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var (sut, context) = await CreateSutWithContext();
+
+        // Act
+        sut.AttachAndModifyCompanyCertificateDetails(new("9f5b9934-4014-4099-91e9-7b1aee696c12"), null, x =>
+            {
+                x.CompanyCertificateStatusId = CompanyCertificateStatusId.INACTIVE;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyCertificate>()
+            .And.Match<CompanyCertificate>(x => x.CompanyCertificateStatusId == CompanyCertificateStatusId.INACTIVE);
+    }
+
+    [Fact]
+    public async Task CompanyCertificateDocumentDetailsModify_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        var (sut, context) = await CreateSutWithContext();
+
+        // Act
+        sut.AttachAndModifyCompanyCertificateDocumentDetails(new("aaf53459-c36b-408e-a805-0b406ce9751e"), null, x =>
+            {
+                x.DocumentStatusId = DocumentStatusId.INACTIVE;
+                x.DateLastChanged = now;
+            });
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<Document>()
+            .And.Match<Document>(x => x.DocumentStatusId == DocumentStatusId.INACTIVE);
     }
 
     #endregion
@@ -187,13 +329,13 @@ public class CompanyCertificateRepositoryTests
 
     private async Task<CompanyCertificateRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return new CompanyCertificateRepository(context);
     }
 
     private async Task<(CompanyCertificateRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return (new CompanyCertificateRepository(context), context);
     }
 

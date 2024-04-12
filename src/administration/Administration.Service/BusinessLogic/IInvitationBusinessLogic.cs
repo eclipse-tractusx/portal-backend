@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,5 +24,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
     public interface IInvitationBusinessLogic
     {
         Task ExecuteInvitation(CompanyInvitationData invitationData);
+        Task RetriggerCreateCentralIdp(Guid processId);
+        Task RetriggerCreateSharedIdpServiceAccount(Guid processId);
+        Task RetriggerUpdateCentralIdpUrls(Guid processId);
+        Task RetriggerCreateCentralIdpOrgMapper(Guid processId);
+        Task RetriggerCreateSharedRealmIdpClient(Guid processId);
+        Task RetriggerEnableCentralIdp(Guid processId);
+        Task RetriggerCreateDatabaseIdp(Guid processId);
+        Task RetriggerInvitationCreateUser(Guid processId);
+        Task RetriggerInvitationSendMail(Guid processId);
     }
 }

@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -23,18 +22,20 @@
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Tests.Shared</AssemblyName>
     <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Tests.Shared</RootNamespace>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Flurl.Http.Signed" Version="3.2.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Testcontainers" Version="3.4.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="3.4.0" />
+    <PackageReference Include="Testcontainers" Version="3.7.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.7.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />

@@ -27,9 +27,7 @@ public class DistinctValuesAttribute : Attribute
 
     public DistinctValuesAttribute(string? selectorExpression = null)
     {
-        _selector = selectorExpression == null
-            ? null
-            : selectorExpression;
+        _selector = selectorExpression;
     }
 
     public virtual string? Selector

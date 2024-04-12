@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,43 +31,54 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 public partial class KeycloakClient
 {
     [Obsolete("Not working yet")]
-    public async Task RemoveImportedUsersAsync(string realm, string storageProviderId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task RemoveImportedUsersAsync(string realm, string storageProviderId)
+    {
+        using var stringContent = new StringContent("");
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/user-storage/")
             .AppendPathSegment(storageProviderId, true)
             .AppendPathSegment("/remove-imported-users")
-            .PostAsync(new StringContent(""))
-            .ConfigureAwait(false);
+            .PostAsync(stringContent)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 
     [Obsolete("Not working yet")]
-    public async Task<SynchronizationResult> TriggerUserSynchronizationAsync(string realm, string storageProviderId, UserSyncActions action) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<SynchronizationResult> TriggerUserSynchronizationAsync(string realm, string storageProviderId, UserSyncActions action)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/user-storage/")
             .AppendPathSegment(storageProviderId, true)
             .AppendPathSegment("/sync")
             .SetQueryParam(nameof(action), action == UserSyncActions.Full ? "triggerFullSync" : "triggerChangedUsersSync")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<SynchronizationResult>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 
     [Obsolete("Not working yet")]
-    public async Task UnlinkImportedUsersAsync(string realm, string storageProviderId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task UnlinkImportedUsersAsync(string realm, string storageProviderId)
+    {
+        using var stringContent = new StringContent("");
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/user-storage/")
             .AppendPathSegment(storageProviderId, true)
             .AppendPathSegment("/unlink-users")
-            .PostAsync(new StringContent(""))
-            .ConfigureAwait(false);
+            .PostAsync(stringContent)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 
     [Obsolete("Not working yet")]
-    public async Task<SynchronizationResult> TriggerLdapMapperSynchronizationAsync(string realm, string storageProviderId, string mapperId, LdapMapperSyncActions direction) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+    public async Task<SynchronizationResult> TriggerLdapMapperSynchronizationAsync(string realm, string storageProviderId, string mapperId, LdapMapperSyncActions direction)
+    {
+        using var stringContent = new StringContent("");
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/user-storage/")
@@ -77,7 +87,8 @@ public partial class KeycloakClient
             .AppendPathSegment(mapperId, true)
             .AppendPathSegment("/sync")
             .SetQueryParam(nameof(direction), direction == LdapMapperSyncActions.FedToKeycloak ? "fedToKeycloak" : "keycloakToFed")
-            .PostAsync(new StringContent(""))
+            .PostAsync(stringContent)
             .ReceiveJson<SynchronizationResult>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 }

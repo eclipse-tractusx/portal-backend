@@ -94,7 +94,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(status, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Assert
         var expectedCount = status ?
@@ -117,7 +117,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(0, 15, new NotificationFilters(null, null, null, false, sorting, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(_notificationDetails.Count());
@@ -137,7 +137,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var results = await sut.GetNotificationsAsync(1, 3, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND).ConfigureAwait(false);
+        var results = await sut.GetNotificationsAsync(1, 3, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Assert
         results.Should().NotBeNull();
@@ -160,7 +160,7 @@ public class NotificationBusinessLogicTests
         var Act = () => sut.GetNotificationsAsync(0, 20, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ControllerArgumentException>(Act);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class NotificationBusinessLogicTests
         var Act = () => sut.GetNotificationsAsync(-1, 15, new NotificationFilters(null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null), SearchSemanticTypeId.AND);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ControllerArgumentException>(Act);
     }
 
     [Fact]
@@ -191,12 +191,22 @@ public class NotificationBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
         var filter = _fixture.Create<NotificationFilters>();
 
+        A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(A<Guid>._, A<SearchSemanticTypeId>._, A<bool>._, A<NotificationTypeId>._, A<NotificationTopicId>._, A<bool>._, A<NotificationSorting>._, A<bool>._, A<IEnumerable<NotificationTypeId>>._, A<string?>._))
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<NotificationDetailData>?>(new(100, _fixture.CreateMany<NotificationDetailData>(take))));
+
         // Act
-        var result = await sut.GetNotificationsAsync(0, 20, filter, SearchSemanticTypeId.AND).ConfigureAwait(false);
+        var result = await sut.GetNotificationsAsync(2, 10, filter, SearchSemanticTypeId.AND);
 
         // Assert
         A.CallTo(() => _notificationRepository.GetAllNotificationDetailsByReceiver(userId, SearchSemanticTypeId.AND, filter.IsRead, filter.TypeId, filter.TopicId, filter.OnlyDueDate, filter.Sorting, filter.DoneState, A<IEnumerable<NotificationTypeId>>.That.Matches(x => x.Count() == filter.SearchTypeIds.Count()), filter.SearchQuery))
             .MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull()
+            .And.Match<Pagination.Response<NotificationDetailData>>(x =>
+                x.Meta.NumberOfElements == 100 &&
+                x.Meta.NumberOfPages == 10 &&
+                x.Meta.Page == 2 &&
+                x.Meta.PageSize == 10 &&
+                x.Content.Count() == 10);
     }
 
     #endregion
@@ -213,7 +223,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationDetailDataAsync(_notificationDetail.Id).ConfigureAwait(false);
+        var result = await sut.GetNotificationDetailDataAsync(_notificationDetail.Id);
 
         // Assert
         var notificationDetailData = _unreadNotificationDetails.First();
@@ -232,7 +242,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        async Task Act() => await sut.GetNotificationDetailDataAsync(_notificationDetail.Id).ConfigureAwait(false);
+        async Task Act() => await sut.GetNotificationDetailDataAsync(_notificationDetail.Id);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -250,7 +260,7 @@ public class NotificationBusinessLogicTests
 
         // Act
         var notificationId = Guid.NewGuid();
-        async Task Act() => await sut.GetNotificationDetailDataAsync(notificationId).ConfigureAwait(false);
+        async Task Act() => await sut.GetNotificationDetailDataAsync(notificationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -271,7 +281,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationCountAsync(false).ConfigureAwait(false);
+        var result = await sut.GetNotificationCountAsync(false);
 
         // Assert
         result.Should().Be(5);
@@ -303,7 +313,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        var result = await sut.GetNotificationCountDetailsAsync().ConfigureAwait(false);
+        var result = await sut.GetNotificationCountDetailsAsync();
 
         // Assert
         result.Read.Should().Be(9);
@@ -337,7 +347,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        await sut.SetNotificationStatusAsync(_notificationDetail.Id, isRead).ConfigureAwait(false);
+        await sut.SetNotificationStatusAsync(_notificationDetail.Id, isRead);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -356,7 +366,7 @@ public class NotificationBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
 
         // Act
-        async Task Act() => await sut.SetNotificationStatusAsync(randomNotificationId, true).ConfigureAwait(false);
+        async Task Act() => await sut.SetNotificationStatusAsync(randomNotificationId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -375,7 +385,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        async Task Act() => await sut.SetNotificationStatusAsync(_notificationDetail.Id, true).ConfigureAwait(false);
+        async Task Act() => await sut.SetNotificationStatusAsync(_notificationDetail.Id, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -396,7 +406,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        await sut.DeleteNotificationAsync(_notificationDetail.Id).ConfigureAwait(false);
+        await sut.DeleteNotificationAsync(_notificationDetail.Id);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -414,7 +424,7 @@ public class NotificationBusinessLogicTests
         }));
 
         // Act
-        async Task Act() => await sut.DeleteNotificationAsync(_notificationDetail.Id).ConfigureAwait(false);
+        async Task Act() => await sut.DeleteNotificationAsync(_notificationDetail.Id);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -452,11 +462,11 @@ public class NotificationBusinessLogicTests
         A.CallTo(() =>
                 _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
-            .Returns(((bool, NotificationDetailData))default);
+            .Returns<(bool, NotificationDetailData)>(default);
 
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(_notificationDetail.Id, _identityId))
-            .ReturnsLazily(() => (true, true, true));
+            .Returns((true, true, true));
         A.CallTo(() =>
                 _notificationRepository.CheckNotificationExistsByIdAndValidateReceiverAsync(
                     A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), A<Guid>._))
@@ -470,7 +480,7 @@ public class NotificationBusinessLogicTests
         A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(_notificationDetail.Id, A<Guid>.That.Not.Matches(x => x == _identityId)))
             .Returns((false, _unreadNotificationDetails.First()));
         A.CallTo(() => _notificationRepository.GetNotificationByIdAndValidateReceiverAsync(A<Guid>.That.Not.Matches(x => x == _notificationDetail.Id), _identityId))
-            .Returns(default((bool IsUserReceiver, NotificationDetailData NotificationDetailData)));
+            .Returns<(bool IsUserReceiver, NotificationDetailData NotificationDetailData)>(default);
 
         A.CallTo(() => _notificationRepository.GetNotificationCountForUserAsync(_identityId, false))
             .Returns(5);

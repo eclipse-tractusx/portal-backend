@@ -88,7 +88,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> AddServiceSubscription([FromRoute] Guid serviceId, [FromBody] IEnumerable<OfferAgreementConsentData> offerAgreementConsentData)
     {
-        var serviceSubscriptionId = await _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData).ConfigureAwait(false);
+        var serviceSubscriptionId = await _serviceBusinessLogic.AddServiceSubscription(serviceId, offerAgreementConsentData).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetSubscriptionDetail), new { subscriptionId = serviceSubscriptionId }, serviceSubscriptionId);
     }
 
@@ -189,7 +189,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> StartAutoSetupServiceProcess([FromBody] OfferAutoSetupData data)
     {
-        await _serviceBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(false);
+        await _serviceBusinessLogic.StartAutoSetupAsync(data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -229,7 +229,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     public async Task<FileResult> GetServiceDocumentContentAsync([FromRoute] Guid serviceId, [FromRoute] Guid documentId, CancellationToken cancellationToken)
     {
-        var (content, contentType, fileName) = await _serviceBusinessLogic.GetServiceDocumentContentAsync(serviceId, documentId, cancellationToken).ConfigureAwait(false);
+        var (content, contentType, fileName) = await _serviceBusinessLogic.GetServiceDocumentContentAsync(serviceId, documentId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, contentType, fileName);
     }
 
@@ -323,7 +323,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UnsubscribeCompanyServiceSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await _serviceBusinessLogic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId).ConfigureAwait(false);
+        await _serviceBusinessLogic.UnsubscribeOwnCompanyServiceSubscriptionAsync(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -347,7 +347,7 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ActivateCompanyAppSubscriptionAsync([FromRoute] Guid subscriptionId)
     {
-        await _serviceBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(false);
+        await _serviceBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -40,12 +39,8 @@ public class OfferRepository : IOfferRepository
     /// <param name="portalDbContext">PortalDb context.</param>
     public OfferRepository(PortalDbContext portalDbContext)
     {
-        this._context = portalDbContext;
+        _context = portalDbContext;
     }
-
-    /// <inheritdoc />
-    public Task<bool> CheckAppExistsById(Guid appId) =>
-        _context.Offers.AnyAsync(x => x.Id == appId && x.OfferTypeId == OfferTypeId.APP);
 
     ///<inheritdoc/>
     public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId) =>
@@ -232,18 +227,6 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    [Obsolete("only referenced by code that is marked as obsolte")]
-    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync(Guid appId, string languageShortName) =>
-        _context.Offers
-            .Where(app => app.Id == appId)
-            .SelectMany(app => app.UserRoles)
-            .Select(roles => new ClientRoles(
-                roles.Id,
-                roles.UserRoleText,
-                roles.UserRoleDescriptions.SingleOrDefault(desc => desc.LanguageShortName == languageShortName)!.Description
-            )).AsAsyncEnumerable();
-
-    /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<ServiceOverviewData>?>> GetActiveServicesPaginationSource(ServiceOverviewSorting? sorting, ServiceTypeId? serviceTypeId, string languageShortName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
@@ -331,7 +314,7 @@ public class OfferRepository : IOfferRepository
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
                 OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
                 OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new InReviewAppData(
                 offer.Id,
@@ -352,7 +335,6 @@ public class OfferRepository : IOfferRepository
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
                 o.UserRoles.Any(),
-                o.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
                 o.OfferAssignedPrivacyPolicies.Any(),
                 o.Documents.Where(doc => doc.DocumentStatusId == DocumentStatusId.PENDING || doc.DocumentStatusId == DocumentStatusId.LOCKED)
                     .Select(doc => new ValueTuple<Guid, DocumentStatusId, DocumentTypeId>(doc.Id, doc.DocumentStatusId, doc.DocumentTypeId))
@@ -597,7 +579,7 @@ public class OfferRepository : IOfferRepository
             initial => initial.LanguageCode,
             modify => modify.LanguageCode,
             languageCode => new OfferDescription(offerId, languageCode, null!, null!),
-            (initial, modified) => (initial.LongDescription == modified.LongDescription && initial.ShortDescription == modified.ShortDescription),
+            (initial, modified) => initial.LongDescription == modified.LongDescription && initial.ShortDescription == modified.ShortDescription,
             (entity, initial) =>
                 {
                     entity.DescriptionLong = initial.LongDescription;
@@ -722,7 +704,7 @@ public class OfferRepository : IOfferRepository
             {
                 OfferSorting.DateAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.DateCreated),
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new AllOfferStatusData(
                 offer.Id,
@@ -748,7 +730,7 @@ public class OfferRepository : IOfferRepository
                 OfferSorting.DateDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.DateCreated),
                 OfferSorting.NameAsc => (IEnumerable<Offer> offers) => offers.OrderBy(offer => offer.Name),
                 OfferSorting.NameDesc => (IEnumerable<Offer> offers) => offers.OrderByDescending(offer => offer.Name),
-                _ => (Expression<Func<IEnumerable<Offer>, IOrderedEnumerable<Offer>>>?)null
+                _ => null
             },
             offer => new InReviewServiceData(
                 offer.Id,

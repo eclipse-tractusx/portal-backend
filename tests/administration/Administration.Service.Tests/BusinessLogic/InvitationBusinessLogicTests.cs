@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,19 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
@@ -38,303 +32,530 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class InvitationBusinessLogicTests
 {
     private readonly IFixture _fixture;
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IProcessStepRepository _processStepRepository;
+    private readonly ICompanyInvitationRepository _companyInvitationRepository;
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityProviderRepository _identityProviderRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly ICompanyRepository _companyRepository;
-    private readonly IApplicationRepository _applicationRepository;
-    private readonly IMailingService _mailingService;
-    private readonly IOptions<InvitationSettings> _options;
-    private readonly string _companyName;
-    private readonly string _idpName;
-    private readonly Guid _companyId;
-    private readonly Guid _identityProviderId;
-    private readonly Guid _applicationId;
-    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
-    private readonly Exception _error;
+    private readonly InvitationBusinessLogic _sut;
 
     public InvitationBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
-        _provisioningManager = A.Fake<IProvisioningManager>();
-        _userProvisioningService = A.Fake<IUserProvisioningService>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
-        _userRepository = A.Fake<IUserRepository>();
-        _companyRepository = A.Fake<ICompanyRepository>();
-        _applicationRepository = A.Fake<IApplicationRepository>();
-        _mailingService = A.Fake<IMailingService>();
-        _options = A.Fake<IOptions<InvitationSettings>>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _companyInvitationRepository = A.Fake<ICompanyInvitationRepository>();
 
-        _companyName = "testCompany";
-        _idpName = _fixture.Create<string>();
-        _companyId = _fixture.Create<Guid>();
-        _identityProviderId = _fixture.Create<Guid>();
-        _applicationId = _fixture.Create<Guid>();
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyInvitationRepository>()).Returns(_companyInvitationRepository);
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
-
-        _error = _fixture.Create<TestException>();
+        _sut = new InvitationBusinessLogic(_portalRepositories);
     }
 
     #region ExecuteInvitation
 
     [Fact]
-    public async Task TestExecuteInvitationSuccess()
+    public async Task ExecuteInvitation_WithoutEmail_ThrowsControllerArgumentException()
     {
-        SetupFakes();
-
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .With(x => x.OrganisationName, _fixture.Create<string>())
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .With(x => x.Email, (string?)null)
             .Create();
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
 
-        await sut.ExecuteInvitation(invitationData).ConfigureAwait(false);
-
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _provisioningManager.SetupSharedIdpAsync(A<string>.That.IsEqualTo(_idpName), A<string>.That.IsEqualTo(invitationData.organisationName), A<string?>._)).MustHaveHappened();
-
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>.That.IsEqualTo(invitationData.organisationName), null)).MustHaveHappened();
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, A<Guid>._, A<Action<IdentityProvider>>._)).MustHaveHappened();
-        A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(A<Guid>._, _idpName)).MustHaveHappened();
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(_companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, A<Action<CompanyApplication>>._)).MustHaveHappened();
-
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(
-            A<CompanyNameIdpAliasData>.That.Matches(d => d.CompanyId == _companyId),
-            A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._,
-            A<CancellationToken>._)).MustHaveHappened();
-
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == invitationData.firstName))).MustHaveHappened();
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(u => u.FirstName == invitationData.firstName))).MustNotHaveHappened();
-
-        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_applicationId), A<Guid>._)).MustHaveHappened();
-
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _mailingService.SendMails(A<string>.That.IsEqualTo(invitationData.email), A<Dictionary<string, string>>._, A<List<string>>._)).MustHaveHappened();
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("email must not be empty (Parameter 'email')");
+        ex.ParamName.Should().Be("email");
     }
 
     [Fact]
-    public async Task TestExecuteInvitationNoEmailThrows()
+    public async Task ExecuteInvitation_WithoutOrganisationName_ThrowsControllerArgumentException()
     {
-        SetupFakes();
-
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .With(x => x.email, "")
+            .With(x => x.OrganisationName, (string?)null)
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
 
-        Task Act() => sut.ExecuteInvitation(invitationData);
-
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be("email must not be empty (Parameter 'email')");
-
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
+        ex.ParamName.Should().Be("organisationName");
     }
 
     [Fact]
-    public async Task TestExecuteInvitationNoOrganisationNameThrows()
+    public async Task ExecuteInvitation_WithValidData_CreatesExpected()
     {
-        SetupFakes();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        var invitations = new List<CompanyInvitation>();
+
+        SetupFakesForInvite(processes, processSteps, invitations);
 
         var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, "")
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
+            .WithOrgNamePattern(x => x.OrganisationName)
+            .With(x => x.UserName, "testUserName")
+            .WithNamePattern(x => x.FirstName)
+            .WithNamePattern(x => x.LastName)
+            .WithEmailPattern(x => x.Email)
             .Create();
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+        await _sut.ExecuteInvitation(invitationData);
 
-        Task Act() => sut.ExecuteInvitation(invitationData);
+        processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+        invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
+    }
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
+    #endregion
 
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    #region RetriggerCreateCentralIdp
+
+    [Fact]
+    public async Task RetriggerCreateCentralIdp_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerCreateCentralIdp(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task TestExecuteInvitationWrongPatternOrganisationNameThrows()
+    public async Task RetriggerCreateCentralIdp_WithNotExistingProcess_ThrowsException()
     {
-        SetupFakes();
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateCentralIdp(process.Id);
 
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, "*Catena")
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
-            .Create();
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
 
-        Task Act() => sut.ExecuteInvitation(invitationData);
+    #endregion
 
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name (Parameter 'organisationName')");
+    #region RetriggerCreateSharedIdpServiceAccount
 
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+    [Fact]
+    public async Task RetriggerCreateSharedIdpServiceAccount_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerCreateSharedIdpServiceAccount(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task TestExecuteInvitationCreateUserErrorThrows()
+    public async Task RetriggerCreateSharedIdpServiceAccount_WithNotExistingProcess_ThrowsException()
     {
-        SetupFakes();
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-                .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, _error)
-                .Create());
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
-            .Create();
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+    #endregion
 
-        Task Act() => sut.ExecuteInvitation(invitationData);
+    #region RetriggerUpdateCentralIdpUrls
 
-        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be(_error.Message);
+    [Fact]
+    public async Task RetriggerUpdateCentralIdpUrls_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
 
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        // Act
+        await _sut.RetriggerUpdateCentralIdpUrls(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
-    public async Task TestExecuteInvitationCreateUserThrowsThrows()
+    public async Task RetriggerUpdateCentralIdpUrls_WithNotExistingProcess_ThrowsException()
     {
-        SetupFakes();
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).Throws(_error);
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.organisationName, _companyName)
-            .WithNamePattern(x => x.firstName)
-            .WithNamePattern(x => x.lastName)
-            .WithEmailPattern(x => x.email)
-            .Create();
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
 
-        var sut = new InvitationBusinessLogic(
-            _provisioningManager,
-            _userProvisioningService,
-            _portalRepositories,
-            _mailingService,
-            _options);
+    #endregion
 
-        Task Act() => sut.ExecuteInvitation(invitationData);
+    #region RetriggerCreateCentralIdpOrgMapper
 
-        var error = await Assert.ThrowsAsync<TestException>(Act).ConfigureAwait(false);
-        error.Message.Should().Be(_error.Message);
+    [Fact]
+    public async Task RetriggerCreateCentralIdpOrgMapper_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
 
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).MustHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<Dictionary<string, string>>._, A<List<string>>._)).MustNotHaveHappened();
+        // Act
+        await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateCentralIdpOrgMapper_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateCentralIdpOrgMapper(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerCreateCentralIdpOrgMapper
+
+    [Fact]
+    public async Task RetriggerCreateSharedRealmIdpClient_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerCreateSharedRealmIdpClient(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateSharedRealmIdpClient_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateSharedRealmIdpClient(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerCreateCentralIdpOrgMapper
+
+    [Fact]
+    public async Task RetriggerEnableCentralIdp_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerEnableCentralIdp(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerEnableCentralIdp_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerEnableCentralIdp(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerCreateDatabaseIdp
+
+    [Fact]
+    public async Task RetriggerCreateDatabaseIdp_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerCreateDatabaseIdp(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerCreateDatabaseIdp_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerCreateDatabaseIdp(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerInvitationCreateUser
+
+    [Fact]
+    public async Task RetriggerInvitationCreateUser_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_USER;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerInvitationCreateUser(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerInvitationCreateUser_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerInvitationCreateUser(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
+    #region RetriggerInvitationSendMail
+
+    [Fact]
+    public async Task RetriggerInvitationSendMail_CallsExpected()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
+        var processStepTypeId = ProcessStepTypeId.INVITATION_SEND_MAIL;
+        var processSteps = new List<ProcessStep>();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var processStepId = Guid.NewGuid();
+        SetupFakesForRetrigger(processSteps);
+        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((true, verifyProcessData));
+
+        // Act
+        await _sut.RetriggerInvitationSendMail(process.Id);
+
+        // Assert
+        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task RetriggerInvitationSendMail_WithNotExistingProcess_ThrowsException()
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL;
+        var process = _fixture.Create<Process>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.INVITATION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .Returns((false, _fixture.Create<VerifyProcessData>()));
+        async Task Act() => await _sut.RetriggerInvitationSendMail(process.Id);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"process {process.Id} does not exist");
     }
 
     #endregion
 
     #region Setup
 
-    private void SetupFakes()
+    private void SetupFakesForInvite(List<Process> processes, List<ProcessStep> processSteps, List<CompanyInvitation> invitations)
     {
-        A.CallTo(() => _options.Value).Returns(_fixture.Build<InvitationSettings>()
-            .With(x => x.InvitedUserInitialRoles, new[]
+        var createdProcessId = Guid.NewGuid();
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.INVITATION))
+            .Invokes((ProcessTypeId processTypeId) =>
             {
-                new UserRoleConfig(_fixture.Create<string>(), _fixture.CreateMany<string>())
+                var process = new Process(createdProcessId, processTypeId, Guid.NewGuid());
+                processes.Add(process);
             })
-            .Create());
-
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>()).Returns(_identityProviderRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>?>._)).ReturnsLazily((string organisationName, Action<Company>? _) =>
-            new Company(_companyId, organisationName, CompanyStatusId.PENDING, _fixture.Create<DateTimeOffset>()));
-
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>?>._))
-            .ReturnsLazily((IdentityProviderCategoryId categoryId, IdentityProviderTypeId typeId, Guid owner, Action<IdentityProvider>? setOptionalFields) =>
+            .Returns(new Process(createdProcessId, ProcessTypeId.INVITATION, Guid.NewGuid()));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, createdProcessId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
             {
-                var idp = new IdentityProvider(_identityProviderId, categoryId, typeId, owner, _fixture.Create<DateTimeOffset>());
-                setOptionalFields?.Invoke(idp);
-                return idp;
+                var processStep = new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId,
+                    DateTimeOffset.UtcNow);
+                processSteps.Add(processStep);
             });
 
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>?>._))
-            .ReturnsLazily((Guid companyId, CompanyApplicationStatusId applicationStatusId, CompanyApplicationTypeId typeId, Action<CompanyApplication>? _) => new CompanyApplication(_applicationId, companyId, applicationStatusId, typeId, _fixture.Create<DateTimeOffset>()));
+        A.CallTo(() => _companyInvitationRepository.CreateCompanyInvitation(A<string>._, A<string>._, A<string>._, A<string>._, createdProcessId, A<Action<CompanyInvitation>>._))
+            .Invokes((string firstName, string lastName, string email, string organisationName, Guid processId, Action<CompanyInvitation>? setOptionalFields) =>
+            {
+                var entity = new CompanyInvitation(Guid.NewGuid(), firstName, lastName, email, organisationName, processId);
+                setOptionalFields?.Invoke(entity);
+                invitations.Add(entity);
+            });
+    }
 
-        A.CallTo(() => _provisioningManager.GetNextCentralIdentityProviderNameAsync()).Returns(_idpName);
-
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
-                userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
-
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-                .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, (Exception?)null)
-                .Create());
+    private void SetupFakesForRetrigger(List<ProcessStep> processSteps)
+    {
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+                {
+                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
+                });
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

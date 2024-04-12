@@ -124,7 +124,7 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<CreatedAtRouteResult> CreateOwnIdpOwnCompanyUser([FromBody] UserCreationInfoIdp userToCreate, [FromRoute] Guid identityProviderId)
     {
-        var result = await _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate).ConfigureAwait(false);
+        var result = await _logic.CreateOwnCompanyIdpUserAsync(identityProviderId, userToCreate).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetOwnCompanyUserDetails), new { companyUserId = result }, result);
     }
 
@@ -368,26 +368,6 @@ public class UserController : ControllerBase
         _rolesLogic.GetAppRolesAsync(appId, languageShortName);
 
     /// <summary>
-    /// Gets the client roles for the given app.
-    /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
-    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
-    /// <returns>Returns the client roles for the given app.</returns>
-    /// <remarks>Example: GET: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
-    /// <response code="200">Returns the client roles.</response>
-    /// <response code="400">The language does not exist.</response>
-    /// <response code="404">The app was not found.</response>
-    [Obsolete("to be replaced by endpoint /user/owncompany/roles/apps/{appid}. Remove as soon frontend is adjusted")]
-    [HttpGet]
-    [Authorize(Roles = "view_client_roles")]
-    [Route("app/{appId}/roles")]
-    [ProducesResponseType(typeof(IAsyncEnumerable<ClientRoles>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IAsyncEnumerable<ClientRoles> GetClientRolesAsync([FromRoute] Guid appId, string? languageShortName = null) =>
-        _logic.GetClientRolesAsync(appId, languageShortName);
-
-    /// <summary>
     /// Gets the user details for the current user.
     /// </summary>
     /// <returns>Returns the company user details.</returns>
@@ -480,27 +460,6 @@ public class UserController : ControllerBase
                 email,
                 roleName,
                 hasRole));
-
-    /// <summary>
-    /// Updates the roles for the user
-    /// </summary>
-    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the application</param>
-    /// <param name="userRoleInfo"></param>
-    /// <returns></returns>
-    /// <remarks>Example: PUT: api/administration/user/app/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
-    /// <response code="200">Roles got successfully updated user account.</response>
-    /// <response code="400">Invalid User roles for client</response>
-    /// <response code="404">User not found</response>
-    [Obsolete("to be replaced by endpoint /user/owncompany/users/{companyUserId}/apps/{appId}/roles. remove as soon frontend has been adjusted")]
-    [HttpPut]
-    [Authorize(Roles = "modify_user_account")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("app/{appId}/roles")]
-    [ProducesResponseType(typeof(IEnumerable<UserRoleWithId>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<IEnumerable<UserRoleWithId>> ModifyUserRolesAsync([FromRoute] Guid appId, [FromBody] UserRoleInfo userRoleInfo) =>
-        _rolesLogic.ModifyUserRoleAsync(appId, userRoleInfo);
 
     /// <summary>
     /// Delete BPN assigned to user from DB and Keycloack.

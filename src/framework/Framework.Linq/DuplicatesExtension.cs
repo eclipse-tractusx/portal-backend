@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,24 +24,12 @@ public static class DuplicatesExtension
     public static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source)
     {
         var buffer = new HashSet<T>();
-        foreach (var t in source)
-        {
-            if (!buffer.Add(t))
-            {
-                yield return t;
-            }
-        }
+        return source.Select(x => (Valid: buffer.Add(x), Value: x)).Where(x => !x.Valid).Select(x => x.Value);
     }
 
     public static IEnumerable<T> DuplicatesBy<T, S>(this IEnumerable<T> source, Func<T, S> selector)
     {
         var buffer = new HashSet<S>();
-        foreach (var t in source)
-        {
-            if (!buffer.Add(selector(t)))
-            {
-                yield return t;
-            }
-        }
+        return source.Select(x => (Valid: buffer.Add(selector(x)), Value: x)).Where(x => !x.Valid).Select(x => x.Value);
     }
 }

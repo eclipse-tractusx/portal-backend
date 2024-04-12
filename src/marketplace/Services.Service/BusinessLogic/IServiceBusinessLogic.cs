@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -89,6 +88,7 @@ public interface IServiceBusinessLogic
     /// <param name="sorting"></param>
     /// <param name="statusId"></param>
     /// <param name="offerId"></param>
+    /// <param name="companyName"></param>
     /// <returns>Pagination of user's company's provided service' statuses.</returns>
     Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName = null);
 

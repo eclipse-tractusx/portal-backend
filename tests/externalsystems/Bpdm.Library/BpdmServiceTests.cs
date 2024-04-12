@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -67,7 +66,7 @@ public class BpdmServiceTests
         var data = _fixture.Create<BpdmTransferData>();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -76,7 +75,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.PutInputLegalEntity(data, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -88,7 +87,7 @@ public class BpdmServiceTests
         // Arrange
         var data = _fixture.Create<BpdmTransferData>();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -96,7 +95,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.PutInputLegalEntity(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -113,7 +112,7 @@ public class BpdmServiceTests
         // Arrange
         var externalId = Guid.NewGuid().ToString();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -122,7 +121,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
@@ -134,7 +133,7 @@ public class BpdmServiceTests
         // Arrange
         var externalId = Guid.NewGuid().ToString();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -142,7 +141,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -225,7 +224,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(json));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -233,7 +232,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.FetchInputLegalEntity(externalId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.FetchInputLegalEntity(externalId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -245,11 +244,12 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyObjectResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -257,10 +257,10 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("Access to external system bpdm did not return a valid legal entity response");
         ex.IsRecoverable.Should().BeTrue();
     }
@@ -269,11 +269,12 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithEmtpyResult_ThrowsServiceException()
     {
         // Arrange
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -281,10 +282,10 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().StartWith("Access to external system bpdm did not return a valid json response");
         ex.IsRecoverable.Should().BeFalse();
     }
@@ -294,7 +295,7 @@ public class BpdmServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -305,7 +306,7 @@ public class BpdmServiceTests
         var Act = () => sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -314,7 +315,7 @@ public class BpdmServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -322,7 +323,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.FetchInputLegalEntity(_fixture.Create<string>(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -359,7 +360,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(json));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -367,7 +368,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -384,11 +385,12 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("{}");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent("{}"));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -396,10 +398,10 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("Access to sharing state did not return a valid legal entity response");
         ex.IsRecoverable.Should().BeTrue();
     }
@@ -409,11 +411,12 @@ public class BpdmServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        using var stringContent = new StringContent("");
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(""));
+            stringContent);
 
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com"),
         };
@@ -421,10 +424,10 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().StartWith("Access to sharing state did not return a valid json response");
         ex.IsRecoverable.Should().BeFalse();
     }
@@ -435,7 +438,7 @@ public class BpdmServiceTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.NotFound);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -446,7 +449,7 @@ public class BpdmServiceTests
         var Act = () => sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -456,7 +459,7 @@ public class BpdmServiceTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -464,7 +467,7 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetSharingState(applicationId, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

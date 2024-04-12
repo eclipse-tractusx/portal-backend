@@ -161,7 +161,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await _logic.SetNotificationStatusAsync(notificationId, isRead).ConfigureAwait(false);
+        await _logic.SetNotificationStatusAsync(notificationId, isRead).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -183,7 +183,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await _logic.DeleteNotificationAsync(notificationId).ConfigureAwait(false);
+        await _logic.DeleteNotificationAsync(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

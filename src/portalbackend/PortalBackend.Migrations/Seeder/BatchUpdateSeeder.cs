@@ -68,7 +68,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntity, entity) =>
             {
                 dbEntity.LongName = entity.LongName;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyRoleDescription>(
             "company_role_descriptions",
@@ -77,7 +77,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<UserRoleCollectionDescription>(
             "user_role_collection_descriptions",
@@ -86,7 +86,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyCertificateTypeAssignedStatus>(
             "company_certificate_type_assigned_statuses",
@@ -95,7 +95,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.CompanyCertificateTypeStatusId = entry.CompanyCertificateTypeStatusId;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyCertificateTypeDescription>(
             "company_certificate_type_descriptions",
@@ -104,7 +104,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Description = entry.Description;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<Country>(
             "countries",
@@ -113,7 +113,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Alpha3Code = entry.Alpha3Code;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyIdentifier>("company_identifiers",
             x => new { x.CompanyId, x.UniqueIdentifierId },
@@ -121,7 +121,7 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Value = entry.Value;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions",
             x => x.Id,
@@ -131,7 +131,7 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Template = entry.Template;
                 dbEntry.Expiry = entry.Expiry;
                 dbEntry.ValidFrom = entry.ValidFrom;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyServiceAccount>("company_service_accounts",
             x => x.Id,
@@ -141,7 +141,7 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Description = entry.Description;
                 dbEntry.Name = entry.Name;
                 dbEntry.ClientClientId = entry.ClientClientId;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<Company>("companies",
             x => x.Id,
@@ -149,9 +149,17 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.SelfDescriptionDocumentId = entry.SelfDescriptionDocumentId;
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await SeedTable<CompanyApplication>("company_applications",
+            x => x.Id,
+            x => x.dbEntity.ChecklistProcessId == null,
+            (dbEntry, entry) =>
+            {
+                dbEntry.ChecklistProcessId = entry.ChecklistProcessId;
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
 
@@ -159,7 +167,7 @@ public class BatchUpdateSeeder : ICustomSeeder
     {
         _logger.LogInformation("Start seeding {Filename}", fileName);
         var additionalEnvironments = _settings.TestDataEnvironments ?? Enumerable.Empty<string>();
-        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, additionalEnvironments.ToArray()).ConfigureAwait(false);
+        var data = await SeederHelper.GetSeedData<T>(_logger, fileName, _settings.DataPaths, cancellationToken, additionalEnvironments.ToArray()).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Found {ElementCount} data", data.Count);
         if (data.Any())
         {

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -114,11 +113,12 @@ public class BPNAccessTest
             }
         }";
 
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        }, requestMessage => request = requestMessage);
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage, requestMessage => request = requestMessage);
 
         var businessPartnerNumber = _fixture.Create<string>();
         var sut = _fixture.Create<BpnAccess>();
@@ -143,18 +143,19 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -166,18 +167,19 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -188,17 +190,18 @@ public class BPNAccessTest
     public async Task FetchLegalEntityByBpn_NoContentResponse_Throws()
     {
         //Arrange
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -210,18 +213,19 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "{\"some\": [{\"other\": \"json\"}]}";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -233,18 +237,19 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)
-        });
+        };
+        ConfigureHttpClientFactoryFixture(responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Message.Should().Be($"call to external system bpn-fetch-legal-entity failed with statuscode {(int)HttpStatusCode.BadRequest}");

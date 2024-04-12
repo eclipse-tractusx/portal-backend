@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,12 +42,12 @@ public class ClientScopesUpdater : IClientScopesUpdater
         var keycloak = _keycloakFactory.CreateKeycloakClient(instanceName);
         var realm = _seedData.Realm;
 
-        var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(false);
+        var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var seedClientScopes = _seedData.ClientScopes;
 
-        await RemoveObsoleteClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
-        await CreateMissingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
-        await UpdateExistingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(false);
+        await RemoveObsoleteClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingClientScopes(keycloak, realm, clientScopes, seedClientScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task RemoveObsoleteClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, CancellationToken cancellationToken)
@@ -58,7 +57,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
             await keycloak.DeleteClientScopeAsync(
                 realm,
                 deleteScope.Id ?? throw new ConflictException($"clientScope.Id is null: {deleteScope.Name}"),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -66,7 +65,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
     {
         foreach (var addScope in seedClientScopes.ExceptBy(clientScopes.Select(x => x.Name), x => x.Name))
         {
-            await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, addScope, true), cancellationToken).ConfigureAwait(false);
+            await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, addScope, true), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -79,7 +78,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
                 x => x.Name,
                 (clientScope, update) => (ClientScope: clientScope, Update: update)))
         {
-            await UpdateClientScopeWithProtocolMappers(keycloak, realm, clientScope, update, cancellationToken).ConfigureAwait(false);
+            await UpdateClientScopeWithProtocolMappers(keycloak, realm, clientScope, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -94,15 +93,15 @@ public class ClientScopesUpdater : IClientScopesUpdater
                 realm,
                 clientScope.Id,
                 CreateClientScope(clientScope.Id, update, false),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var mappers = clientScope.ProtocolMappers ?? Enumerable.Empty<ProtocolMapper>();
         var updateMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
 
-        await DeleteObsoleteProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
-        await CreateMissingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
-        await UpdateExistingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+        await DeleteObsoleteProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingProtocolMappers(keycloak, realm, clientScope.Id, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task DeleteObsoleteProtocolMappers(KeycloakClient keycloak, string realm, string clientScopeId, IEnumerable<ProtocolMapper> mappers, IEnumerable<ProtocolMapperModel> updateMappers, CancellationToken cancellationToken)
@@ -113,7 +112,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
                 realm,
                 clientScopeId,
                 mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -125,7 +124,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
                 realm,
                 clientScopeId,
                 ProtocolMappersUpdater.CreateProtocolMapper(null, update),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -143,7 +142,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
                 clientScopeId,
                 mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
                 ProtocolMappersUpdater.CreateProtocolMapper(mapper.Id, update),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -155,7 +154,7 @@ public class ClientScopesUpdater : IClientScopesUpdater
             Description = clientScope.Description,
             Protocol = clientScope.Protocol,
             Attributes = clientScope.Attributes == null ? null : CreateClientScopeAttributes(clientScope.Attributes),
-            ProtocolMappers = includeProtocolMappers ? clientScope?.ProtocolMappers?.Select(x => ProtocolMappersUpdater.CreateProtocolMapper(x.Id, x)) : null
+            ProtocolMappers = includeProtocolMappers ? clientScope.ProtocolMappers?.Select(x => ProtocolMappersUpdater.CreateProtocolMapper(x.Id, x)) : null
         };
 
     private static bool CompareClientScope(ClientScope scope, ClientScopeModel update) =>

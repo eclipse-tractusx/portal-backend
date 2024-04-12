@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -158,7 +157,7 @@ public interface IOfferSubscriptionsRepository
     Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId);
     Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
     OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl);
-    void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionId);
+    void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionProcessDataId);
     IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);
     Task<(bool Exists, bool IsOfferProvider, bool OfferSubscriptionAlreadyLinked, OfferSubscriptionStatusId OfferSubscriptionStatus, Guid? SelfDescriptionDocumentId, Guid CompanyId, string? ProviderBpn)> CheckOfferSubscriptionWithOfferProvider(Guid subscriptionId, Guid offerProvidingCompanyId);
     IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,8 +45,8 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
             ClientId = ospDetails.ClientId,
             ClientSecret = ospDetails.ClientSecret
         };
-        var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
-            .ConfigureAwait(false);
+        using var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(ospDetails.CallbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-onboarding-provider")
             .ConfigureAwait(false);

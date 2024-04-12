@@ -76,7 +76,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
     {
         _offerSubscriptionId = Guid.Empty;
 
-        var result = await _offerSubscriptionsRepository.GetOfferSubscriptionDataForProcessIdAsync(processId).ConfigureAwait(false);
+        var result = await _offerSubscriptionsRepository.GetOfferSubscriptionDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == Guid.Empty)
         {
             throw new NotFoundException($"process {processId} does not exist or is not associated with an offer subscription");
@@ -104,19 +104,19 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
             {
                 ProcessStepTypeId.TRIGGER_PROVIDER => await _offerProviderBusinessLogic
                     .TriggerProvider(_offerSubscriptionId, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => await _offerSetupService
                     .CreateClient(_offerSubscriptionId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await _offerSetupService
                     .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
                     .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.ServiceManagerRoles, _settings.BasePortalAddress)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await _offerProviderBusinessLogic
                     .TriggerProviderCallback(_offerSubscriptionId, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };
         }
@@ -135,7 +135,7 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         {
             ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
             FlurlHttpException { StatusCode: { } } flurlHttpException when RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO, ex.Message, null),
-            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
+            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetOfferSubscriptionRetriggerStep())
         };
     }
 }

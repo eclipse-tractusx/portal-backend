@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -49,6 +49,7 @@ public class BpdmBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IBpdmService _bpdmService;
     private readonly BpdmBusinessLogic _logic;
+    private readonly IPortalRepositories _portalRepositories;
 
     public BpdmBusinessLogicTests()
     {
@@ -57,15 +58,16 @@ public class BpdmBusinessLogicTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        var portalRepository = A.Fake<IPortalRepositories>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _bpdmService = A.Fake<IBpdmService>();
+        var options = A.Fake<IOptions<BpdmServiceSettings>>();
 
-        A.CallTo(() => portalRepository.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-        A.CallTo(() => portalRepository.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
-        _logic = new BpdmBusinessLogic(portalRepository, _bpdmService);
+        _logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, options);
     }
 
     #endregion
@@ -88,7 +90,7 @@ public class BpdmBusinessLogicTests
             .Returns((ValidCompanyId, null!));
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -111,7 +113,7 @@ public class BpdmBusinessLogicTests
         SetupFakesForTrigger();
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -131,10 +133,10 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, "Test", null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, "Test", null!, null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -154,10 +156,10 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -177,10 +179,10 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, null, "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, null, "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -200,10 +202,10 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutZipCode, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "TEST", null, null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "TEST", null, null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
 
         // Act
-        async Task Act() => await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -226,7 +228,7 @@ public class BpdmBusinessLogicTests
         SetupFakesForTrigger();
 
         // Act
-        var result = await _logic.PushLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.PushLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -257,7 +259,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity();
 
         // Act
-        async Task Act() => await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -278,7 +280,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity();
 
         // Act
-        async Task Act() => await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -299,7 +301,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity();
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry.Should().BeNull();
@@ -316,9 +318,6 @@ public class BpdmBusinessLogicTests
         {
             BusinessPartnerNumber = "1"
         };
-        var checklistEntry = _fixture.Build<ApplicationChecklistEntry>()
-            .With(x => x.ApplicationChecklistEntryStatusId,
-                ApplicationChecklistEntryStatusId.TO_DO).Create();
         var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
@@ -329,7 +328,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        async Task Act() => await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        Task Act() => _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -357,7 +356,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -389,7 +388,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -399,10 +398,16 @@ public class BpdmBusinessLogicTests
         result.Modified.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task HandlePullLegalEntity_WithValidData_ReturnsExpected()
+    [Theory]
+    [InlineData(true, ProcessStepTypeId.CREATE_DIM_WALLET)]
+    [InlineData(false, ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    public async Task HandlePullLegalEntity_WithValidData_ReturnsExpected(bool useDimWallet, ProcessStepTypeId processStepTypeId)
     {
         // Arrange
+        var options = Options.Create(new BpdmServiceSettings
+        {
+            UseDimWallet = useDimWallet
+        });
         var company = new Company(Guid.NewGuid(), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
         {
             BusinessPartnerNumber = "1"
@@ -418,14 +423,15 @@ public class BpdmBusinessLogicTests
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         SetupForHandlePullLegalEntity(company);
+        var logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, options);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
         checklistEntry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Subject.Single().Should().Be(ProcessStepTypeId.CREATE_IDENTITY_WALLET);
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Subject.Single().Should().Be(processStepTypeId);
         result.SkipStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL);
         result.Modified.Should().BeTrue();
     }
@@ -451,7 +457,7 @@ public class BpdmBusinessLogicTests
         SetupForHandlePullLegalEntity(company);
 
         // Act
-        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None).ConfigureAwait(false);
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
 
         // Assert
         result.ModifyChecklistEntry?.Invoke(checklistEntry);
@@ -473,17 +479,17 @@ public class BpdmBusinessLogicTests
             .With(x => x.Alpha2Code, "DE")
             .With(x => x.City, "Test")
             .With(x => x.StreetName, "test")
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .Create();
 
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithBpn)))
             .Returns((ValidCompanyId, validData));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithStateCreated)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithStateCreated || x == IdWithBpn || x == IdWithoutZipCode)))
-            .Returns(new ValueTuple<Guid, BpdmData>());
+            .Returns<(Guid, BpdmData)>(default);
 
         A.CallTo(() => _bpdmService.PutInputLegalEntity(
                 A<BpdmTransferData>.That.Matches(x => x.CompanyName == ValidCompanyName && x.ZipCode == "50668"),
@@ -499,22 +505,22 @@ public class BpdmBusinessLogicTests
             .With(x => x.Alpha2Code, "DE")
             .With(x => x.City, "Test")
             .With(x => x.StreetName, "test")
-            .With(x => x.BusinessPartnerNumber, (string?)null)
+            .With(x => x.BusinessPartnerNumber, default(string?))
             .Create();
 
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithSharingError || x == IdWithSharingPending || x == IdWithoutSharingProcessStarted)))
             .Returns((ValidCompanyId, validData));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithStateCreated)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, "DE", null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Matches(x => x == IdWithoutZipCode)))
-            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, new List<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
+            .Returns((ValidCompanyId, new BpdmData(ValidCompanyName, null!, null!, null!, null!, "Test", "test", null!, null!, Enumerable.Empty<(BpdmIdentifierId UniqueIdentifierId, string Value)>())));
         A.CallTo(() => _applicationRepository.GetBpdmDataForApplicationAsync(A<Guid>.That.Not.Matches(x => x == IdWithStateCreated || x == IdWithBpn || x == IdWithoutZipCode || x == IdWithSharingError || x == IdWithSharingPending || x == IdWithoutSharingProcessStarted)))
-            .Returns(new ValueTuple<Guid, BpdmData>());
+            .Returns<(Guid, BpdmData)>(default);
 
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithStateCreated.ToString()), A<CancellationToken>._))
             .ThrowsAsync(new ServiceException("not found", System.Net.HttpStatusCode.NotFound));
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithoutZipCode.ToString()), A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, (BpdmLegelEntityData?)null).Create());
+            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, default(BpdmLegelEntityData?)).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, new BpdmLegelEntityData("CAXSDUMMYCATENAZZ", null, null, null, Enumerable.Empty<BpdmProfileClassification>())).Create());
         A.CallTo(() => _bpdmService.GetSharingState(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithStateCreated || x == IdWithoutZipCode || x == IdWithoutSharingProcessStarted), A<CancellationToken>._))
@@ -536,7 +542,7 @@ public class BpdmBusinessLogicTests
                 .Create());
         A.CallTo(() => _bpdmService.GetSharingState(IdWithoutSharingProcessStarted, A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmSharingState>()
-                .With(x => x.SharingProcessStarted, (DateTimeOffset?)null)
+                .With(x => x.SharingProcessStarted, default(DateTimeOffset?))
                 .Create());
 
         if (company != null)

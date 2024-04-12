@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -42,11 +41,11 @@ public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTes
     public async Task GetCompanyConnectorsForCurrentUserAsync_WithTwoConnectors_ReturnsCorrectAmount()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        using var client = _factory.CreateClient();
         var endpoint = new ConnectorsEndpoints(client);
 
         // Act
-        var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync().ConfigureAwait(false);
+        using var response = await endpoint.GetCompanyConnectorsForCurrentUserAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

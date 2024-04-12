@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,3 +28,12 @@ public record OfferRoleInfo(
 public record OfferRoleInfos(
     [property: JsonPropertyName("offerId")] Guid OfferId,
     [property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);
+
+public record ActiveAppRoleDetails(
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("descriptions")] IEnumerable<ActiveAppUserRoleDescription> Descriptions);
+
+public record ActiveAppUserRoleDescription(
+    [property: JsonPropertyName("languageCode")] string LanguageCode,
+    [property: JsonPropertyName("description")] string Description);
+

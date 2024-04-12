@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using RestAssured.Response.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -35,31 +34,31 @@ public class WalletEndpointTests : EndToEndTestBase
         TestResources.BaseCentralIdpUrl + "/auth/realms/CX-Central/protocol/openid-connect/token";
 
     private const string WalletEndPoint = "/api/wallets";
-    private static string? InterfaceHealthCheckTechUserToken;
-    private static string? Bpn;
+    private readonly string InterfaceHealthCheckTechUserToken;
+    private string? Bpn;
 
     private static readonly Secrets Secrets = new();
 
     public WalletEndpointTests(ITestOutputHelper output) : base(output)
     {
+        InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
+        if (string.IsNullOrEmpty(InterfaceHealthCheckTechUserToken))
+            throw new Exception("Could not fetch token for interface partner health check");
     }
 
     [Fact]
-    public void WalletCreationInterface_CreateAndDuplicationCheck()
+    public async Task WalletCreationInterface_CreateAndDuplicationCheck()
     {
         Bpn = $"BPNLTEST{DateTime.Now:DDhhmmss}";
-        InterfaceHealthCheckTechUserToken = TechTokenRetriever.GetToken(TokenUrl, Secrets.InterfaceHealthCheckTechClientId, Secrets.InterfaceHealthCheckTechClientSecret);
-        if (InterfaceHealthCheckTechUserToken.IsNullOrEmpty())
-            throw new Exception("Could not fetch token for interface partner health check");
         GetListOfWallets();
-        Thread.Sleep(3000);
+        await Task.Delay(3000);
         CreateWallet(201);
-        Thread.Sleep(3000);
+        await Task.Delay(3000);
         CreateWallet(409);
     }
 
     //GET: /api/wallets
-    private static void GetListOfWallets()
+    private void GetListOfWallets()
     {
         Given()
              .DisableSslCertificateValidation()
@@ -74,7 +73,7 @@ public class WalletEndpointTests : EndToEndTestBase
     }
 
     //POST: /api/wallets
-    private static void CreateWallet(int statusCode)
+    private void CreateWallet(int statusCode)
     {
         Given()
             .DisableSslCertificateValidation()

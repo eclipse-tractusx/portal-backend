@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 using Xunit;
 
@@ -66,9 +67,7 @@ public class ServiceReleaseBusinessLogicTest
     public ServiceReleaseBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerRepository = A.Fake<IOfferRepository>();
@@ -118,7 +117,7 @@ public class ServiceReleaseBusinessLogicTest
             .Returns(data);
 
         //Act
-        var result = await _sut.GetServiceAgreementDataAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetServiceAgreementDataAsync().ToListAsync();
 
         // Assert 
         A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE))
@@ -139,7 +138,7 @@ public class ServiceReleaseBusinessLogicTest
             .Returns(data);
 
         //Act
-        var result = await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
+        var result = await _sut.GetServiceDetailsByIdAsync(serviceId);
 
         // Assert 
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(A<Guid>._))
@@ -162,10 +161,10 @@ public class ServiceReleaseBusinessLogicTest
         //Arrange
         var data = _fixture.Build<ServiceDetailsData>()
                            .With(x => x.OfferStatusId, OfferStatusId.IN_REVIEW)
-                           .With(x => x.Title, (string?)null)
-                           .With(x => x.ProviderUri, (string?)null)
-                           .With(x => x.ContactEmail, (string?)null)
-                           .With(x => x.ContactNumber, (string?)null)
+                           .With(x => x.Title, default(string?))
+                           .With(x => x.ProviderUri, default(string?))
+                           .With(x => x.ContactEmail, default(string?))
+                           .With(x => x.ContactNumber, default(string?))
                            .Create();
         var serviceId = _fixture.Create<Guid>();
 
@@ -173,7 +172,7 @@ public class ServiceReleaseBusinessLogicTest
             .Returns(data);
 
         //Act
-        var result = await _sut.GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(false);
+        var result = await _sut.GetServiceDetailsByIdAsync(serviceId);
 
         // Assert 
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(A<Guid>._))
@@ -191,13 +190,13 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
         var invalidServiceId = Guid.NewGuid();
         A.CallTo(() => _offerRepository.GetServiceDetailsByIdAsync(invalidServiceId))
-           .Returns((ServiceDetailsData?)null);
+           .Returns<ServiceDetailsData?>(null);
 
         // Act
-        async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId).ConfigureAwait(false);
+        async Task Act() => await _sut.GetServiceDetailsByIdAsync(invalidServiceId);
 
         // Assert
-        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act);
         error.Message.Should().Be($"serviceId {invalidServiceId} not found or Incorrect Status");
     }
 
@@ -216,7 +215,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
 
         // Act
-        var result = await sut.GetServiceTypeDataAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetServiceTypeDataAsync().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetServiceTypeData())
@@ -239,7 +238,7 @@ public class ServiceReleaseBusinessLogicTest
 
         //Act
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
-        var result = await sut.GetServiceAgreementConsentAsync(serviceId).ConfigureAwait(false);
+        var result = await sut.GetServiceAgreementConsentAsync(serviceId);
 
         // Assert 
         A.CallTo(() => offerService.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE))
@@ -254,14 +253,14 @@ public class ServiceReleaseBusinessLogicTest
         var data = _fixture.Build<OfferProviderResponse>()
             .With(x => x.Title, "test title")
             .With(x => x.ContactEmail, "info@test.de")
-            .With(x => x.UseCase, (IEnumerable<AppUseCaseData>?)null)
+            .With(x => x.UseCase, default(IEnumerable<AppUseCaseData>?))
             .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCY_SERVICE })
             .Create();
 
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE))
             .Returns(data);
 
-        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId).ConfigureAwait(false);
+        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId);
 
         result.Should().NotBeNull();
         result.Title.Should().Be("test title");
@@ -287,7 +286,7 @@ public class ServiceReleaseBusinessLogicTest
             .Returns(paginationResult);
 
         // Act
-        var result = await _sut.GetAllInReviewStatusServiceAsync(1, 5, OfferSorting.DateAsc, null, "en", filter).ConfigureAwait(false);
+        var result = await _sut.GetAllInReviewStatusServiceAsync(1, 5, OfferSorting.DateAsc, null, "en", filter);
 
         // Assert
         A.CallTo(() => _offerRepository.GetAllInReviewStatusServiceAsync(
@@ -325,7 +324,7 @@ public class ServiceReleaseBusinessLogicTest
         A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(A<Guid>._, A<OfferAgreementConsent>._, A<OfferTypeId>._))
             .Returns(new[] { new ConsentStatusData(Guid.NewGuid(), ConsentStatusId.ACTIVE) });
 
-        var result = await _sut.SubmitOfferConsentAsync(serviceId, data).ConfigureAwait(false);
+        var result = await _sut.SubmitOfferConsentAsync(serviceId, data);
 
         result.Should().ContainSingle().Which.ConsentStatus.Should().Be(ConsentStatusId.ACTIVE);
         A.CallTo(() => _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, data, OfferTypeId.SERVICE))
@@ -336,7 +335,7 @@ public class ServiceReleaseBusinessLogicTest
     public async Task SubmitOfferConsentAsync_WithEmptyGuid_ThrowsControllerArgumentException()
     {
         var data = new OfferAgreementConsent(new List<AgreementConsentStatus>());
-        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data).ConfigureAwait(false);
+        async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be("ServiceId must not be empty");
@@ -353,7 +352,7 @@ public class ServiceReleaseBusinessLogicTest
         var documentId = _fixture.Create<Guid>();
 
         // Act
-        await _sut.DeleteServiceDocumentsAsync(documentId).ConfigureAwait(false);
+        await _sut.DeleteServiceDocumentsAsync(documentId);
 
         // Assert
         A.CallTo(() => _offerService.DeleteDocumentsAsync(documentId, A<IEnumerable<DocumentTypeId>>._, OfferTypeId.SERVICE)).MustHaveHappenedOnceExactly();
@@ -393,10 +392,10 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data);
 
         // Assert
-        var error = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<NotFoundException>(Act);
         error.Message.Should().Be($"Service {_notExistingServiceId} does not exists");
     }
 
@@ -408,10 +407,10 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ConflictException>(Act);
         error.Message.Should().Be("Service in State ACTIVE can't be updated");
     }
 
@@ -423,10 +422,10 @@ public class ServiceReleaseBusinessLogicTest
         var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
 
         // Act
-        async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ForbiddenException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
         error.Message.Should().Be($"Company {_identity.CompanyId} is not the service provider.");
     }
 
@@ -466,7 +465,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
-        await sut.UpdateServiceAsync(_existingServiceId, data).ConfigureAwait(false);
+        await sut.UpdateServiceAsync(_existingServiceId, data);
 
         // Assert
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
@@ -493,7 +492,7 @@ public class ServiceReleaseBusinessLogicTest
         // Arrange
 
         // Act
-        await _sut.SubmitServiceAsync(_existingServiceId).ConfigureAwait(false);
+        await _sut.SubmitServiceAsync(_existingServiceId);
 
         // Assert
         A.CallTo(() =>
@@ -522,7 +521,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
-        await sut.DeclineServiceRequestAsync(_existingServiceId, data).ConfigureAwait(false);
+        await sut.DeclineServiceRequestAsync(_existingServiceId, data);
 
         // Assert
         A.CallTo(() => _offerService.DeclineOfferAsync(_existingServiceId, data,
@@ -550,7 +549,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, Options.Create(settings));
 
         // Act
-        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None).ConfigureAwait(false);
+        await sut.CreateServiceDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _offerDocumentService.UploadDocumentAsync(serviceId, DocumentTypeId.ADDITIONAL_DETAILS, file, OfferTypeId.SERVICE, settings.UploadServiceDocumentTypeIds, OfferStatusId.CREATED, CancellationToken.None)).MustHaveHappenedOnceExactly();
@@ -568,13 +567,13 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(_portalRepositories, _offerService, _offerDocumentService, _identityService, _options);
 
         // Act
-        await sut.ApproveServiceRequestAsync(offerId).ConfigureAwait(false);
+        await sut.ApproveServiceRequestAsync(offerId);
 
         // Assert
         A.CallTo(() => _offerService.ApproveOfferRequestAsync(offerId, OfferTypeId.SERVICE,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
             A<IEnumerable<NotificationTypeId>>._, A<IEnumerable<UserRoleConfig>>._,
-            A<ValueTuple<string, string>>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
+            A<(string, string)>.That.Matches(x => x.Item1 == _options.Value.OfferSubscriptionAddress && x.Item2 == _options.Value.OfferDetailAddress),
             A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -591,8 +590,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId)
-            .ConfigureAwait(false);
+        var result = await sut.GetTechnicalUserProfilesForOffer(_existingServiceId);
 
         result.Should().HaveCount(5);
     }
@@ -611,8 +609,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Act
         await sut
-            .UpdateTechnicalUserProfiles(_existingServiceId, data)
-            .ConfigureAwait(false);
+            .UpdateTechnicalUserProfiles(_existingServiceId, data);
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(_existingServiceId, OfferTypeId.SERVICE,
                 A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile))
@@ -624,11 +621,11 @@ public class ServiceReleaseBusinessLogicTest
     private void SetupUpdateService()
     {
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_notExistingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns((ServiceUpdateData?)null);
+            .Returns<ServiceUpdateData?>(null);
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_activeServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns(new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.ACTIVE, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_differentCompanyServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
-            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), ((Guid, string, bool))default, Array.Empty<LocalizedDescription>(), null));
+            .Returns(new ServiceUpdateData(OfferStatusId.CREATED, false, Array.Empty<(ServiceTypeId serviceTypeId, bool IsMatch)>(), default, Array.Empty<LocalizedDescription>(), null));
         A.CallTo(() => _offerRepository.GetServiceUpdateData(_existingServiceId, A<IEnumerable<ServiceTypeId>>._, _identity.CompanyId))
             .Returns(new ServiceUpdateData(OfferStatusId.CREATED, true, new[] { (ServiceTypeId.DATASPACE_SERVICE, false) }, (Guid.NewGuid(), "123", false), Array.Empty<LocalizedDescription>(), Guid.NewGuid()));
     }

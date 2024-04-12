@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -32,16 +32,18 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IBpdmService _bpdmService;
+    private readonly BpdmServiceSettings _settings;
 
-    public BpdmBusinessLogic(IPortalRepositories portalRepositories, IBpdmService bpdmService)
+    public BpdmBusinessLogic(IPortalRepositories portalRepositories, IBpdmService bpdmService, IOptions<BpdmServiceSettings> options)
     {
         _portalRepositories = portalRepositories;
         _bpdmService = bpdmService;
+        _settings = options.Value;
     }
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> PushLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -86,8 +88,8 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             data.Region,
             data.Identifiers);
 
-        await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(false);
-        await _bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(false);
+        await _bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -101,14 +103,14 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandlePullLegalEntity(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(false);
+            .GetBpdmDataForApplicationAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
             throw new UnexpectedConditionException($"CompanyApplication {context.ApplicationId} does not exist");
         }
 
-        var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(false);
+        var sharingState = await _bpdmService.GetSharingState(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (sharingState.SharingProcessStarted == null)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, "SharingProcessStarted was not set");
@@ -131,15 +133,12 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
         CancellationToken cancellationToken)
     {
         var legalEntity = await _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrEmpty(legalEntity.LegalEntity?.Bpnl))
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null);
         }
-
-        // TODO: clarify whether it should be an error if businessPartnerNumber has been set locally while bpdm-answer was outstanding
-        // TODO: clarify whether it should be an error if address- or identifier-data returned by bpdm does not match what is stored in portal-db or modify in portal-db based on bpdm-response
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
             companyId,
@@ -159,9 +158,11 @@ public class BpdmBusinessLogic : IBpdmBusinessLogic
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { ProcessStepTypeId.CREATE_IDENTITY_WALLET },
+                : new[] { CreateWalletStep() },
             new[] { ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL },
             true,
             null);
     }
+
+    private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 }

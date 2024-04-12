@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -183,7 +182,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         var exception = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         exception.Message.Should().Be("uploaded file contains no lines (Parameter 'document')");
@@ -200,7 +199,7 @@ public class CsvParserTest
             null,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustNotHaveHappened();
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
@@ -216,7 +215,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustNotHaveHappened();
@@ -233,7 +232,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustHaveHappened(4, Times.Exactly);
@@ -251,7 +250,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         var exception = await Assert.ThrowsAsync<ArgumentException>(Act);
         exception.Message.Should().Be("invalid header");
@@ -271,7 +270,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _validateHeaderLine(A<string>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _parseLine(A<string>.Ignored)).MustHaveHappened(4, Times.Exactly);
@@ -297,7 +296,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
         result.Processed.Should().Be(3);
@@ -321,7 +320,7 @@ public class CsvParserTest
             _validateHeaderLine,
             _parseLine,
             _processLines,
-            _cancellationToken).ConfigureAwait(false);
+            _cancellationToken);
 
         A.CallTo(() => _processLines(A<IAsyncEnumerable<FakeLineType>>.Ignored)).MustHaveHappenedOnceExactly();
         result.Processed.Should().Be(2);
@@ -362,7 +361,7 @@ public class CsvParserTest
     private static async IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesError(IAsyncEnumerable<FakeLineType> lines)
     {
         var numLine = 0;
-        await foreach (var line in lines)
+        await foreach (var _ in lines)
         {
             numLine++;
             yield return numLine == 3
@@ -374,7 +373,7 @@ public class CsvParserTest
     private static async IAsyncEnumerable<(bool Processed, Exception? Error)> ProcessLinesThrows(IAsyncEnumerable<FakeLineType> lines)
     {
         var numLine = 0;
-        await foreach (var line in lines)
+        await foreach (var _ in lines)
         {
             numLine++;
             if (numLine == 3)
