@@ -2,7 +2,7 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 1.9.0
+## 2.0.0-RC1
 
 ### Change
 * **Backend Logic**
@@ -10,11 +10,20 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Apps Services**
   * updated backend logic of `PUT /api/apps/AppReleaseProcess/{appId}/submit` to allow the submission without defined/configured technical user profile
 * **Administration Service**
-  * remove obsolte endpoint `GET /api/user/app/{appId}/roles`
-  * remove obsolte endpoint `PUT /api/user/app/{appId}/roles`
+  * remove obsolete endpoint `GET /api/user/app/{appId}/roles`
+  * remove obsolete endpoint `PUT /api/user/app/{appId}/roles`
   * added connector url inside the response body of `GET /api/administration/Connectors`
   * added connector url inside the response body of `GET /api/administration/Connectors/managed`
   * added connector url inside the response body of `GET /api/administration/Connectors/{connectorID}`
+* upgraded all services and jobs to .net 8
+* upgraded nuget packages
+* merged all migrations since v1.8.0-rc6 into one 2.0.0-alpha
+* updated swagger (endpoint documentation, payload examples and allowed values)
+* changed the CompanyInvitationData to class instead of record
+* updated seeding:
+  * removed service account sa-cl5-custodian-1
+  * removed the following roles: BPDM Gate Read, BPDM Gate Read & Write, BPDM Partner Gate, BPDM Management, BPDM Pool
+  * added the following roles: BPDM Sharing Admin, BPDM Sharing Input Manager, BPDM Sharing Input Consumer, BPDM Sharing Output Consumer, BPDM Pool Admin, BPDM Pool Consumer
 
 ### Feature
 * **Certificate Management (Administration Service)**
@@ -32,36 +41,32 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Seeding Data updated**
   * new technical user profiles for BPDM services released inside the seeding files
 * **Business Process Worker**
-  * added new backend worker for invitations to run the invitation steps asynchron
-  * added mailing worker and moved all backedn functions for sending emails into the worker
+  * added new backend worker for invitations to run the invitation steps asynchronously
+  * added mailing worker and moved all backend functions for sending emails into the worker
 * Email Templates
   * Enabled email service for create user account under owned IdP as well as for migration of an user account from any IdP to a ownedIdP
 
 ### Technical Support
-* adjusted the get_current_version script to only return the tag name
-* Swagger updates (endpoint documentation, payload examples and allowed values)
-* Sonar findings fixed
-* Codeql findings fixed
-* Introduce codeql scan
-* Removed veracode workflow
-* Changed the CompanyInvitationData to class instead of record
-* Removed unused deprecated packages
-* Improved workflows and docs (readme, contribution doc, eclipse dash tool workflow, sonar workflow run etc.)
-* upgrades gh actions and change to pinned actions full length commit sha
-* Migration merge from 1.8.0 RC-x to 2.0.0
-* upgraded all services and jobs to .net 8
-* upgraded nuget packages
-* adjusted runtime version for docker images
+* adjusted the get_current_version script for nuget packages to only return the tag name
+* introduced codeql scan
+* removed veracode workflow
+* removed unused deprecated packages
+* improved workflows and documentation
+* upgraded gh actions and change to pinned actions full length commit sha
 * add dependabot.yml file
 
 ### Bugfix
 * adjusted endpoint `GET api/administration/serviceaccount/owncompany/serviceaccounts` to filter for active service accounts by default
-* fixed backend logic of the endpont `POST /api/administration/companydata/companyCertificate` - document sttaus is now automatically set tok "locked" with the document upload
+* fixed backend logic of the endpoint `POST /api/administration/companydata/companyCertificate` - document status is now automatically set tok "locked" with the document upload
 * endpoint `POST /api/administration/connectors/discovery` was running on an empty response when calling the endpoint without a body (instead of an empty array). Backend behavior fixed to allow both calls
 * corrected mail template that's send out after the network registration from 'CredentialRejected' to 'OspWelcomeMail'
 * fixed GetCompanyWithAddressAsync
   * use identifier.Value instead of repeating its type
   * use CompanyUniqueIdData instead of UniqueIdentifierData
+* fixed sonar findings
+* fixed codeql findings
+* CONTRIBUTING.md: linked to contribution details
+* updated eclipse dash tool for dependencies check
 
 ## 1.8.0
 
