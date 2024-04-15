@@ -117,7 +117,7 @@ public class IdpManagement : IIdpManagement
 
     public async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, string organisationName, string loginTheme, string clientId, string secret)
     {
-        var sharedKeycloak = await CreateSharedRealmAsync(alias, organisationName, loginTheme, clientId, secret);
+        var sharedKeycloak = _factory.CreateKeycloakClient(SharedRealm, clientId, secret);
         var config = await sharedKeycloak.GetOpenIDConfigurationAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         identityProvider.Config!.AuthorizationUrl = config.AuthorizationEndpoint.ToString();

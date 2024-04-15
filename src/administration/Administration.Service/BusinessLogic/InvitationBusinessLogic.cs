@@ -87,7 +87,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     public Task RetriggerEnableCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP);
     public Task RetriggerCreateDatabaseIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP);
     public Task RetriggerInvitationCreateUser(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER);
-    public Task RetriggerInvitationSendMail(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL);
 
     private async Task TriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
     {
@@ -101,7 +100,6 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP => ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER => ProcessStepTypeId.INVITATION_CREATE_USER,
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP => ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
-            ProcessStepTypeId.RETRIGGER_INVITATION_SEND_MAIL => ProcessStepTypeId.INVITATION_SEND_MAIL,
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 

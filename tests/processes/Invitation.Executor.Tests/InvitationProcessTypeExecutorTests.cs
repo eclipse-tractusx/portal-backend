@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Tests;
 
@@ -65,7 +64,6 @@ public class InvitationProcessTypeExecutorTests
             ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
             ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
             ProcessStepTypeId.INVITATION_CREATE_USER,
-            ProcessStepTypeId.INVITATION_SEND_MAIL
         };
     }
 
@@ -322,7 +320,6 @@ public class InvitationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, false)]
     [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_SEND_MAIL, false)]
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act

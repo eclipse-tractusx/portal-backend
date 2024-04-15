@@ -153,19 +153,4 @@ public class InvitationControllerTests
         A.CallTo(() => _logic.RetriggerInvitationCreateUser(processId))
             .MustHaveHappenedOnceExactly();
     }
-
-    [Fact]
-    public async Task RetriggerInvitationSendMail_ReturnsExpected()
-    {
-        // Arrange
-        var processId = Guid.NewGuid();
-
-        // Act
-        var result = await _controller.RetriggerInvitationSendMail(processId);
-
-        // Assert
-        result.StatusCode.Should().Be(204);
-        A.CallTo(() => _logic.RetriggerInvitationSendMail(processId))
-            .MustHaveHappenedOnceExactly();
-    }
 }
