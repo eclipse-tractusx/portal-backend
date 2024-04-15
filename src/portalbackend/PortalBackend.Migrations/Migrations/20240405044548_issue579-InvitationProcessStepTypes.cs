@@ -147,59 +147,57 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 column: "label",
                 value: "RETRIGGER_INVITATION_CREATE_DATABASE_IDP");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_database_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 420)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_database_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 420)
+                UPDATE portal.process_steps SET process_step_type_id = 419 from retrigger_invitation_create_database_idp as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_user As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 419)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_user As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 419)
+                UPDATE portal.process_steps SET process_step_type_id = 418 from retrigger_invitation_create_user as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_enable_central_idp As( SELECT DISTINCT id from portal.process_steps where process_step_type_id = 418)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_enable_central_idp As( SELECT DISTINCT id from portal.process_steps where process_step_type_id = 418)
+                UPDATE portal.process_steps SET process_step_type_id = 417 from retrigger_invitation_enable_central_idp as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_enable_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 418)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_client As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 417)
+                UPDATE portal.process_steps SET process_step_type_id = 416 from retrigger_invitation_create_shared_client as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_client As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 417)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 416)
+                UPDATE portal.process_steps SET process_step_type_id = 413 from retrigger_invitation_create_shared_realm as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 416)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_central_idp_org_mapper As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 415)
+                UPDATE portal.process_steps SET process_step_type_id = 414 from retrigger_invitation_create_central_idp_org_mapper as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_central_idp_org_mapper As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 415)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 414)
+                UPDATE portal.process_steps SET process_step_type_id = 412 from retrigger_invitation_add_realm_role as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 414)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 413)
+                UPDATE portal.process_steps SET process_step_type_id = 415 from retrigger_invitation_update_central_idp_urls as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 413)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_idp_service_account As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 412)
+                UPDATE portal.process_steps SET process_step_type_id = 411 from retrigger_invitation_create_shared_idp_service_account as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_idp_service_account As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 412)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 411)
+                UPDATE portal.process_steps SET process_step_type_id = 410 from retrigger_invitation_create_central_idp as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 411)");
+            migrationBuilder.Sql(@"
+                WITH invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 405)
+                UPDATE portal.process_steps SET process_step_type_id = 403 from invitation_create_shared_realm as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 405)");
+            migrationBuilder.Sql(@"
+                WITH invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 403)
+                UPDATE portal.process_steps SET process_step_type_id = 402 from invitation_add_realm_role as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 403)");
-
-            migrationBuilder.Sql("WITH invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 402)");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 419 from retrigger_invitation_create_database_idp as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 418 from retrigger_invitation_create_user as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 417 from retrigger_invitation_enable_central_idp as up where up.id = process_steps.id; ");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 416 from retrigger_invitation_create_shared_client as up where up.id = process_steps.id; ");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 413 from retrigger_invitation_create_shared_realm as up where up.id = process_steps.id; ");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 414 from retrigger_invitation_create_central_idp_org_mapper as up where up.id = process_steps.id; ");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 412 from retrigger_invitation_add_realm_role as up where up.id = process_steps.id; ");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 415 from retrigger_invitation_update_central_idp_urls as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 411 from retrigger_invitation_create_shared_idp_service_account as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 410 from retrigger_invitation_create_central_idp as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 403 from invitation_create_shared_realm as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 402 from invitation_add_realm_role as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 405 from invitation_update_central_idp_urls as up where up.id = process_steps.id;");
+            migrationBuilder.Sql(@"
+                WITH invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 402)
+                UPDATE portal.process_steps SET process_step_type_id = 405 from invitation_update_central_idp_urls as up where up.id = process_steps.id;");
 
         }
 
@@ -320,57 +318,57 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 421, "RETRIGGER_INVITATION_SEND_MAIL" }
                 });
 
-            migrationBuilder.Sql("WITH invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 402)");
+            migrationBuilder.Sql(@"
+                WITH invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 402)
+                UPDATE portal.process_steps SET process_step_type_id = 403 from invitation_add_realm_role as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 403)");
+            migrationBuilder.Sql(@"
+                WITH invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 403)
+                UPDATE portal.process_steps SET process_step_type_id = 405 from invitation_create_shared_realm as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 405)");
+            migrationBuilder.Sql(@"
+                WITH invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 405)
+                UPDATE portal.process_steps SET process_step_type_id = 402 from invitation_update_central_idp_urls as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 410)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 410)
+                UPDATE portal.process_steps SET process_step_type_id = 411 from retrigger_invitation_create_central_idp as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_idp_service_account As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 411)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_idp_service_account As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 411)
+                UPDATE portal.process_steps SET process_step_type_id = 412 from retrigger_invitation_create_shared_idp_service_account as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 412)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_add_realm_role As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 412)
+                UPDATE portal.process_steps SET process_step_type_id = 414 from retrigger_invitation_add_realm_role as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 413)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_realm As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 413)
+                UPDATE portal.process_steps SET process_step_type_id = 416 from retrigger_invitation_create_shared_realm as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_central_idp_org_mapper As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 414)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_central_idp_org_mapper As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 414)
+                UPDATE portal.process_steps SET process_step_type_id = 415 from retrigger_invitation_create_central_idp_org_mapper as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 415)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_update_central_idp_urls As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 415)
+                UPDATE portal.process_steps SET process_step_type_id = 413 from retrigger_invitation_update_central_idp_urls as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_shared_client As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 416)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_shared_client As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 416)
+                UPDATE portal.process_steps SET process_step_type_id = 417 from retrigger_invitation_create_shared_client as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_enable_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 417)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_enable_central_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 417)
+                UPDATE portal.process_steps SET process_step_type_id = 418 from retrigger_invitation_enable_central_idp as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_user As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 418)");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_user As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 418)
+                UPDATE portal.process_steps SET process_step_type_id = 419 from retrigger_invitation_create_user as up where up.id = process_steps.id;");
 
-            migrationBuilder.Sql("WITH retrigger_invitation_create_database_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 419)");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 403 from invitation_add_realm_role as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 405 from invitation_create_shared_realm as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 402 from invitation_update_central_idp_urls as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 411 from retrigger_invitation_create_central_idp as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 412 from retrigger_invitation_create_shared_idp_service_account as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 414 from retrigger_invitation_add_realm_role as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 416 from retrigger_invitation_create_shared_realm as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 415 from retrigger_invitation_create_central_idp_org_mapper as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 413 from retrigger_invitation_update_central_idp_urls as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 417 from retrigger_invitation_create_shared_client as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 418 from retrigger_invitation_enable_central_idp as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 419 from retrigger_invitation_create_user as up where up.id = process_steps.id;");
-
-            migrationBuilder.Sql("UPDATE portal.process_steps SET process_step_type_id = 420 from retrigger_invitation_create_database_idp as up where up.id = process_steps.id;");
+            migrationBuilder.Sql(@"
+                WITH retrigger_invitation_create_database_idp As(SELECT DISTINCT id from portal.process_steps where process_step_type_id = 419)
+                UPDATE portal.process_steps SET process_step_type_id = 420 from retrigger_invitation_create_database_idp as up where up.id = process_steps.id;");
 
         }
     }
