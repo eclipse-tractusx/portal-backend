@@ -1,5 +1,5 @@
-﻿/********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240405044548_issue579-InvitationProcessStepTypes")]
-    partial class issue579InvitationProcessStepTypes
+    [Migration("20240415133846_579-InvitationProcessStepTypes")]
+    partial class _579InvitationProcessStepTypes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
-                .HasAnnotation("ProductVersion", "7.0.13")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -7489,7 +7489,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_certificate_type_descriptions_languages_language_te");
+                        .HasConstraintName("fk_company_certificate_type_descriptions_languages_language_sh");
 
                     b.Navigation("CompanyCertificateType");
 
@@ -7503,7 +7503,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("CountryAlpha2Code")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_addresses_countries_country_temp_id");
+                        .HasConstraintName("fk_addresses_countries_country_alpha2code");
 
                     b.Navigation("Country");
                 });
@@ -7687,7 +7687,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany()
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_app_languages_languages_language_temp_id");
+                        .HasConstraintName("fk_app_languages_languages_language_short_name");
 
                     b.Navigation("App");
 
@@ -7960,7 +7960,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("LanguageShortName")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_role_descriptions_languages_language_temp_id2");
+                        .HasConstraintName("fk_company_role_descriptions_languages_language_short_name");
 
                     b.Navigation("CompanyRole");
 
@@ -7993,7 +7993,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_service_accounts_identities_identity_id");
+                        .HasConstraintName("fk_company_service_accounts_identities_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.OfferSubscription", "OfferSubscription")
                         .WithMany("CompanyServiceAccounts")
@@ -8071,7 +8071,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_users_identities_identity_id");
+                        .HasConstraintName("fk_company_users_identities_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
                         .WithMany()
@@ -8167,7 +8167,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_connectors_countries_location_temp_id1");
+                        .HasConstraintName("fk_connectors_countries_location_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Provider")
                         .WithMany("ProvidedConnectors")
@@ -8348,13 +8348,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("CountryLongNames")
                         .HasForeignKey("Alpha2Code")
                         .IsRequired()
-                        .HasConstraintName("fk_country_long_names_countries_country_alpha2code");
+                        .HasConstraintName("fk_country_long_names_countries_alpha2code");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("CountryLongNames")
                         .HasForeignKey("ShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_country_long_names_languages_language_temp_id3");
+                        .HasConstraintName("fk_country_long_names_languages_short_name");
 
                     b.Navigation("Country");
 
@@ -8432,7 +8432,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("Identities")
                         .HasForeignKey("UserStatusId")
                         .IsRequired()
-                        .HasConstraintName("fk_identities_identity_user_statuses_identity_status_id");
+                        .HasConstraintName("fk_identities_identity_user_statuses_user_status_id");
 
                     b.Navigation("Company");
 
@@ -8530,13 +8530,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("LanguageLongNameLanguages")
                         .HasForeignKey("LanguageShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_language_long_names_languages_long_name_language_short_name");
+                        .HasConstraintName("fk_language_long_names_languages_language_short_name");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
                         .WithMany("LanguageLongNames")
                         .HasForeignKey("ShortName")
                         .IsRequired()
-                        .HasConstraintName("fk_language_long_names_languages_language_short_name");
+                        .HasConstraintName("fk_language_long_names_languages_short_name");
 
                     b.Navigation("Language");
 
@@ -8605,7 +8605,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "Creator")
                         .WithMany("CreatedNotifications")
                         .HasForeignKey("CreatorUserId")
-                        .HasConstraintName("fk_notifications_identities_creator_id");
+                        .HasConstraintName("fk_notifications_identities_creator_user_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NotificationType", "NotificationType")
                         .WithMany("Notifications")
@@ -8617,7 +8617,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("Notifications")
                         .HasForeignKey("ReceiverUserId")
                         .IsRequired()
-                        .HasConstraintName("fk_notifications_company_users_receiver_id");
+                        .HasConstraintName("fk_notifications_company_users_receiver_user_id");
 
                     b.Navigation("Creator");
 
@@ -8955,7 +8955,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("TechnicalUserProfileAssignedUserRole")
                         .HasForeignKey("UserRoleId")
                         .IsRequired()
-                        .HasConstraintName("fk_technical_user_profile_assigned_user_roles_user_roles_user_r");
+                        .HasConstraintName("fk_technical_user_profile_assigned_user_roles_user_roles_user_");
 
                     b.Navigation("TechnicalUserProfile");
 

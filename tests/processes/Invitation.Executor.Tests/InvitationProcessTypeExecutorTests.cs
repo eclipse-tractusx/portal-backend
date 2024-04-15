@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Tests;
 

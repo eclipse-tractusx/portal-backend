@@ -27,16 +27,16 @@ public static class InvitationProcessStepTypeIdExtensions
     public static IEnumerable<ProcessStepTypeId> GetInvitationRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
-            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP },
-            ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT },
-            ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS },
-            ProcessStepTypeId.INVITATION_ADD_REALM_ROLE => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_ADD_REALM_ROLE },
-            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER },
-            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM },
-            ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_CLIENT },
-            ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP },
-            ProcessStepTypeId.INVITATION_CREATE_USER => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER },
-            ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => new[] { ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP },
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP],
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT],
+            ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS => [ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS],
+            ProcessStepTypeId.INVITATION_ADD_REALM_ROLE => [ProcessStepTypeId.RETRIGGER_INVITATION_ADD_REALM_ROLE],
+            ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER],
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM],
+            ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_CLIENT],
+            ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP => [ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP],
+            ProcessStepTypeId.INVITATION_CREATE_USER => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER],
+            ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP => [ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP],
             _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process Invitation")
         };
 }
