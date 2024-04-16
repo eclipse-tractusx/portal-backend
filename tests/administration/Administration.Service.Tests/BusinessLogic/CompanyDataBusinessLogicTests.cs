@@ -20,7 +20,6 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -34,18 +33,14 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class CompanyDataBusinessLogicTests
 {
     private readonly IIdentityData _identity;
-    private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
-    private readonly Guid _validCredentialId = Guid.NewGuid();
     private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
@@ -55,10 +50,7 @@ public class CompanyDataBusinessLogicTests
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
-    private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
-    private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CompanyDataBusinessLogic _sut;
     private readonly IIdentityService _identityService;
@@ -73,16 +65,12 @@ public class CompanyDataBusinessLogicTests
         _consentRepository = A.Fake<IConsentRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _companyRolesRepository = A.Fake<ICompanyRolesRepository>();
-        _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
-        _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
-        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
         _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
-        _custodianService = A.Fake<ICustodianService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identityService = A.Fake<IIdentityService>();
         _identity = A.Fake<IIdentityData>();
@@ -90,7 +78,6 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConsentRepository>()).Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRolesRepository>()).Returns(_companyRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanySsiDetailsRepository>()).Returns(_companySsiDetailsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
@@ -101,8 +88,8 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test" });
-        _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, _issuerComponentBusinessLogic, options);
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test" });
+        _sut = new CompanyDataBusinessLogic(_portalRepositories, _dateTimeProvider, _identityService, _issuerComponentBusinessLogic, options);
     }
 
     #region GetOwnCompanyDetails
@@ -719,187 +706,6 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
-    #region GetUseCaseParticipationAsync
-
-    [Fact]
-    public async Task GetUseCaseParticipationAsync_WithValidRequest_ReturnsExpected()
-    {
-        // Arrange
-        var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
-            .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1))
-            .CreateMany(5);
-        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
-            .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
-
-        // Act
-        var result = await _sut.GetUseCaseParticipationAsync("en");
-
-        // Assert
-        result.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public async Task GetUseCaseParticipationAsync_WithMultipleSsiDetailData_ReturnsExpected()
-    {
-        // Arrange
-        var verifiedCredentials = _fixture.Build<CompanySsiExternalTypeDetailTransferData>()
-            .With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(2))
-            .CreateMany(4);
-        A.CallTo(() => _companySsiDetailsRepository.GetUseCaseParticipationForCompany(_identity.CompanyId, "en"))
-            .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
-
-        // Act
-        var Act = () => _sut.GetUseCaseParticipationAsync("en");
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
-    }
-
-    #endregion
-
-    #region GetSsiCertificates
-
-    [Fact]
-    public async Task GetSsiCertificates_WithValidRequest_ReturnsExpected()
-    {
-        // Arrange
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiCertificates(_identity.CompanyId))
-            .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1)).CreateMany(5).ToAsyncEnumerable());
-
-        // Act
-        var result = await _sut.GetSsiCertificatesAsync();
-
-        // Assert
-        result.Should().HaveCount(5);
-    }
-
-    #endregion
-
-    #region CreateUseCaseParticipation
-
-    [Fact]
-    public async Task CreateUseCaseParticipation_WithValidCall_CreatesExpected()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
-
-        // Act
-        await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, _identity.IdentityId, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    #endregion
-
-    #region CreateSsiCertificate
-
-    [Fact]
-    public async Task CreateSsiCertificate_WithInvalidDocumentContentType_ThrowsUnsupportedMediaTypeException()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
-
-        // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        ex.Message.Should().Be($"Document type not supported. File must match contentTypes :{MediaTypeId.PDF.MapToMediaType()}");
-    }
-
-    [Fact]
-    public async Task CreateSsiCertificate_WithWrongVerifiedCredentialType_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateSsiCertificate();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"{VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK} is not assigned to a certificate");
-    }
-
-    [Fact]
-    public async Task CheckSsiDetailsExistsForCompany_WithRequestAlreadyExisting_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateSsiCertificate();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, VerifiedCredentialTypeKindId.CERTIFICATE, null))
-            .Returns(true);
-
-        // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Credential request already existing");
-    }
-
-    [Fact]
-    public async Task CreateSsiCertificate_WithValidCall_CreatesExpected()
-    {
-        // Arrange
-        SetupCreateSsiCertificate();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
-        var documentId = Guid.NewGuid();
-        var documents = new List<Document>();
-        var ssiDetails = new List<CompanySsiDetail>();
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, VerifiedCredentialTypeKindId.CERTIFICATE, null))
-            .Returns(false);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .Invokes((Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields) =>
-            {
-                var ssiDetail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
-                setOptionalFields?.Invoke(ssiDetail);
-                ssiDetails.Add(ssiDetail);
-            });
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
-            {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-                setupOptionalFields?.Invoke(document);
-                documents.Add(document);
-            })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
-
-        // Act
-        await _sut.CreateSsiCertificate(data, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
-            .MustHaveHappenedOnceExactly();
-        documents.Should().ContainSingle();
-        var document = documents.Single();
-        document.DocumentTypeId.Should().Be(DocumentTypeId.PRESENTATION);
-        document.CompanyUserId.Should().Be(_identity.IdentityId);
-        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, document.Id, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .MustHaveHappenedOnceExactly();
-        ssiDetails.Should().ContainSingle();
-        var detail = ssiDetails.Single();
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
-        detail.DocumentId.Should().Be(document.Id);
-        detail.VerifiedCredentialTypeId.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
-        detail.ExpiryDate.Should().Be(null);
-        detail.VerifiedCredentialExternalTypeUseCaseDetailId.Should().BeNull();
-    }
-
-    #endregion
-
     #region CompanyCertificate
 
     [Fact]
@@ -1052,499 +858,6 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         result.Should().BeEmpty();
-    }
-
-    #endregion
-
-    #region GetCredentials
-
-    [Fact]
-    public async Task GetCredentials_WithFilter_ReturnsList()
-    {
-        // Arrange
-        var companySsiDetailStatusId = _fixture.Create<CompanySsiDetailStatusId>();
-        var credentialTypeId = _fixture.Create<VerifiedCredentialTypeId>();
-        var companyName = _fixture.Create<string>();
-        var verificationCredentialType = _fixture.Build<VerifiedCredentialType>()
-            .With(x => x.VerifiedCredentialTypeAssignedUseCase, new VerifiedCredentialTypeAssignedUseCase(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid())
-            {
-                UseCase = new UseCase(Guid.NewGuid(), "test", "name")
-            })
-            .Create();
-        var data = _fixture.Build<CompanySsiDetail>()
-            .With(x => x.VerifiedCredentialType, verificationCredentialType)
-            .With(x => x.Document, new Document(Guid.NewGuid(), null!, null!, "test-doc.pdf", MediaTypeId.PDF, default, default, default))
-            .CreateMany(3);
-        var credentials = new AsyncEnumerableStub<CompanySsiDetail>(data);
-        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(A<CompanySsiDetailStatusId>._, A<VerifiedCredentialTypeId?>._, A<string?>._))
-            .Returns(credentials.AsQueryable());
-
-        // Act
-        var result = await _sut.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, CompanySsiDetailSorting.CompanyAsc);
-
-        // Assert
-        result.Content.Should().HaveCount(credentials.Count());
-        A.CallTo(() => _companySsiDetailsRepository.GetAllCredentialDetails(companySsiDetailStatusId, credentialTypeId, companyName))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    #endregion
-
-    #region ApproveCredential
-
-    [Fact]
-    public async Task ApproveCredential_WithoutExistingSsiDetail_ThrowsNotFoundException()
-    {
-        // Arrange
-        var notExistingId = Guid.NewGuid();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(notExistingId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>());
-        async Task Act() => await _sut.ApproveCredential(notExistingId, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Theory]
-    [InlineData(CompanySsiDetailStatusId.ACTIVE)]
-    [InlineData(CompanySsiDetailStatusId.INACTIVE)]
-    public async Task ApproveCredential_WithStatusNotPending_ThrowsConflictException(CompanySsiDetailStatusId statusId)
-    {
-        // Arrange
-        var alreadyActiveId = Guid.NewGuid();
-        var approvalData = _fixture.Build<SsiApprovalData>()
-            .With(x => x.Status, statusId)
-            .Create();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task ApproveCredential_WithBpnNotSetActiveSsiDetail_ThrowsConflictException()
-    {
-        // Arrange
-        var alreadyActiveId = Guid.NewGuid();
-        var approvalData = _fixture.Build<SsiApprovalData>()
-            .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
-            .With(x => x.Bpn, default(string?))
-            .With(x => x.CompanyName, "Test Company")
-            .Create();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task ApproveCredential_WithoutExternalDetailSet_ThrowsConflictException()
-    {
-        // Arrange
-        var alreadyActiveId = Guid.NewGuid();
-        var approvalData = _fixture.Build<SsiApprovalData>()
-            .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
-            .With(x => x.Bpn, "test")
-            .With(x => x.CompanyName, "Test Company")
-            .With(x => x.Kind, VerifiedCredentialTypeKindId.USE_CASE)
-            .With(x => x.UseCaseDetailData, default(UseCaseDetailData?))
-            .Create();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Theory]
-    [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK)]
-    [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)]
-    public async Task ApproveCredential_WithValidRequest_ReturnsExpected(VerifiedCredentialTypeKindId kindId, VerifiedCredentialTypeId typeId)
-    {
-        // Arrange
-        const string recipientMail = "test@mail.com";
-        var now = DateTimeOffset.UtcNow;
-        var requesterId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        UseCaseDetailData? useCaseData = null;
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            useCaseData = new UseCaseDetailData(
-                VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
-                "test",
-                "1.0.0"
-            );
-        }
-
-        var bpn = "BPNL00000001TEST";
-        var data = new SsiApprovalData(
-            CompanySsiDetailStatusId.PENDING,
-            typeId,
-            kindId,
-            "Stark Industries",
-            bpn,
-            null,
-            useCaseData,
-            new SsiRequesterData(
-                requesterId,
-                recipientMail,
-                "Tony",
-                "Stark"
-            )
-        );
-
-        var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, typeId, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
-        A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
-            .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
-            {
-                initialize?.Invoke(detail);
-                updateFields.Invoke(detail);
-            });
-
-        // Act
-        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(recipientMail, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
-                .MustHaveHappenedOnceExactly();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
-                .MustNotHaveHappened();
-        }
-        else
-        {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
-                .MustNotHaveHappened();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        notifications.Should().ContainSingle();
-        var notification = notifications.Single();
-        notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
-        notification.CreatorUserId.Should().Be(_identity.IdentityId);
-
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
-        detail.DateLastChanged.Should().Be(now);
-    }
-
-    [Fact]
-    public async Task ApproveCredential_WithInvalidCredentialType_ThrowsException()
-    {
-        // Arrange
-        const string recipientMail = "test@mail.com";
-        var now = DateTimeOffset.UtcNow;
-        var requesterId = Guid.NewGuid();
-        var useCaseData = new UseCaseDetailData(
-            VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
-            "test",
-            "1.0.0"
-        );
-
-        var bpn = "BPNL00000001TEST";
-        var data = new SsiApprovalData(
-            CompanySsiDetailStatusId.PENDING,
-            default,
-            VerifiedCredentialTypeKindId.USE_CASE,
-            "Stark Industries",
-            bpn,
-            null,
-            useCaseData,
-            new SsiRequesterData(
-                requesterId,
-                recipientMail,
-                "Tony",
-                "Stark"
-            )
-        );
-
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
-
-        // Act
-        async Task Act() => await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("VerifiedCredentialType 0 does not exists");
-    }
-
-    [Theory]
-    [InlineData(VerifiedCredentialTypeKindId.USE_CASE, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK)]
-    [InlineData(VerifiedCredentialTypeKindId.CERTIFICATE, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)]
-    public async Task ApproveCredential_WithoutUserMail_ReturnsExpected(VerifiedCredentialTypeKindId kindId, VerifiedCredentialTypeId typeId)
-    {
-        // Arrange
-        var now = DateTimeOffset.UtcNow;
-        var requesterId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        UseCaseDetailData? useCaseData = null;
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            useCaseData = new UseCaseDetailData(
-                VerifiedCredentialExternalTypeId.TRACEABILITY_CREDENTIAL,
-                "test",
-                "1.0.0"
-            );
-        }
-
-        var bpn = "BPNL00000001TEST";
-        var data = new SsiApprovalData(
-            CompanySsiDetailStatusId.PENDING,
-            typeId,
-            kindId,
-            "Stark Industries",
-            bpn,
-            null,
-            useCaseData,
-            new SsiRequesterData(
-                requesterId,
-                null,
-                null,
-                null
-            )
-        );
-
-        var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, typeId, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(_validCredentialId))
-            .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
-        A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
-            .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
-            {
-                initialize?.Invoke(detail);
-                updateFields.Invoke(detail);
-            });
-
-        // Act
-        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
-        {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
-                .MustHaveHappenedOnceExactly();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
-                .MustNotHaveHappened();
-        }
-        else
-        {
-            A.CallTo(() => _custodianService.TriggerFrameworkAsync(bpn, A<UseCaseDetailData>._, A<CancellationToken>._))
-                .MustNotHaveHappened();
-            A.CallTo(() => _custodianService.TriggerDismantlerAsync(bpn, typeId, A<CancellationToken>._))
-                .MustHaveHappenedOnceExactly();
-        }
-
-        notifications.Should().ContainSingle();
-        var notification = notifications.Single();
-        notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_APPROVAL);
-        notification.CreatorUserId.Should().Be(_identity.IdentityId);
-
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.ACTIVE);
-        detail.DateLastChanged.Should().Be(now);
-    }
-
-    #endregion
-
-    #region RejectCredential
-
-    [Fact]
-    public async Task RejectCredential_WithoutExistingSsiDetail_ThrowsNotFoundException()
-    {
-        // Arrange
-        var notExistingId = Guid.NewGuid();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(notExistingId))
-            .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>());
-        async Task Act() => await _sut.RejectCredential(notExistingId);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Theory]
-    [InlineData(CompanySsiDetailStatusId.ACTIVE)]
-    [InlineData(CompanySsiDetailStatusId.INACTIVE)]
-    public async Task RejectCredential_WithNotPendingSsiDetail_ThrowsNotFoundException(CompanySsiDetailStatusId status)
-    {
-        // Arrange
-        var alreadyInactiveId = Guid.NewGuid();
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(alreadyInactiveId))
-            .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, status, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid(), null, null, null));
-        async Task Act() => await _sut.RejectCredential(alreadyInactiveId);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-    }
-
-    [Fact]
-    public async Task RejectCredential_WithValidRequest_ReturnsExpected()
-    {
-        // Arrange
-        const string recipientMail = "test@mail.com";
-        var now = DateTimeOffset.UtcNow;
-        var requesterId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.Now);
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(_validCredentialId))
-            .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, CompanySsiDetailStatusId.PENDING, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, requesterId, recipientMail, "Tony", "Stark"));
-        A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, A<Action<Notification>?>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow,
-                    notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
-            .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
-            {
-                initialize?.Invoke(detail);
-                updateFields.Invoke(detail);
-            });
-
-        // Act
-        await _sut.RejectCredential(_validCredentialId);
-
-        // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-
-        notifications.Should().ContainSingle();
-        var notification = notifications.Single();
-        notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
-        notification.CreatorUserId.Should().Be(_identity.IdentityId);
-
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
-        detail.DateLastChanged.Should().Be(now);
-    }
-
-    [Fact]
-    public async Task RejectCredential_WithoutUserMail_ReturnsExpected()
-    {
-        // Arrange
-        var now = DateTimeOffset.UtcNow;
-        var requesterId = Guid.NewGuid();
-        var notifications = new List<Notification>();
-        var detail = new CompanySsiDetail(_validCredentialId, _identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, CompanySsiDetailStatusId.PENDING, Guid.NewGuid(), requesterId, DateTimeOffset.UtcNow);
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(_validCredentialId))
-            .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, CompanySsiDetailStatusId.PENDING, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, requesterId, null, null, null));
-        A.CallTo(() => _notificationRepository.CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, A<Action<Notification>>._))
-            .Invokes((Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters) =>
-            {
-                var notification = new Notification(Guid.NewGuid(), receiverUserId, DateTimeOffset.UtcNow, notificationTypeId, isRead);
-                setOptionalParameters?.Invoke(notification);
-                notifications.Add(notification);
-            });
-        A.CallTo(() => _companySsiDetailsRepository.AttachAndModifyCompanySsiDetails(_validCredentialId, A<Action<CompanySsiDetail>?>._, A<Action<CompanySsiDetail>>._!))
-            .Invokes((Guid _, Action<CompanySsiDetail>? initialize, Action<CompanySsiDetail> updateFields) =>
-            {
-                initialize?.Invoke(detail);
-                updateFields.Invoke(detail);
-            });
-
-        // Act
-        await _sut.RejectCredential(_validCredentialId);
-
-        // Assert
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-
-        notifications.Should().ContainSingle();
-        var notification = notifications.Single();
-        notification.NotificationTypeId.Should().Be(NotificationTypeId.CREDENTIAL_REJECTED);
-        notification.CreatorUserId.Should().Be(_identity.IdentityId);
-
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.INACTIVE);
-        detail.DateLastChanged.Should().Be(now);
-    }
-
-    #endregion
-
-    #region GetCertificateTypes
-
-    [Fact]
-    public async Task GetCertificateTypes_WithFilter_ReturnsList()
-    {
-        // Arrange
-        A.CallTo(() => _companySsiDetailsRepository.GetCertificateTypes(_identity.CompanyId))
-            .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
-
-        // Act
-        var result = await _sut.GetCertificateTypes().ToListAsync();
-
-        // Assert
-        result.Should().HaveCount(1);
-        result.Single().Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
     }
 
     #endregion
@@ -1757,14 +1070,6 @@ public class CompanyDataBusinessLogicTests
     #endregion
 
     #region Setup
-
-    private void SetupCreateSsiCertificate()
-    {
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE))
-            .Returns(true);
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiCertificateType(A<VerifiedCredentialTypeId>.That.Matches(x => x != VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE)))
-            .Returns(false);
-    }
 
     private void SetupCreateCompanyCertificate()
     {

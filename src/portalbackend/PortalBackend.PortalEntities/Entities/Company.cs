@@ -41,7 +41,6 @@ public class Company : IBaseEntity
         HostedConnectors = new HashSet<Connector>();
         CompanyIdentifiers = new HashSet<CompanyIdentifier>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        CompanySsiDetails = new HashSet<CompanySsiDetail>();
         OwnedIdentityProviders = new HashSet<IdentityProvider>();
         ProvidedApplications = new HashSet<CompanyApplication>();
         OnboardedNetworkRegistrations = new HashSet<NetworkRegistration>();
@@ -98,7 +97,6 @@ public class Company : IBaseEntity
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
     public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
     public virtual ICollection<IdentityProvider> OwnedIdentityProviders { get; private set; }
     public virtual ICollection<CompanyApplication> ProvidedApplications { get; private set; }
     public virtual ICollection<NetworkRegistration> OnboardedNetworkRegistrations { get; private set; }

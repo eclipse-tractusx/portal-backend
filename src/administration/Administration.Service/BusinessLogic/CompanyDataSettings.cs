@@ -26,37 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class CompanyDataSettings
 {
-    public CompanyDataSettings()
-    {
-        UseCaseParticipationMediaTypes = null!;
-        SsiCertificateMediaTypes = null!;
-        CompanyCertificateMediaTypes = null!;
-        DecentralIdentityManagementAuthUrl = null!;
-    }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for use case participation
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> UseCaseParticipationMediaTypes { get; set; }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for ssi certificate
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
-
     /// <summary>
     /// The media types that are allowed for the uploaded document for company certificate
     /// </summary>
     [Required]
     [EnumEnumeration]
     [DistinctValues]
-    public IEnumerable<MediaTypeId> CompanyCertificateMediaTypes { get; set; }
+    public IEnumerable<MediaTypeId> CompanyCertificateMediaTypes { get; set; } = null!;
 
     /// <summary>
     /// The maximum page size
@@ -64,7 +40,7 @@ public class CompanyDataSettings
     public int MaxPageSize { get; set; }
 
     [Required(AllowEmptyStrings = true)]
-    public string DecentralIdentityManagementAuthUrl { get; set; }
+    public string DecentralIdentityManagementAuthUrl { get; set; } = null!;
 }
 
 public static class CompanyDataSettingsExtensions

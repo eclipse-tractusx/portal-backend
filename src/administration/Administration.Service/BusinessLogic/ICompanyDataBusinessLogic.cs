@@ -38,21 +38,7 @@ public interface ICompanyDataBusinessLogic
     IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string? languageShortName);
 
     Task CreateCompanyRoleAndConsentAgreementDetailsAsync(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
-
-    Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(string? language);
-
-    Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync();
-
     Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
-    Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken);
-
-    Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting);
-
-    Task ApproveCredential(Guid credentialId, CancellationToken cancellationToken);
-
-    Task RejectCredential(Guid credentialId);
-
-    IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
 
     IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber);
 

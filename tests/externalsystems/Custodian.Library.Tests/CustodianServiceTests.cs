@@ -312,7 +312,6 @@ public class CustodianServiceTests
     {
         // Arrange
         const string bpn = "123";
-        var data = _fixture.Create<UseCaseDetailData>();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
@@ -324,16 +323,13 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None);
+        await sut.TriggerFrameworkAsync(bpn, CancellationToken.None);
 
         // Assert
         httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
             x.Content is JsonContent &&
             (x.Content as JsonContent)!.ObjectType == typeof(CustodianFrameworkRequest) &&
-            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.HolderIdentifier == bpn &&
-            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Type == data.VerifiedCredentialExternalTypeId &&
-            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Template == data.Template &&
-            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.Version == data.Version
+            ((x.Content as JsonContent)!.Value as CustodianFrameworkRequest)!.HolderIdentifier == bpn
         );
     }
 
@@ -346,7 +342,6 @@ public class CustodianServiceTests
     {
         // Arrange
         const string bpn = "123";
-        var data = _fixture.Create<UseCaseDetailData>();
         var httpMessageHandlerMock = content == null
             ? new HttpMessageHandlerMock(statusCode)
             : new HttpMessageHandlerMock(statusCode, new StringContent(content));
@@ -358,7 +353,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None);
+        async Task Act() => await sut.TriggerFrameworkAsync(bpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -386,14 +381,13 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None);
+        await sut.TriggerDismantlerAsync(bpn, CancellationToken.None);
 
         // Assert
         httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
             x.Content is JsonContent &&
             (x.Content as JsonContent)!.ObjectType == typeof(CustodianDismantlerRequest) &&
-            ((x.Content as JsonContent)!.Value as CustodianDismantlerRequest)!.Bpn == bpn &&
-            ((x.Content as JsonContent)!.Value as CustodianDismantlerRequest)!.Type == VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE
+            ((x.Content as JsonContent)!.Value as CustodianDismantlerRequest)!.Bpn == bpn
         );
     }
 
@@ -417,7 +411,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None);
+        async Task Act() => await sut.TriggerDismantlerAsync(bpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

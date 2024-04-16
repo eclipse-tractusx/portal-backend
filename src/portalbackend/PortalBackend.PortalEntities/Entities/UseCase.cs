@@ -51,7 +51,6 @@ public class UseCase : IBaseEntity
     public string Shortname { get; set; }
 
     // Navigation properties
-    public virtual VerifiedCredentialTypeAssignedUseCase? VerifiedCredentialAssignedUseCase { get; private set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
     public virtual ICollection<Offer> Apps { get; private set; }
