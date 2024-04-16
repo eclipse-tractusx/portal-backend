@@ -41,7 +41,7 @@ public class BpnAccess : IBpnAccess
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var uri = new UriBuilder
         {
-            Path = $"pool/api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
+            Path = $"pool/v6/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
             Query = "idType=BPN"
         }.Uri;
         var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken)
