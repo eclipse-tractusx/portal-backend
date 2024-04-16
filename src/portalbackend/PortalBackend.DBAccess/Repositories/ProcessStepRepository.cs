@@ -113,4 +113,24 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
+    public Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid externalId) =>
+    _context.Processes.Where(x => x.Id == externalId)
+        .Select(x => new ValueTuple<bool, ProcessTypeId, IEnumerable<(Guid, ProcessStepTypeId, ProcessStepStatusId)>, ValueTuple<Guid?, Guid?, string?>, Guid?, ValueTuple<string?, Guid?>>(
+            true,
+            x.ProcessTypeId,
+            x.ProcessSteps.Select(ps => new ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>(ps.Id, ps.ProcessStepTypeId, ps.ProcessStepStatusId)),
+            x.OfferSubscription == null ?
+                new ValueTuple<Guid?, Guid?, string?>() :
+                new ValueTuple<Guid?, Guid?, string?>(
+                    x.OfferSubscription!.Id,
+                    x.OfferSubscription.CompanyId,
+                    x.OfferSubscription.Offer!.Name
+                ),
+            Guid.Empty,
+            new ValueTuple<string?, Guid?>(
+                x.DimUserCreationData!.ServiceAccount!.Name,
+                x.DimUserCreationData.ServiceAccount.Identity!.CompanyId
+            )
+        ))
+        .SingleOrDefaultAsync();
 }

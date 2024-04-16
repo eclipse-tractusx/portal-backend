@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -332,6 +333,60 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region CreateDimCompanyServiceAccount
+
+    [Fact]
+    public async Task CreateDimCompanyServiceAccount_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.CreateDimCompanyServiceAccount(
+            _validServiceAccountId,
+            "https://example.org/auth",
+            "test"u8.ToArray(),
+            "test"u8.ToArray(),
+            0
+        );
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<DimCompanyServiceAccount>().Which.EncryptionMode.Should().Be(0);
+    }
+
+    #endregion
+
+    #region CreateDimUserCreationData
+
+    [Fact]
+    public async Task CreateDimUserCreationData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.CreateDimUserCreationData(
+            _validServiceAccountId,
+            processId
+        );
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().Entity.Should().BeOfType<DimUserCreationData>().Which.ProcessId.Should().Be(processId);
     }
 
     #endregion

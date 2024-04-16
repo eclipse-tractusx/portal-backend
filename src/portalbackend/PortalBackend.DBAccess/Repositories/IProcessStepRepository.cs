@@ -36,4 +36,5 @@ public interface IProcessStepRepository
     IAsyncEnumerable<Process> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate);
     IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId);
     public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid externalId);
 }

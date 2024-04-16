@@ -64,4 +64,12 @@ public class DimService : IDimService
         var validationResult = await result.Content.ReadFromJsonAsync<DidValidationResult>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return validationResult != null && string.IsNullOrWhiteSpace(validationResult.DidResolutionMetadata.Error);
     }
+
+    /// <inhertidoc />
+    public async Task CreateTechnicalUser(string bpn, TechnicalUserData technicalUserData, CancellationToken cancellationToken)
+    {
+        var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await httpClient.PostAsJsonAsync($"technical-user/{Uri.EscapeDataString(bpn)}", technicalUserData, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("technical-user-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+    }
 }

@@ -45,4 +45,11 @@ public class OfferSubscriptionsProcessSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string BasePortalAddress { get; init; } = null!;
+
+    /// <summary>
+    /// Roles used to determine if a technical user should be created within the dim
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> DimCreationRoles { get; set; } = null!;
 }

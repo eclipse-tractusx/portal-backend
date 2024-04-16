@@ -299,11 +299,12 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var result = _executor.GetExecutableStepTypeIds();
 
         // Assert
-        result.Should().HaveCount(5)
+        result.Should().HaveCount(6)
             .And.Satisfy(
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
+                x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER,
                 x => x == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
             );
@@ -326,7 +327,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .Returns((new[] { ProcessStepTypeId.START_AUTOSETUP }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .Returns((new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns((new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._, A<string>._))
             .Returns((new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, ProcessStepStatusId.DONE, true, null));

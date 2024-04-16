@@ -197,4 +197,23 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.Id,
                 sa.Identity!.CompanyId))
             .SingleOrDefaultAsync();
+
+    public void CreateDimCompanyServiceAccount(Guid serviceAccountId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode) =>
+        _dbContext.DimCompanyServiceAccounts.Add(new DimCompanyServiceAccount(serviceAccountId, authenticationServiceUrl, secret, initializationVector, encryptionMode));
+
+    public void CreateDimUserCreationData(Guid serviceAccountId, Guid processId) =>
+     _dbContext.DimUserCreationData.Add(new DimUserCreationData(Guid.NewGuid(), serviceAccountId, processId));
+
+    public Task<(string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
+    _dbContext.DimCompanyServiceAccounts.Where(x => x.Id == dimServiceAccountId)
+        .Select(x => new ValueTuple<string?, string?>(
+            x.CompanyServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
+            x.CompanyServiceAccount!.Name))
+        .SingleOrDefaultAsync();
+
+    public Task<Guid> GetDimServiceAccountIdForProcess(Guid processId) =>
+        _dbContext.DimUserCreationData
+            .Where(x => x.ProcessId == processId)
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync();
 }

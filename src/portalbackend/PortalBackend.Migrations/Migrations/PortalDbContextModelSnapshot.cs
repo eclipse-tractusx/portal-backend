@@ -4426,6 +4426,65 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("country_long_names", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthenticationServiceUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("authentication_service_url");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_company_service_accounts");
+
+                    b.ToTable("dim_company_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_user_creation_data");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_process_id");
+
+                    b.HasIndex("ServiceAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_service_account_id");
+
+                    b.ToTable("dim_user_creation_data", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
@@ -6473,6 +6532,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
+                            Id = 112,
+                            Label = "OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 113,
+                            Label = "RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 114,
+                            Label = "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 115,
+                            Label = "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
                             Id = 200,
                             Label = "SYNCHRONIZE_USER"
                         },
@@ -6635,6 +6714,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 419,
                             Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
+                        },
+                        new
+                        {
+                            Id = 500,
+                            Label = "CREATE_DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -6680,6 +6764,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 6,
                             Label = "INVITATION"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -8410,6 +8499,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                        .WithOne("DimCompanyServiceAccount")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_company_service_accounts_company_service_accounts_id");
+
+                    b.Navigation("CompanyServiceAccount");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ProcessId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_processes_process_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "ServiceAccount")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ServiceAccountId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_company_service_accounts_service_acc");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("ServiceAccount");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
@@ -9343,6 +9463,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompaniesLinkedServiceAccount");
 
                     b.Navigation("Connector");
+
+                    b.Navigation("DimCompanyServiceAccount");
+
+                    b.Navigation("DimUserCreationData");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
@@ -9605,6 +9729,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyApplication");
 
                     b.Navigation("CompanyInvitation");
+
+                    b.Navigation("DimUserCreationData");
 
                     b.Navigation("MailingInformation");
 

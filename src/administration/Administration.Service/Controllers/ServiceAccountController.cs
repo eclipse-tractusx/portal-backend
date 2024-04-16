@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -189,4 +190,21 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
         _logic.GetServiceAccountRolesAsync(languageShortName);
+
+    /// <summary>
+    /// Get all service account roles
+    /// </summary>
+    /// <param name="externalId">The externalId which projects the processId for that the technical user was requested for.</param>
+    /// <param name="callbackData">Information of the technical user which was created.</param>
+    /// <remarks>Example: POST: api/administration/serviceaccount/cllback/{externalId}</remarks>
+    /// <response code="200">returns all service account roles</response>
+    [HttpPost]
+    [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("callback/{externalId}")]
+    public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid externalId, [FromBody] AuthenticationDetail callbackData)
+    {
+        await _logic.HandleServiceAccountCreationCallback(externalId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);
+        return Ok();
+    }
 }

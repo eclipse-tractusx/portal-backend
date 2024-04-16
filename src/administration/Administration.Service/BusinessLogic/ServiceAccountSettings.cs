@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -31,6 +33,20 @@ public class ServiceAccountSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string ClientId { get; set; } = null!;
+
+    [Required]
+    public int EncryptionConfigIndex { get; set; }
+
+    [Required]
+    [DistinctValues("x => x.Index")]
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    /// <summary>
+    /// Roles used to determine if a technical user should be created within the dim
+    /// </summary>
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> DimCreationRoles { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions

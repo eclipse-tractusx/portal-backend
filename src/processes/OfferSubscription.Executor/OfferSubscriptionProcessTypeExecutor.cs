@@ -34,38 +34,30 @@ using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor;
 
-public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
+public class OfferSubscriptionProcessTypeExecutor(
+    IOfferProviderBusinessLogic offerProviderBusinessLogic,
+    IOfferSetupService offerSetupService,
+    IPortalRepositories portalRepositories,
+    IOptions<OfferSubscriptionsProcessSettings> options)
+    : IProcessTypeExecutor
 {
     private static readonly IEnumerable<int> RecoverableStatusCodes = ImmutableArray.Create(
         (int)HttpStatusCode.BadGateway,
         (int)HttpStatusCode.ServiceUnavailable,
         (int)HttpStatusCode.GatewayTimeout);
 
-    private readonly IOfferProviderBusinessLogic _offerProviderBusinessLogic;
-    private readonly IOfferSetupService _offerSetupService;
-    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
+    private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository = portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
 
     private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
         ProcessStepTypeId.TRIGGER_PROVIDER,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
+        ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
         ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK);
 
     private Guid _offerSubscriptionId;
-    private readonly OfferSubscriptionsProcessSettings _settings;
-
-    public OfferSubscriptionProcessTypeExecutor(
-        IOfferProviderBusinessLogic offerProviderBusinessLogic,
-        IOfferSetupService offerSetupService,
-        IPortalRepositories portalRepositories,
-        IOptions<OfferSubscriptionsProcessSettings> options)
-    {
-        _offerProviderBusinessLogic = offerProviderBusinessLogic;
-        _offerSetupService = offerSetupService;
-        _offerSubscriptionsRepository = portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        _settings = options.Value;
-    }
+    private readonly OfferSubscriptionsProcessSettings _settings = options.Value;
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.OFFER_SUBSCRIPTION;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _executableProcessSteps.Contains(processStepTypeId);
@@ -102,19 +94,22 @@ public class OfferSubscriptionProcessTypeExecutor : IProcessTypeExecutor
         {
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
-                ProcessStepTypeId.TRIGGER_PROVIDER => await _offerProviderBusinessLogic
+                ProcessStepTypeId.TRIGGER_PROVIDER => await offerProviderBusinessLogic
                     .TriggerProvider(_offerSubscriptionId, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
-                ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => await _offerSetupService
+                ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => await offerSetupService
                     .CreateClient(_offerSubscriptionId)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
-                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await _offerSetupService
-                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles)
+                ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await offerSetupService
+                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles, _settings.DimCreationRoles)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
-                ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await _offerSetupService
+                ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER => await offerSetupService
+                    .CreateDimTechnicalUser(_offerSubscriptionId, cancellationToken)
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
+                ProcessStepTypeId.ACTIVATE_SUBSCRIPTION => await offerSetupService
                     .ActivateSubscription(_offerSubscriptionId, _settings.ItAdminRoles, _settings.ServiceManagerRoles, _settings.BasePortalAddress)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
-                ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await _offerProviderBusinessLogic
+                ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => await offerProviderBusinessLogic
                     .TriggerProviderCallback(_offerSubscriptionId, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => (null, ProcessStepStatusId.TODO, false, null)

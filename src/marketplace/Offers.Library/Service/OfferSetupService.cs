@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
@@ -36,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Collections.Immutable;
 using System.Text.Json;
+using TechnicalUserData = Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models.TechnicalUserData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
@@ -47,6 +49,7 @@ public class OfferSetupService : IOfferSetupService
     private readonly INotificationService _notificationService;
     private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
     private readonly IMailingProcessCreation _mailingProcessCreation;
+    private readonly IDimService _dimService;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
     private readonly IIdentityData _identityData;
     private readonly ILogger<OfferSetupService> _logger;
@@ -62,6 +65,7 @@ public class OfferSetupService : IOfferSetupService
     /// <param name="technicalUserProfileService">Access to the technical user profile service</param>
     /// <param name="identityService">Access to the identity of the user</param>
     /// <param name="mailingProcessCreation">Mailing Process Creation</param>
+    /// <param name="dimService">Access to the Dim Service</param>
     /// <param name="logger">Access to the logger</param>
     public OfferSetupService(
         IPortalRepositories portalRepositories,
@@ -72,6 +76,7 @@ public class OfferSetupService : IOfferSetupService
         ITechnicalUserProfileService technicalUserProfileService,
         IIdentityService identityService,
         IMailingProcessCreation mailingProcessCreation,
+        IDimService dimService,
         ILogger<OfferSetupService> logger)
     {
         _portalRepositories = portalRepositories;
@@ -81,6 +86,7 @@ public class OfferSetupService : IOfferSetupService
         _offerSubscriptionProcessService = offerSubscriptionProcessService;
         _technicalUserProfileService = technicalUserProfileService;
         _mailingProcessCreation = mailingProcessCreation;
+        _dimService = dimService;
         _identityData = identityService.IdentityData;
         _logger = logger;
     }
@@ -126,7 +132,7 @@ public class OfferSetupService : IOfferSetupService
 
         var technicalUserClientId = clientInfoData?.ClientId ?? $"{offerDetails.OfferName}-{offerDetails.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP, true);
-        var technicalUserInfoData = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (technicalUserInfoData, _) = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -142,7 +148,7 @@ public class OfferSetupService : IOfferSetupService
             clientInfoData);
     }
 
-    private async Task<TechnicalUserInfoData?> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data)
+    private async Task<(TechnicalUserInfoData? TechnicalUserData, bool CreateDimTechnicalUser)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, IEnumerable<UserRoleConfig> dimCreationRoles)
     {
         var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -158,7 +164,7 @@ public class OfferSetupService : IOfferSetupService
 
         if (serviceAccountCreationInfo == null)
         {
-            return null;
+            return (null, false);
         }
 
         var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
@@ -172,7 +178,9 @@ public class OfferSetupService : IOfferSetupService
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+        var technicalUserForSubscription = new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+        var createDimTechnicalUser = userRoleData.Any(userDataItem => dimCreationRoles.Any(configDataItem => userDataItem.ClientClientId == configDataItem.ClientId && configDataItem.UserRoleNames.Contains(userDataItem.UserRoleText)));
+        return (technicalUserForSubscription, createDimTechnicalUser);
     }
 
     /// <inheritdoc />
@@ -198,15 +206,16 @@ public class OfferSetupService : IOfferSetupService
         {
             throw new ConflictException($"The app instance {appInstanceId} is associated with exiting subscriptions");
         }
+
         await _provisioningManager.DeleteCentralClientAsync(clientClientId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-
         _portalRepositories.GetInstance<IClientRepository>().RemoveClient(clientId);
         var serviceAccountIds = await appInstanceRepository.GetAssignedServiceAccounts(appInstanceId).ToListAsync().ConfigureAwait(false);
         if (serviceAccountIds.Any())
         {
             appInstanceRepository.RemoveAppInstanceAssignedServiceAccounts(appInstanceId, serviceAccountIds);
         }
+
         appInstanceRepository.RemoveAppInstance(appInstanceId);
     }
 
@@ -217,6 +226,7 @@ public class OfferSetupService : IOfferSetupService
         {
             throw new ConflictException($"App {offerId} does not exist.");
         }
+
         if (!data.IsSingleInstance)
         {
             throw new ConflictException($"offer {offerId} is not set up as single instance app");
@@ -237,8 +247,8 @@ public class OfferSetupService : IOfferSetupService
         {
             throw new ConflictException($"clientId must not be empty for single instance offer {offerId}");
         }
-        await _provisioningManager.EnableClient(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        await _provisioningManager.EnableClient(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         var technicalUserData = await CreateTechnicalUsersForOffer(offerId, OfferTypeId.APP, new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, internalClientId, true, true)).ToListAsync()
             .ConfigureAwait(false);
 
@@ -352,12 +362,12 @@ public class OfferSetupService : IOfferSetupService
         {
             notifications.Add((JsonSerializer.Serialize(new { offerDetails.OfferId, offerDetails.OfferName }), NotificationTypeId.TECHNICAL_USER_CREATION));
         }
+
         var userIdsOfNotifications = await _notificationService.CreateNotifications(
             itAdminRoles,
             userId,
             notifications,
             offerDetails.CompanyId).ToListAsync().ConfigureAwait(false);
-
         if (!userIdsOfNotifications.Contains(offerDetails.RequesterId))
         {
             _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(offerDetails.RequesterId, appSubscriptionActivation, false, notification =>
@@ -506,7 +516,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles, IEnumerable<UserRoleConfig> dimCreationRoles)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetTechnicalUserCreationData(offerSubscriptionId)
@@ -523,7 +533,7 @@ public class OfferSetupService : IOfferSetupService
 
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true, false);
-        var technicalUserInfoData = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (technicalUserInfoData, createDimTechnicalUser) = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData, dimCreationRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         var technicalClientId = technicalUserInfoData?.TechnicalClientId;
 
         var content = JsonSerializer.Serialize(new
@@ -543,7 +553,38 @@ public class OfferSetupService : IOfferSetupService
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             new[]
             {
-                ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+                createDimTechnicalUser ? ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+            },
+            ProcessStepStatusId.DONE,
+            true,
+            null);
+    }
+
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimTechnicalUser(Guid offerSubscriptionId, CancellationToken cancellationToken)
+    {
+        var (bpn, offerName, processId) = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        if (bpn is null)
+        {
+            throw new ConflictException("Bpn must be set");
+        }
+
+        if (offerName is null)
+        {
+            throw new ConflictException($"Offer Name must be set for subscription {offerSubscriptionId}");
+        }
+
+        if (processId is null)
+        {
+            throw new UnexpectedConditionException($"OfferSubscription {offerSubscriptionId} must be linked to a process");
+        }
+
+        await _dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId.Value, $"sa-{offerName}-{offerSubscriptionId}"), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
+            new[]
+            {
+                ProcessStepTypeId.AWAIT_DIM_RESPONSE
             },
             ProcessStepStatusId.DONE,
             true,
