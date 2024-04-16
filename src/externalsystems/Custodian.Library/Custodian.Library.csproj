@@ -38,4 +38,10 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess">
+        <HintPath>..\..\..\tests\externalsystems\Dim.Library.Tests\bin\Debug\net8.0\Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

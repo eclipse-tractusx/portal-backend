@@ -123,16 +123,6 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Value = entry.Value;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await SeedTable<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions",
-            x => x.Id,
-            x => x.dataEntity.Template != x.dbEntity.Template || x.dataEntity.Expiry != x.dbEntity.Expiry || x.dataEntity.ValidFrom != x.dbEntity.ValidFrom,
-            (dbEntry, entry) =>
-            {
-                dbEntry.Template = entry.Template;
-                dbEntry.Expiry = entry.Expiry;
-                dbEntry.ValidFrom = entry.ValidFrom;
-            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
         await SeedTable<CompanyServiceAccount>("company_service_accounts",
             x => x.Id,
             x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientClientId != x.dbEntity.ClientClientId,

@@ -118,16 +118,13 @@ public class CustodianService : ICustodianService
     }
 
     /// <inheritdoc />
-    public async Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken)
+    public async Task TriggerFrameworkAsync(string bpn, CancellationToken cancellationToken)
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestBody = new CustodianFrameworkRequest
         (
-            bpn,
-            useCaseDetailData.VerifiedCredentialExternalTypeId,
-            useCaseDetailData.Template,
-            useCaseDetailData.Version
+            bpn
         );
 
         await httpClient.PostAsJsonAsync("/api/credentials/issuer/framework", requestBody, Options, cancellationToken)
@@ -135,14 +132,13 @@ public class CustodianService : ICustodianService
     }
 
     /// <inheritdoc />
-    public async Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken)
+    public async Task TriggerDismantlerAsync(string bpn, CancellationToken cancellationToken)
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<CustodianService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestBody = new CustodianDismantlerRequest
         (
-            bpn,
-            credentialTypeId
+            bpn
         );
 
         await httpClient.PostAsJsonAsync("/api/credentials/issuer/dismantler", requestBody, Options, cancellationToken)

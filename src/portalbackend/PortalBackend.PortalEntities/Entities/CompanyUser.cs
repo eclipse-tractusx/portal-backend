@@ -40,7 +40,6 @@ public class CompanyUser : IBaseEntity, IAuditableV1
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
-        CompanySsiDetails = new HashSet<CompanySsiDetail>();
         CompanyUserAssignedIdentityProviders = new HashSet<CompanyUserAssignedIdentityProvider>();
     }
 
@@ -75,5 +74,4 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<OfferSubscription> RequestedSubscriptions { get; private set; }
-    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

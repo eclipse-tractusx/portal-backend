@@ -89,9 +89,6 @@ public class Document : IAuditableV1, IBaseEntity
     /// Mapping to an optional the connector
     /// </summary>
     public virtual Connector? Connector { get; set; }
-
-    public virtual CompanySsiDetail? CompanySsiDetail { get; set; }
-
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }
