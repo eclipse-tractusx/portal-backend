@@ -102,6 +102,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<BpdmIdentifier> BpdmIdentifiers { get; set; } = default!;
     public virtual DbSet<Company> Companies { get; set; } = default!;
     public virtual DbSet<CompanyApplication> CompanyApplications { get; set; } = default!;
+    public virtual DbSet<AuditCertificateManagement20240416> AuditCertificateManagement20240416 { get; set; } = default!;
     public virtual DbSet<CompanyApplicationStatus> CompanyApplicationStatuses { get; set; } = default!;
     public virtual DbSet<CompanyApplicationType> CompanyApplicationTypes { get; set; } = default!;
     public virtual DbSet<CompanyCertificate> CompanyCertificates { get; set; } = default!;
@@ -1552,6 +1553,9 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Document>()
             .HasAuditV1Triggers<Document, AuditDocument20231115>();
+
+        modelBuilder.Entity<CompanyCertificate>()
+                    .HasAuditV1Triggers<CompanyCertificate, AuditCertificateManagement20240416>();
 
         modelBuilder.Entity<CompanyInvitation>(entity =>
         {
