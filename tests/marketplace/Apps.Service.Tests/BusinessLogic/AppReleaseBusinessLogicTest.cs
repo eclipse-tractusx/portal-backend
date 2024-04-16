@@ -1207,6 +1207,79 @@ public class AppReleaseBusinessLogicTest
 
     #endregion
 
+    #region GetAppProviderRoles
+
+    [Fact]
+    public async Task GetAppProviderRolesAsync_Throws_NotFoundException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = default((bool, bool, IEnumerable<ActiveAppRoleDetails>));
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        Task Act() => _sut.GetAppProviderRolesAsync(appId, null);
+
+        // Assert
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
+        result.Message.Should().Be($"App {appId} does not exist");
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, null, "en"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAppProviderRolesAsync_Throws_ForbiddenException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var activeAppRoleDetails = (true, false, _fixture.CreateMany<ActiveAppRoleDetails>());
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        Task Act() => _sut.GetAppProviderRolesAsync(appId, "de");
+
+        // Assert
+        var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company");
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetAppProviderRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var userRole1 = new ActiveAppRoleDetails("TestRole1", [
+            new ActiveAppUserRoleDescription("en", "TestRole1 description")
+        ]);
+        var userRole2 = new ActiveAppRoleDetails("TestRole2", [
+            new ActiveAppUserRoleDescription("en", "TestRole2 description")
+        ]);
+        var activeAppRoleDetails = (true, true, new[] {
+            userRole1,
+            userRole2
+        });
+
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        var result = await _sut.GetAppProviderRolesAsync(appId, "de");
+
+        // Assert
+        result.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
+                x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
+        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupUpdateApp()

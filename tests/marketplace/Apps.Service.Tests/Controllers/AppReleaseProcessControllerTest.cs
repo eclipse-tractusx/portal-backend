@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Controllers.Tests;
@@ -402,5 +403,26 @@ public class AppReleaseProcessControllerTest
         //Assert
         A.CallTo(() => _logic.UpdateTechnicalUserProfiles(offerId, A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5))).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetAppProviderRolesAsync_ReturnsExpected()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var language = _fixture.Create<string>();
+        var activeAppRoleDetails = _fixture.CreateMany<ActiveAppRoleDetails>(5).ToImmutableArray();
+
+        A.CallTo(() => _logic.GetAppProviderRolesAsync(A<Guid>._, A<string>._))
+            .Returns(activeAppRoleDetails);
+
+        // Act
+        var result = await _controller.GetAppProviderRolesAsync(appId, language);
+
+        // Assert
+        A.CallTo(() => _logic.GetAppProviderRolesAsync(appId, language))
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveSameCount(activeAppRoleDetails)
+            .And.ContainInOrder(activeAppRoleDetails);
     }
 }

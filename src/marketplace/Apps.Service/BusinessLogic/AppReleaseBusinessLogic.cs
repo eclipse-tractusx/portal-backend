@@ -556,4 +556,19 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data) =>
         _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, _settings.TechnicalUserProfileClient);
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ActiveAppRoleDetails>> GetAppProviderRolesAsync(Guid appId, string? languageShortName)
+    {
+        var (isValid, isProvider, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!isValid)
+        {
+            throw new NotFoundException($"App {appId} does not exist");
+        }
+        if (!isProvider)
+        {
+            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company");
+        }
+        return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
+    }
 }

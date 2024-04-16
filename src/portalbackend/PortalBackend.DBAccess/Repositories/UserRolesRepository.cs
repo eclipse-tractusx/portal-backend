@@ -301,4 +301,30 @@ public class UserRolesRepository : IUserRolesRepository
                                     description.Description))))
                     : null))
             .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetAppProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName) =>
+        _dbContext.Offers
+            .AsNoTracking()
+            .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new
+            {
+                Provider = offer.ProviderCompanyId == companyId,
+                Roles = offer.UserRoles
+            })
+            .Select(x => new ValueTuple<bool, bool, IEnumerable<ActiveAppRoleDetails>?>(
+                true,
+                x.Provider,
+                x.Provider
+                    ? x.Roles.Select(role =>
+                        new ActiveAppRoleDetails(
+                            role.UserRoleText,
+                            role.UserRoleDescriptions.Where(description =>
+                                (languageShortName != null && description.LanguageShortName == languageShortName) ||
+                                    description.LanguageShortName == defaultLanguageShortName)
+                                .Select(description => new ActiveAppUserRoleDescription(
+                                    description.LanguageShortName,
+                                    description.Description))))
+                    : null))
+            .SingleOrDefaultAsync();
 }

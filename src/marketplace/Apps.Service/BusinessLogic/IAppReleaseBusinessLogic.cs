@@ -178,4 +178,11 @@ public interface IAppReleaseBusinessLogic
     /// <param name="appId">Id of the app</param>
     /// <param name="data">The technical user profiles</param>
     Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data);
+
+    /// <summary>
+    /// Get an user roles for an app provider
+    /// </summary>
+    /// <param name="appId">Id of the app</param>
+    /// <param name="languageShortName"></param>
+    Task<IEnumerable<ActiveAppRoleDetails>> GetAppProviderRolesAsync(Guid appId, string? languageShortName);
 }
