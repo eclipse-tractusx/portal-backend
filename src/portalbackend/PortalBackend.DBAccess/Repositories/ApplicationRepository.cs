@@ -521,9 +521,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Where(ca => ca.Id == applicationId)
             .Select(ca => new ValueTuple<bool, string?, string?>(
                 true,
-                ca.Company!.CompanyWalletData == null
-                    ? null
-                    : ca.Company!.CompanyWalletData!.Did,
+                ca.Company!.CompanyWalletData!.Did,
                 ca.Company.BusinessPartnerNumber
             ))
             .SingleOrDefaultAsync();

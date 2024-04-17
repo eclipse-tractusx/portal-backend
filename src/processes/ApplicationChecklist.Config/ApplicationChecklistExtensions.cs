@@ -42,8 +42,7 @@ public static class ApplicationChecklistExtensions
             .AddClearinghouseService(section.GetSection("Clearinghouse"))
             .AddSdFactoryService(section.GetSection("SdFactory"))
             .AddDimService(section.GetSection("Dim"))
-            .AddIssuerComponentService(section.GetSection("IssuerComponent"))
-            .AddBpnDidResolver(section.GetSection("BpnDidResolver"));
+            .AddIssuerComponentService(section.GetSection("IssuerComponent"));
 
     public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section) =>
         services
