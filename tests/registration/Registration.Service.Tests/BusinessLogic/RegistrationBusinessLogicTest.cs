@@ -605,8 +605,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should()
-            .Be(
-                "BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
+            .Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
     }
 
     [Fact]
@@ -670,8 +669,11 @@ public class RegistrationBusinessLogicTest
             c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
-    [Fact]
-    public async Task SetCompanyWithAddressAsync_ModifyCompany()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("BPNL00000003CRHK")]
+    public async Task SetCompanyWithAddressAsync_ModifyCompany(string? bpn)
     {
         //Arrange
         var applicationId = Guid.NewGuid();
@@ -682,7 +684,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var companyData = _fixture.Build<CompanyDetailData>()
-            .With(x => x.BusinessPartnerNumber, default(string?))
+            .With(x => x.BusinessPartnerNumber, bpn)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .Create();
@@ -723,12 +725,15 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
+        var expectedBpn = string.IsNullOrEmpty(companyData.BusinessPartnerNumber)
+            ? null
+            : companyData.BusinessPartnerNumber;
         company.Should().NotBeNull();
         company.Should().Match<Company>(c =>
             c.Id == companyId &&
             c.Name == companyData.Name &&
             c.Shortname == companyData.ShortName &&
-            c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
+            c.BusinessPartnerNumber == expectedBpn);
     }
 
     [Fact]

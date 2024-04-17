@@ -114,7 +114,6 @@ public class NetworkBusinessLogicTests
     #region HandlePartnerRegistration
 
     [Theory]
-    [InlineData("")]
     [InlineData("TEST00000012")]
     [InlineData("BPNL1234567899")]
     public async Task HandlePartnerRegistration_WithInvalidBusinessPartnerNumber_ThrowsControllerArgumentException(string? bpn)

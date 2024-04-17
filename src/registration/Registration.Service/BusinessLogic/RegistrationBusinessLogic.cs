@@ -358,7 +358,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             },
             c =>
             {
-                c.BusinessPartnerNumber = modifyData.BusinessPartnerNumber?.ToUpper();
+                c.BusinessPartnerNumber = string.IsNullOrEmpty(modifyData.BusinessPartnerNumber) ? null : modifyData.BusinessPartnerNumber?.ToUpper();
                 c.Name = modifyData.Name;
                 c.Shortname = modifyData.ShortName;
                 c.CompanyStatusId = CompanyStatusId.PENDING;
