@@ -30,7 +30,7 @@ public class BpnDidResolveServiceTests
         // Arrange
         const string did = "did:web:123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -49,7 +49,7 @@ public class BpnDidResolveServiceTests
         // Arrange
         const string did = "did:web:123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };

@@ -51,7 +51,7 @@ public class DimServiceTests
         const string bpn = "bpnl0000123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -71,7 +71,7 @@ public class DimServiceTests
         const string companyName = "testCompany";
         const string bpn = "bpnl0000123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -98,7 +98,7 @@ public class DimServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(JsonSerializer.Serialize(didValidationResult)));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -120,7 +120,7 @@ public class DimServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
             new StringContent(JsonSerializer.Serialize(didValidationResult)));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -139,7 +139,7 @@ public class DimServiceTests
         // Arrange
         const string did = "did:web:123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
