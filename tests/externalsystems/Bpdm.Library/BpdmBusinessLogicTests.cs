@@ -522,7 +522,7 @@ public class BpdmBusinessLogicTests
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithoutZipCode.ToString()), A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, default(BpdmLegelEntityData?)).Create());
         A.CallTo(() => _bpdmService.FetchInputLegalEntity(A<string>.That.Matches(x => x == IdWithBpn.ToString()), A<CancellationToken>._))
-            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, new BpdmLegelEntityData("CAXSDUMMYCATENAZZ", null, null, null, Enumerable.Empty<BpdmProfileClassification>())).Create());
+            .Returns(_fixture.Build<BpdmLegalEntityOutputData>().With(x => x.LegalEntity, new BpdmLegelEntityData("CAXSDUMMYCATENAZZ", null, null, null, _fixture.Create<BpdmConfidenceCriteria>(), Enumerable.Empty<BpdmStatus>())).Create());
         A.CallTo(() => _bpdmService.GetSharingState(A<Guid>.That.Matches(x => x == IdWithBpn || x == IdWithStateCreated || x == IdWithoutZipCode || x == IdWithoutSharingProcessStarted), A<CancellationToken>._))
             .Returns(_fixture.Build<BpdmSharingState>()
                 .With(x => x.SharingStateType, BpdmSharingStateType.Success)
