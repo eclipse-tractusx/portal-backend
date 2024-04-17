@@ -236,11 +236,8 @@ public class CompanyDataController : ControllerBase
     [Route("useCaseParticipation")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<NoContentResult> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken)
-    {
-        await _logic.CreateUseCaseParticipation(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        return NoContent();
-    }
+    public Task<Guid> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken) =>
+        _logic.CreateUseCaseParticipation(data, cancellationToken);
 
     /// <summary>
     /// Creates the SSI Certificate request

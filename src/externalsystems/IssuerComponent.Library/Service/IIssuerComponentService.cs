@@ -25,4 +25,5 @@ public interface IIssuerComponentService
 {
     Task<bool> CreateBpnlCredential(CreateBpnCredentialRequest data, CancellationToken cancellationToken);
     Task<bool> CreateMembershipCredential(CreateMembershipCredentialRequest data, CancellationToken cancellationToken);
+    Task<Guid> CreateFrameworkCredential(CreateFrameworkCredentialRequest data, CancellationToken cancellationToken);
 }
