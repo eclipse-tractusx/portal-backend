@@ -147,7 +147,7 @@ public class SdFactoryServiceTests
 
     private HttpClient CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
     {
-        using var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.SdFactoryUrl) };
+        var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.SdFactoryUrl) };
         A.CallTo(() => _tokenService.GetAuthorizedClient<SdFactoryService>(_options.Value, CancellationToken.None))
             .Returns(httpClient);
         return httpClient;
