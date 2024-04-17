@@ -27,18 +27,16 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 
 /// <inheritdoc />
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
-    private readonly IImmutableList<NotificationTypeId> ValidNotificationTypes = new List<NotificationTypeId>{
-        NotificationTypeId.CREDENTIAL_APPROVAL,
+    private static readonly IEnumerable<NotificationTypeId> ValidNotificationTypes =
+        [NotificationTypeId.CREDENTIAL_APPROVAL,
         NotificationTypeId.CREDENTIAL_REJECTED,
-        NotificationTypeId.CREDENTIAL_EXPIRY
-    }.ToImmutableList();
+        NotificationTypeId.CREDENTIAL_EXPIRY];
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;

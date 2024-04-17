@@ -30,11 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingProcessCreation mailingProcessCreation)
     : IMailBusinessLogic
 {
-    private readonly IImmutableList<string> ValidTemplates = new List<string>{
-        "CredentialExpiry",
+    private static readonly IEnumerable<string> ValidTemplates =
+        ["CredentialExpiry",
         "CredentialRejected",
-        "CredentialApproval"
-    }.ToImmutableList();
+        "CredentialApproval"];
 
     public async Task SendMail(MailData mailData)
     {
