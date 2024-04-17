@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -32,6 +33,8 @@ public class ChecklistCreationServiceTests
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly IApplicationChecklistCreationService _service;
+    private readonly IOptions<ApplicationChecklistSettings> _options;
+    private readonly ApplicationChecklistSettings _settings;
 
     public ChecklistCreationServiceTests()
     {
@@ -45,7 +48,11 @@ public class ChecklistCreationServiceTests
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
-        _service = new ApplicationChecklistCreationService(_portalRepositories);
+        _settings = A.Fake<ApplicationChecklistSettings>();
+        _options = A.Fake<IOptions<ApplicationChecklistSettings>>();
+        A.CallTo(() => _options.Value).Returns(_settings);
+
+        _service = new ApplicationChecklistCreationService(_portalRepositories, _options);
     }
 
     #region CreateInitialChecklistAsync
@@ -65,12 +72,12 @@ public class ChecklistCreationServiceTests
             A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
                 .Matches(x =>
-                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2 &&
                     x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1 &&
                     x.Count(y => y.TypeId != ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 5)))
             .MustHaveHappenedOnceExactly();
 
-        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2)
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
@@ -92,19 +99,53 @@ public class ChecklistCreationServiceTests
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
-            ApplicationWithoutBpnId,
-            A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
-                .That
-                .Matches(x =>
-                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
-                    x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
+                ApplicationWithoutBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
+                    .That
+                    .Matches(x =>
+                        x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2 &&
+                        x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
             .MustHaveHappenedOnceExactly();
 
-        result.Should().HaveSameCount(Enum.GetValues<ApplicationChecklistEntryTypeId>())
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2)
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
+            );
+    }
+
+    [Fact]
+    public async Task CreateInitialChecklistAsync_WithUseDimWalletTrue_CreatesExpectedResult()
+    {
+        // Arrange
+        SetupFakesForCreate();
+        A.CallTo(() => _options.Value).Returns(new ApplicationChecklistSettings() { UseDimWallet = true });
+        IApplicationChecklistCreationService service = new ApplicationChecklistCreationService(_portalRepositories, _options);
+
+        // Act
+        var result = await service.CreateInitialChecklistAsync(ApplicationWithoutBpnId);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
+                ApplicationWithoutBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
+                    .That
+                    .Matches(x =>
+                        x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                        x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
+            .MustHaveHappenedOnceExactly();
+
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
+            .And.Satisfy(
+                x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO

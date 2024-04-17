@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
+      <ProjectReference Include="..\..\externalsystems\IssuerComponent.Library\IssuerComponent.Library.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\externalsystems\Bpdm.Library\Bpdm.Library.csproj" />
       <ProjectReference Include="..\..\externalsystems\Custodian.Library\Custodian.Library.csproj" />

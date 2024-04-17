@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -430,6 +431,50 @@ public class RegistrationController : ControllerBase
     public async Task<NoContentResult> RetriggerValidateDid([FromRoute] Guid applicationId)
     {
         await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the issuer bpn response
+    /// </summary>
+    /// <param name="responseData">Response data from the issuer component</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/issuer/bpncredential
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the bpn credential process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the external id.</response>
+    [HttpPost]
+    [Authorize(Roles = "update_application_bpn_credential")]
+    [Route("issuer/bpncredential")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessIssuerBpnResponse([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessIssuerBpnResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Processes the issuer membership response
+    /// </summary>
+    /// <param name="responseData">Response data from the issuer component</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/issuer/membershipcredential
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the membership credential process is not in status IN_PROGRESS.</response>
+    /// <response code="404">No application found for the external id.</response>
+    [HttpPost]
+    [Authorize(Roles = "update_application_membership_credential")]
+    [Route("issuer/membershipcredential")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> ProcessIssuerMembershipResponse([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
+    {
+        await _logic.ProcessIssuerMembershipResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
         return NoContent();
     }
 }

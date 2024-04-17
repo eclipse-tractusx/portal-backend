@@ -217,6 +217,9 @@ public class DimBusinessLogicTests
     public async Task CreateDimWalletAsync_WithValid_CallsExpected()
     {
         // Arrange
+        var companyId = Guid.NewGuid();
+        var companyName = "Test Corp";
+        var company = new Company(companyId, companyName, CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow);
         var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
                 { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
@@ -225,10 +228,14 @@ public class DimBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        var companyId = Guid.NewGuid();
-        var companyName = "Test Corp";
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(ApplicationId))
             .Returns(new ValueTuple<Guid, string, string?>(companyId, companyName, BPN));
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(companyId, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid _, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                initialize?.Invoke(company);
+                modify(company);
+            });
 
         // Act
         var result = await _logic.CreateDimWalletAsync(context, CancellationToken.None);
@@ -236,6 +243,9 @@ public class DimBusinessLogicTests
         // Assert
         A.CallTo(() => _dimService.CreateWalletAsync(companyName, BPN, A<string>.That.Contains($"{BPN}/did.json"), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(companyId, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        company.DidDocumentLocation.Should().NotBeNull();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.AWAIT_DIM_RESPONSE);
     }
@@ -570,7 +580,7 @@ public class DimBusinessLogicTests
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.START_CLEARING_HOUSE);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.REQUEST_BPN_CREDENTIAL);
     }
 
     #endregion

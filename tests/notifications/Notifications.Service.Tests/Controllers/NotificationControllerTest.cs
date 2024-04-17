@@ -136,4 +136,19 @@ public class NotificationControllerTest
         A.CallTo(() => _logic.DeleteNotificationAsync(notificationId)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
+
+    [Fact]
+    public async Task CreateNotification_ReturnsNoContent()
+    {
+        //Arrange
+        var requesterId = Guid.NewGuid();
+        var data = new NotificationRequest(requesterId, "test", NotificationTypeId.CREDENTIAL_REJECTED);
+
+        //Act
+        var result = await _controller.CreateNotification(data);
+
+        //Assert
+        A.CallTo(() => _logic.CreateNotification(data)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
 }

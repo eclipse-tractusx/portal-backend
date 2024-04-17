@@ -2913,16 +2913,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 4,
-                            Label = "CLEARING_HOUSE"
+                            Label = "BPNL_CREDENTIAL"
                         },
                         new
                         {
                             Id = 5,
-                            Label = "SELF_DESCRIPTION_LP"
+                            Label = "MEMBERSHIP_CREDENTIAL"
                         },
                         new
                         {
                             Id = 6,
+                            Label = "CLEARING_HOUSE"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "SELF_DESCRIPTION_LP"
+                        },
+                        new
+                        {
+                            Id = 8,
                             Label = "APPLICATION_ACTIVATION"
                         });
                 });
@@ -3105,6 +3115,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
+
+                    b.Property<string>("DidDocumentLocation")
+                        .HasColumnType("text")
+                        .HasColumnName("did_document_location");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -5536,6 +5550,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 25,
                             Label = "CREDENTIAL_REJECTED"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "CREDENTIAL_EXPIRY"
                         });
                 });
 
@@ -6358,6 +6377,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 24,
                             Label = "RETRIGGER_VALIDATE_DID_DOCUMENT"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Label = "REQUEST_BPN_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "STORED_BPN_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Label = "REQUEST_MEMBERSHIP_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Label = "STORED_MEMBERSHIP_CREDENTIAL"
                         },
                         new
                         {

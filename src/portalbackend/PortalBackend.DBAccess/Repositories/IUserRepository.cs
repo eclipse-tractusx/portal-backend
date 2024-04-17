@@ -129,4 +129,6 @@ public interface IUserRepository
     IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId, IEnumerable<UserStatusId> validUserStates);
     Task<(bool Exists, string ProviderId, string Username)> GetCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId);
     void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify);
+    Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId);
+    Task<bool> CheckUserExists(Guid companyUserId);
 }

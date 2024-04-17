@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
@@ -38,6 +39,7 @@ public class ChecklistHandlerServiceTests
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
+    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
     private readonly IApplicationActivationService _applicationActivationService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IFixture _fixture;
@@ -54,6 +56,7 @@ public class ChecklistHandlerServiceTests
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
+        _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
         _applicationActivationService = A.Fake<IApplicationActivationService>();
         _checklistService = A.Fake<IApplicationChecklistService>();
     }
@@ -211,6 +214,7 @@ public class ChecklistHandlerServiceTests
             _clearinghouseBusinessLogic,
             _sdFactoryBusinessLogic,
             _dimBusinessLogic,
+            _issuerComponentBusinessLogic,
             _applicationActivationService,
             _checklistService);
 }
