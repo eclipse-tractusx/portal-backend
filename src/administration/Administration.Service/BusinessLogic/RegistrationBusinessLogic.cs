@@ -604,7 +604,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
 
-        await _issuerComponentBusinessLogic.StoreBpnlCredential(applicationId, data).ConfigureAwait(false);
+        await _issuerComponentBusinessLogic.StoreBpnlCredentialResponse(applicationId, data).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
@@ -612,7 +612,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     public async Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken)
     {
         var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
-        await _issuerComponentBusinessLogic.StoreMembershipCredential(applicationId, data).ConfigureAwait(false);
+        await _issuerComponentBusinessLogic.StoreMembershipCredentialResponse(applicationId, data).ConfigureAwait(false);
         await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 

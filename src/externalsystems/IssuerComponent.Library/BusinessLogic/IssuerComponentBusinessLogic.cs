@@ -75,21 +75,21 @@ public class IssuerComponentBusinessLogic(
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            new[] { ProcessStepTypeId.STORED_BPN_CREDENTIAL },
+            [ProcessStepTypeId.STORED_BPN_CREDENTIAL],
             null,
             true,
             null);
     }
 
-    public async Task StoreBpnlCredential(Guid applicationId, IssuerResponseData data)
+    public async Task StoreBpnlCredentialResponse(Guid applicationId, IssuerResponseData data)
     {
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.STORED_BPN_CREDENTIAL,
-                processStepTypeIds: new[] { ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL })
+                processStepTypeIds: [ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL])
             .ConfigureAwait(false);
 
         checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -102,7 +102,9 @@ public class IssuerComponentBusinessLogic(
                     : ApplicationChecklistEntryStatusId.DONE;
                 item.Comment = data.Message;
             },
-        data.Status == IssuerResponseStatus.SUCCESSFUL ? new[] { ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL } : null);
+            data.Status == IssuerResponseStatus.SUCCESSFUL
+                ? [ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL]
+                : null);
     }
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateMembershipCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -141,21 +143,21 @@ public class IssuerComponentBusinessLogic(
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            new[] { ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL },
+            [ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL],
             null,
             true,
             null);
     }
 
-    public async Task StoreMembershipCredential(Guid applicationId, IssuerResponseData data)
+    public async Task StoreMembershipCredentialResponse(Guid applicationId, IssuerResponseData data)
     {
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
-                processStepTypeIds: new[] { ProcessStepTypeId.START_CLEARING_HOUSE })
+                processStepTypeIds: [ProcessStepTypeId.START_CLEARING_HOUSE])
             .ConfigureAwait(false);
 
         checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -169,7 +171,7 @@ public class IssuerComponentBusinessLogic(
                 item.Comment = data.Message;
             },
             data.Status == IssuerResponseStatus.SUCCESSFUL
-                ? new[] { ProcessStepTypeId.START_CLEARING_HOUSE }
+                ? [ProcessStepTypeId.START_CLEARING_HOUSE]
                 : null);
     }
 }

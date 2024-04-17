@@ -250,7 +250,7 @@ public class IssuerComponentBusinessLogicTests
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
-        await _sut.StoreBpnlCredential(IdWithBpn, data);
+        await _sut.StoreBpnlCredentialResponse(IdWithBpn, data);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL) == 1))).MustHaveHappenedOnceExactly();
@@ -276,7 +276,7 @@ public class IssuerComponentBusinessLogicTests
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
-        await _sut.StoreBpnlCredential(IdWithBpn, data);
+        await _sut.StoreBpnlCredentialResponse(IdWithBpn, data);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.IsNull())).MustHaveHappenedOnceExactly();
@@ -448,7 +448,7 @@ public class IssuerComponentBusinessLogicTests
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
-        await _sut.StoreMembershipCredential(IdWithBpn, data);
+        await _sut.StoreMembershipCredentialResponse(IdWithBpn, data);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
@@ -474,7 +474,7 @@ public class IssuerComponentBusinessLogicTests
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
-        await _sut.StoreMembershipCredential(IdWithBpn, data);
+        await _sut.StoreMembershipCredentialResponse(IdWithBpn, data);
 
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.IsNull())).MustHaveHappenedOnceExactly();

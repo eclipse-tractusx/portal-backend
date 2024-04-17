@@ -72,6 +72,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 8, "APPLICATION_ACTIVATION" }
                 });
 
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 8 WHERE application_checklist_entry_type_id = 6");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 7 WHERE application_checklist_entry_type_id = 5");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 6 WHERE application_checklist_entry_type_id = 4");
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "process_step_types",
@@ -88,6 +92,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE from portal.application_checklist WHERE application_checklist_entry_type_id = 4");
+            migrationBuilder.Sql("DELETE from portal.application_checklist WHERE application_checklist_entry_type_id = 5");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 4 WHERE application_checklist_entry_type_id = 6");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 5 WHERE application_checklist_entry_type_id = 7");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 6 WHERE application_checklist_entry_type_id = 8");
+
             migrationBuilder.DeleteData(
                 schema: "portal",
                 table: "application_checklist_types",

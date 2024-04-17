@@ -61,7 +61,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, new ErrorParameter[] { new("notificationId", notificationId.ToString()) });
+            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, [new("notificationId", notificationId.ToString())]);
         }
 
         if (!result.IsUserReceiver)
@@ -120,7 +120,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
         var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default || !result.IsNotificationExisting)
         {
-            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, new ErrorParameter[] { new("notificationId", notificationId.ToString()) });
+            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, [new("notificationId", notificationId.ToString())]);
         }
 
         if (!result.IsUserReceiver)
@@ -134,10 +134,10 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task CreateNotification(NotificationRequest data)
     {
-        var userExists = await _portalRepositories.GetInstance<IUserRepository>().CheckUserExists(data.Requester).ConfigureAwait(false);
+        var userExists = await _portalRepositories.GetInstance<IUserRepository>().CheckUserExists(data.Requester).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!userExists)
         {
-            throw NotFoundException.Create(NotificationErrors.USER_NOT_FOUND, new ErrorParameter[] { new("userId", data.Requester.ToString()) });
+            throw NotFoundException.Create(NotificationErrors.USER_NOT_FOUND, [new("userId", data.Requester.ToString())]);
         }
 
         _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.Requester, data.NotificationTypeId, false, n =>
@@ -145,6 +145,6 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
             n.CreatorUserId = _identityData.IdentityId;
             n.Content = data.Content;
         });
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

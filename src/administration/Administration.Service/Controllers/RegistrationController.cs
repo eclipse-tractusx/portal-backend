@@ -450,7 +450,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> ProcessIssuerBpn([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
+    public async Task<NoContentResult> ProcessIssuerBpnResponse([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
     {
         await _logic.ProcessIssuerBpnResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
         return NoContent();
@@ -472,7 +472,7 @@ public class RegistrationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> ProcessIssuerMembership([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
+    public async Task<NoContentResult> ProcessIssuerMembershipResponse([FromBody] IssuerResponseData responseData, CancellationToken cancellationToken)
     {
         await _logic.ProcessIssuerMembershipResponseAsync(responseData, cancellationToken).ConfigureAwait(false);
         return NoContent();

@@ -484,10 +484,14 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                     .Select(ps => ps.DateCreated)))
             .SingleOrDefaultAsync();
 
-    public Task<(bool exists, string? holder, string? businessPartnerNumber, WalletInformation? walletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId) =>
+    public Task<(bool Exists, string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId) =>
         portalDbContext.CompanyApplications
             .Where(ca => ca.Id == applicationId)
-            .Select(ca => new { Company = ca.Company!, Wallet = ca.Company!.CompanyWalletData })
+            .Select(ca => new
+            {
+                Company = ca.Company!,
+                Wallet = ca.Company!.CompanyWalletData
+            })
             .Select(c => new ValueTuple<bool, string?, string?, WalletInformation?>(
                 true,
                 c.Company.DidDocumentLocation,

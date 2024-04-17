@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLo
 public interface IIssuerComponentBusinessLogic
 {
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateBpnlCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
-    Task StoreBpnlCredential(Guid applicationId, IssuerResponseData data);
+    Task StoreBpnlCredentialResponse(Guid applicationId, IssuerResponseData data);
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateMembershipCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
-    Task StoreMembershipCredential(Guid applicationId, IssuerResponseData data);
+    Task StoreMembershipCredentialResponse(Guid applicationId, IssuerResponseData data);
 }

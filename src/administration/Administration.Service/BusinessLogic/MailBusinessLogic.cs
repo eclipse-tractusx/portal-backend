@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -34,12 +35,12 @@ public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingP
         var data = await portalRepositories.GetInstance<IUserRepository>().GetUserMailData(mailData.Requester).ConfigureAwait(false);
         if (!data.Exists)
         {
-            throw NotFoundException.Create(AdministrationMailErrors.USER_NOT_FOUND, new ErrorParameter[] { new("userId", mailData.Requester.ToString()) });
+            throw NotFoundException.Create(AdministrationMailErrors.USER_NOT_FOUND, [new("userId", mailData.Requester.ToString())]);
         }
 
         if (data.RecipientMail is not null)
         {
-            mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters.ToDictionary(x => x.Key, x => x.Value));
+            mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters.ToImmutableDictionary(x => x.Key, x => x.Value));
         }
     }
 }

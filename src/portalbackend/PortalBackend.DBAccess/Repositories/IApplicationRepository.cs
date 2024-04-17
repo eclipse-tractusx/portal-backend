@@ -101,5 +101,5 @@ public interface IApplicationRepository
 
     Task<bool> IsValidApplicationForCompany(Guid applicationId, Guid companyId);
     Task<(bool Exists, string? Did, IEnumerable<DateTimeOffset> ProcessStepsDateCreated)> GetDidApplicationId(Guid applicationId);
-    Task<(bool exists, string? holder, string? businessPartnerNumber, WalletInformation? walletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId);
+    Task<(bool Exists, string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetBpnlCredentialIformationByApplicationId(Guid applicationId);
 }

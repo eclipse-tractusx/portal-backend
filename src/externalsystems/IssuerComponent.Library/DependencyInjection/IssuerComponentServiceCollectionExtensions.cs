@@ -32,6 +32,7 @@ public static class IssuerComponentServiceCollectionExtensions
     {
         services.AddOptions<IssuerComponentSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<IssuerComponentService>>();
 
