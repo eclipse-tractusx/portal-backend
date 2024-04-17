@@ -93,7 +93,7 @@ public class MailBusinessLogicTests
         await _sut.SendMail(data);
 
         // Assert
-        A.CallTo(() => _mailingService.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
+        A.CallTo(() => _mailingService.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._)).MustNotHaveHappened();
     }
 
     [Theory]
