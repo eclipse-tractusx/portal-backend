@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
@@ -40,6 +41,7 @@ public class ChecklistHandlerServiceTests
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
+    private readonly IBpnDidResolverBusinessLogic _bpnDidResolverBusinessLogic;
     private readonly IApplicationActivationService _applicationActivationService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IFixture _fixture;
@@ -57,6 +59,7 @@ public class ChecklistHandlerServiceTests
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _dimBusinessLogic = A.Fake<IDimBusinessLogic>();
         _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
+        _bpnDidResolverBusinessLogic = A.Fake<IBpnDidResolverBusinessLogic>();
         _applicationActivationService = A.Fake<IApplicationActivationService>();
         _checklistService = A.Fake<IApplicationChecklistService>();
     }
@@ -66,6 +69,8 @@ public class ChecklistHandlerServiceTests
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER)]
     [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
+    [InlineData(ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
+    [InlineData(ProcessStepTypeId.TRANSMIT_BPN_DID, ApplicationChecklistEntryTypeId.IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP)]
@@ -113,6 +118,12 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.CREATE_DIM_WALLET:
                 A.CallTo(() => _dimBusinessLogic.CreateDimWalletAsync(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
+            case ProcessStepTypeId.VALIDATE_DID_DOCUMENT:
+                A.CallTo(() => _dimBusinessLogic.ValidateDidDocument(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.TRANSMIT_BPN_DID:
+                A.CallTo(() => _bpnDidResolverBusinessLogic.TransmitDidAndBpn(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
             case ProcessStepTypeId.START_CLEARING_HOUSE:
                 A.CallTo(() => _clearinghouseBusinessLogic.HandleClearinghouse(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
@@ -155,6 +166,10 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.VALIDATE_DID_DOCUMENT:
                 execution.ErrorFunc.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.TRANSMIT_BPN_DID:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_TRANSMIT_DID_BPN)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.START_CLEARING_HOUSE:
                 execution.ErrorFunc.Should().NotBeNull();
@@ -215,6 +230,7 @@ public class ChecklistHandlerServiceTests
             _sdFactoryBusinessLogic,
             _dimBusinessLogic,
             _issuerComponentBusinessLogic,
+            _bpnDidResolverBusinessLogic,
             _applicationActivationService,
             _checklistService);
 }

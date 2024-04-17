@@ -580,7 +580,7 @@ public class DimBusinessLogicTests
 
         // Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.REQUEST_BPN_CREDENTIAL);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.TRANSMIT_BPN_DID);
     }
 
     #endregion

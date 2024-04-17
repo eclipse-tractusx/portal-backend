@@ -372,14 +372,14 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Select(ca => new ClearinghouseData(
                 ca.ApplicationStatusId,
                 new ParticipantDetails(
-                        ca.Company!.Name,
-                        ca.Address!.City,
-                        ca.Address.Streetname,
-                        ca.Company.BusinessPartnerNumber,
-                        ca.Address.Region,
-                        ca.Address.Zipcode,
-                        ca.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "en").Select(cln => cln.LongName).SingleOrDefault(),
-                        ca.Address.CountryAlpha2Code),
+                    ca.Company!.Name,
+                    ca.Address!.City,
+                    ca.Address.Streetname,
+                    ca.Company.BusinessPartnerNumber,
+                    ca.Address.Region,
+                    ca.Address.Zipcode,
+                    ca.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "en").Select(cln => cln.LongName).SingleOrDefault(),
+                    ca.Address.CountryAlpha2Code),
                 ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifier!.Label, ci.Value))))
             .SingleOrDefaultAsync();
 
@@ -474,9 +474,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Where(ca => ca.Id == applicationId)
             .Select(x => new ValueTuple<bool, string?, IEnumerable<DateTimeOffset>>(
                 true,
-                x.Company!.CompanyWalletData == null
-                    ? null
-                    : x.Company!.CompanyWalletData!.Did,
+                x.Company!.CompanyWalletData!.Did,
                 x.ChecklistProcess!.ProcessSteps
                     .Where(ps =>
                         ps.ProcessStepTypeId == ProcessStepTypeId.VALIDATE_DID_DOCUMENT &&
@@ -514,5 +512,15 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 true,
                 a.CompanyId,
                 a.ApplicationStatusId))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => new ValueTuple<bool, string?, string?>(
+                true,
+                ca.Company!.CompanyWalletData!.Did,
+                ca.Company.BusinessPartnerNumber
+            ))
             .SingleOrDefaultAsync();
 }

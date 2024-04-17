@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
@@ -40,6 +41,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
+    private readonly IBpnDidResolverBusinessLogic _bpnDidResolverBusinessLogic;
     private readonly IApplicationActivationService _applicationActivationService;
     private readonly IApplicationChecklistService _checklistService;
 
@@ -53,6 +55,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
         ISdFactoryBusinessLogic sdFactoryBusinessLogic,
         IDimBusinessLogic dimBusinessLogic,
         IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
+        IBpnDidResolverBusinessLogic bpnDidResolverBusinessLogic,
         IApplicationActivationService applicationActivationService,
         IApplicationChecklistService checklistService)
     {
@@ -62,6 +65,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
         _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
         _dimBusinessLogic = dimBusinessLogic;
         _issuerComponentBusinessLogic = issuerComponentBusinessLogic;
+        _bpnDidResolverBusinessLogic = bpnDidResolverBusinessLogic;
         _applicationActivationService = applicationActivationService;
         _checklistService = checklistService;
 
@@ -74,6 +78,7 @@ public class ApplicationChecklistHandlerService : IApplicationChecklistHandlerSe
             (ProcessStepTypeId.VALIDATE_DID_DOCUMENT, new (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, true, (context, cancellationToken) => _dimBusinessLogic.ValidateDidDocument(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT))),
             (ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, new (ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, true, (context, cancellationToken) => _issuerComponentBusinessLogic.CreateBpnlCredential(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT))),
             (ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL, new (ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, true, (context, cancellationToken) => _issuerComponentBusinessLogic.CreateMembershipCredential(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT))),
+            (ProcessStepTypeId.TRANSMIT_BPN_DID, new (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, true, (context, cancellationToken) => _bpnDidResolverBusinessLogic.TransmitDidAndBpn(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_TRANSMIT_DID_BPN))),
             (ProcessStepTypeId.START_CLEARING_HOUSE, new (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, true, (context, cancellationToken) => _clearinghouseBusinessLogic.HandleClearinghouse(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE))),
             (ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, new (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, true, (context, cancellationToken) => _clearinghouseBusinessLogic.HandleClearinghouse(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE))),
             (ProcessStepTypeId.START_SELF_DESCRIPTION_LP, new (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, true, (context, cancellationToken) => _sdFactoryBusinessLogic.StartSelfDescriptionRegistration(context, cancellationToken), (ex, _, _) => _checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP))),

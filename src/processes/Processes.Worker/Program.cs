@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
@@ -55,6 +56,7 @@ try
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddBpnDidResolver(hostContext.Configuration.GetSection("BpnDidResolver"))
                 .AddApplicationChecklistCreation(hostContext.Configuration.GetSection("ApplicationCreation"))
                 .AddApplicationActivation(hostContext.Configuration)
                 .AddConfigurationProcessIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
