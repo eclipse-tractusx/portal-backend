@@ -34,9 +34,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogi
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
     private static readonly IEnumerable<NotificationTypeId> ValidNotificationTypes =
-        [NotificationTypeId.CREDENTIAL_APPROVAL,
-        NotificationTypeId.CREDENTIAL_REJECTED,
-        NotificationTypeId.CREDENTIAL_EXPIRY];
+        [
+            NotificationTypeId.CREDENTIAL_APPROVAL,
+            NotificationTypeId.CREDENTIAL_REJECTED,
+            NotificationTypeId.CREDENTIAL_EXPIRY
+        ];
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;

@@ -31,9 +31,11 @@ public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingP
     : IMailBusinessLogic
 {
     private static readonly IEnumerable<string> ValidTemplates =
-        ["CredentialExpiry",
-        "CredentialRejected",
-        "CredentialApproval"];
+        [
+            "CredentialExpiry",
+            "CredentialRejected",
+            "CredentialApproval"
+        ];
 
     public async Task SendMail(MailData mailData)
     {
