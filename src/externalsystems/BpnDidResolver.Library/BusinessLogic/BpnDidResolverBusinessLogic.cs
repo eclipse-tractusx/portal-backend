@@ -57,7 +57,7 @@ public class BpnDidResolverBusinessLogic : IBpnDidResolverBusinessLogic
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
-            new[] { ProcessStepTypeId.START_CLEARING_HOUSE },
+            [ProcessStepTypeId.START_CLEARING_HOUSE],
             null,
             true,
             null);

@@ -29,7 +29,7 @@ public class BpnDidResolverService(IHttpClientFactory httpClientFactory) : IBpnD
 
     public async Task<bool> TransmitDidAndBpn(string did, string bpn, CancellationToken cancellationToken)
     {
-        var httpClient = httpClientFactory.CreateClient(nameof(BpnDidResolverService));
+        using var httpClient = httpClientFactory.CreateClient(nameof(BpnDidResolverService));
         var data = new BpnMappingData(bpn, did);
         var result = await httpClient.PostAsJsonAsync("/api/management/bpn-directory", data, Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return result.IsSuccessStatusCode;
