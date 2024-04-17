@@ -112,7 +112,7 @@ public class BpdmService : IBpdmService
             )
         };
 
-        await httpClient.PutAsJsonAsync("/companies/test-company/v6/input/business-partners", requestData, Options, cancellationToken)
+        await httpClient.PutAsJsonAsync("/input/business-partners", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
@@ -122,7 +122,7 @@ public class BpdmService : IBpdmService
         using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var content = new { externalIds = Enumerable.Repeat(externalId, 1) };
-        await httpClient.PostAsJsonAsync("/companies/test-company/v6/sharing-state/ready", content, Options, cancellationToken)
+        await httpClient.PostAsJsonAsync("/sharing-state/ready", content, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-sharing-state-ready", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
@@ -132,7 +132,7 @@ public class BpdmService : IBpdmService
         using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var data = Enumerable.Repeat(externalId, 1);
-        var result = await httpClient.PostAsJsonAsync("/companies/test-company/v6/output/business-partners/search", data, Options, cancellationToken)
+        var result = await httpClient.PostAsJsonAsync("/output/business-partners/search", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-search-legal-entities", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try
         {
@@ -156,7 +156,7 @@ public class BpdmService : IBpdmService
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var url = $"/companies/test-company/v6/sharing-state?externalIds={applicationId}";
+        var url = $"/sharing-state?externalIds={applicationId}";
         var result = await httpClient.GetAsync(url, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-sharing-state", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         try
