@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using System.Net.Http.Json;
 using System.Text.Json;
 
