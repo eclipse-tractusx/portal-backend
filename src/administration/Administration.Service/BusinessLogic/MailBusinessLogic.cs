@@ -30,8 +30,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingProcessCreation mailingProcessCreation)
     : IMailBusinessLogic
 {
+    private readonly IImmutableList<string> ValidTemplates = new List<string>{
+        "CredentialExpiry",
+        "CredentialRejected",
+        "CredentialApproval"
+    }.ToImmutableList();
+
     public async Task SendMail(MailData mailData)
     {
+        if (!ValidTemplates.Contains(mailData.Template))
+        {
+            throw ConflictException.Create(AdministrationMailErrors.INVALID_TEMPLATE, [new("template", mailData.Template)]);
+        }
+
         var data = await portalRepositories.GetInstance<IUserRepository>().GetUserMailData(mailData.Requester).ConfigureAwait(false);
         if (!data.Exists)
         {

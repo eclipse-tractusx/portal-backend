@@ -196,7 +196,7 @@ public class NotificationController : ControllerBase
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpPost]
-    [Route("")]
+    [Route("ssi-credentials")]
     [Authorize(Roles = "create_notifications")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]

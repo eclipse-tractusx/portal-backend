@@ -27,7 +27,8 @@ public class NotificationErrorMessageContainer : IErrorMessageContainer
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<NotificationErrors, string> {
                 { NotificationErrors.USER_NOT_FOUND, "User {userId} does not exist" },
                 { NotificationErrors.NOTIFICATION_NOT_FOUND, "Notification {notificationId} does not exist." },
-                { NotificationErrors.USER_NOT_RECEIVER, "The user is not the receiver of the notification" },
+                { NotificationErrors.INVALID_NOTIFICATION_TYPE, "Notification Type {notificationTypeId} is invalid." },
+                { NotificationErrors.USER_NOT_RECEIVER, "The user is not the receiver of the notification" }
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(NotificationErrors); }
@@ -38,5 +39,6 @@ public enum NotificationErrors
 {
     USER_NOT_FOUND,
     NOTIFICATION_NOT_FOUND,
-    USER_NOT_RECEIVER
+    USER_NOT_RECEIVER,
+    INVALID_NOTIFICATION_TYPE
 }

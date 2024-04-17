@@ -26,6 +26,7 @@ public class AdministrationMailErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationMailErrors, string> {
                 { AdministrationMailErrors.USER_NOT_FOUND, "User {userId} does not exist" },
+                { AdministrationMailErrors.INVALID_TEMPLATE, "{template} is not valid" },
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationMailErrors); }
@@ -34,5 +35,6 @@ public class AdministrationMailErrorMessageContainer : IErrorMessageContainer
 
 public enum AdministrationMailErrors
 {
-    USER_NOT_FOUND
+    USER_NOT_FOUND,
+    INVALID_TEMPLATE
 }

@@ -51,10 +51,10 @@ public class MailController : ControllerBase
     /// </summary>
     /// <param name="data">Data for the mail</param>
     /// <returns>Return NoContent</returns>
-    /// <remarks>Example: POST: /api/administration/mail</remarks>
+    /// <remarks>Example: POST: /api/administration/mail/ssi-credentials</remarks>
     [HttpPost]
-    [Route("")]
-    // [Authorize(Roles = "send_mail")]
+    [Route("ssi-credentials")]
+    [Authorize(Roles = "send_mail")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

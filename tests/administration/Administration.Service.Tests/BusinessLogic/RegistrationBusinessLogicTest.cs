@@ -883,7 +883,7 @@ public class RegistrationBusinessLogicTest
         await _logic.ProcessIssuerBpnResponseAsync(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.StoreBpnlCredential(ApplicationId, data))
+        A.CallTo(() => _issuerComponentBusinessLogic.StoreBpnlCredentialResponse(ApplicationId, data))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -935,7 +935,7 @@ public class RegistrationBusinessLogicTest
         await _logic.ProcessIssuerMembershipResponseAsync(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.StoreMembershipCredential(ApplicationId, data))
+        A.CallTo(() => _issuerComponentBusinessLogic.StoreMembershipCredentialResponse(ApplicationId, data))
             .MustHaveHappenedOnceExactly();
     }
 

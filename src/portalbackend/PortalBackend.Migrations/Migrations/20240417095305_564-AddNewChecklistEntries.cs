@@ -78,6 +78,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "notification_type",
+                columns: new[] { "id", "label" },
+                values: new object[] { 26, "CREDENTIAL_EXPIRY" });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "process_step_types",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -109,6 +115,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "application_checklist_types",
                 keyColumn: "id",
                 keyValue: 8);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 26);
 
             migrationBuilder.DeleteData(
                 schema: "portal",

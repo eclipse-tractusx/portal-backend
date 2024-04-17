@@ -5550,6 +5550,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 25,
                             Label = "CREDENTIAL_REJECTED"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "CREDENTIAL_EXPIRY"
                         });
                 });
 

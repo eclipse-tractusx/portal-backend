@@ -57,7 +57,7 @@ public class MailBusinessLogicTests
     public async Task SendMail_WithoutExistingUser_ThrowsNotFoundException()
     {
         // Arrange
-        var data = _fixture.Build<MailData>().With(x => x.Requester, UserId).Create();
+        var data = _fixture.Build<MailData>().With(x => x.Requester, UserId).With(x => x.Template, "CredentialExpiry").Create();
         A.CallTo(() => _userRepository.GetUserMailData(UserId)).Returns((false, null));
         async Task Act() => await _sut.SendMail(data).ConfigureAwait(false);
 
@@ -69,10 +69,24 @@ public class MailBusinessLogicTests
     }
 
     [Fact]
+    public async Task SendMail_WithInvalidTemplate_CallsExpected()
+    {
+        // Arrange
+        var data = new MailData(UserId, "testTemplate", Enumerable.Empty<MailParameter>());
+        async Task Act() => await _sut.SendMail(data).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be(AdministrationMailErrors.INVALID_TEMPLATE.ToString());
+    }
+
+    [Fact]
     public async Task SendMail_WithUserWithoutEmail_DoesntCallService()
     {
         // Arrange
-        var data = _fixture.Build<MailData>().With(x => x.Requester, UserId).Create();
+        var data = _fixture.Build<MailData>().With(x => x.Requester, UserId).With(x => x.Template, "CredentialExpiry").Create();
         A.CallTo(() => _userRepository.GetUserMailData(UserId)).Returns((true, null));
 
         // Act
@@ -82,18 +96,21 @@ public class MailBusinessLogicTests
         A.CallTo(() => _mailingService.CreateMailProcess(A<string>._, A<string>._, A<Dictionary<string, string>>._)).MustNotHaveHappened();
     }
 
-    [Fact]
-    public async Task SendMail_WithValid_CallsExpected()
+    [Theory]
+    [InlineData("CredentialExpiry")]
+    [InlineData("CredentialRejected")]
+    [InlineData("CredentialApproval")]
+    public async Task SendMail_WithValid_CallsExpected(string template)
     {
         // Arrange
-        var data = new MailData(UserId, "testTemplate", Enumerable.Empty<MailParameter>());
+        var data = new MailData(UserId, template, Enumerable.Empty<MailParameter>());
         A.CallTo(() => _userRepository.GetUserMailData(UserId)).Returns((true, "test@email.com"));
 
         // Act
         await _sut.SendMail(data);
 
         // Assert
-        A.CallTo(() => _mailingService.CreateMailProcess("test@email.com", "testTemplate", A<Dictionary<string, string>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingService.CreateMailProcess("test@email.com", template, A<IReadOnlyDictionary<string, string>>._)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

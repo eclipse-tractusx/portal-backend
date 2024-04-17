@@ -27,12 +27,19 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 
 /// <inheritdoc />
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
+    private readonly IImmutableList<NotificationTypeId> ValidNotificationTypes = new List<NotificationTypeId>{
+        NotificationTypeId.CREDENTIAL_APPROVAL,
+        NotificationTypeId.CREDENTIAL_REJECTED,
+        NotificationTypeId.CREDENTIAL_EXPIRY
+    }.ToImmutableList();
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
     private readonly NotificationSettings _settings;
@@ -134,6 +141,11 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task CreateNotification(NotificationRequest data)
     {
+        if (!ValidNotificationTypes.Contains(data.NotificationTypeId))
+        {
+            throw ConflictException.Create(NotificationErrors.INVALID_NOTIFICATION_TYPE, [new("notificationTypeId", data.NotificationTypeId.ToString())]);
+        }
+
         var userExists = await _portalRepositories.GetInstance<IUserRepository>().CheckUserExists(data.Requester).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!userExists)
         {

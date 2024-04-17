@@ -463,7 +463,10 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
         var userId = Guid.NewGuid();
-        var data = _fixture.Build<NotificationRequest>().With(x => x.Requester, userId).Create();
+        var data = _fixture.Build<NotificationRequest>()
+            .With(x => x.Requester, userId)
+            .With(x => x.NotificationTypeId, NotificationTypeId.CREDENTIAL_APPROVAL)
+            .Create();
         A.CallTo(() => _userRepository.CheckUserExists(userId)).Returns(false);
         async Task Act() => await sut.CreateNotification(data).ConfigureAwait(false);
 
@@ -476,7 +479,30 @@ public class NotificationBusinessLogicTests
     }
 
     [Fact]
-    public async Task CreateNotification_WithValidData_ExecutesSuccessfully()
+    public async Task CreateNotification_WithInvalidNotificationType_ThrowsForbiddenException()
+    {
+        // Arrange
+        var sut = new NotificationBusinessLogic(_portalRepositories, _identityService, Options.Create(new NotificationSettings
+        {
+            MaxPageSize = 15
+        }));
+        var userId = Guid.NewGuid();
+        var data = _fixture.Build<NotificationRequest>().With(x => x.Requester, userId).With(x => x.NotificationTypeId, NotificationTypeId.INFO).Create();
+        async Task Act() => await sut.CreateNotification(data).ConfigureAwait(false);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be(NotificationErrors.INVALID_NOTIFICATION_TYPE.ToString());
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Theory]
+    [InlineData(NotificationTypeId.CREDENTIAL_APPROVAL)]
+    [InlineData(NotificationTypeId.CREDENTIAL_REJECTED)]
+    [InlineData(NotificationTypeId.CREDENTIAL_EXPIRY)]
+    public async Task CreateNotification_WithValidData_ExecutesSuccessfully(NotificationTypeId notificationTypeId)
     {
         // Arrange
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
@@ -485,6 +511,7 @@ public class NotificationBusinessLogicTests
         var data = _fixture.Build<NotificationRequest>()
             .With(x => x.Requester, userId)
             .With(x => x.Content, "test")
+            .With(x => x.NotificationTypeId, notificationTypeId)
             .Create();
         A.CallTo(() => _userRepository.CheckUserExists(userId)).Returns(true);
         A.CallTo(() => _notificationRepository.CreateNotification(userId, A<NotificationTypeId>._, false, A<Action<Notification>>._))
