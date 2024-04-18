@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -53,11 +54,11 @@ public class ServiceAccountBusinessLogic(
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, [new("authenticationType", serviceAccountCreationInfos.IamClientAuthMethod.ToString())]);//TODO implement other authenticationTypes
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, parameters: [new("authenticationType", serviceAccountCreationInfos.IamClientAuthMethod.ToString())]);//TODO implement other authenticationTypes
         }
         if (string.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, [new("name", serviceAccountCreationInfos.Name)]);
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, parameters: [new("name", serviceAccountCreationInfos.Name)]);
         }
 
         var companyId = _identityData.CompanyId;
@@ -72,7 +73,7 @@ public class ServiceAccountBusinessLogic(
         }
 
         serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
-            .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
+            .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
         var companyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
         var (clientId, serviceAccountData, serviceAccountId, userRoleData) = await serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, [result.Bpn], companyServiceAccountTypeId, false, true).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -204,11 +205,11 @@ public class ServiceAccountBusinessLogic(
     {
         if (serviceAccountDetails.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, [new("authenticationType", serviceAccountDetails.IamClientAuthMethod.ToString())]); //TODO implement other authenticationTypes
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, parameters: [new("authenticationType", serviceAccountDetails.IamClientAuthMethod.ToString())]); //TODO implement other authenticationTypes
         }
         if (serviceAccountId != serviceAccountDetails.ServiceAccountId)
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, [new("serviceAccountId", serviceAccountId.ToString()), new("serviceAccountDetailsServiceAccountId", serviceAccountDetails.ServiceAccountId.ToString())]);
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, parameters: [new("serviceAccountId", serviceAccountId.ToString()), new("serviceAccountDetailsServiceAccountId", serviceAccountDetails.ServiceAccountId.ToString())]);
         }
 
         var companyId = _identityData.CompanyId;
@@ -275,34 +276,29 @@ public class ServiceAccountBusinessLogic(
 
     public async Task HandleServiceAccountCreationCallback(Guid externalId, AuthenticationDetail callbackData)
     {
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountCallback(externalId)
+        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountCallback(externalId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!processData.ProcessExists)
         {
             throw new NotFoundException($"Process {externalId} does not exist");
         }
 
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {externalId}");
         if (processData.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION)
         {
-            await HandleOfferSubscriptionTechnicalUserCallback(externalId, callbackData, processData.ProcessSteps, processData.SubscriptionData).ConfigureAwait(ConfigureAwaitOptions.None);
+            HandleOfferSubscriptionTechnicalUserCallback(externalId, callbackData, context, processData.SubscriptionData);
         }
         else if (processData.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
         {
-            await HandleDimTechnicalUserCallback(callbackData, processData.ProcessSteps, processData.ServiceAccountData);
+            HandleDimTechnicalUserCallback(callbackData, processData.ServiceAccountData);
         }
+
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private async Task HandleOfferSubscriptionTechnicalUserCallback(Guid externalId, AuthenticationDetail callbackData, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) subscriptionData)
+    private void HandleOfferSubscriptionTechnicalUserCallback(Guid externalId, AuthenticationDetail callbackData, ManualProcessStepData context, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) subscriptionData)
     {
-        if (processSteps.Count(x => x is
-            {
-                ProcessStepTypeId: ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
-                ProcessStepStatusId: ProcessStepStatusId.TODO
-            }) != 1)
-        {
-            throw new ConflictException($"{ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE} must be in Status {ProcessStepStatusId.TODO}");
-        }
-
         if (subscriptionData.OfferSubscriptionId is null)
         {
             throw new ConflictException($"OfferSubscriptionId must be set for Process {externalId}");
@@ -318,33 +314,13 @@ public class ServiceAccountBusinessLogic(
             throw new ConflictException($"OfferName must be set for Process {externalId}");
         }
 
-        var processStep = processSteps.Single(x => x is
-        {
-            ProcessStepTypeId: ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
-            ProcessStepStatusId: ProcessStepStatusId.TODO
-        });
         var name = $"sa-{subscriptionData.OfferName}-{subscriptionData.OfferSubscriptionId}";
         CreateDimServiceAccount(callbackData, subscriptionData.CompanyId.Value, name, CompanyServiceAccountTypeId.MANAGED, x => x.OfferSubscriptionId = subscriptionData.OfferSubscriptionId);
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
-        processStepRepository.AttachAndModifyProcessStep(processStep.ProcessStepId,
-            ps => { ps.ProcessStepStatusId = processStep.ProcessStepStatusId; },
-            ps => { ps.ProcessStepStatusId = ProcessStepStatusId.DONE; }
-        );
-        processStepRepository.CreateProcessStep(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, externalId);
-        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        context.ScheduleProcessSteps([ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION]);
     }
 
-    private async Task HandleDimTechnicalUserCallback(AuthenticationDetail callbackData, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, (string? ServiceAccountName, Guid? CompanyId) serviceAccountData)
+    private void HandleDimTechnicalUserCallback(AuthenticationDetail callbackData, (string? ServiceAccountName, Guid? CompanyId) serviceAccountData)
     {
-        if (processSteps.Count(x => x is
-            {
-                ProcessStepTypeId: ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
-                ProcessStepStatusId: ProcessStepStatusId.TODO
-            }) != 1)
-        {
-            throw new ConflictException($"{ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE} must be in Status {ProcessStepStatusId.TODO}");
-        }
-
         if (serviceAccountData.ServiceAccountName is null)
         {
             throw new ConflictException("Service Account Name must be set");
@@ -355,19 +331,8 @@ public class ServiceAccountBusinessLogic(
             throw new ConflictException("Company Id must be set");
         }
 
-        var processStep = processSteps.Single(x => x is
-        {
-            ProcessStepTypeId: ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
-            ProcessStepStatusId: ProcessStepStatusId.TODO
-        });
         var name = $"dim-{serviceAccountData.ServiceAccountName}";
         CreateDimServiceAccount(callbackData, serviceAccountData.CompanyId.Value, name, CompanyServiceAccountTypeId.OWN, null);
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
-        processStepRepository.AttachAndModifyProcessStep(processStep.ProcessStepId,
-            ps => { ps.ProcessStepStatusId = processStep.ProcessStepStatusId; },
-            ps => { ps.ProcessStepStatusId = ProcessStepStatusId.DONE; }
-        );
-        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private void CreateDimServiceAccount(AuthenticationDetail callbackData, Guid companyId, string name, CompanyServiceAccountTypeId serviceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters)

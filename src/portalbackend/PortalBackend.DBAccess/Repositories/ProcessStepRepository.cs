@@ -113,12 +113,17 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId) =>
+    public Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
     _context.Processes.Where(x => x.Id == processId)
-        .Select(x => new ValueTuple<bool, ProcessTypeId, IEnumerable<(Guid, ProcessStepTypeId, ProcessStepStatusId)>, ValueTuple<Guid?, Guid?, string?>, Guid?, ValueTuple<string?, Guid?>>(
+        .Select(x => new ValueTuple<bool, ProcessTypeId, VerifyProcessData, ValueTuple<Guid?, Guid?, string?>, Guid?, ValueTuple<string?, Guid?>>(
             true,
             x.ProcessTypeId,
-            x.ProcessSteps.Select(ps => new ValueTuple<Guid, ProcessStepTypeId, ProcessStepStatusId>(ps.Id, ps.ProcessStepTypeId, ps.ProcessStepStatusId)),
+            new VerifyProcessData(
+                x,
+                x.ProcessSteps
+                    .Where(step =>
+                        processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                        step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
             x.OfferSubscription == null ?
                 new ValueTuple<Guid?, Guid?, string?>() :
                 new ValueTuple<Guid?, Guid?, string?>(
