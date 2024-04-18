@@ -150,6 +150,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<OnboardingServiceProviderDetail>("onboarding_service_provider_details", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<CompanyInvitation>("company_invitations", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<MailingInformation>("mailing_informations", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTableForBaseEntity<CompanyWalletData>("company_wallet_data", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task SeedTableForBaseEntity<T>(string fileName, CancellationToken cancellationToken) where T : class, IBaseEntity

@@ -97,7 +97,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF } });
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/auth" });
         _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, options);
     }
 
@@ -1814,6 +1814,25 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
 
+    }
+
+    #endregion
+
+    #region GetDimServiceUrls
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetWalletServiceUrl(_identity.CompanyId))
+            .Returns("https://example.org/service");
+
+        // Act
+        var result = await _sut.GetDimServiceUrls();
+
+        // Assert
+        result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/auth");
+        result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/service");
     }
 
     #endregion

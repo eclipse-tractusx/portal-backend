@@ -31,6 +31,7 @@ public class CompanyDataSettings
         UseCaseParticipationMediaTypes = null!;
         SsiCertificateMediaTypes = null!;
         CompanyCertificateMediaTypes = null!;
+        DecentralIdentityManagementAuthUrl = null!;
     }
 
     /// <summary>
@@ -61,6 +62,9 @@ public class CompanyDataSettings
     /// The maximum page size
     /// </summary>
     public int MaxPageSize { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; }
 }
 
 public static class CompanyDataSettingsExtensions

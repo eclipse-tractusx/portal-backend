@@ -176,4 +176,5 @@ public interface ICompanyRepository
     void CreateWalletData(Guid companyId, string did, JsonDocument didDocument, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, string authenticationServiceUrl);
     Task<(bool Exists, JsonDocument DidDocument)> GetDidDocumentById(string bpn);
     Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
+    Task<string?> GetWalletServiceUrl(Guid companyId);
 }

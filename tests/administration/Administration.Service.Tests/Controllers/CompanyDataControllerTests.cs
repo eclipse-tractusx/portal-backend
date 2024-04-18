@@ -286,4 +286,21 @@ public class CompanyDataControllerTests
         //Assert
         result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
     }
+
+    [Fact]
+    public async Task GetDimServiceUrls()
+    {
+        // Arrange
+        var decentralIdentityManagementAuthUrl = "https://example.com/auth";
+        var decentralIdentityManagementServiceUrl = "https://example.com/service";
+        A.CallTo(() => _logic.GetDimServiceUrls())
+            .Returns(new DimUrlsResponse(decentralIdentityManagementAuthUrl, decentralIdentityManagementServiceUrl));
+
+        //Act
+        var result = await _controller.GetDimServiceUrls();
+
+        //Assert
+        result.DecentralIdentityManagementAuthUrl.Should().Be(decentralIdentityManagementAuthUrl);
+        result.DecentralIdentityManagementServiceUrl.Should().Be(decentralIdentityManagementServiceUrl);
+    }
 }

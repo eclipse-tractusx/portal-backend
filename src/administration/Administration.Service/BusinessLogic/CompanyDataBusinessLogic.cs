@@ -603,6 +603,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             _settings.MaxPageSize,
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
+    public async Task<DimUrlsResponse> GetDimServiceUrls()
+    {
+        var serviceUrl = await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new DimUrlsResponse(_settings.DecentralIdentityManagementAuthUrl, serviceUrl);
+    }
+
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
