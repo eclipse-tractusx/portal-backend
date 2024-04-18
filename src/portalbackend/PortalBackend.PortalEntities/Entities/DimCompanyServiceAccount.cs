@@ -25,7 +25,7 @@ public class DimCompanyServiceAccount(Guid id, string authenticationServiceUrl, 
     : IBaseEntity
 {
     /// <inheritdoc />
-    public Guid Id { get; set; } = id;
+    public Guid Id { get; private set; } = id;
 
     public string AuthenticationServiceUrl { get; set; } = authenticationServiceUrl;
 
@@ -34,5 +34,5 @@ public class DimCompanyServiceAccount(Guid id, string authenticationServiceUrl, 
     public int EncryptionMode { get; set; } = encryptionMode;
 
     // Navigation properties
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
 }

@@ -113,8 +113,8 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid externalId) =>
-    _context.Processes.Where(x => x.Id == externalId)
+    public Task<(bool ProcessExists, ProcessTypeId ProcessTypeId, IEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) SubscriptionData, Guid? TechnicalUserCreation, (string? ServiceAccountName, Guid? CompanyId) ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId) =>
+    _context.Processes.Where(x => x.Id == processId)
         .Select(x => new ValueTuple<bool, ProcessTypeId, IEnumerable<(Guid, ProcessStepTypeId, ProcessStepStatusId)>, ValueTuple<Guid?, Guid?, string?>, Guid?, ValueTuple<string?, Guid?>>(
             true,
             x.ProcessTypeId,

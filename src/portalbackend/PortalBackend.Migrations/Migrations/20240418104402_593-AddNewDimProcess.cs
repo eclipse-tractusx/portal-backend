@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 #nullable disable
 
@@ -27,7 +26,7 @@ using System;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class _593AddNewProcess : Migration
+    public partial class _593AddNewDimProcess : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -91,7 +90,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     { 113, "RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER" },
                     { 114, "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE" },
                     { 115, "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE" },
-                    { 500, "CREATE_DIM_TECHNICAL_USER" }
+                    { 500, "CREATE_DIM_TECHNICAL_USER" },
+                    { 501, "RETRIGGER_CREATE_DIM_TECHNICAL_USER" }
                 });
 
             migrationBuilder.InsertData(
@@ -155,6 +155,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 500);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 501);
 
             migrationBuilder.DeleteData(
                 schema: "portal",
