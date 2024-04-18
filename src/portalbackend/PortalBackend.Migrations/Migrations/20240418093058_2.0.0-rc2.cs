@@ -26,7 +26,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class _579InvitationProcessStepTypes : Migration
+    public partial class _200rc2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -154,6 +154,57 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 keyColumn: "id",
                 keyValue: 421);
 
+            migrationBuilder.AddColumn<string>(
+                name: "did_document_location",
+                schema: "portal",
+                table: "companies",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "BPNL_CREDENTIAL");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 5,
+                column: "label",
+                value: "MEMBERSHIP_CREDENTIAL");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 6,
+                column: "label",
+                value: "CLEARING_HOUSE");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "application_checklist_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 7, "SELF_DESCRIPTION_LP" },
+                    { 8, "APPLICATION_ACTIVATION" }
+                });
+
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 8 WHERE application_checklist_entry_type_id = 6");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 7 WHERE application_checklist_entry_type_id = 5");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 6 WHERE application_checklist_entry_type_id = 4");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "notification_type",
+                columns: new[] { "id", "label" },
+                values: new object[] { 26, "CREDENTIAL_EXPIRY" });
+
             migrationBuilder.UpdateData(
                 schema: "portal",
                 table: "process_step_types",
@@ -257,6 +308,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 keyValue: 419,
                 column: "label",
                 value: "RETRIGGER_INVITATION_CREATE_DATABASE_IDP");
+
+            migrationBuilder.InsertData(
+                schema: "portal",
+                table: "process_step_types",
+                columns: new[] { "id", "label" },
+                values: new object[,]
+                {
+                    { 25, "REQUEST_BPN_CREDENTIAL" },
+                    { 26, "STORED_BPN_CREDENTIAL" },
+                    { 27, "REQUEST_MEMBERSHIP_CREDENTIAL" },
+                    { 28, "STORED_MEMBERSHIP_CREDENTIAL" },
+                    { 29, "TRANSMIT_BPN_DID" },
+                    { 30, "RETRIGGER_TRANSMIT_DID_BPN" }
+                });
 
             migrationBuilder.AddForeignKey(
                 name: "fk_addresses_countries_country_alpha2code",
@@ -403,6 +468,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE from portal.application_checklist WHERE application_checklist_entry_type_id = 4");
+            migrationBuilder.Sql("DELETE from portal.application_checklist WHERE application_checklist_entry_type_id = 5");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 4 WHERE application_checklist_entry_type_id = 6");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 5 WHERE application_checklist_entry_type_id = 7");
+            migrationBuilder.Sql("UPDATE portal.application_checklist SET application_checklist_entry_type_id = 6 WHERE application_checklist_entry_type_id = 8");
+
             migrationBuilder.DropForeignKey(
                 name: "fk_addresses_countries_country_alpha2code",
                 schema: "portal",
@@ -477,6 +548,89 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "fk_technical_user_profile_assigned_user_roles_user_roles_user_",
                 schema: "portal",
                 table: "technical_user_profile_assigned_user_roles");
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 7);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 8);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "notification_type",
+                keyColumn: "id",
+                keyValue: 26);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 25);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 26);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 27);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 28);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 29);
+
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "process_step_types",
+                keyColumn: "id",
+                keyValue: 30);
+
+            migrationBuilder.DropColumn(
+                name: "did_document_location",
+                schema: "portal",
+                table: "companies");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 4,
+                column: "label",
+                value: "CLEARING_HOUSE");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 5,
+                column: "label",
+                value: "SELF_DESCRIPTION_LP");
+
+            migrationBuilder.UpdateData(
+                schema: "portal",
+                table: "application_checklist_types",
+                keyColumn: "id",
+                keyValue: 6,
+                column: "label",
+                value: "APPLICATION_ACTIVATION");
 
             migrationBuilder.UpdateData(
                 schema: "portal",
