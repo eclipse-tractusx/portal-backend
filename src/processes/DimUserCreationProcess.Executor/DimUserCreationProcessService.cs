@@ -33,8 +33,13 @@ public class DimUserCreationProcessService(
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken)
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
-        var (bpn, serviceAccountName) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
+        var (isValid, bpn, serviceAccountName) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        if (!isValid)
+        {
+            throw new NotFoundException($"DimServiceAccountId {dimServiceAccountId} does not exist");
+        }
 
         if (string.IsNullOrWhiteSpace(bpn))
         {

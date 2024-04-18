@@ -269,7 +269,7 @@ public class OfferSetupService : IOfferSetupService
                 .CreateServiceAccountAsync(
                     creationInfo,
                     data.CompanyId,
-                    data.Bpn == null ? Enumerable.Empty<string>() : new[] { data.Bpn },
+                    data.Bpn == null ? Enumerable.Empty<string>() : [data.Bpn],
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName,
                     data.Enabled)
@@ -471,10 +471,10 @@ public class OfferSetupService : IOfferSetupService
                 var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId,
                     ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, null, true).ConfigureAwait(ConfigureAwaitOptions.None);
 
-                _offerSubscriptionProcessService.FinalizeProcessSteps(context, new[]
-                {
+                _offerSubscriptionProcessService.FinalizeProcessSteps(context,
+                [
                     ProcessStepTypeId.ACTIVATE_SUBSCRIPTION
-                });
+                ]);
                 await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
         }
@@ -504,12 +504,11 @@ public class OfferSetupService : IOfferSetupService
         CreateAppInstance(offerSubscriptionId, clientCreationData.OfferUrl, clientCreationData.OfferId, iamClientId);
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            new[]
-            {
-                clientCreationData.IsTechnicalUserNeeded ?
-                    ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION :
-                    ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
-            },
+            [
+                clientCreationData.IsTechnicalUserNeeded
+                    ? ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+                    : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+            ],
             ProcessStepStatusId.DONE,
             true,
             null);
@@ -544,17 +543,17 @@ public class OfferSetupService : IOfferSetupService
         await _notificationService.CreateNotifications(
             itAdminRoles,
             null,
-            new[]
-            {
+            [
                 (content, NotificationTypeId.TECHNICAL_USER_CREATION)
-            }!,
+            ],
             data.CompanyId).AwaitAll().ConfigureAwait(false);
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            new[]
-            {
-                createDimTechnicalUser ? ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
-            },
+            [
+                createDimTechnicalUser
+                    ? ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
+                    : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+            ],
             ProcessStepStatusId.DONE,
             true,
             null);
@@ -582,10 +581,9 @@ public class OfferSetupService : IOfferSetupService
 
         await _dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId.Value, $"sa-{offerName}-{offerSubscriptionId}"), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            new[]
-            {
+            [
                 ProcessStepTypeId.AWAIT_DIM_RESPONSE
-            },
+            ],
             ProcessStepStatusId.DONE,
             true,
             null);
@@ -647,10 +645,9 @@ public class OfferSetupService : IOfferSetupService
         var userIdsOfNotifications = await _notificationService.CreateNotificationsWithExistenceCheck(
                 itAdminRoles,
                 null,
-                new (string?, NotificationTypeId)[]
-                {
+                [
                     (notificationContent, notificationTypeId)
-                },
+                ],
                 offerDetails.CompanyId,
                 nameof(offerSubscriptionId),
                 offerSubscriptionId.ToString())

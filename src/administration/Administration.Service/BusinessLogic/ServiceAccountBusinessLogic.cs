@@ -50,6 +50,8 @@ public class ServiceAccountBusinessLogic(
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly ServiceAccountSettings _settings = options.Value;
 
+    private static readonly string CompanyId = "companyId";
+
     public async Task<ServiceAccountDetails> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos)
     {
         if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
@@ -65,11 +67,11 @@ public class ServiceAccountBusinessLogic(
         var result = await portalRepositories.GetInstance<ICompanyRepository>().GetBpnAndTechnicalUserRoleIds(companyId, _settings.ClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, [new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, [new(CompanyId, companyId.ToString())]);
         }
         if (string.IsNullOrEmpty(result.Bpn))
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, [new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, [new(CompanyId, companyId.ToString())]);
         }
 
         serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
@@ -105,7 +107,7 @@ public class ServiceAccountBusinessLogic(
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
         if (result.statusId == ConnectorStatusId.ACTIVE || result.statusId == ConnectorStatusId.PENDING)
         {
@@ -150,7 +152,7 @@ public class ServiceAccountBusinessLogic(
         var result = await portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
         if (result.ClientClientId == null)
         {
@@ -182,7 +184,7 @@ public class ServiceAccountBusinessLogic(
         var result = await portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
         if (result.ClientClientId == null)
         {
@@ -217,7 +219,7 @@ public class ServiceAccountBusinessLogic(
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
         if (result.UserStatusId == UserStatusId.INACTIVE)
         {
@@ -274,44 +276,44 @@ public class ServiceAccountBusinessLogic(
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
         portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
 
-    public async Task HandleServiceAccountCreationCallback(Guid externalId, AuthenticationDetail callbackData)
+    public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)
     {
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountCallback(externalId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!processData.ProcessExists)
-        {
-            throw new NotFoundException($"Process {externalId} does not exist");
-        }
 
-        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {externalId}");
-        if (processData.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION)
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {processId}");
+
+        switch (processData.ProcessTypeId)
         {
-            HandleOfferSubscriptionTechnicalUserCallback(externalId, callbackData, context, processData.SubscriptionData);
-        }
-        else if (processData.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
-        {
-            HandleDimTechnicalUserCallback(callbackData, processData.ServiceAccountData);
+            case ProcessTypeId.OFFER_SUBSCRIPTION:
+                HandleOfferSubscriptionTechnicalUserCallback(processId, callbackData, context, processData.SubscriptionData ?? throw new UnexpectedConditionException("subcriptionData should never be null here"));
+                break;
+            case ProcessTypeId.DIM_TECHNICAL_USER:
+                HandleDimTechnicalUserCallback(callbackData, processData.ServiceAccountData ?? throw new UnexpectedConditionException("serviceAccountData should never be null here"));
+                break;
+            default:
+                throw new ControllerArgumentException($"process {processId} has invalid processType {processData.ProcessTypeId}");
         }
 
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private void HandleOfferSubscriptionTechnicalUserCallback(Guid externalId, AuthenticationDetail callbackData, ManualProcessStepData context, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) subscriptionData)
+    private void HandleOfferSubscriptionTechnicalUserCallback(Guid processId, AuthenticationDetail callbackData, ManualProcessStepData context, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) subscriptionData)
     {
         if (subscriptionData.OfferSubscriptionId is null)
         {
-            throw new ConflictException($"OfferSubscriptionId must be set for Process {externalId}");
+            throw new ConflictException($"OfferSubscriptionId must be set for Process {processId}");
         }
 
         if (subscriptionData.CompanyId is null)
         {
-            throw new ConflictException($"CompanyId must be set for Process {externalId}");
+            throw new ConflictException($"CompanyId must be set for Process {processId}");
         }
 
         if (subscriptionData.OfferName is null)
         {
-            throw new ConflictException($"OfferName must be set for Process {externalId}");
+            throw new ConflictException($"OfferName must be set for Process {processId}");
         }
 
         var name = $"sa-{subscriptionData.OfferName}-{subscriptionData.OfferSubscriptionId}";

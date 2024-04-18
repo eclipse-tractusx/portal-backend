@@ -61,13 +61,15 @@ public class DimUserCreationProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         var expectedServiceAccountName = "dim-sa-test";
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
-            .Returns(new ValueTuple<string?, string?>(Bpn, "sa-test"));
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+            .Returns((true, Bpn, "sa-test"));
 
         // Act
         var result = await _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>.That.Matches(x => x.ExternalId == processId && x.Name == expectedServiceAccountName), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.modified.Should().BeTrue();
@@ -78,13 +80,34 @@ public class DimUserCreationProcessServiceTests
     }
 
     [Fact]
+    public async Task CreateDimUser_WithInvalidDimServiceAccountId_ThrowsNotFoundException()
+    {
+        // Arrange
+        var dimServiceAccountId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+            .Returns(default((bool, string?, string?)));
+        Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Act
+        ex.Message.Should().Be($"DimServiceAccountId {dimServiceAccountId} does not exist");
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task CreateDimUser_WithBpnNotSet_ThrowsConflictException()
     {
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
-            .Returns(new ValueTuple<string?, string?>(null, null));
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+            .Returns((true, null, null));
         Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
@@ -92,6 +115,8 @@ public class DimUserCreationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Bpn must not be null");
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }
@@ -102,8 +127,8 @@ public class DimUserCreationProcessServiceTests
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
-            .Returns(new ValueTuple<string?, string?>(Bpn, null));
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+            .Returns((true, Bpn, null));
         Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
@@ -111,6 +136,8 @@ public class DimUserCreationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Service Account Name must not be null");
+        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }

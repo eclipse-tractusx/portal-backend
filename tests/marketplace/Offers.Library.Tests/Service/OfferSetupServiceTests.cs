@@ -151,11 +151,11 @@ public class OfferSetupServiceTests
         if (technicalUserRequired)
         {
             A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-                .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
+                .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
         }
         var serviceManagerRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
+            new UserRoleConfig("Cl2-CX-Portal", ["Service Manager"])
         };
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
@@ -183,7 +183,7 @@ public class OfferSetupServiceTests
             });
         var companyAdminRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "IT Admin" })
+            new UserRoleConfig("Cl2-CX-Portal", ["IT Admin"])
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
@@ -263,22 +263,22 @@ public class OfferSetupServiceTests
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
             .Returns(new IamClient(clientId, "cl1"));
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-            .Returns(new ServiceAccountCreationInfo[]
-            {
-                new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, new List<Guid>()),
-                new(Guid.NewGuid().ToString(), "test1", IamClientAuthMethod.SECRET, new List<Guid>())
-            });
+            .Returns(
+            [
+                new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()),
+                new(Guid.NewGuid().ToString(), "test1", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>())
+            ]);
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
             .Returns(new AppInstance(appInstanceId, _existingServiceId, clientId));
 
         var companyAdminRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+            new UserRoleConfig("Cl2-CX-Portal", ["IT Admin"])
         };
         var serviceManagerAdminRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new[] { "Service Manager" })
+            new UserRoleConfig("Cl2-CX-Portal", ["Service Manager"])
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
@@ -315,11 +315,11 @@ public class OfferSetupServiceTests
         SetupAutoSetup(OfferTypeId.APP);
         var companyAdminRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+            new UserRoleConfig("Cl2-CX-Portal", ["IT Admin"])
         };
         var serviceManagerRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
+            new UserRoleConfig("Cl2-CX-Portal", ["Service Manager"])
         };
 
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
@@ -343,11 +343,11 @@ public class OfferSetupServiceTests
         SetupAutoSetup(OfferTypeId.APP, isSingleInstance: true);
         var companyAdminRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new[] { "IT Admin" })
+            new UserRoleConfig("Cl2-CX-Portal", ["IT Admin"])
         };
         var serviceManagerRoles = new[]
         {
-            new UserRoleConfig("Cl2-CX-Portal", new [] { "Service Manager" })
+            new UserRoleConfig("Cl2-CX-Portal", ["Service Manager"])
         };
 
         var data = new OfferAutoSetupData(_offerIdWithMultipleInstances, "https://new-url.com/");
@@ -734,7 +734,7 @@ public class OfferSetupServiceTests
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsProviderCompany, true)
             .With(x => x.InstanceData, (true, null))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid(), Guid.NewGuid()])
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://www.test.de");
@@ -759,7 +759,7 @@ public class OfferSetupServiceTests
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsProviderCompany, true)
             .With(x => x.InstanceData, (true, "https://www.test.de"))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid()])
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var process = _fixture.Create<Process>();
@@ -772,10 +772,9 @@ public class OfferSetupServiceTests
             .Returns(new ManualProcessStepData(
                 ProcessStepTypeId.START_AUTOSETUP,
                 process,
-                new ProcessStep[]
-                {
-                    new (Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
-                },
+                [
+                    new(Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
+                ],
                 _portalRepositories));
 
         // Act
@@ -796,7 +795,7 @@ public class OfferSetupServiceTests
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsProviderCompany, true)
             .With(x => x.InstanceData, (false, null))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid(), Guid.NewGuid()])
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         var process = _fixture.Create<Process>();
@@ -809,10 +808,9 @@ public class OfferSetupServiceTests
             .Returns(new ManualProcessStepData(
                 ProcessStepTypeId.START_AUTOSETUP,
                 process,
-                new ProcessStep[]
-                {
-                    new (Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
-                },
+                [
+                    new(Guid.NewGuid(), ProcessStepTypeId.START_AUTOSETUP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.Now)
+                ],
                 _portalRepositories));
 
         // Act
@@ -858,7 +856,7 @@ public class OfferSetupServiceTests
         var transferData = _fixture.Build<SubscriptionActivationData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, (true, "https://www.test.de"))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid(), Guid.NewGuid()])
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
@@ -879,7 +877,7 @@ public class OfferSetupServiceTests
         var transferData = _fixture.Build<SubscriptionActivationData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, (false, "https://www.test.de"))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid(), Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid(), Guid.NewGuid()])
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId))
@@ -900,7 +898,7 @@ public class OfferSetupServiceTests
         var transferData = _fixture.Build<SubscriptionActivationData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, (true, "https://www.test.de"))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid()])
             .With(x => x.ProviderCompanyId, Guid.NewGuid())
             .Create();
         var offerSubscriptionId = Guid.NewGuid();
@@ -931,7 +929,7 @@ public class OfferSetupServiceTests
         var transferData = _fixture.Build<SubscriptionActivationData>()
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.InstanceData, (true, "https://www.test.de"))
-            .With(x => x.AppInstanceIds, new[] { Guid.NewGuid() })
+            .With(x => x.AppInstanceIds, [Guid.NewGuid()])
             .With(x => x.ProviderCompanyId, _companyId)
             .Create();
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
@@ -1010,7 +1008,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
             .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(_validOfferId))
-            .Returns(new List<string> { "TestRole" }.ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat("TestRole", 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.SetupClientAsync($"{url}/*", url, A<IEnumerable<string>>._, false))
             .Returns(clientId);
         A.CallTo(() => _clientRepository.CreateClient(clientId))
@@ -1085,8 +1083,10 @@ public class OfferSetupServiceTests
         var offerSubscriptionId = Guid.NewGuid();
         var serviceAccountId = Guid.NewGuid();
         var userRoleId = Guid.NewGuid();
-        var userRoleData = new List<UserRoleData> { new(userRoleId, "Client1", "TestRole") };
-        var dimUserRoles = new List<UserRoleConfig> { new("Client1", new List<string> { "TestRole" }) };
+        IEnumerable<UserRoleData> userRoleData = [new(userRoleId, "Client1", "TestRole")];
+        var dimUserRoles = withMatchingDimRoles
+            ? [new("Client1", Enumerable.Repeat("TestRole", 1))]
+            : Enumerable.Empty<UserRoleConfig>();
         var data = new OfferSubscriptionTechnicalUserCreationData(true, clientId, "Test App", "Stark Industries", CompanyUserCompanyId, Bpn, OfferTypeId.SERVICE);
         var serviceAccountData = _fixture.Create<ServiceAccountData>();
         var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
@@ -1098,7 +1098,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
-            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds) });
+            .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<Action<CompanyServiceAccount>>._))
             .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
@@ -1109,10 +1109,10 @@ public class OfferSetupServiceTests
                 serviceAccountData,
                 serviceAccountId,
                 userRoleData));
-        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["AdminRoles"]), 1);
 
         // Act
-        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles, withMatchingDimRoles ? dimUserRoles : Enumerable.Empty<UserRoleConfig>());
+        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles, dimUserRoles);
 
         // Assert
         result.nextStepTypeIds.Should().ContainSingle().And
@@ -1133,8 +1133,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
-            .Returns(new ValueTuple<string?, string?, Guid?>());
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(A<Guid>._))
+            .Returns(default((string?, string?, Guid?)));
 
         // Act
         async Task Act() => await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
@@ -1142,6 +1142,8 @@ public class OfferSetupServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("Bpn must be set");
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -1149,8 +1151,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
-            .Returns(new ValueTuple<string?, string?, Guid?>(Bpn, null, null));
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(A<Guid>._))
+            .Returns((Bpn, null, null));
 
         // Act
         async Task Act() => await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
@@ -1158,6 +1160,8 @@ public class OfferSetupServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be($"Offer Name must be set for subscription {offerSubscriptionId}");
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -1165,8 +1169,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
-            .Returns(new ValueTuple<string?, string?, Guid?>(Bpn, "app1", null));
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(A<Guid>._))
+            .Returns((Bpn, "app1", null));
 
         // Act
         async Task Act() => await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
@@ -1174,6 +1178,8 @@ public class OfferSetupServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be($"OfferSubscription {offerSubscriptionId} must be linked to a process");
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -1182,8 +1188,8 @@ public class OfferSetupServiceTests
         // Arrange
         var processId = Guid.NewGuid();
         var offerSubscriptionId = Guid.NewGuid();
-        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
-            .Returns(new ValueTuple<string?, string?, Guid?>(Bpn, "app1", processId));
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(A<Guid>._))
+            .Returns((Bpn, "app1", processId));
 
         // Act
         var result = await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
@@ -1193,6 +1199,8 @@ public class OfferSetupServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
+        A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>.That.Matches(x => x.ExternalId == processId && x.Name == $"sa-app1-{offerSubscriptionId}"), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -1211,7 +1219,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscription.Id, _companyId))
             .Returns(true);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
-            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
         // Act
         await _sut.TriggerActivateSubscription(offerSubscription.Id);
@@ -1256,9 +1264,9 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), new[] { Guid.NewGuid() }, offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
-            .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
         A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
             .Returns(false);
@@ -1267,8 +1275,8 @@ public class OfferSetupServiceTests
             {
                 setOptionalParameter.Invoke(offerSubscription);
             });
-        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
-        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["AdminRoles"]), 1);
+        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["ServiceManagerRoles"]), 1);
 
         // Act
         var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/");
@@ -1318,9 +1326,9 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), new[] { Guid.NewGuid() }, offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
-            .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
         A.CallTo(() => _notificationRepository.CheckNotificationExistsForParam(A<Guid>._, A<NotificationTypeId>._, A<string>._, A<string>._))
             .Returns(false);
@@ -1329,8 +1337,8 @@ public class OfferSetupServiceTests
             {
                 setOptionalParameter.Invoke(offerSubscription);
             });
-        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "AdminRoles" }), 1);
-        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", new[] { "ServiceManagerRoles" }), 1);
+        var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["AdminRoles"]), 1);
+        var serviceManagerRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["ServiceManagerRoles"]), 1);
 
         // Act
         var result = await _sut.ActivateSubscription(offerSubscription.Id, itAdminRoles, serviceManagerRoles, "https://portal-backend.dev.demo.catena-x.net/");
@@ -1339,7 +1347,7 @@ public class OfferSetupServiceTests
         var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
 
-        result.nextStepTypeIds.Should().ContainInOrder(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK });
+        result.nextStepTypeIds.Should().ContainInOrder([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK]);
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
@@ -1379,7 +1387,7 @@ public class OfferSetupServiceTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true))
-            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
         A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId))
             .Returns(false);
 
@@ -1400,7 +1408,7 @@ public class OfferSetupServiceTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep(processStepId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true))
-            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
         A.CallTo(() => _offerSubscriptionsRepository.CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityService.IdentityData.CompanyId))
             .Returns(true);
 
@@ -1469,7 +1477,7 @@ public class OfferSetupServiceTests
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.ACTIVE, true, "Company",
                 _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] { Guid.NewGuid() },
+                [Guid.NewGuid()],
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _pendingSubscriptionId,
@@ -1478,7 +1486,7 @@ public class OfferSetupServiceTests
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true,
                 "Company", _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] { Guid.NewGuid() },
+                [Guid.NewGuid()],
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _pendingSubscriptionId,
@@ -1488,7 +1496,7 @@ public class OfferSetupServiceTests
                 _companyUserId,
                 _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, "https://test.de"),
-                new[] { Guid.NewGuid() },
+                [Guid.NewGuid()],
                 _salesManagerId));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 _offerIdWithMultipleInstances,
@@ -1511,7 +1519,7 @@ public class OfferSetupServiceTests
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, false, string.Empty,
                 Guid.NewGuid(), Guid.NewGuid(), _existingServiceId, OfferTypeId.APP, "Test Service",
                 Bpn, null, null, null, (isSingleInstance, "https://test.de"),
-                new[] { Guid.NewGuid() },
+                [Guid.NewGuid()],
                 null));
 
         return createNotificationsEnumerator;
@@ -1535,9 +1543,9 @@ public class OfferSetupServiceTests
         }
 
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_validOfferId, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, "cl1") }));
+            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, [(_validInstanceSetupId, "cl1")]));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithoutClient, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, new[] { (_validInstanceSetupId, string.Empty) }));
+            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, [(_validInstanceSetupId, string.Empty)]));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithMultipleInstances, OfferTypeId.APP))
             .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, false, Enumerable.Empty<(Guid, string)>()));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithWithNoInstanceSetupIds, OfferTypeId.APP))

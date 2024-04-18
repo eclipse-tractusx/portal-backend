@@ -187,5 +187,5 @@ public interface IOfferSubscriptionsRepository
     /// <returns><c>true</c> when the company is the provider of the offer for the offerSubscription, otherwise <c>false</c></returns>
     Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId);
 
-    Task<(string? bpn, string? offerName, Guid? processId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId);
+    Task<(string? Bpn, string? OfferName, Guid? ProcessId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId);
 }

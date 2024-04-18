@@ -556,13 +556,15 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), Guid.NewGuid(), "test"), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), Guid.NewGuid(), "test"), null));
 
         // Act
         await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
@@ -574,15 +576,17 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((false, processTypeId, _fixture.Create<VerifyProcessData>(), new ValueTuple<Guid?, Guid?, string?>(), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(default((ProcessTypeId, VerifyProcessData, (Guid?, Guid?, string?)?, (string?, Guid?)?)));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
-        ex.Message.Should().Be($"Process {process.Id} does not exist");
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be($"externalId {process.Id} does not exist");
     }
 
     [Fact]
@@ -592,14 +596,16 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, default((Guid?, Guid?, string?)), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"OfferSubscriptionId must be set for Process {process.Id}");
     }
 
@@ -610,14 +616,16 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), null, null), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), null, null), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"CompanyId must be set for Process {process.Id}");
     }
 
@@ -628,14 +636,16 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), Guid.NewGuid(), null), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), Guid.NewGuid(), null), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"OfferName must be set for Process {process.Id}");
     }
 
@@ -646,14 +656,16 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.DIM_TECHNICAL_USER, context, new ValueTuple<Guid?, Guid?, string?>(), Guid.Empty, new ValueTuple<string?, Guid?>("test", null)));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, ("test", null)));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("Company Id must be set");
     }
 
@@ -664,14 +676,16 @@ public class ServiceAccountBusinessLogicTests
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, ProcessTypeId.DIM_TECHNICAL_USER, context, new ValueTuple<Guid?, Guid?, string?>(), Guid.Empty, new ValueTuple<string?, Guid?>()));
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, default((string?, Guid?))));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("Service Account Name must be set");
     }
 

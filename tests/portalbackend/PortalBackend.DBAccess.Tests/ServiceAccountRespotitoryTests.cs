@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -356,11 +355,10 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<DimCompanyServiceAccount>().Which.EncryptionMode.Should().Be(0);
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<DimCompanyServiceAccount>()
+            .Which.EncryptionMode.Should().Be(0);
     }
 
     #endregion
@@ -382,11 +380,10 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<DimUserCreationData>().Which.ProcessId.Should().Be(processId);
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<DimUserCreationData>()
+            .Which.ProcessId.Should().Be(processId);
     }
 
     #endregion

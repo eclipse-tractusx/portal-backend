@@ -34,5 +34,5 @@ public interface IServiceAccountBusinessLogic
     Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId);
     Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive);
     IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName);
-    Task HandleServiceAccountCreationCallback(Guid externalId, AuthenticationDetail callbackData);
+    Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData);
 }

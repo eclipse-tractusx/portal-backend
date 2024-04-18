@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -41,20 +40,24 @@ public class OfferSubscriptionProcessTypeExecutor(
     IOptions<OfferSubscriptionsProcessSettings> options)
     : IProcessTypeExecutor
 {
-    private static readonly IEnumerable<int> RecoverableStatusCodes = ImmutableArray.Create(
+    private static readonly IEnumerable<int> RecoverableStatusCodes =
+    [
         (int)HttpStatusCode.BadGateway,
         (int)HttpStatusCode.ServiceUnavailable,
-        (int)HttpStatusCode.GatewayTimeout);
+        (int)HttpStatusCode.GatewayTimeout
+    ];
 
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository = portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
 
-    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = ImmutableArray.Create(
+    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps =
+    [
         ProcessStepTypeId.TRIGGER_PROVIDER,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
         ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER,
         ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
-        ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK);
+        ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
+    ];
 
     private Guid _offerSubscriptionId;
     private readonly OfferSubscriptionsProcessSettings _settings = options.Value;
@@ -62,7 +65,7 @@ public class OfferSubscriptionProcessTypeExecutor(
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.OFFER_SUBSCRIPTION;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _executableProcessSteps.Contains(processStepTypeId);
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _executableProcessSteps;
-    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(false);
+    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => ValueTask.FromResult(false);
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {

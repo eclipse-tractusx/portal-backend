@@ -33,13 +33,17 @@ public class DimUserCreationProcessTypeExecutor(
     IDimUserCreationProcessService dimUserCreationProcessService)
     : IProcessTypeExecutor
 {
-    private static readonly IEnumerable<int> RecoverableStatusCodes = ImmutableArray.Create(
+    private static readonly IEnumerable<int> RecoverableStatusCodes =
+    [
         (int)HttpStatusCode.BadGateway,
         (int)HttpStatusCode.ServiceUnavailable,
-        (int)HttpStatusCode.GatewayTimeout);
+        (int)HttpStatusCode.GatewayTimeout
+    ];
 
-    private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = ImmutableArray.Create(
-        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER);
+    private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps =
+    [
+        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER
+    ];
 
     private Guid _dimServiceAccountId;
     private Guid _processId;
@@ -66,7 +70,7 @@ public class DimUserCreationProcessTypeExecutor(
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
-    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(false);
+    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => ValueTask.FromResult(false);
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.DIM_TECHNICAL_USER;
 

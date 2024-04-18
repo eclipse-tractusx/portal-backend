@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -43,6 +42,6 @@ public interface IServiceAccountRepository
     public Task<(Guid IdentityId, Guid CompanyId)> GetServiceAccountDataByClientId(string clientId);
     void CreateDimCompanyServiceAccount(Guid serviceAccountId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);
     void CreateDimUserCreationData(Guid serviceAccountId, Guid processId);
-    Task<(string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId);
+    Task<(bool IsValid, string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId);
     Task<Guid> GetDimServiceAccountIdForProcess(Guid processId);
 }

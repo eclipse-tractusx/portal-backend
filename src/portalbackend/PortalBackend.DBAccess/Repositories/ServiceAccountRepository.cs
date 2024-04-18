@@ -204,10 +204,11 @@ public class ServiceAccountRepository : IServiceAccountRepository
     public void CreateDimUserCreationData(Guid serviceAccountId, Guid processId) =>
          _dbContext.DimUserCreationData.Add(new DimUserCreationData(Guid.NewGuid(), serviceAccountId, processId));
 
-    public Task<(string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
+    public Task<(bool IsValid, string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
         _dbContext.DimCompanyServiceAccounts
             .Where(x => x.Id == dimServiceAccountId)
-            .Select(x => new ValueTuple<string?, string?>(
+            .Select(x => new ValueTuple<bool, string?, string?>(
+                true,
                 x.CompanyServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
                 x.CompanyServiceAccount!.Name))
             .SingleOrDefaultAsync();

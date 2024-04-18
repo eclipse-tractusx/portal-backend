@@ -551,7 +551,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Offer!.ProviderCompanyId == providerCompanyId)
             .AnyAsync();
 
-    public Task<(string? bpn, string? offerName, Guid? processId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId) =>
+    public Task<(string? Bpn, string? OfferName, Guid? ProcessId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new ValueTuple<string?, string?, Guid?>(

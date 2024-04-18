@@ -58,6 +58,7 @@ public static class ServiceAccountSettingsExtensions
         services.AddOptions<ServiceAccountSettings>()
             .Bind(section)
             .ValidateDataAnnotations()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;
     }
