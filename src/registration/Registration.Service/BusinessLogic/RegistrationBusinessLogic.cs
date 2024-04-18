@@ -415,16 +415,15 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
             application.DateLastChanged = _dateTimeProvider.OffsetNow;
         });
 
-        var modified = await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-
         var inviteTemplateName = "invite";
         if (!string.IsNullOrWhiteSpace(userCreationInfo.Message))
         {
             inviteTemplateName = "inviteWithMessage";
         }
 
-        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+        var modified = await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
         var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
             KeyValuePair.Create("password", password),
@@ -438,6 +437,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, inviteTemplateName, mailParameters);
         _mailingProcessCreation.CreateMailProcess(userCreationInfo.eMail, "password", mailParameters);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return modified;
     }
 
