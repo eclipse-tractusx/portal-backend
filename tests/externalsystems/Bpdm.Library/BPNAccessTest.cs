@@ -201,7 +201,7 @@ public class BPNAccessTest
         request.Should().NotBeNull();
         request!.RequestUri.Should().NotBeNull();
         request.RequestUri.Should().NotBeNull();
-        request.RequestUri!.LocalPath.Should().Be($"/pool/v6/legal-entities/{businessPartnerNumber}");
+        request.RequestUri!.LocalPath.Should().Be($"/legal-entities/{businessPartnerNumber}");
         request.RequestUri.Query.Should().Be("?idType=BPN");
 
         result.Should().NotBeNull();
