@@ -54,62 +54,133 @@ public class BPNAccessTest
         HttpRequestMessage? request = null;
 
         const string json = @"{
-            ""legalName"": ""CX-Test-Access"",
-            ""bpnl"": ""BPNL00000007OR16"",
+            ""bpnl"": ""BPNL000000000001"",
+            ""legalName"": ""Comapany Test Auto"",
+            ""legalShortName"": ""CTA"",
+            ""legalForm"": {
+                ""technicalKey"": ""CUSTOM_LEGAL_FORM_f254bb28-92f2-4b49-81a8-f364cde5a5cc"",
+                ""name"": ""Legal Form for Test Automation"",
+                ""abbreviation"": null
+            },
             ""identifiers"": [
                 {
-                    ""value"": ""HRB 12345"",
+                    ""value"": ""1c4815e7-c5b6-41a3-862a-a815ee2a836e"",
                     ""type"": {
-                        ""technicalKey"": ""EU_VAT_ID_DE"",
-                        ""name"": ""Value added tax identification number""
+                        ""technicalKey"": ""CUSTOM_LE_ID_e6e534ac-ff59-40ab-bd0d-da94f73f700e"",
+                        ""name"": ""Custom Identifier Type of LE for Test Automation""
                     },
-                    ""issuingBody"": null
+                    ""issuingBody"": ""ISSUE_BODY_TEST_AUTO""
                 }
             ],
-            ""legalShortName"": ""CX-Test-Access"",
-            ""legalForm"": null,
-            ""states"": [],
-            ""classifications"": [],
+            ""states"": [
+                {
+                    ""validFrom"": ""2023-07-16T05:54:48.942"",
+                    ""validTo"": ""2024-06-09T07:31:01.213"",
+                    ""type"": {
+                        ""technicalKey"": ""ACTIVE"",
+                        ""name"": ""Active""
+                    }
+                }
+            ],
             ""relations"": [],
-            ""currentness"": ""2023-07-26T15:27:12.739650Z"",
-            ""createdAt"": ""2023-07-26T15:27:13.756713Z"",
-            ""updatedAt"": ""2023-07-26T15:27:13.756719Z"",
+            ""currentness"": ""2023-09-20T05:31:17.009357Z"",
+            ""confidenceCriteria"": {
+                ""sharedByOwner"": false,
+                ""checkedByExternalDataSource"": false,
+                ""numberOfSharingMembers"": 1,
+                ""lastConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                ""nextConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                ""confidenceLevel"": 0
+            },
+            ""isCatenaXMemberData"": true,
+            ""createdAt"": ""2023-09-20T05:31:17.090516Z"",
+            ""updatedAt"": ""2023-09-20T05:31:17.090523Z"",
             ""legalAddress"": {
-                ""bpna"": ""BPNA000000000LKR"",
-                ""name"": null,
-                ""states"": [],
-                ""identifiers"": [],
+                ""bpna"": ""BPNA000000000001"",
+                ""name"": ""ADDRESS_TEST_AUTO"",
+                ""states"": [
+                    {
+                        ""validFrom"": ""2023-07-16T05:54:48.942"",
+                        ""validTo"": ""2024-06-05T07:31:01.213"",
+                        ""type"": {
+                            ""technicalKey"": ""ACTIVE"",
+                            ""name"": ""Active""
+                        }
+                    }
+                ],
+                ""identifiers"": [
+                    {
+                        ""value"": ""1c4815e7-c5b6-41a3-862a-a815ee2a836e"",
+                        ""type"": {
+                            ""technicalKey"": ""CUSTOM_ADD_ID_0501e165-a446-40f9-b49b-63158abec717"",
+                            ""name"": ""Custom Identifier Type of Test Automation""
+                        }
+                    }
+                ],
                 ""physicalPostalAddress"": {
-                    ""geographicCoordinates"": null,
+                    ""geographicCoordinates"": {
+                        ""longitude"": 0.0,
+                        ""latitude"": 0.0,
+                        ""altitude"": 0.0
+                    },
                     ""country"": {
                         ""technicalKey"": ""DE"",
                         ""name"": ""Germany""
                     },
-                    ""postalCode"": ""1"",
-                    ""city"": ""Dresden"",
+                    ""administrativeAreaLevel1"": null,
+                    ""administrativeAreaLevel2"": ""test1"",
+                    ""administrativeAreaLevel3"": ""test2"",
+                    ""postalCode"": ""1111"",
+                    ""city"": ""TestCity"",
+                    ""district"": ""Test district"",
                     ""street"": {
-                        ""name"": ""Onisamili Road 236"",
-                        ""houseNumber"": """",
-                        ""milestone"": null,
-                        ""direction"": null
+                        ""name"": ""Stuttgarter Strasse"",
+                        ""houseNumber"": ""1"",
+                        ""houseNumberSupplement"": null,
+                        ""milestone"": ""Test milestone 1"",
+                        ""direction"": ""Test direction 1"",
+                        ""namePrefix"": null,
+                        ""additionalNamePrefix"": null,
+                        ""nameSuffix"": null,
+                        ""additionalNameSuffix"": null
+                    },
+                    ""companyPostalCode"": ""1234"",
+                    ""industrialZone"": ""Test industrialZone 1"",
+                    ""building"": ""Test building 1"",
+                    ""floor"": ""F"",
+                    ""door"": ""test door 1""
+                },
+                ""alternativePostalAddress"": {
+                    ""geographicCoordinates"": {
+                        ""longitude"": 0.0,
+                        ""latitude"": 0.0,
+                        ""altitude"": 0.0
+                    },
+                    ""country"": {
+                        ""technicalKey"": ""DE"",
+                        ""name"": ""Germany""
                     },
                     ""administrativeAreaLevel1"": null,
-                    ""administrativeAreaLevel2"": null,
-                    ""administrativeAreaLevel3"": null,
-                    ""district"": null,
-                    ""companyPostalCode"": null,
-                    ""industrialZone"": null,
-                    ""building"": null,
-                    ""floor"": null,
-                    ""door"": null
+                    ""postalCode"": ""2222"",
+                    ""city"": ""Test city 2"",
+                    ""deliveryServiceType"": ""PO_BOX"",
+                    ""deliveryServiceQualifier"": ""test deliveryServiceQualifier"",
+                    ""deliveryServiceNumber"": ""2222""
                 },
-                ""alternativePostalAddress"": null,
-                ""bpnLegalEntity"": ""BPNL00000007OR16"",
-                ""isLegalAddress"": true,
+                ""bpnLegalEntity"": ""BPNL000000000001"",
                 ""bpnSite"": null,
-                ""isMainAddress"": false,
-                ""createdAt"": ""2023-07-26T15:27:13.756112Z"",
-                ""updatedAt"": ""2023-07-26T15:27:14.267585Z""
+                ""isCatenaXMemberData"": true,
+                ""createdAt"": ""2023-09-20T05:31:17.084880Z"",
+                ""updatedAt"": ""2023-09-20T05:31:17.096188Z"",
+                ""confidenceCriteria"": {
+                    ""sharedByOwner"": false,
+                    ""checkedByExternalDataSource"": false,
+                    ""numberOfSharingMembers"": 1,
+                    ""lastConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                    ""nextConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                    ""confidenceLevel"": 0
+                },
+                ""addressType"": ""LegalAddress""
             }
         }";
 
@@ -130,12 +201,12 @@ public class BPNAccessTest
         request.Should().NotBeNull();
         request!.RequestUri.Should().NotBeNull();
         request.RequestUri.Should().NotBeNull();
-        request.RequestUri!.LocalPath.Should().Be($"/pool/api/catena/legal-entities/{businessPartnerNumber}");
+        request.RequestUri!.LocalPath.Should().Be($"/legal-entities/{businessPartnerNumber}");
         request.RequestUri.Query.Should().Be("?idType=BPN");
 
         result.Should().NotBeNull();
         result.LegalEntityAddress.Should().NotBeNull();
-        result.LegalEntityAddress!.Bpna.Should().Be("BPNA000000000LKR");
+        result.LegalEntityAddress!.Bpna.Should().Be("BPNA000000000001");
     }
 
     [Fact]

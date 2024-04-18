@@ -32,7 +32,8 @@ public record BpdmLegalEntityDto(
     [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifierDto> Identifiers,
     [property: JsonPropertyName("legalForm")] BpdmLegalFormDto? LegalForm,
     [property: JsonPropertyName("states")] IEnumerable<BpdmStatusDto> States,
-    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassificationDto> Classifications,
+    [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria? ConfidenceCriteria,
+    [property: JsonPropertyName("isCatenaXMemberData")] bool IsCatenaXMemberData,
     [property: JsonPropertyName("relations")] IEnumerable<BpdmRelationDto> Relations,
     [property: JsonPropertyName("legalAddress")] BpdmLegalEntityAddress? LegalEntityAddress
 );
@@ -50,16 +51,9 @@ public record BpdmLegalFormDto(
 );
 
 public record BpdmStatusDto(
-    string? OfficialDenotation,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidUntil,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
     BpdmTechnicalKey Type
-);
-
-public record BpdmProfileClassificationDto(
-    string? Value,
-    string? Code,
-    BpdmTechnicalKey? Type
 );
 
 public record BpdmDataDto(
@@ -74,10 +68,10 @@ public record BpdmTechnicalKey(
 
 public record BpdmRelationDto(
     BpdmTechnicalKey Type,
-    string? StartBpn,
-    string? EndBpn,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo
+    string? StartBpnl,
+    string? EndBpnl,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo
 );
 
 public record BpdmLegalEntityAddress
@@ -88,19 +82,20 @@ public record BpdmLegalEntityAddress
     string? BpnSite,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    bool IsLegalAddress,
-    bool IsMainAddress,
+    string AddressType,
     IEnumerable<BpdmLegalEntityAddressState> States,
     IEnumerable<BpdmLegalEntityAddressIdentifier> Identifiers,
     BpdmPhysicalPostalAddress? PhysicalPostalAddress,
-    BpdmAlternativePostalAddress? AlternativePostalAddress
+    BpdmAlternativePostalAddress? AlternativePostalAddress,
+    [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria? ConfidenceCriteria,
+    [property: JsonPropertyName("isCatenaXMemberData")] bool IsCatenaXMemberData
 );
 
 public record BpdmLegalEntityAddressState
 (
     string? Description,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset ValidTo,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
     BpdmTechnicalKey Type
 );
 
@@ -134,7 +129,7 @@ public record BpdmAlternativePostalAddress(
     string? City,
     BpdmAdministrativeAreaLevel? AdministrativeAreaLevel1,
     string? DeliveryServiceNumber,
-    string? Type,
+    string? DeliveryServiceType,
     string? DeliveryServiceQualifier
 );
 

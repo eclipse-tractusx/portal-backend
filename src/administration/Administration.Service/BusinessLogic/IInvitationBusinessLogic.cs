@@ -32,6 +32,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
         Task RetriggerEnableCentralIdp(Guid processId);
         Task RetriggerCreateDatabaseIdp(Guid processId);
         Task RetriggerInvitationCreateUser(Guid processId);
-        Task RetriggerInvitationSendMail(Guid processId);
     }
 }

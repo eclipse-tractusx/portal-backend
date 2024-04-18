@@ -46,8 +46,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT,
         ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP,
         ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
-        ProcessStepTypeId.INVITATION_CREATE_USER,
-        ProcessStepTypeId.INVITATION_SEND_MAIL);
+        ProcessStepTypeId.INVITATION_CREATE_USER);
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IInvitationProcessService _invitationProcessService;

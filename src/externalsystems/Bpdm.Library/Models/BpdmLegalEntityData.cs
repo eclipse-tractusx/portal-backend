@@ -91,7 +91,8 @@ public record BpdmAddress(
     string? Name,
     string? AddressType,
     BpdmPutPhysicalPostalAddress PhysicalPostalAddress,
-    BpdmPutAlternativePostalAddress? AlternativePostalAddress
+    BpdmPutAlternativePostalAddress? AlternativePostalAddress,
+    IEnumerable<BpdmState> States
 );
 
 public record BpdmLegalEntity(
@@ -99,12 +100,13 @@ public record BpdmLegalEntity(
     string LegalName,
     string? ShortName,
     string? LegalForm,
-    IEnumerable<BpdmClassification> Classifications
+    IEnumerable<BpdmState> States
 );
 
 public record BpdmSite(
     string SiteBpn,
-    string Name
+    string Name,
+    IEnumerable<BpdmState> States
 );
 
 public record BpdmLegalEntityData(

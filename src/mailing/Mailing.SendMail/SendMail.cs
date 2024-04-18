@@ -35,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 
         Task ISendMail.Send(string sender, string recipient, string subject, string body, bool useHtml)
         {
-            using var message = new MimeMessage();
+            var message = new MimeMessage();
             message.From.Add(MailboxAddress.Parse(sender));
             message.To.Add(MailboxAddress.Parse(recipient));
             message.Subject = subject;
@@ -53,6 +53,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
                 {
                     client.ProxyClient = new HttpProxyClient(_MailSettings.HttpProxy, _MailSettings.HttpProxyPort);
                 }
+
                 await client.ConnectAsync(_MailSettings.SmtpHost, _MailSettings.SmtpPort);
                 await client.AuthenticateAsync(_MailSettings.SmtpUser, _MailSettings.SmtpPassword);
                 await client.SendAsync(message);
