@@ -346,13 +346,12 @@ public class BpdmServiceTests
             ""contentSize"": 1,
             ""content"": [
                 {
-                    ""businessPartnerType"": ""LEGAL_ENTITY"",
                     ""externalId"": ""aa2eeac5-a0e9-46b0-80f0-d48dde49aa23"",
                     ""sharingStateType"": ""Error"",
                     ""sharingErrorCode"": ""SharingProcessError"",
                     ""sharingErrorMessage"": ""Address Identifier Type 'Cheese Region' does not exist (LegalAddressRegionNotFound)"",
-                    ""bpn"": null,
-                    ""sharingProcessStarted"": ""2023-08-04T14:35:30.478594""
+                    ""sharingProcessStarted"": ""2023-08-04T14:35:30.478594"",
+                    ""taskId"": ""aa2eeac5-a0e9-46b0-80f0-d48dde49aa11""
                 }
             ]
         }";
@@ -373,10 +372,8 @@ public class BpdmServiceTests
         // Assert
         result.Should().NotBeNull();
         result.ExternalId.Should().Be(applicationId);
-        result.Bpn.Should().BeNull();
         result.SharingErrorCode.Should().Be("SharingProcessError");
         result.SharingStateType.Should().Be(BpdmSharingStateType.Error);
-        result.BusinessPartnerType.Should().Be(BpdmSharingStateBusinessPartnerType.LEGAL_ENTITY);
         result.SharingErrorMessage.Should().Be("Address Identifier Type 'Cheese Region' does not exist (LegalAddressRegionNotFound)");
     }
 

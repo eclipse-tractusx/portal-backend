@@ -21,11 +21,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -239,27 +236,6 @@ public class InvitationController : ControllerBase
     public async Task<NoContentResult> RetriggerInvitationCreateUser([FromRoute] Guid processId)
     {
         await _logic.RetriggerInvitationCreateUser(processId).ConfigureAwait(ConfigureAwaitOptions.None);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Retriggers the last failed step
-    /// </summary>
-    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
-    /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/invitation/{processId}/retrigger-send-mail
-    /// <response code="204">Empty response on success.</response>
-    /// <response code="404">No registration found for the externalId.</response>
-    [HttpPost]
-    [Authorize(Roles = "invite_new_partner")]
-    [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Route("{processId}/retrigger-send-mail")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerInvitationSendMail([FromRoute] Guid processId)
-    {
-        await _logic.RetriggerInvitationSendMail(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

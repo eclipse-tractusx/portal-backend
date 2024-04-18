@@ -185,6 +185,7 @@ public class InvitationProcessServiceTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
             .Which.Should().Be(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE);
+        A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(A<Guid>._, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -224,7 +225,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM);
     }
 
     [Fact]
@@ -267,7 +268,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT);
     }
 
     [Fact]
@@ -340,7 +341,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS);
     }
 
     [Fact]
@@ -383,7 +384,7 @@ public class InvitationProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT);
+            .Which.Should().Be(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER);
     }
 
     [Fact]

@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -184,6 +183,28 @@ public class NotificationController : ControllerBase
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
         await _logic.DeleteNotificationAsync(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Creates a notification with the given data
+    /// </summary>
+    /// <param name="data">Data for the notification</param>
+    /// <returns>Return NoContent</returns>
+    /// <remarks>Example: POST: /api/notification</remarks>
+    /// <response code="204">Count of the notifications.</response>
+    /// <response code="400">NotificationStatus does not exist.</response>
+    /// <response code="403">IamUserId is not assigned.</response>
+    [HttpPost]
+    [Route("ssi-credentials")]
+    [Authorize(Roles = "create_notifications")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> CreateNotification([FromBody] NotificationRequest data)
+    {
+        await _logic.CreateNotification(data).ConfigureAwait(false);
         return NoContent();
     }
 }

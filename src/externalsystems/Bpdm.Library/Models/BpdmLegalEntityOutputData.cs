@@ -35,7 +35,7 @@ public record BpdmLegalEntityOutputData(
     [property: JsonPropertyName("roles")] IEnumerable<string> Roles,
     [property: JsonPropertyName("isOwnCompanyData")] bool IsOwnCompanyData,
     [property: JsonPropertyName("legalEntity")] BpdmLegelEntityData? LegalEntity,
-    [property: JsonPropertyName("site")] BpdmSite? Site,
+    [property: JsonPropertyName("site")] BpdmLegalEntitySite? Site,
     [property: JsonPropertyName("address")] BpdmLegalAddressResponse Address
 );
 
@@ -44,7 +44,24 @@ public record BpdmLegelEntityData(
     [property: JsonPropertyName("legalName")] string? LegalName,
     [property: JsonPropertyName("shortName")] string? ShortName,
     [property: JsonPropertyName("legalForm")] string? LegalForm,
-    [property: JsonPropertyName("classifications")] IEnumerable<BpdmProfileClassification> Classifications
+    [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria ConfidenceCriteria,
+    [property: JsonPropertyName("states")] IEnumerable<BpdmStatus> States
+);
+
+public record BpdmLegalEntitySite(
+    string SiteBpn,
+    string Name,
+    [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria ConfidenceCriteria,
+    IEnumerable<BpdmState> States
+);
+
+public record BpdmConfidenceCriteria(
+    [property: JsonPropertyName("sharedByOwner")] bool SharedByOwner,
+    [property: JsonPropertyName("checkedByExternalDataSource")] bool CheckedByExternalDataSource,
+    [property: JsonPropertyName("numberOfSharingMembers")] int NumberOfSharingMembers,
+    [property: JsonPropertyName("lastConfidenceCheckAt")] DateTime LastConfidenceCheckAt,
+    [property: JsonPropertyName("nextConfidenceCheckAt")] DateTime NextConfidenceCheckAt,
+    [property: JsonPropertyName("confidenceLevel")] int ConfidenceLevel
 );
 
 public record BpdmLegalAddressResponse(
@@ -52,13 +69,14 @@ public record BpdmLegalAddressResponse(
     [property: JsonPropertyName("name")] string? Name,
     [property: JsonPropertyName("addressType")] string? AddressType,
     [property: JsonPropertyName("physicalPostalAddress")] BpdmAddressPhysicalPostalAddress? PhysicalPostalAddress,
-    [property: JsonPropertyName("alternativePostalAddress")] BpdmAddressAlternativePostalAddress? AlternativePostalAddress
+    [property: JsonPropertyName("alternativePostalAddress")] BpdmAddressAlternativePostalAddress? AlternativePostalAddress,
+    [property: JsonPropertyName("confidenceCriteria")] BpdmConfidenceCriteria ConfidenceCriteria,
+    [property: JsonPropertyName("states")] IEnumerable<BpdmStatus> States
 );
 
 public record BpdmStatus(
-    string OfficialDenotation,
     DateTimeOffset ValidFrom,
-    DateTimeOffset ValidUntil,
+    DateTimeOffset ValidTo,
     string Type
 );
 

@@ -101,6 +101,7 @@ public class InvitationProcessService : IInvitationProcessService
                 x.ClientId = null;
                 x.ClientSecret = null;
                 x.ServiceAccountUserId = null;
+                x.IdpName = null;
             },
             x =>
             {
@@ -109,9 +110,8 @@ public class InvitationProcessService : IInvitationProcessService
                 x.InitializationVector = initializationVector;
                 x.EncryptionMode = encryptionMode;
                 x.ServiceAccountUserId = serviceAccountUserId;
+                x.IdpName = idpName;
             });
-
-        companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x => { x.IdpName = null; }, x => { x.IdpName = idpName; });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE, 1), ProcessStepStatusId.DONE, true, null);
     }
@@ -135,7 +135,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         await _idpManagement.AddRealmRoleMappingsToUserAsync(serviceAccountUserId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, 1), ProcessStepStatusId.DONE, true, null);
+        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, 1), ProcessStepStatusId.DONE, true, null);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> UpdateCentralIdpUrl(Guid invitationId)
@@ -157,7 +157,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         await _idpManagement.UpdateCentralIdentityProviderUrlsAsync(idpName, orgName, _settings.InitialLoginTheme, clientId, secret).ConfigureAwait(false);
 
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null);
+        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT, 1), ProcessStepStatusId.DONE, true, null);
     }
 
     private string Decrypt(byte[]? clientSecret, byte[]? initializationVector, int? encryptionMode)
@@ -193,7 +193,7 @@ public class InvitationProcessService : IInvitationProcessService
 
         await _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync(idpName, orgName).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, 1), ProcessStepStatusId.DONE, true, null);
+        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, 1), ProcessStepStatusId.DONE, true, null);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpRealm(Guid invitationId)
@@ -217,7 +217,7 @@ public class InvitationProcessService : IInvitationProcessService
             .CreateSharedRealmIdpClientAsync(idpName, _settings.InitialLoginTheme, orgName, clientId, secret)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT, 1), ProcessStepStatusId.DONE, true, null);
+        return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, 1), ProcessStepStatusId.DONE, true, null);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedClient(Guid invitationId)

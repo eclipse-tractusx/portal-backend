@@ -30,7 +30,7 @@ public static class RegistrationValidation
 
     public static void ValidateData(this RegistrationData data)
     {
-        if (data.BusinessPartnerNumber != null && !BpnRegex.IsMatch(data.BusinessPartnerNumber))
+        if (!string.IsNullOrEmpty(data.BusinessPartnerNumber) && !BpnRegex.IsMatch(data.BusinessPartnerNumber))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.BusinessPartnerNumber));
         }

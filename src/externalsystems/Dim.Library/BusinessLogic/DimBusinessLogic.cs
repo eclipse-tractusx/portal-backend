@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using System.Reflection;
 using System.Text.Json;
+using System.Web;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 
@@ -73,7 +74,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                     {
                         checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
                     },
-                new[] { ProcessStepTypeId.AWAIT_DIM_RESPONSE },
+                [ProcessStepTypeId.AWAIT_DIM_RESPONSE],
                 null,
                 true,
                 null);
@@ -96,6 +97,7 @@ public class DimBusinessLogic : IDimBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
+        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, c => c.DidDocumentLocation = null, c => c.DidDocumentLocation = $"{_settings.DidDocumentBaseLocation}/{HttpUtility.UrlEncode(businessPartnerNumber)}/did.json");
         await _dimService.CreateWalletAsync(companyName, businessPartnerNumber, $"{_settings.DidDocumentBaseLocation}/{businessPartnerNumber}/did.json", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -116,9 +118,9 @@ public class DimBusinessLogic : IDimBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 companyApplicationStatusIds.Single(),
                 ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.AWAIT_DIM_RESPONSE,
-                processStepTypeIds: new[] { ProcessStepTypeId.VALIDATE_DID_DOCUMENT })
+                processStepTypeIds: [ProcessStepTypeId.VALIDATE_DID_DOCUMENT])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!ValidateDidFormat(data.Did, bpn))
@@ -161,7 +163,7 @@ public class DimBusinessLogic : IDimBusinessLogic
             {
                 item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            new[] { ProcessStepTypeId.VALIDATE_DID_DOCUMENT });
+            [ProcessStepTypeId.VALIDATE_DID_DOCUMENT]);
     }
 
     private bool ValidateDidFormat(string did, string bpn)
@@ -190,9 +192,9 @@ public class DimBusinessLogic : IDimBusinessLogic
                 ProcessStepStatusId.DONE,
                 checklist =>
                 {
-                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                    checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
                 },
-                new[] { ProcessStepTypeId.START_CLEARING_HOUSE },
+                [ProcessStepTypeId.TRANSMIT_BPN_DID],
                 null,
                 true,
                 null);
@@ -200,7 +202,6 @@ public class DimBusinessLogic : IDimBusinessLogic
 
         // Do stuff
         var maxTime = dateCreated.AddDays(_settings.MaxValidationTimeInDays);
-
         return _dateTimeProvider.OffsetNow > maxTime
             ? new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.FAILED,

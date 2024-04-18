@@ -24,12 +24,10 @@ public record BpdmPaginationSharingStateOutput(
 );
 
 public record BpdmSharingState(
-    BpdmSharingStateBusinessPartnerType? BusinessPartnerType,
     Guid ExternalId,
     BpdmSharingStateType? SharingStateType,
     string? SharingErrorCode,
     string? SharingErrorMessage,
-    string? Bpn,
     DateTimeOffset? SharingProcessStarted,
     Guid? TaskId
 );

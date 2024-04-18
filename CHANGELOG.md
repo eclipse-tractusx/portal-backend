@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC2
+
+### Change
+* moved api paths from BPDM out of code into config / helm chart
+* merged all migrations since 2.0.0-alpha into one 2.0.0-rc2
+
+### Feature
+* added DID to DID BPN resolver
+* added new checklist steps
+
+### Bugfix
+* fixed company invite: changed invitation processStepType order and removed disposal of mimeMessage for mailing
+* fixed mail not being set at new user invite
+
 ## 2.0.0-RC1
 
 ### Change
