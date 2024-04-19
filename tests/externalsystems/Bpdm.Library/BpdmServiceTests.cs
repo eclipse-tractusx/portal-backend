@@ -160,74 +160,235 @@ public class BpdmServiceTests
     public async Task FetchInputLegalEntity_WithValidResult_ReturnsExpected()
     {
         // Arrange
-        const string externalId = "0bf60442-09a8-4f09-811b-8854626ed5a6";
-        const string json = @"{
+        const string ExternalId = "0bf60442-09a8-4f09-811b-8854626ed5a6";
+        const string Json = @"{
             ""totalElements"": 1,
             ""totalPages"": 1,
             ""page"": 0,
             ""contentSize"": 1,
             ""content"": [
-                {
-                    ""legalNameParts"": [
-                        ""Volkswagen AG""
+              {
+                ""externalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6"",
+                ""nameParts"": [
+                    ""Volkswagen AG""
+                ],
+                ""identifiers"": [
+                  {
+                    ""type"": ""EU_VAT_ID_DE"",
+                    ""value"": ""DE234567890"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_CZ"",
+                    ""value"": ""CZ12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_PL"",
+                    ""value"": ""PL1234567890"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_BE"",
+                    ""value"": ""BE1234567890"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_CH"",
+                    ""value"": ""CHE123456789"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_DK"",
+                    ""value"": ""DK12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_ES"",
+                    ""value"": ""ES12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_GB"",
+                    ""value"": ""GB12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_NO"",
+                    ""value"": ""NO12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_FR"",
+                    ""value"": ""FR12345678901"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""CH_UID"",
+                    ""value"": ""CHE-123.456.789"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""FR_SIREN"",
+                    ""value"": ""12345678901"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""EU_VAT_ID_AT"",
+                    ""value"": ""ATU12345678"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""DE_BNUM"",
+                    ""value"": ""12345670"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""CZ_ICO"",
+                    ""value"": ""12345671"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""BE_ENT_NO"",
+                    ""value"": ""1234567890"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""CVR_DK"",
+                    ""value"": ""12345672"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""ID_CRN"",
+                    ""value"": ""12345673"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""NO_ORGID"",
+                    ""value"": ""12345674"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""LEI_ID"",
+                    ""value"": ""12345675"",
+                    ""issuingBody"": ""string""
+                  },
+                  {
+                    ""type"": ""DUNS_ID"",
+                    ""value"": ""283329464"",
+                    ""issuingBody"": ""string""
+                  }
+                ],
+                ""states"": [
+                  {
+                    ""validFrom"": ""2024-04-12T09:48:11.443Z"",
+                    ""validTo"": ""2024-04-12T09:48:11.443Z"",
+                    ""type"": ""ACTIVE""
+                  }
+                ],
+                ""roles"": [
+                    ""SUPPLIER""
+                ],
+                ""isOwnCompanyData"": true,
+                ""legalEntity"": {
+                    ""legalEntityBpn"": ""BPNL00000007QGTF"",
+                    ""legalName"": ""Volkswagen AG"",
+                    ""shortName"": ""VW"",
+                    ""legalForm"": ""string"",
+                    ""classifications"": [
+                      {
+                        ""type"": ""NACE"",
+                        ""code"": ""string"",
+                        ""value"": ""string""
+                      }
                     ],
-                    ""identifiers"": [
-                        {
-                            ""value"": ""DE234567890"",
-                            ""type"": ""EU_VAT_ID_DE"",
-                            ""issuingBody"": null
-                        }
-                    ],
-                    ""legalShortName"": ""Volkswagen AG"",
-                    ""legalForm"": null,
-                    ""states"": [],
-                    ""classifications"": [],
-                    ""roles"": [],
-                    ""legalAddress"": {
-                        ""nameParts"": [],
-                        ""states"": [],
-                        ""identifiers"": [],
-                        ""physicalPostalAddress"": {
-                            ""geographicCoordinates"": null,
-                            ""country"": ""DE"",
-                            ""administrativeAreaLevel1"": null,
-                            ""administrativeAreaLevel2"": null,
-                            ""administrativeAreaLevel3"": null,
-                            ""postalCode"": ""38440"",
-                            ""city"": ""Wolfsburg"",
-                            ""district"": null,
-                            ""street"": {
-                                ""namePrefix"": null,
-                                ""additionalNamePrefix"": null,
-                                ""name"": ""Berliner Ring 2"",
-                                ""nameSuffix"": null,
-                                ""additionalNameSuffix"": null,
-                                ""houseNumber"": null,
-                                ""milestone"": null,
-                                ""direction"": null
-                            },
-                            ""companyPostalCode"": null,
-                            ""industrialZone"": null,
-                            ""building"": null,
-                            ""floor"": null,
-                            ""door"": null
+                    ""confidenceCriteria"": {
+                        ""sharedByOwner"": true,
+                        ""checkedByExternalDataSource"": true,
+                        ""numberOfBusinessPartners"": 0,
+                        ""lastConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""nextConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""confidenceLevel"": 0
+                    }
+                },
+                ""site"": {
+                    ""siteBpn"": ""string"",
+                    ""name"": ""string"",
+                    ""confidenceCriteria"": {
+                        ""sharedByOwner"": true,
+                        ""checkedByExternalDataSource"": true,
+                        ""numberOfBusinessPartners"": 0,
+                        ""lastConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""nextConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""confidenceLevel"": 0
+                  }
+                },
+                ""address"": {
+                    ""addressBpn"": ""BPNA000000006GFG"",
+                    ""name"": ""string"",
+                    ""addressType"": ""LegalAndSiteMainAddress"",
+                    ""physicalPostalAddress"": {
+                        ""geographicCoordinates"": {
+                            ""longitude"": 0,
+                            ""latitude"": 0,
+                            ""altitude"": 0
                         },
-                        ""alternativePostalAddress"": null,
-                        ""roles"": [],
-                        ""externalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6_legalAddress"",
-                        ""legalEntityExternalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6"",
-                        ""siteExternalId"": null,
-                        ""bpna"": ""BPNA000000006GFG""
+                    ""country"": ""UNDEFINED"",
+                    ""administrativeAreaLevel1"": ""string"",
+                    ""administrativeAreaLevel2"": ""string"",
+                    ""administrativeAreaLevel3"": ""string"",
+                    ""postalCode"": ""38440"",
+                    ""city"": ""Wolfsburg"",
+                    ""district"": ""string"",
+                    ""street"": {
+                        ""namePrefix"": ""string"",
+                        ""additionalNamePrefix"": ""string"",
+                        ""name"": ""Berliner Ring"",
+                        ""nameSuffix"": ""string"",
+                        ""additionalNameSuffix"": ""string"",
+                        ""houseNumber"": ""2"",
+                        ""houseNumberSupplement"": ""string"",
+                        ""milestone"": ""string"",
+                        ""direction"": ""string""
                     },
-                    ""externalId"": ""0bf60442-09a8-4f09-811b-8854626ed5a6"",
-                    ""bpnl"": ""BPNL00000007QGTF""
-                }
+                    ""companyPostalCode"": ""string"",
+                    ""industrialZone"": ""string"",
+                    ""building"": ""string"",
+                    ""floor"": ""string"",
+                    ""door"": ""string""
+                    },
+                    ""alternativePostalAddress"": {
+                        ""geographicCoordinates"": {
+                            ""longitude"": 0,
+                            ""latitude"": 0,
+                            ""altitude"": 0
+                        },
+                        ""country"": ""UNDEFINED"",
+                        ""administrativeAreaLevel1"": ""string"",
+                        ""postalCode"": ""string"",
+                        ""city"": ""string"",
+                        ""deliveryServiceType"": ""PO_BOX"",
+                        ""deliveryServiceQualifier"": ""string"",
+                        ""deliveryServiceNumber"": ""string""
+                    },
+                    ""confidenceCriteria"": {
+                        ""sharedByOwner"": true,
+                        ""checkedByExternalDataSource"": true,
+                        ""numberOfBusinessPartners"": 0,
+                        ""lastConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""nextConfidenceCheckAt"": ""2024-04-12T09:48:11.443Z"",
+                        ""confidenceLevel"": 0
+                    }
+                },
+                ""createdAt"": ""2024-04-12T09:48:11.443Z"",
+                ""updatedAt"": ""2024-04-12T09:48:11.443Z""
+              }
             ]
-        }";
+          }";
 
         var httpMessageHandlerMock = new HttpMessageHandlerMock(
             HttpStatusCode.OK,
-            new StringContent(json));
+            new StringContent(Json));
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
@@ -236,12 +397,37 @@ public class BpdmServiceTests
         var sut = new BpdmService(_tokenService, _options);
 
         // Act
-        var result = await sut.FetchInputLegalEntity(externalId, CancellationToken.None);
+        var result = await sut.FetchInputLegalEntity(ExternalId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result.ExternalId.Should().Be(externalId);
-        result.LegalEntity?.Bpnl.Should().Be("BPNL00000007QGTF");
+        result.ExternalId.Should().Be(ExternalId);
+        result.LegalEntity.Should().NotBeNull();
+        result.LegalEntity!.Bpnl.Should().Be("BPNL00000007QGTF");
+        result.Identifiers.Should().HaveCount(21)
+            .And.Satisfy(
+                x => x.Type == "EU_VAT_ID_DE" && x.Value == "DE234567890",
+                x => x.Type == "EU_VAT_ID_CZ" && x.Value == "CZ12345678",
+                x => x.Type == "EU_VAT_ID_PL" && x.Value == "PL1234567890",
+                x => x.Type == "EU_VAT_ID_BE" && x.Value == "BE1234567890",
+                x => x.Type == "EU_VAT_ID_CH" && x.Value == "CHE123456789",
+                x => x.Type == "EU_VAT_ID_DK" && x.Value == "DK12345678",
+                x => x.Type == "EU_VAT_ID_ES" && x.Value == "ES12345678",
+                x => x.Type == "EU_VAT_ID_GB" && x.Value == "GB12345678",
+                x => x.Type == "EU_VAT_ID_NO" && x.Value == "NO12345678",
+                x => x.Type == "EU_VAT_ID_FR" && x.Value == "FR12345678901",
+                x => x.Type == "CH_UID" && x.Value == "CHE-123.456.789",
+                x => x.Type == "FR_SIREN" && x.Value == "12345678901",
+                x => x.Type == "EU_VAT_ID_AT" && x.Value == "ATU12345678",
+                x => x.Type == "DE_BNUM" && x.Value == "12345670",
+                x => x.Type == "CZ_ICO" && x.Value == "12345671",
+                x => x.Type == "BE_ENT_NO" && x.Value == "1234567890",
+                x => x.Type == "CVR_DK" && x.Value == "12345672",
+                x => x.Type == "ID_CRN" && x.Value == "12345673",
+                x => x.Type == "NO_ORGID" && x.Value == "12345674",
+                x => x.Type == "LEI_ID" && x.Value == "12345675",
+                x => x.Type == "DUNS_ID" && x.Value == "283329464"
+            );
     }
 
     [Fact]
