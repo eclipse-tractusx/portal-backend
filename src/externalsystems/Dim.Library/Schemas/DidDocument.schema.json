@@ -9,8 +9,7 @@
         "type": "string"
       },
       "const": [
-        "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/suites/ed25519-2020/v1"
+        "https://www.w3.org/ns/did/v1"
       ]
     },
     "id": {
@@ -22,10 +21,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string"
           },
           "type": {
             "type": "string"
@@ -41,12 +37,16 @@
               },
               "x": {
                 "type": "string"
+              },
+              "y": {
+                "type": "string"
               }
             },
             "required": [
               "kty",
               "crv",
-              "x"
+              "x",
+              "y"
             ],
             "additionalProperties": true
           }
@@ -65,10 +65,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string"
           },
           "type": {
             "type": "string"
