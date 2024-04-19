@@ -20,6 +20,8 @@
 using AutoFixture;
 using AutoFixture.Dsl;
 using AutoFixture.Kernel;
+using FakeItEasy;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Linq.Expressions;
 using System.Text.Json;
 
@@ -53,5 +55,24 @@ public static class AutoFixtureExtensions
     public static IPostprocessComposer<T> WithOrgNamePattern<T>(this IPostprocessComposer<T> composer, Expression<Func<T, object?>> propertyPicker)
     {
         return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(OrgNameRegex)));
+    }
+
+    public static void ConfigureTokenServiceFixture<T>(this IFixture fixture, HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null)
+    {
+        var messageHandler = A.Fake<HttpMessageHandler>();
+        A.CallTo(messageHandler) // mock protected method
+            .Where(x => x.Method.Name == "SendAsync")
+            .WithReturnType<Task<HttpResponseMessage>>()
+            .ReturnsLazily(call =>
+            {
+                var message = call.Arguments.Get<HttpRequestMessage>(0);
+                setMessage?.Invoke(message);
+                return Task.FromResult(httpResponseMessage);
+            });
+        var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("https://example.com/path/test/") };
+        fixture.Inject(httpClient);
+
+        var tokenService = fixture.Freeze<Fake<ITokenService>>();
+        A.CallTo(() => tokenService.FakedObject.GetAuthorizedClient<T>(A<KeyVaultAuthSettings>._, A<CancellationToken>._)).Returns(httpClient);
     }
 }

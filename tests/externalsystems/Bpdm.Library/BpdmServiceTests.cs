@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -52,6 +53,7 @@ public class BpdmServiceTests
             GrantType = "cred",
             TokenAddress = "https://key.cloak.com",
         });
+        _fixture.Inject(_options);
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -111,20 +113,21 @@ public class BpdmServiceTests
     {
         // Arrange
         var externalId = Guid.NewGuid().ToString();
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        HttpRequestMessage? request = null;
+        _fixture.ConfigureTokenServiceFixture<BpdmService>(new HttpResponseMessage
         {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
-            .Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+            StatusCode = HttpStatusCode.OK
+        }, requestMessage => request = requestMessage);
+        var sut = _fixture.Create<BpdmService>();
 
         // Act
         var result = await sut.SetSharingStateToReady(externalId, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
+        request.Should().NotBeNull();
+        request!.RequestUri.Should()
+            .Be("https://example.com/path/test/sharing-state/ready");
     }
 
     [Fact]
@@ -132,13 +135,12 @@ public class BpdmServiceTests
     {
         // Arrange
         var externalId = Guid.NewGuid().ToString();
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        HttpRequestMessage? request = null;
+        _fixture.ConfigureTokenServiceFixture<BpdmService>(new HttpResponseMessage
         {
-            BaseAddress = new Uri("https://base.address.com")
-        };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new BpdmService(_tokenService, _options);
+            StatusCode = HttpStatusCode.BadRequest
+        }, requestMessage => request = requestMessage);
+        var sut = _fixture.Create<BpdmService>();
 
         // Act
         async Task Act() => await sut.SetSharingStateToReady(externalId, CancellationToken.None);
@@ -146,6 +148,8 @@ public class BpdmServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("call to external system bpdm-put-sharing-state-ready failed with statuscode 400");
+        request!.RequestUri.Should()
+            .Be("https://example.com/path/test/sharing-state/ready");
     }
 
     #endregion
