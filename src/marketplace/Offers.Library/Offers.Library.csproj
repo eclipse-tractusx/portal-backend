@@ -28,6 +28,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.HttpClientExtensions\Framework.HttpClientExtensions.csproj" />
       <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />

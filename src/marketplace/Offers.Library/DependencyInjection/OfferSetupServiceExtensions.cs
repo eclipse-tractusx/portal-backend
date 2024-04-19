@@ -18,21 +18,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 
 public static class OfferSetupServiceCollectionExtension
 {
-    public static IServiceCollection AddOfferServices(this IServiceCollection services)
+    public static IServiceCollection AddOfferServices(this IServiceCollection services, IConfiguration config)
     {
         services
             .AddTransient<LoggingHandler<OfferSetupService>>()
             .AddHttpClient(nameof(OfferSetupService)).AddHttpMessageHandler<LoggingHandler<OfferSetupService>>();
         return services
+            .AddDimService(config.GetSection("Dim"))
+            .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
+            .AddTransient<ITokenService, TokenService>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSetupService, OfferSetupService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()

@@ -52,7 +52,7 @@ WebAppHelper
             .AddOfferDocumentServices();
 
         builder.Services
-            .AddOfferServices()
+            .AddOfferServices(builder.Configuration)
             .AddProvisioningDBAccess(builder.Configuration);
 
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));

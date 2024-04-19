@@ -60,7 +60,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
         _settings = new OfferSubscriptionsProcessSettings
         {
             BasePortalAddress = "https://test.com",
-            ItAdminRoles = Enumerable.Repeat(new UserRoleConfig("Portal", new[] { "ItAdmin", "Admin" }), 1)
+            ItAdminRoles = Enumerable.Repeat(new UserRoleConfig("Portal", ["ItAdmin", "Admin"]), 1)
         };
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionRepository);
@@ -299,11 +299,12 @@ public class OfferSubscriptionProcessTypeExecutorTests
         var result = _executor.GetExecutableStepTypeIds();
 
         // Assert
-        result.Should().HaveCount(5)
+        result.Should().HaveCount(6)
             .And.Satisfy(
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
                 x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
+                x => x == ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER,
                 x => x == ProcessStepTypeId.ACTIVATE_SUBSCRIPTION,
                 x => x == ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK
             );
@@ -323,13 +324,13 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .Returns(Guid.Empty);
 
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
-            .Returns((new[] { ProcessStepTypeId.START_AUTOSETUP }, ProcessStepStatusId.DONE, true, null));
+            .Returns(([ProcessStepTypeId.START_AUTOSETUP], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
-            .Returns((new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION }, ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._))
-            .Returns((new[] { ProcessStepTypeId.ACTIVATE_SUBSCRIPTION }, ProcessStepStatusId.DONE, true, null));
+            .Returns(([ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION], ProcessStepStatusId.DONE, true, null));
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
+            .Returns(([ProcessStepTypeId.ACTIVATE_SUBSCRIPTION], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._, A<string>._))
-            .Returns((new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK }, ProcessStepStatusId.DONE, true, null));
+            .Returns(([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProviderCallback(_subscriptionId, A<CancellationToken>._))
             .Returns((null, ProcessStepStatusId.DONE, true, null));
     }
