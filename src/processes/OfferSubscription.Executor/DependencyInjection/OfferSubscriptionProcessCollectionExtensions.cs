@@ -38,7 +38,7 @@ public static class OfferSubscriptionProcessCollectionExtensions
 
         return services
             .AddOfferProviderService(config)
-            .AddOfferServices(config)
+            .AddOfferServices()
             .AddTransient<IProcessTypeExecutor, OfferSubscriptionProcessTypeExecutor>();
     }
 }

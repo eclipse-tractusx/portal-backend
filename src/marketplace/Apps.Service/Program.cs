@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -52,7 +53,8 @@ WebAppHelper
             .AddOfferDocumentServices();
 
         builder.Services
-            .AddOfferServices(builder.Configuration)
+            .AddDimService(builder.Configuration.GetSection("Dim"))
+            .AddOfferServices()
             .AddProvisioningDBAccess(builder.Configuration);
 
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));

@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
@@ -43,6 +44,7 @@ WebAppHelper
 
         builder.Services.AddTransient<INotificationService, NotificationService>();
         builder.Services
+            .AddDimService(builder.Configuration.GetSection("Dim"))
             .AddServiceBusinessLogic(builder.Configuration)
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
             .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
@@ -50,7 +52,7 @@ WebAppHelper
             .AddOfferDocumentServices();
 
         builder.Services
-            .AddOfferServices(builder.Configuration)
+            .AddOfferServices()
             .AddProvisioningDBAccess(builder.Configuration);
 
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
