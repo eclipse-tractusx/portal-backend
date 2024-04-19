@@ -387,4 +387,9 @@ public class CompanyRepository : ICompanyRepository
                     .Where(ca => ca.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
                     .Select(ca => ca.Id)))
             .SingleOrDefaultAsync();
+
+    public Task<string?> GetWalletServiceUrl(Guid companyId) =>
+        _context.Companies.Where(x => x.Id == companyId)
+            .Select(x => x.CompanyWalletData!.AuthenticationServiceUrl)
+            .SingleOrDefaultAsync();
 }

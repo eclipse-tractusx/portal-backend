@@ -65,4 +65,5 @@ public interface ICompanyDataBusinessLogic
     Task<int> DeleteCompanyCertificateAsync(Guid documentId);
 
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);
+    Task<DimUrlsResponse> GetDimServiceUrls();
 }
