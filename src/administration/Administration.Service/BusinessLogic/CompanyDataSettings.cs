@@ -76,6 +76,7 @@ public static class CompanyDataSettingsExtensions
     {
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
             .ValidateEnumEnumeration(section)
             .ValidateOnStart();

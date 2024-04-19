@@ -597,17 +597,16 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     }
 
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType) =>
-            Pagination.CreateResponseAsync(
+        Pagination.CreateResponseAsync(
             page,
             size,
             _settings.MaxPageSize,
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
-    public async Task<DimUrlsResponse> GetDimServiceUrls()
-    {
-        var serviceUrl = await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
-        return new DimUrlsResponse(_settings.DecentralIdentityManagementAuthUrl, serviceUrl);
-    }
+    public async Task<DimUrlsResponse> GetDimServiceUrls() =>
+        new DimUrlsResponse(
+            _settings.DecentralIdentityManagementAuthUrl,
+            await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None));
 
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)

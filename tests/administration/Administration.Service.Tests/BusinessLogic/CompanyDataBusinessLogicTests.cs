@@ -1824,13 +1824,15 @@ public class CompanyDataBusinessLogicTests
     public async Task GetDimServiceUrls_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
     {
         // Arrange
-        A.CallTo(() => _companyRepository.GetWalletServiceUrl(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetWalletServiceUrl(A<Guid>._))
             .Returns("https://example.org/service");
 
         // Act
         var result = await _sut.GetDimServiceUrls();
 
         // Assert
+        A.CallTo(() => _companyRepository.GetWalletServiceUrl(_identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
         result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/auth");
         result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/service");
     }

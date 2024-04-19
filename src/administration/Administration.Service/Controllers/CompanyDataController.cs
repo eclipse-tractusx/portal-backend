@@ -479,8 +479,6 @@ public class CompanyDataController : ControllerBase
     /// <response code="200">Returns the dim urls.</response>
     [HttpGet]
     [Authorize(Roles = "view_company_data")]
-    [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("decentralidentity/urls")]
     [ProducesResponseType(typeof(DimUrlsResponse), StatusCodes.Status200OK)]
