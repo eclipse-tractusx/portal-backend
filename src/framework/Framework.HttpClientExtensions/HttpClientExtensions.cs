@@ -30,7 +30,7 @@ public static class HttpClientExtensions
         {
             if (baseAddress != null)
             {
-                c.BaseAddress = new Uri(baseAddress);
+                c.BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
             }
         }).AddHttpMessageHandler<LoggingHandler<T>>();
 
