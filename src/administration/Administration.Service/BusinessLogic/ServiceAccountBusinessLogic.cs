@@ -159,23 +159,55 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
         }
 
-        var internalClientId = await provisioningManager.GetIdOfCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        IamClientAuthMethod iamClientAuthMethod;
+        string? secret;
+        if (result.DimServiceAccountData == null)
+        {
+            var internalClientId = await provisioningManager.GetIdOfCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            var authData = await provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            iamClientAuthMethod = authData.IamClientAuthMethod;
+            secret = authData.Secret;
+        }
+        else
+        {
+            iamClientAuthMethod = IamClientAuthMethod.SECRET;
+            secret = Decrypt(
+                result.DimServiceAccountData.ClientSecret,
+                result.DimServiceAccountData.InitializationVector,
+                result.DimServiceAccountData.EncryptionMode);
+        }
 
-        var authData = await provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ServiceAccountConnectorOfferData(
             result.ServiceAccountId,
             result.ClientClientId,
             result.Name,
             result.Description,
-            authData.IamClientAuthMethod,
+            iamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
-            authData.Secret,
+            secret,
             result.ConnectorData,
             result.OfferSubscriptionData,
             result.CompanyLastEditorData!.Name,
             result.CompanyLastEditorData.CompanyName,
             result.SubscriptionId);
+    }
+
+    private string Decrypt(byte[]? clientSecret, byte[]? initializationVector, int? encryptionMode)
+    {
+        if (clientSecret == null)
+        {
+            throw new ConflictException("ClientSecret must not be null");
+        }
+
+        if (encryptionMode == null)
+        {
+            throw new ConflictException("EncryptionMode must not be null");
+        }
+
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == encryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {encryptionMode} is not configured");
+
+        return CryptoHelper.Decrypt(clientSecret, initializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
     }
 
     public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId)
