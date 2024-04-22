@@ -375,7 +375,7 @@ public class DimBusinessLogicTests
                                                     }
                                                 }
                                             ],
-                                            "services": [
+                                            "service": [
                                                 {
                                                     "id": "did:web:example.com:did:BPNL0000000000XX#key-0",
                                                     "type": "CredentialStore",
