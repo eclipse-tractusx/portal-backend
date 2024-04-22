@@ -233,7 +233,7 @@ public class BpnDidResolverBusinessLogicTests
         A.CallTo(() => _bpnDidResolverService.TransmitDidAndBpn(did, BPN, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.START_CLEARING_HOUSE);
+        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.REQUEST_BPN_CREDENTIAL);
     }
 
     #endregion
