@@ -57,6 +57,25 @@ public static class AutoFixtureExtensions
         return composer.With(propertyPicker, new SpecimenContext(composer).Resolve(new RegularExpressionRequest(OrgNameRegex)));
     }
 
+    public static void ConfigureHttpClientFactoryFixture(this IFixture fixture, string clientName, HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null, string? baseAddress = null)
+    {
+        var messageHandler = A.Fake<HttpMessageHandler>();
+        A.CallTo(messageHandler) // mock protected method
+            .Where(x => x.Method.Name == "SendAsync")
+            .WithReturnType<Task<HttpResponseMessage>>()
+            .ReturnsLazily(call =>
+            {
+                var message = call.Arguments.Get<HttpRequestMessage>(0);
+                setMessage?.Invoke(message);
+                return Task.FromResult(httpResponseMessage);
+            });
+        var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri(baseAddress ?? "http://localhost") };
+        fixture.Inject(httpClient);
+
+        var httpClientFactory = fixture.Freeze<Fake<IHttpClientFactory>>();
+        A.CallTo(() => httpClientFactory.FakedObject.CreateClient(clientName)).Returns(httpClient);
+    }
+
     public static void ConfigureTokenServiceFixture<T>(this IFixture fixture, HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null)
     {
         var messageHandler = A.Fake<HttpMessageHandler>();

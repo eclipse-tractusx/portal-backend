@@ -16,11 +16,12 @@ public class DimServiceTests
     private readonly ITokenService _tokenService;
     private readonly IHttpClientFactory _clientFactory;
     private readonly DimSettings _dimSettings;
+    private readonly IFixture _fixture;
 
     public DimServiceTests()
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.ConfigureFixture();
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.ConfigureFixture();
 
         _tokenService = A.Fake<ITokenService>();
         _clientFactory = A.Fake<IHttpClientFactory>();
@@ -36,8 +37,9 @@ public class DimServiceTests
             Password = "katze123",
             Scope = "credentials",
             DidDocumentBaseLocation = "https://example.org/did/",
-            UniversalResolverAddress = "https://example.org/resolver/"
+            UniversalResolverAddress = "https://dev.uniresolver.io/"
         };
+        _fixture.Inject(Options.Create(_dimSettings));
         _sut = new DimService(_tokenService, _clientFactory, Options.Create(_dimSettings));
     }
 
@@ -94,21 +96,25 @@ public class DimServiceTests
     {
         // Arrange
         const string did = "did:web:123";
+        HttpRequestMessage? request = null;
         var didValidationResult = new DidValidationResult(new DidResolutionMetadata(null));
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            new StringContent(JsonSerializer.Serialize(didValidationResult)));
-        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var responseMessage = new HttpResponseMessage
         {
-            BaseAddress = new Uri("https://base.address.com")
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(JsonSerializer.Serialize(didValidationResult))
         };
-        A.CallTo(() => _clientFactory.CreateClient("universalResolver")).Returns(httpClient);
+        _fixture.ConfigureHttpClientFactoryFixture("universalResolver", responseMessage, requestMessage => request = requestMessage, _dimSettings.UniversalResolverAddress);
+        var sut = _fixture.Create<DimService>();
 
         // Act
-        var result = await _sut.ValidateDid(did, CancellationToken.None);
+        var result = await sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         result.Should().BeTrue();
+        request.Should().NotBeNull();
+        request!.RequestUri.Should().NotBeNull();
+        request.RequestUri.Should().NotBeNull();
+        request.RequestUri!.AbsoluteUri.Should().Be($"https://dev.uniresolver.io/1.0/identifiers/{Uri.EscapeDataString(did)}");
     }
 
     [Fact]
@@ -117,17 +123,16 @@ public class DimServiceTests
         // Arrange
         const string did = "did:web:123";
         var didValidationResult = new DidValidationResult(new DidResolutionMetadata("This is an error"));
-        var httpMessageHandlerMock = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            new StringContent(JsonSerializer.Serialize(didValidationResult)));
-        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var responseMessage = new HttpResponseMessage
         {
-            BaseAddress = new Uri("https://base.address.com")
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(JsonSerializer.Serialize(didValidationResult))
         };
-        A.CallTo(() => _clientFactory.CreateClient("universalResolver")).Returns(httpClient);
+        _fixture.ConfigureHttpClientFactoryFixture("universalResolver", responseMessage);
+        var sut = _fixture.Create<DimService>();
 
         // Act
-        var result = await _sut.ValidateDid(did, CancellationToken.None);
+        var result = await sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         result.Should().BeFalse();

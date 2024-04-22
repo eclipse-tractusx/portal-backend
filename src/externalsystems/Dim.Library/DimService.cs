@@ -53,7 +53,7 @@ public class DimService : IDimService
     public async Task<bool> ValidateDid(string did, CancellationToken cancellationToken)
     {
         using var httpClient = _httpClientFactory.CreateClient("universalResolver");
-        var result = await httpClient.GetAsync($"{Uri.EscapeDataString(_settings.UniversalResolverAddress)}1.0/identifiers/{Uri.EscapeDataString(did)}", cancellationToken)
+        var result = await httpClient.GetAsync($"1.0/identifiers/{Uri.EscapeDataString(did)}", cancellationToken)
             .CatchingIntoServiceExceptionFor("validate-did", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         if (!result.IsSuccessStatusCode)
