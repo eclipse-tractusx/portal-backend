@@ -40,10 +40,23 @@ public static class DimServiceCollectionExtension
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<DimSettings>>();
         services.AddCustomHttpClientWithAuthentication<DimService>(settings.Value.BaseAddress);
+
+        RegisterUniversalResolver(settings.Value, services);
         services
             .AddTransient<IDimService, DimService>()
             .AddTransient<IDimBusinessLogic, DimBusinessLogic>();
 
         return services;
+    }
+
+    private static void RegisterUniversalResolver(DimSettings settings, IServiceCollection services)
+    {
+        var baseAddress = settings.UniversalResolverAddress.EndsWith("/")
+            ? settings.UniversalResolverAddress
+            : $"{settings.UniversalResolverAddress}/";
+        services.AddHttpClient("universalResolver", c =>
+        {
+            c.BaseAddress = new Uri(baseAddress);
+        });
     }
 }
