@@ -159,7 +159,7 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
         }
 
-        var iamClientAuthMethod = IamClientAuthMethod.SECRET;
+        IamClientAuthMethod iamClientAuthMethod;
         string? secret;
         if (result.DimServiceAccountData == null)
         {
@@ -170,6 +170,7 @@ public class ServiceAccountBusinessLogic(
         }
         else
         {
+            iamClientAuthMethod = IamClientAuthMethod.SECRET;
             secret = Decrypt(
                 result.DimServiceAccountData.ClientSecret,
                 result.DimServiceAccountData.InitializationVector,

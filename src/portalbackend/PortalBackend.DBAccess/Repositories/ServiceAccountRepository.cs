@@ -139,14 +139,16 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.OfferSubscription.Offer!.OfferTypeId,
                             serviceAccount.OfferSubscription.Offer.Name,
                             serviceAccount.OfferSubscription.Id),
-                    serviceAccount.Identity.LastEditorId == null ? null :
-                        new CompanyLastEditorData(
+                    serviceAccount.Identity.LastEditorId == null
+                        ? null
+                        : new CompanyLastEditorData(
                             serviceAccount.Identity.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
                                 ? serviceAccount.Identity.LastEditor.CompanyUser!.Lastname
                                 : serviceAccount.Identity.LastEditor.CompanyServiceAccount!.Name,
                             serviceAccount.Identity.LastEditor.Company!.Name),
-                    serviceAccount.DimCompanyServiceAccount == null ? null :
-                        new DimServiceAccountData(
+                    serviceAccount.DimCompanyServiceAccount == null
+                        ? null
+                        : new DimServiceAccountData(
                             serviceAccount.DimCompanyServiceAccount.ClientSecret,
                             serviceAccount.DimCompanyServiceAccount.InitializationVector,
                             serviceAccount.DimCompanyServiceAccount.EncryptionMode)))

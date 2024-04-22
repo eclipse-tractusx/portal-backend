@@ -229,6 +229,7 @@ public class ServiceAccountBusinessLogicTests
 
         // Assert
         result.Should().NotBeNull();
+        result.Secret.Should().Be("test");
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._)).MustNotHaveHappened();
@@ -772,7 +773,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Build<CompanyServiceAccountDetailedData>()
-            .With(x => x.DimServiceAccountData, (DimServiceAccountData?)null)
+            .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
             .Create();
 
         var cryptoConfig = _options.Value.EncryptionConfigs.Single(x => x.Index == _options.Value.EncryptionConfigIndex);
