@@ -32,10 +32,17 @@ public record CompanyServiceAccountDetailedData(
     Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
     OfferResponseData? OfferSubscriptionData,
-    CompanyLastEditorData? CompanyLastEditorData);
+    CompanyLastEditorData? CompanyLastEditorData,
+    DimServiceAccountData? DimServiceAccountData);
 
 public record ConnectorResponseData(Guid Id, string Name);
 
 public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? SubscriptionId);
 
 public record CompanyLastEditorData(string? Name, string CompanyName);
+
+public record DimServiceAccountData(
+    byte[] ClientSecret,
+    byte[]? InitializationVector,
+    int EncryptionMode
+);
