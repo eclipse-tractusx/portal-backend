@@ -123,7 +123,12 @@ public class ApplicationActivationService : IApplicationActivationService
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
 
-        var resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        string? resultMessage = null;
+        if (!_settings.UseDimWallet)
+        {
+            resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+
         await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (assignedRoles != null)
