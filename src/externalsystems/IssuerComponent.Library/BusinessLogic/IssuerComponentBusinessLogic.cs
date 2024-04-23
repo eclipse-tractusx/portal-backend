@@ -94,7 +94,7 @@ public class IssuerComponentBusinessLogic(
 
         checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
-            null,
+            item => item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             item =>
             {
                 item.ApplicationChecklistEntryStatusId = data.Status == IssuerResponseStatus.UNSUCCESSFUL
@@ -162,7 +162,7 @@ public class IssuerComponentBusinessLogic(
 
         checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
-            null,
+            item => item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
             item =>
             {
                 item.ApplicationChecklistEntryStatusId = data.Status == IssuerResponseStatus.UNSUCCESSFUL
