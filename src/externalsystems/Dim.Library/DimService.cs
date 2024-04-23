@@ -44,7 +44,7 @@ public class DimService : IDimService
     /// <inhertidoc />
     public async Task<bool> CreateWalletAsync(string companyName, string bpn, string didDocumentLocation, CancellationToken cancellationToken)
     {
-        var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync($"setup-dim?companyName={Uri.EscapeDataString(companyName)}&bpn={Uri.EscapeDataString(bpn)}&didDocumentLocation={Uri.EscapeDataString(didDocumentLocation)}", Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("dim-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
@@ -52,8 +52,8 @@ public class DimService : IDimService
 
     public async Task<bool> ValidateDid(string did, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient("universalResolver");
-        var result = await httpClient.GetAsync($"{Uri.EscapeDataString(_settings.UniversalResolverAddress)}1.0/identifiers/{Uri.EscapeDataString(did)}", cancellationToken)
+        using var httpClient = _httpClientFactory.CreateClient("universalResolver");
+        var result = await httpClient.GetAsync($"1.0/identifiers/{Uri.EscapeDataString(did)}", cancellationToken)
             .CatchingIntoServiceExceptionFor("validate-did", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
         if (!result.IsSuccessStatusCode)
@@ -63,5 +63,13 @@ public class DimService : IDimService
 
         var validationResult = await result.Content.ReadFromJsonAsync<DidValidationResult>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return validationResult != null && string.IsNullOrWhiteSpace(validationResult.DidResolutionMetadata.Error);
+    }
+
+    /// <inhertidoc />
+    public async Task CreateTechnicalUser(string bpn, TechnicalUserData technicalUserData, CancellationToken cancellationToken)
+    {
+        using var httpClient = await _tokenService.GetAuthorizedClient<DimService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await httpClient.PostAsJsonAsync($"technical-user/{Uri.EscapeDataString(bpn)}", technicalUserData, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("technical-user-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
     }
 }

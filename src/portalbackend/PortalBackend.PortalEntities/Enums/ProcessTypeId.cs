@@ -25,5 +25,6 @@ public enum ProcessTypeId
     OFFER_SUBSCRIPTION = 3,
     PARTNER_REGISTRATION = 4,
     MAILING = 5,
-    INVITATION = 6
+    INVITATION = 6,
+    DIM_TECHNICAL_USER = 7
 }

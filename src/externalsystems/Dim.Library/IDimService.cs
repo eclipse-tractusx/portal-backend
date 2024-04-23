@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Dim.Library;
 
 /// <summary>
@@ -41,4 +43,12 @@ public interface IDimService
     /// <param name="cancellationToken">The CancellationToken</param>
     /// <returns><c>true</c> if the did is valid, otherwise <c>false</c></returns>
     Task<bool> ValidateDid(string did, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates a technical user for the wallet of the company with the given bpn
+    /// </summary>
+    /// <param name="bpn">Bpn of the company the technical user should be created for</param>
+    /// <param name="technicalUserData">Data for the technical user creation</param>
+    /// <param name="cancellationToken">The CancellationToken</param>
+    Task CreateTechnicalUser(string bpn, TechnicalUserData technicalUserData, CancellationToken cancellationToken);
 }

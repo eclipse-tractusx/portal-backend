@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -25,25 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 public class BPNAccessTest
 {
     private readonly IFixture _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-
-    private void ConfigureHttpClientFactoryFixture(HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null)
-    {
-        var messageHandler = A.Fake<HttpMessageHandler>();
-        A.CallTo(messageHandler) // mock protected method
-            .Where(x => x.Method.Name == "SendAsync")
-            .WithReturnType<Task<HttpResponseMessage>>()
-            .ReturnsLazily(call =>
-            {
-                var message = call.Arguments.Get<HttpRequestMessage>(0);
-                setMessage?.Invoke(message);
-                return Task.FromResult(httpResponseMessage);
-            });
-        var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
-        _fixture.Inject(httpClient);
-
-        var httpClientFactory = _fixture.Freeze<Fake<IHttpClientFactory>>();
-        A.CallTo(() => httpClientFactory.FakedObject.CreateClient("bpn")).Returns(httpClient);
-    }
 
     #region FetchLegalEntityByBpns
 
@@ -189,7 +171,7 @@ public class BPNAccessTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
         };
-        ConfigureHttpClientFactoryFixture(responseMessage, requestMessage => request = requestMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage, requestMessage => request = requestMessage);
 
         var businessPartnerNumber = _fixture.Create<string>();
         var sut = _fixture.Create<BpnAccess>();
@@ -219,7 +201,7 @@ public class BPNAccessTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
         };
-        ConfigureHttpClientFactoryFixture(responseMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -243,7 +225,7 @@ public class BPNAccessTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
         };
-        ConfigureHttpClientFactoryFixture(responseMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -265,7 +247,7 @@ public class BPNAccessTest
         {
             StatusCode = HttpStatusCode.OK,
         };
-        ConfigureHttpClientFactoryFixture(responseMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -289,7 +271,7 @@ public class BPNAccessTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
         };
-        ConfigureHttpClientFactoryFixture(responseMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
@@ -313,7 +295,7 @@ public class BPNAccessTest
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)
         };
-        ConfigureHttpClientFactoryFixture(responseMessage);
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 

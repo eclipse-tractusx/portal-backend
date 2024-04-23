@@ -327,8 +327,8 @@ public class DimBusinessLogicTests
         {
             { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new (ApplicationChecklistEntryStatusId.TO_DO, string.Empty )}
         }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>());
-        var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n    \"https://www.w3.org/ns/did/v1\",\n    \"https://w3id.org/security/suites/ed25519-2020/v1\"\n  ],\n  \"id\": \"did:web:example.com:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
-        var data = _fixture.Build<DimWalletData>().With(x => x.DidDocument, didDocument).Create();
+        var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n \"abc\" ],\n  \"id\": \"did:web:example.org:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
+        var data = _fixture.Build<DimWalletData>().With(x => x.DidDocument, didDocument).With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX").Create();
         var companyId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
             .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
@@ -360,28 +360,24 @@ public class DimBusinessLogicTests
         const string jsonData = """
                                         {
                                             "@context": [
-                                                "https://www.w3.org/ns/did/v1",
-                                                "https://w3id.org/security/suites/ed25519-2020/v1"
+                                                "https://www.w3.org/ns/did/v1"
                                             ],
                                             "id": "did:web:example.com:did:BPNL0000000000XX",
                                             "verificationMethod": [
                                                 {
-                                                    "id": [
-                                                        "did:web:example.com:did:BPNL0000000000XX#key-0"
-                                                    ],
+                                                    "id": "did:web:example.com:did:BPNL0000000000XX#key-0",
                                                     "type": "JsonWebKey2020",
                                                     "publicKeyJwk": {
                                                         "kty": "JsonWebKey2020",
                                                         "crv": "Ed25519",
-                                                        "x": "3534354354353"
+                                                        "x": "3534354354353",
+                                                        "y": "123456"
                                                     }
                                                 }
                                             ],
-                                            "services": [
+                                            "service": [
                                                 {
-                                                    "id": [
-                                                        "did:web:example.com:did:BPNL0000000000XX#key-0"
-                                                    ],
+                                                    "id": "did:web:example.com:did:BPNL0000000000XX#key-0",
                                                     "type": "CredentialStore",
                                                     "serviceEndpoint": "https://example.com/svc"
                                                 }

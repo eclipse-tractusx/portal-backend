@@ -336,6 +336,58 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CreateDimCompanyServiceAccount
+
+    [Fact]
+    public async Task CreateDimCompanyServiceAccount_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.CreateDimCompanyServiceAccount(
+            _validServiceAccountId,
+            "https://example.org/auth",
+            "test"u8.ToArray(),
+            "test"u8.ToArray(),
+            0
+        );
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<DimCompanyServiceAccount>()
+            .Which.EncryptionMode.Should().Be(0);
+    }
+
+    #endregion
+
+    #region CreateDimUserCreationData
+
+    [Fact]
+    public async Task CreateDimUserCreationData_ReturnsExpectedResult()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.CreateDimUserCreationData(
+            _validServiceAccountId,
+            processId
+        );
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<DimUserCreationData>()
+            .Which.ProcessId.Should().Be(processId);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()
