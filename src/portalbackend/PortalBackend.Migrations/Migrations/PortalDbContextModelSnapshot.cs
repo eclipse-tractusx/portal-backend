@@ -37,7 +37,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
                 .HasAnnotation("ProductVersion", "8.0.2")
-                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

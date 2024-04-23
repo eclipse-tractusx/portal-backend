@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,7 +29,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240416055815_466-auditing-certificate-management")]
+    [Migration("20240423132534_466-auditing-certificate-management")]
     partial class _466auditingcertificatemanagement
     {
         /// <inheritdoc />
@@ -2994,16 +2994,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 4,
-                            Label = "CLEARING_HOUSE"
+                            Label = "BPNL_CREDENTIAL"
                         },
                         new
                         {
                             Id = 5,
-                            Label = "SELF_DESCRIPTION_LP"
+                            Label = "MEMBERSHIP_CREDENTIAL"
                         },
                         new
                         {
                             Id = 6,
+                            Label = "CLEARING_HOUSE"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "SELF_DESCRIPTION_LP"
+                        },
+                        new
+                        {
+                            Id = 8,
                             Label = "APPLICATION_ACTIVATION"
                         });
                 });
@@ -3186,6 +3196,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_created");
+
+                    b.Property<string>("DidDocumentLocation")
+                        .HasColumnType("text")
+                        .HasColumnName("did_document_location");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -4490,6 +4504,65 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("country_long_names", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthenticationServiceUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("authentication_service_url");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_company_service_accounts");
+
+                    b.ToTable("dim_company_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_user_creation_data");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_process_id");
+
+                    b.HasIndex("ServiceAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_service_account_id");
+
+                    b.ToTable("dim_user_creation_data", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5617,6 +5690,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 25,
                             Label = "CREDENTIAL_REJECTED"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "CREDENTIAL_EXPIRY"
                         });
                 });
 
@@ -6442,6 +6520,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
+                            Id = 25,
+                            Label = "REQUEST_BPN_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Label = "STORED_BPN_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Label = "REQUEST_MEMBERSHIP_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Label = "STORED_MEMBERSHIP_CREDENTIAL"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Label = "TRANSMIT_BPN_DID"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Label = "RETRIGGER_TRANSMIT_DID_BPN"
+                        },
+                        new
+                        {
                             Id = 100,
                             Label = "TRIGGER_PROVIDER"
                         },
@@ -6499,6 +6607,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 111,
                             Label = "TRIGGER_ACTIVATE_SUBSCRIPTION"
+                        },
+                        new
+                        {
+                            Id = 112,
+                            Label = "OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 113,
+                            Label = "RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 114,
+                            Label = "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 115,
+                            Label = "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
                         },
                         new
                         {
@@ -6578,12 +6706,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 402,
-                            Label = "INVITATION_UPDATE_CENTRAL_IDP_URLS"
+                            Label = "INVITATION_ADD_REALM_ROLE"
                         },
                         new
                         {
                             Id = 403,
-                            Label = "INVITATION_ADD_REALM_ROLE"
+                            Label = "INVITATION_CREATE_SHARED_REALM"
                         },
                         new
                         {
@@ -6593,7 +6721,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 405,
-                            Label = "INVITATION_CREATE_SHARED_REALM"
+                            Label = "INVITATION_UPDATE_CENTRAL_IDP_URLS"
                         },
                         new
                         {
@@ -6618,62 +6746,62 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         new
                         {
                             Id = 410,
-                            Label = "INVITATION_SEND_MAIL"
-                        },
-                        new
-                        {
-                            Id = 411,
                             Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP"
                         },
                         new
                         {
-                            Id = 412,
+                            Id = 411,
                             Label = "RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT"
                         },
                         new
                         {
-                            Id = 413,
-                            Label = "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS"
-                        },
-                        new
-                        {
-                            Id = 414,
+                            Id = 412,
                             Label = "RETRIGGER_INVITATION_ADD_REALM_ROLE"
                         },
                         new
                         {
-                            Id = 415,
-                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
-                        },
-                        new
-                        {
-                            Id = 416,
+                            Id = 413,
                             Label = "RETRIGGER_INVITATION_CREATE_SHARED_REALM"
                         },
                         new
                         {
-                            Id = 417,
+                            Id = 414,
+                            Label = "RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER"
+                        },
+                        new
+                        {
+                            Id = 415,
+                            Label = "RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS"
+                        },
+                        new
+                        {
+                            Id = 416,
                             Label = "RETRIGGER_INVITATION_CREATE_SHARED_CLIENT"
                         },
                         new
                         {
-                            Id = 418,
+                            Id = 417,
                             Label = "RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP"
                         },
                         new
                         {
-                            Id = 419,
+                            Id = 418,
                             Label = "RETRIGGER_INVITATION_CREATE_USER"
                         },
                         new
                         {
-                            Id = 420,
+                            Id = 419,
                             Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
                         },
                         new
                         {
-                            Id = 421,
-                            Label = "RETRIGGER_INVITATION_SEND_MAIL"
+                            Id = 500,
+                            Label = "CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 501,
+                            Label = "RETRIGGER_CREATE_DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -6719,6 +6847,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 6,
                             Label = "INVITATION"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -8449,6 +8582,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Language");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                        .WithOne("DimCompanyServiceAccount")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_company_service_accounts_company_service_accounts_id");
+
+                    b.Navigation("CompanyServiceAccount");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ProcessId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_processes_process_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "ServiceAccount")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ServiceAccountId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_company_service_accounts_service_acc");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("ServiceAccount");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
@@ -9382,6 +9546,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompaniesLinkedServiceAccount");
 
                     b.Navigation("Connector");
+
+                    b.Navigation("DimCompanyServiceAccount");
+
+                    b.Navigation("DimUserCreationData");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
@@ -9644,6 +9812,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyApplication");
 
                     b.Navigation("CompanyInvitation");
+
+                    b.Navigation("DimUserCreationData");
 
                     b.Navigation("MailingInformation");
 

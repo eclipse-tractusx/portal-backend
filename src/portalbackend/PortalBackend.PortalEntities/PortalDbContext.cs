@@ -1555,7 +1555,7 @@ public class PortalDbContext : DbContext
             .HasAuditV1Triggers<Document, AuditDocument20231115>();
 
         modelBuilder.Entity<CompanyCertificate>()
-                    .HasAuditV1Triggers<CompanyCertificate, AuditCertificateManagement20240416>();
+            .HasAuditV1Triggers<CompanyCertificate, AuditCertificateManagement20240416>();
 
         modelBuilder.Entity<CompanyInvitation>(entity =>
         {
