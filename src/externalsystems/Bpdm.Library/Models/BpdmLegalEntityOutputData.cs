@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
@@ -30,7 +28,7 @@ public record PageOutputResponseBpdmLegalEntityData(
 public record BpdmLegalEntityOutputData(
     [property: JsonPropertyName("externalId")] string? ExternalId,
     [property: JsonPropertyName("nameParts")] IEnumerable<string> NameParts,
-    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmIdentifier> Identifiers,
+    [property: JsonPropertyName("identifiers")] IEnumerable<BpdmUntypedIdentifier> Identifiers,
     [property: JsonPropertyName("states")] IEnumerable<BpdmStatus> States,
     [property: JsonPropertyName("roles")] IEnumerable<string> Roles,
     [property: JsonPropertyName("isOwnCompanyData")] bool IsOwnCompanyData,
@@ -86,22 +84,10 @@ public record BpdmCountry
     string Name
 );
 
-public record BpdmProfileClassification(
+public record BpdmUntypedIdentifier(
+    string Type,
     string Value,
-    string Code,
-    string Type
-);
-
-public record BpdmAddressState(
-    string Description,
-    DateTimeOffset? ValidFrom,
-    DateTimeOffset? ValidTo,
-    string Type
-);
-
-public record BpdmAddressIdentifier(
-    string Value,
-    BpdmIdentifierId Type
+    string? IssuingBody
 );
 
 public record BpdmAddressPhysicalPostalAddress(

@@ -138,6 +138,8 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CountryLongName> CountryLongNames { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
+    public virtual DbSet<DimCompanyServiceAccount> DimCompanyServiceAccounts { get; set; } = default!;
+    public virtual DbSet<DimUserCreationData> DimUserCreationData { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
     public virtual DbSet<DocumentStatus> DocumentStatus { get; set; } = default!;
@@ -867,6 +869,15 @@ public class PortalDbContext : DbContext
             entity.ToTable("company_service_accounts");
         });
 
+        modelBuilder.Entity<DimCompanyServiceAccount>(entity =>
+        {
+            entity.HasOne(x => x.CompanyServiceAccount)
+                .WithOne(x => x.DimCompanyServiceAccount)
+                .HasForeignKey<DimCompanyServiceAccount>(x => x.Id);
+
+            entity.ToTable("dim_company_service_accounts");
+        });
+
         modelBuilder.Entity<IdentityAssignedRole>(entity =>
         {
             entity.HasKey(e => new { e.IdentityId, e.UserRoleId });
@@ -1587,6 +1598,21 @@ public class PortalDbContext : DbContext
             entity.HasOne(x => x.MailingStatus)
                 .WithMany(x => x.MailingInformations)
                 .HasForeignKey(x => x.MailingStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<DimUserCreationData>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.HasOne(x => x.Process)
+                .WithOne(x => x.DimUserCreationData)
+                .HasForeignKey<DimUserCreationData>(x => x.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(x => x.ServiceAccount)
+                .WithOne(x => x.DimUserCreationData)
+                .HasForeignKey<DimUserCreationData>(x => x.ServiceAccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

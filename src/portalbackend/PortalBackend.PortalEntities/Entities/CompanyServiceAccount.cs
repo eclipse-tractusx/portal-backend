@@ -56,6 +56,8 @@ public class CompanyServiceAccount : IBaseEntity
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
-    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
     public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }
+    public virtual DimCompanyServiceAccount? DimCompanyServiceAccount { get; private set; }
+    public virtual DimUserCreationData? DimUserCreationData { get; set; }
+    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
 }

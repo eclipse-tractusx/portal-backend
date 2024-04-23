@@ -55,9 +55,9 @@ public class BpnDidResolverBusinessLogic : IBpnDidResolverBusinessLogic
             ProcessStepStatusId.DONE,
             checklist =>
             {
-                checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            [ProcessStepTypeId.START_CLEARING_HOUSE],
+            [ProcessStepTypeId.REQUEST_BPN_CREDENTIAL],
             null,
             true,
             null);

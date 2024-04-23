@@ -36,6 +36,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />

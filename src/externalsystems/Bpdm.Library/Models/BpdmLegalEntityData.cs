@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,12 +31,6 @@ public record BpdmState(
     DateTime ValidFrom,
     DateTime ValidTo,
     string Type
-);
-
-public record BpdmClassification(
-    string Type,
-    string Code,
-    string Value
 );
 
 public record BpdmGeographicCoordinates(
