@@ -21,8 +21,11 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -46,6 +49,7 @@ public class ServiceAccountBusinessLogicTests
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
     private static readonly Guid ValidConnectorId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
+    private static readonly Guid ValidServiceAccountWithDimDataId = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
     private readonly IIdentityData _identity;
     private readonly IEnumerable<Guid> _userRoleIds = Enumerable.Repeat(Guid.NewGuid(), 1);
@@ -53,6 +57,7 @@ public class ServiceAccountBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly IProvisioningManager _provisioningManager;
@@ -60,6 +65,8 @@ public class ServiceAccountBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IOptions<ServiceAccountSettings> _options;
     private readonly IIdentityService _identityService;
+    private readonly ServiceAccountBusinessLogic _sut;
+    private readonly byte[] _encryptionKey;
 
     public ServiceAccountBusinessLogicTests()
     {
@@ -71,6 +78,7 @@ public class ServiceAccountBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
@@ -82,10 +90,17 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(ValidCompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
+        _encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+
         _options = Options.Create(new ServiceAccountSettings
         {
-            ClientId = ClientId
+            ClientId = ClientId,
+            EncryptionConfigIndex = 1,
+            EncryptionConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(_encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
         });
+
+        _sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
     }
 
     #region CreateOwnCompanyServiceAccountAsync
@@ -200,6 +215,24 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidInputAndDimCompanyData_GetsAllData()
+    {
+        // Arrange
+        SetupGetOwnCompanyServiceAccountDetails();
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountWithDimDataId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Secret.Should().Be("test");
+        result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+        A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -534,6 +567,150 @@ public class ServiceAccountBusinessLogicTests
 
     #endregion
 
+    #region HandleServiceAccountCreationCallback
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithValidOfferSubscription_ExecutesExpected()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), Guid.NewGuid(), "test"), null));
+
+        // Act
+        await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(ProcessTypeId.OFFER_SUBSCRIPTION)]
+    [InlineData(ProcessTypeId.DIM_TECHNICAL_USER)]
+    public async Task HandleServiceAccountCreationCallback_WithNotExistingProcess_ThrowsException(ProcessTypeId processTypeId)
+    {
+        // Arrange
+        var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(default((ProcessTypeId, VerifyProcessData, (Guid?, Guid?, string?)?, (string?, Guid?)?)));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be($"externalId {process.Id} does not exist");
+    }
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithOfferSubscriptionIdNotExisting_ThrowsException()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, default((Guid?, Guid?, string?)), null));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be($"OfferSubscriptionId must be set for Process {process.Id}");
+    }
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithoutCompanyId_ThrowsException()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), null, null), null));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be($"CompanyId must be set for Process {process.Id}");
+    }
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithoutServiceAccountName_ThrowsException()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), Guid.NewGuid(), null), null));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be($"OfferName must be set for Process {process.Id}");
+    }
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithoutDimTechnicalUserCompanyId_ThrowsException()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, ("test", null)));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be("Company Id must be set");
+    }
+
+    [Fact]
+    public async Task HandleServiceAccountCreationCallback_WithoutOfferName_ThrowsException()
+    {
+        // Arrange
+        const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
+        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, default((string?, Guid?))));
+        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+            .MustHaveHappenedOnceExactly();
+        ex.Message.Should().Be("Service Account Name must be set");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupCreateOwnCompanyServiceAccount()
@@ -595,12 +772,24 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnCompanyServiceAccount()
     {
-        var data = _fixture.Create<CompanyServiceAccountDetailedData>();
+        var data = _fixture.Build<CompanyServiceAccountDetailedData>()
+            .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
+            .Create();
+
+        var cryptoConfig = _options.Value.EncryptionConfigs.Single(x => x.Index == _options.Value.EncryptionConfigIndex);
+        var (secret, initializationVector) = CryptoHelper.Encrypt("test", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        var dimServiceAccountData = new DimServiceAccountData(secret, initializationVector, _options.Value.EncryptionConfigIndex);
+        var dataWithDim = _fixture.Build<CompanyServiceAccountDetailedData>()
+            .With(x => x.DimServiceAccountData, dimServiceAccountData)
+            .Create();
 
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns(data);
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountWithDimDataId, ValidCompanyId))
+            .Returns(dataWithDim);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(
-                A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), ValidCompanyId))
+                A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId || x == ValidServiceAccountWithDimDataId), ValidCompanyId))
             .Returns<CompanyServiceAccountDetailedData?>(null);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, A<Guid>.That.Not.Matches(x => x == ValidCompanyId)))
             .Returns<CompanyServiceAccountDetailedData?>(null);

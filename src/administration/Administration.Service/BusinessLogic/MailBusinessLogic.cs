@@ -53,6 +53,7 @@ public class MailBusinessLogic(IPortalRepositories portalRepositories, IMailingP
         if (data.RecipientMail is not null)
         {
             mailingProcessCreation.CreateMailProcess(data.RecipientMail, mailData.Template, mailData.MailParameters.ToImmutableDictionary(x => x.Key, x => x.Value));
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 }

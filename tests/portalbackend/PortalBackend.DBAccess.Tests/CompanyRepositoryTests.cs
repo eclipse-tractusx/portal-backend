@@ -983,6 +983,23 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetWalletServiceUrl
+
+    [Fact]
+    public async Task GetWalletServiceUrl_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetWalletServiceUrl(_validCompanyId);
+
+        // Assert
+        result.Should().Be("https://example.org/auth");
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

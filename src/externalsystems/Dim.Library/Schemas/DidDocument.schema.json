@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://eclipse-tractusx.github.io/DidDocument.schema.json",
   "type": "object",
+  "required": ["@context", "id", "service", "verificationMethod"],
   "properties": {
     "@context": {
       "type": "array",
@@ -9,29 +10,48 @@
         "type": "string"
       },
       "const": [
-        "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/suites/ed25519-2020/v1"
+        "https://www.w3.org/ns/did/v1"
       ]
     },
     "id": {
       "type": "string"
     },
-    "verificationMethod": {
+    "service": {
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["id", "type"],
         "properties": {
           "id": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string"
           },
           "type": {
             "type": "string"
           },
+          "serviceEndpoint": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "verificationMethod": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "publicKeyJwk"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "controller": {
+            "type": "string"
+          },
           "publicKeyJwk": {
             "type": "object",
+            "required": ["kty", "crv", "x", "y"],
             "properties": {
               "kty": {
                 "type": "string"
@@ -41,46 +61,32 @@
               },
               "x": {
                 "type": "string"
+              },
+              "y": {
+                "type": "string"
               }
-            },
-            "required": [
-              "kty",
-              "crv",
-              "x"
-            ],
-            "additionalProperties": true
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "publicKeyJwk"
-        ],
-        "additionalProperties": true
-      }
-    },
-    "services": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "array",
-            "items": {
-              "type": "string"
             }
-          },
-          "type": {
-            "type": "string"
-          },
-          "serviceEndpoint": {
-            "type": "string"
           }
         }
-      },
-      "additionalProperties": true
+      }
+    },
+    "authentication": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assertionMethod": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keyAgreement": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
-  },
-  "required": ["id", "@context", "verificationMethod", "services"],
-  "additionalProperties": true
+  }
 }

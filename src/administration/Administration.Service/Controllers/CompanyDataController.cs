@@ -470,4 +470,18 @@ public class CompanyDataController : ControllerBase
         await _logic.RejectCredential(credentialId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Rejects the given credential
+    /// </summary>
+    /// <remarks>Example: GET: api/administration/companydata/decentralidentity/urls</remarks>
+    /// <returns>The dim service urls</returns>
+    /// <response code="200">Returns the dim urls.</response>
+    [HttpGet]
+    [Authorize(Roles = "view_company_data")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("decentralidentity/urls")]
+    [ProducesResponseType(typeof(DimUrlsResponse), StatusCodes.Status200OK)]
+    public Task<DimUrlsResponse> GetDimServiceUrls() =>
+        _logic.GetDimServiceUrls();
 }

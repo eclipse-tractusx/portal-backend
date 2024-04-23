@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -34,4 +34,5 @@ public interface IServiceAccountBusinessLogic
     Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId);
     Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive);
     IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName);
+    Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData);
 }

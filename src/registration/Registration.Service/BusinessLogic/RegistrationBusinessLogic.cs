@@ -591,8 +591,6 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     application.DateLastChanged = _dateTimeProvider.OffsetNow;
                 });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-
         var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
             KeyValuePair.Create("url", $"{_settings.BasePortalAddress}"),
@@ -606,6 +604,8 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             _logger.LogInformation("user {userId} has no email-address", _identityData.IdentityId);
         }
+
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         return true;
     }

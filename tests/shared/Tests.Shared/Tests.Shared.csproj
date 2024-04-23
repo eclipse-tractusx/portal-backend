@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />

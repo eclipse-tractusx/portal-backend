@@ -131,7 +131,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                 item =>
                 {
                     item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did document did not match the expected schema";
+                    item.Comment = "The did did not match the expected format";
                 },
                 null);
             return;

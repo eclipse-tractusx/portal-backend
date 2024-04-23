@@ -215,6 +215,7 @@ public class UserBusinessLogic : IUserBusinessLogic
             _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, template, mailParameters.ToImmutableDictionary());
         }
 
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return result.CompanyUserId;
     }
 
