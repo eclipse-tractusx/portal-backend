@@ -2,6 +2,24 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC3
+
+### Changes
+* **Administration Service**
+* adjust endpoint api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to return the secrets of a dim technical user as well
+
+### Feature
+* **Backend Logic**
+* adjusted offer autosetup process to create dim technical users
+* **Administration Service**
+* added GET: api/administration/companydata/decentralidentity/urls endpoint to receive wallet information
+
+### Bugfix
+* adjusted base url registration for http client setups
+* adjusted the did schema validation
+* added support for DUNS_ID for the BPDM gat endpoints
+* adjusted saving of mailing process steps
+
 ## 2.0.0-RC2
 
 ### Change
