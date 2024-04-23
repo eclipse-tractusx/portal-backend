@@ -277,7 +277,7 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
+    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveOfferRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
         _dbContext.Offers
             .AsNoTracking()
             .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
@@ -303,7 +303,7 @@ public class UserRolesRepository : IUserRolesRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetAppProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName) =>
+    public Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName) =>
         _dbContext.Offers
             .AsNoTracking()
             .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)

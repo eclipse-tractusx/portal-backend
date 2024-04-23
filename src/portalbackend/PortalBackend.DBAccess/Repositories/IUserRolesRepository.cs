@@ -78,7 +78,7 @@ public interface IUserRolesRepository
     /// <param name="offerId"></param>
     /// <param name="languageShortName"></param>
     /// <returns></returns>
-    Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName);
+    Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveOfferRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName);
 
     /// <summary>
     /// Gets userRoles for an app provider
@@ -86,5 +86,5 @@ public interface IUserRolesRepository
     /// <param name="offerId"></param>
     /// <param name="languageShortName"></param>
     /// <returns></returns>
-    Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetAppProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName);
+    Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName);
 }

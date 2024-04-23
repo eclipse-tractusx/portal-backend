@@ -560,7 +560,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc />
     public async Task<IEnumerable<ActiveAppRoleDetails>> GetAppProviderRolesAsync(Guid appId, string? languageShortName)
     {
-        var (isValid, isProvider, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (isValid, isProvider, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValid)
         {
             throw new NotFoundException($"App {appId} does not exist");

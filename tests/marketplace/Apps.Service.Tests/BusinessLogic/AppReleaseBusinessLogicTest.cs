@@ -1215,7 +1215,7 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = _fixture.Create<Guid>();
         var activeAppRoleDetails = default((bool, bool, IEnumerable<ActiveAppRoleDetails>));
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
             .Returns(activeAppRoleDetails);
 
         // Act
@@ -1224,7 +1224,7 @@ public class AppReleaseBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
         result.Message.Should().Be($"App {appId} does not exist");
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, null, "en"))
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, null, "en"))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -1233,8 +1233,8 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var activeAppRoleDetails = (true, false, _fixture.CreateMany<ActiveAppRoleDetails>());
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+        var activeAppRoleDetails = (true, false, default(IEnumerable<ActiveAppRoleDetails>?));
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
             .Returns(activeAppRoleDetails);
 
         // Act
@@ -1243,7 +1243,7 @@ public class AppReleaseBusinessLogicTest
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
         result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company");
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -1263,7 +1263,7 @@ public class AppReleaseBusinessLogicTest
             userRole2
         });
 
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(A<Guid>._, A<OfferTypeId>._, A<Guid>._, A<string>._, A<string>._))
             .Returns(activeAppRoleDetails);
 
         // Act
@@ -1274,7 +1274,7 @@ public class AppReleaseBusinessLogicTest
             .And.Satisfy(
                 x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
                 x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
-        A.CallTo(() => _userRolesRepository.GetAppProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
+        A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }
 
