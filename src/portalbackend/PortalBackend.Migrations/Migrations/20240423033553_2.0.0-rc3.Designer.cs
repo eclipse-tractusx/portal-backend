@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240418104402_593-AddNewDimProcess")]
-    partial class _593AddNewDimProcess
+    [Migration("20240423033553_2.0.0-rc3")]
+    partial class _200rc3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
