@@ -38,7 +38,8 @@ public static class IssuerComponentServiceCollectionExtensions
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<IssuerComponentSettings>>();
-        services.AddCustomHttpClientWithAuthentication<IssuerComponentService>(settings.Value.BaseAddress);
+        var baseAddress = settings.Value.BaseAddress;
+        services.AddCustomHttpClientWithAuthentication<IssuerComponentService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
         services
             .AddTransient<IIssuerComponentService, IssuerComponentService>()
             .AddTransient<IIssuerComponentBusinessLogic, IssuerComponentBusinessLogic>();

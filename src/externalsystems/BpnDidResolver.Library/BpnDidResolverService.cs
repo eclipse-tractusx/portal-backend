@@ -31,7 +31,7 @@ public class BpnDidResolverService(IHttpClientFactory httpClientFactory) : IBpnD
     {
         using var httpClient = httpClientFactory.CreateClient(nameof(BpnDidResolverService));
         var data = new BpnMappingData(bpn, did);
-        var result = await httpClient.PostAsJsonAsync("/api/management/bpn-directory", data, Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await httpClient.PostAsJsonAsync("api/management/bpn-directory", data, Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return result.IsSuccessStatusCode;
     }
 }

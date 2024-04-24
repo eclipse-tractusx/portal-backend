@@ -97,7 +97,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/auth" });
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test" });
         _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, options);
     }
 
@@ -1833,8 +1833,8 @@ public class CompanyDataBusinessLogicTests
         // Assert
         A.CallTo(() => _companyRepository.GetWalletServiceUrl(_identity.CompanyId))
             .MustHaveHappenedOnceExactly();
-        result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/auth");
-        result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/service");
+        result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/service/oauth/token");
+        result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/test");
     }
 
     #endregion

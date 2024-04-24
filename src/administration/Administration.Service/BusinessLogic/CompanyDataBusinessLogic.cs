@@ -604,9 +604,10 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
     public async Task<DimUrlsResponse> GetDimServiceUrls() =>
-        new DimUrlsResponse(
-            _settings.DecentralIdentityManagementAuthUrl,
-            await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None));
+        new(
+            $"{await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None)}/oauth/token",
+            _settings.DecentralIdentityManagementAuthUrl
+        );
 
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)

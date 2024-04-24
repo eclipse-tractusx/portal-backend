@@ -20,6 +20,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record DimUrlsResponse(
-    string DecentralIdentityManagementAuthUrl,
-    string? DecentralIdentityManagementServiceUrl
+    string? DecentralIdentityManagementAuthUrl,
+    string DecentralIdentityManagementServiceUrl
 );
