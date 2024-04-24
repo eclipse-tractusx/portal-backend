@@ -291,61 +291,6 @@ public class DimBusinessLogicTests
     }
 
     [Fact]
-    public async Task ProcessDimResponse_WithDidSchemaInvalid_CallsExpected()
-    {
-        // Arrange
-        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
-        {
-            { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new(ApplicationChecklistEntryStatusId.TO_DO, string.Empty) }
-        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>());
-        var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n    \"https://www.w3.org/ns/did/v1\",\n    \"https://w3id.org/security/suites/ed25519-2020/v1\"\n  ],\n  \"id\": \"did:web:example.com:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"type\": \"JsonWebKey2020\",\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"type\": \"CredentialStore\",\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
-        var data = _fixture.Build<DimWalletData>()
-            .With(x => x.DidDocument, didDocument)
-            .With(x => x.Did, "did:web:test.com:BPNL0000000000XX")
-            .Create();
-        var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
-        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(context);
-
-        // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context, null, A<Action<ApplicationChecklistEntry>>._, null))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task ProcessDimResponse_WithFailingSchemaValidation_CallsExpected()
-    {
-        // Arrange
-        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
-        {
-            { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new (ApplicationChecklistEntryStatusId.TO_DO, string.Empty )}
-        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>());
-        var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n \"abc\" ],\n  \"id\": \"did:web:example.org:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
-        var data = _fixture.Build<DimWalletData>().With(x => x.DidDocument, didDocument).With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX").Create();
-        var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
-        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(context);
-
-        // Act
-        await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _companyRepository.CreateWalletData(A<Guid>._, A<string>._, A<JsonDocument>._, A<string>._, A<byte[]>._, A<byte[]?>._, A<int>._, A<string>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(context, null, A<Action<ApplicationChecklistEntry>>._, null))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
     public async Task ProcessDimResponse_WithValid_CallsExpected()
     {
         // Arrange

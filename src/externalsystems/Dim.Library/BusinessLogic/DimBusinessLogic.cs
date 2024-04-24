@@ -123,34 +123,6 @@ public class DimBusinessLogic : IDimBusinessLogic
                 processStepTypeIds: [ProcessStepTypeId.VALIDATE_DID_DOCUMENT])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (!ValidateDidFormat(data.Did, bpn))
-        {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did did not match the expected format";
-                },
-                null);
-            return;
-        }
-
-        if (!await ValidateSchema(data.DidDocument, cancellationToken))
-        {
-            _checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
-                null,
-                item =>
-                {
-                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.FAILED;
-                    item.Comment = "The did document did not match the expected schema";
-                },
-                null);
-            return;
-        }
-
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"encryptionConfigIndex {_settings.EncryptionConfigIndex} is not configured");
         var (secret, initializationVector) = CryptoHelper.Encrypt(data.AuthenticationDetails.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
@@ -164,12 +136,6 @@ public class DimBusinessLogic : IDimBusinessLogic
                 item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
             [ProcessStepTypeId.VALIDATE_DID_DOCUMENT]);
-    }
-
-    private bool ValidateDidFormat(string did, string bpn)
-    {
-        var expectedDid = $"did:web:{_settings.DidDocumentBaseLocation.Replace("https://", string.Empty).Replace("/", ":")}:{bpn}";
-        return did.Equals(expectedDid, StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> ValidateDidDocument(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
@@ -238,18 +204,5 @@ public class DimBusinessLogic : IDimBusinessLogic
         }
 
         return (await _dimService.ValidateDid(did, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None), processStepsDateCreated.Single());
-    }
-
-    private static async Task<bool> ValidateSchema(JsonDocument content, CancellationToken cancellationToken)
-    {
-        var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new UnexpectedConditionException("Assembly location must be set");
-
-        var path = Path.Combine(location, "Schemas", "DidDocument.schema.json");
-        var schemaJson = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        var schema = JsonSchema.FromText(schemaJson);
-        SchemaRegistry.Global.Register(schema);
-        var result = schema.Evaluate(content);
-        return result.IsValid;
     }
 }
