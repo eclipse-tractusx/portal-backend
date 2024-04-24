@@ -42,26 +42,30 @@ public class IssuerComponentBusinessLogicTests
     private const string ValidBpn = "BPNL123698762345";
 
     private readonly IApplicationRepository _applicationRepository;
+    private readonly ICompanyRepository _companyRepository;
     private readonly IPortalRepositories _portalRepositories;
 
     private readonly IIssuerComponentService _issuerComponentService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IIssuerComponentBusinessLogic _sut;
     private readonly IOptions<IssuerComponentSettings> _options;
+    private readonly IFixture _fixture;
 
     public IssuerComponentBusinessLogicTests()
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _issuerComponentService = A.Fake<IIssuerComponentService>();
         _checklistService = A.Fake<IApplicationChecklistService>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
 
         _options = Options.Create(new IssuerComponentSettings
         {
@@ -481,6 +485,91 @@ public class IssuerComponentBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.Comment.Should().Be("Comment about the error");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
+    }
+
+    #endregion
+
+    #region CreateFrameworkCredential
+
+    [Fact]
+    public async Task CreateFrameworkCredential_WithValid_CallsExpected()
+    {
+        // Arrange
+        var credentialId = Guid.NewGuid();
+        var identityId = Guid.NewGuid();
+        var useCaseFrameworkVersionId = Guid.NewGuid();
+        var cryptoConfig = _options.Value.EncryptionConfigs.First();
+        var (secret, vector) = CryptoHelper.Encrypt("test123", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        A.CallTo(() => _companyRepository.GetWalletData(identityId))
+            .Returns(new ValueTuple<string?, string?, WalletInformation?>("did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet"))
+            );
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+            .Returns(credentialId);
+
+        // Act
+        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        result.Should().Be(credentialId);
+    }
+
+    [Fact]
+    public async Task CreateFrameworkCredentialData_WithHolderNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var useCaseFrameworkVersionId = Guid.NewGuid();
+        var identityId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetWalletData(identityId))
+            .Returns(new ValueTuple<string?, string?, WalletInformation?>(null, null, null));
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be($"The holder must be set");
+    }
+
+    [Fact]
+    public async Task CreateFrameworkCredential_WithBusinessPartnerNumberNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var useCaseFrameworkVersionId = Guid.NewGuid();
+        var identityId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetWalletData(identityId))
+            .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", null, null));
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be("The bpn must be set");
+    }
+
+    [Fact]
+    public async Task CreateFrameworkCredential_WithWalletInformationNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var useCaseFrameworkVersionId = Guid.NewGuid();
+        var identityId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.GetWalletData(identityId))
+            .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", "BPNL0000001Test", null));
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be("The wallet information must be set");
     }
 
     #endregion

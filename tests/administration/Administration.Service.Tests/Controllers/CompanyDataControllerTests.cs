@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -201,7 +202,7 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
+        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
 
         // Act
         await _controller.CreateUseCaseParticipation(data, CancellationToken.None);

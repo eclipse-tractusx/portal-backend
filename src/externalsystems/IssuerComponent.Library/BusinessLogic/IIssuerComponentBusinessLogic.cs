@@ -28,4 +28,5 @@ public interface IIssuerComponentBusinessLogic
     Task StoreBpnlCredentialResponse(Guid applicationId, IssuerResponseData data);
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> CreateMembershipCredential(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task StoreMembershipCredentialResponse(Guid applicationId, IssuerResponseData data);
+    Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, UseCaseFrameworkId frameworkId, Guid identityId, CancellationToken cancellationToken);
 }
