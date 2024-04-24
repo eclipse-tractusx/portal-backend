@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240423132534_466-auditing-certificate-management")]
-    partial class _466auditingcertificatemanagement
+    [Migration("20240424073406_2.0.0-rc4")]
+    partial class _200rc4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
