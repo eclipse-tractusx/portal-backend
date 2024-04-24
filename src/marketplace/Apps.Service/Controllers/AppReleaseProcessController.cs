@@ -493,4 +493,22 @@ public class AppReleaseProcessController : ControllerBase
         await _appReleaseBusinessLogic.UpdateTechnicalUserProfiles(appId, data).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Gets the app providers an overview of configures app roles.
+    /// </summary>
+    /// <param name="appId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">Id of the app which roles should be returned.</param>
+    /// <param name="languageShortName">OPTIONAL: The language short name.</param>
+    /// <returns>Returns the app providers an overview of configures app roles.</returns>
+    /// <remarks>Example: GET: /api/apps/AppChange/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles</remarks>
+    /// <response code="200">Returns the client roles.</response>
+    /// <response code="404">The app was not found.</response>
+    /// <response code="403">The app is not the provider of the company</response>
+    [HttpGet]
+    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("{appId}/roles")]
+    [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]
+    public Task<IEnumerable<ActiveAppRoleDetails>> GetAppProviderRolesAsync([FromRoute] Guid appId, [FromQuery] string? languageShortName = null) =>
+        _appReleaseBusinessLogic.GetAppProviderRolesAsync(appId, languageShortName);
 }

@@ -277,7 +277,7 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
-    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveAppRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
+    public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveOfferRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
         _dbContext.Offers
             .AsNoTracking()
             .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
@@ -290,6 +290,32 @@ public class UserRolesRepository : IUserRolesRepository
                 true,
                 x.Active,
                 x.Active
+                    ? x.Roles.Select(role =>
+                        new ActiveAppRoleDetails(
+                            role.UserRoleText,
+                            role.UserRoleDescriptions.Where(description =>
+                                (languageShortName != null && description.LanguageShortName == languageShortName) ||
+                                    description.LanguageShortName == defaultLanguageShortName)
+                                .Select(description => new ActiveAppUserRoleDescription(
+                                    description.LanguageShortName,
+                                    description.Description))))
+                    : null))
+            .SingleOrDefaultAsync();
+
+    /// <inheritdoc />
+    public Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName) =>
+        _dbContext.Offers
+            .AsNoTracking()
+            .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
+            .Select(offer => new
+            {
+                Provider = offer.ProviderCompanyId == companyId,
+                Roles = offer.UserRoles
+            })
+            .Select(x => new ValueTuple<bool, bool, IEnumerable<ActiveAppRoleDetails>?>(
+                true,
+                x.Provider,
+                x.Provider
                     ? x.Roles.Select(role =>
                         new ActiveAppRoleDetails(
                             role.UserRoleText,

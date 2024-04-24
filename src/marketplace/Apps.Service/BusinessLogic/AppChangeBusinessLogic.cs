@@ -367,7 +367,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
     /// <inheritdoc />
     public async Task<IEnumerable<ActiveAppRoleDetails>> GetActiveAppRolesAsync(Guid appId, string? languageShortName)
     {
-        var (isValid, isActive, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveAppRolesAsync(appId, OfferTypeId.APP, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (isValid, isActive, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveOfferRolesAsync(appId, OfferTypeId.APP, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValid)
         {
             throw new NotFoundException($"App {appId} does not exist");
