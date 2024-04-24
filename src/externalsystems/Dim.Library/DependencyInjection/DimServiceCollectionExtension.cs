@@ -39,7 +39,8 @@ public static class DimServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<DimSettings>>();
-        services.AddCustomHttpClientWithAuthentication<DimService>(settings.Value.BaseAddress);
+        var baseAddress = settings.Value.BaseAddress;
+        services.AddCustomHttpClientWithAuthentication<DimService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
 
         RegisterUniversalResolver(settings.Value, services);
         services

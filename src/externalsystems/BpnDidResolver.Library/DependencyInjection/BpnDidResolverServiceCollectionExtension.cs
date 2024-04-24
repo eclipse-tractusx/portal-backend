@@ -41,7 +41,8 @@ public static class BpnDidResolverServiceCollectionExtension
         var settings = sp.GetRequiredService<IOptions<BpnDidResolverSettings>>();
         services.AddHttpClient(nameof(BpnDidResolverService), c =>
         {
-            c.BaseAddress = new Uri(settings.Value.BaseAddress);
+            var baseAddress = settings.Value.BaseAddress;
+            c.BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
             c.DefaultRequestHeaders.Add("X-Api-Key", settings.Value.ApiKey);
         });
         services

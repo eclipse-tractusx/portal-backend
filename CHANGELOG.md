@@ -2,6 +2,22 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC4
+
+### Changes
+* **Administration Service**
+* adjusted GET: api/administration/adjust response of companydata/decentralidentity/urls to response the correct urls
+
+### Feature
+* **Backend Logic**
+* added auditing for certificate management
+* **Apps Service**
+* added GET: /api/apps/AppChange/{appId}/roles to receive the roles for a specific app
+
+### Bugfix
+* **Process Worker**
+* set the correct state for IDENTITY_WALLET application step after all steps are done
+
 ## 2.0.0-RC3
 
 ### Changes
