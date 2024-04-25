@@ -200,7 +200,7 @@ public class ServiceAccountController : ControllerBase
     /// <response code="200">returns all service account roles</response>
     [HttpPost]
     [Authorize(Roles = "technical_roles_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [Route("callback/{processId}")]
     public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid processId, [FromBody] AuthenticationDetail callbackData)
     {
