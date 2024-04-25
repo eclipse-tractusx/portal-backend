@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -577,7 +578,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new ValueTuple<Guid?, Guid?, string?>(Guid.NewGuid(), Guid.NewGuid(), "test"), null));
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new SubscriptionData(Guid.NewGuid(), Guid.NewGuid(), "test"), null));
 
         // Act
         await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
@@ -597,7 +598,7 @@ public class ServiceAccountBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(default((ProcessTypeId, VerifyProcessData, (Guid?, Guid?, string?)?, (string?, Guid?)?)));
+            .Returns(new ValueTuple<ProcessTypeId, VerifyProcessData, SubscriptionData?, PortalBackend.DBAccess.Models.ServiceAccountData?>());
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -617,7 +618,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, default((Guid?, Guid?, string?)), null));
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new SubscriptionData(null, null, null), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -637,7 +638,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), null, null), null));
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new SubscriptionData(Guid.NewGuid(), null, null), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -657,7 +658,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, (Guid.NewGuid(), Guid.NewGuid(), null), null));
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, new SubscriptionData(Guid.NewGuid(), Guid.NewGuid(), null), null));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -677,7 +678,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, ("test", null)));
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, new PortalBackend.DBAccess.Models.ServiceAccountData("test", null)));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -697,7 +698,7 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.DIM_TECHNICAL_USER, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, default((string?, Guid?))));
+            .Returns((ProcessTypeId.DIM_TECHNICAL_USER, context, null, new PortalBackend.DBAccess.Models.ServiceAccountData(null, null)));
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
