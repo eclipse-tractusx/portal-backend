@@ -48,4 +48,12 @@ public class IssuerComponentService(ITokenService tokenService, IOptions<IssuerC
             .CatchingIntoServiceExceptionFor("issuer-component-membership-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
     }
+
+    public async Task<Guid> CreateFrameworkCredential(CreateFrameworkCredentialRequest data, CancellationToken cancellationToken)
+    {
+        var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
+        var result = await httpClient.PostAsJsonAsync("/api/issuer/framework", data, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("issuer-component-framework-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
+        return await result.Content.ReadFromJsonAsync<Guid>(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 }

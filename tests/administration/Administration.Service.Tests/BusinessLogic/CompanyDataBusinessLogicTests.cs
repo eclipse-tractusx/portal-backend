@@ -24,6 +24,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -60,6 +62,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CompanyDataBusinessLogic _sut;
     private readonly IIdentityService _identityService;
+    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
 
     public CompanyDataBusinessLogicTests()
     {
@@ -77,6 +80,7 @@ public class CompanyDataBusinessLogicTests
         _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
+        _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
         _custodianService = A.Fake<ICustodianService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
@@ -98,7 +102,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test" });
-        _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, options);
+        _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, _issuerComponentBusinessLogic, options);
     }
 
     #region GetOwnCompanyDetails
@@ -775,105 +779,18 @@ public class CompanyDataBusinessLogicTests
     #region CreateUseCaseParticipation
 
     [Fact]
-    public async Task CreateUseCaseParticipation_WithInvalidDocumentContentType_ThrowsUnsupportedMediaTypeException()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        ex.Message.Should().Be($"Document type not supported. File must match contentTypes :{MediaTypeId.PDF.MapToMediaType()}");
-    }
-
-    [Fact]
-    public async Task CreateUseCaseParticipation_WithNotExistingDetailId_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateUseCaseParticipation();
-        var verifiedCredentialExternalTypeDetailId = Guid.NewGuid();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(verifiedCredentialExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
-    }
-
-    [Fact]
-    public async Task CreateUseCaseParticipation_WithRequestAlreadyExisting_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateUseCaseParticipation();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
-            .Returns(true);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Credential request already existing");
-    }
-
-    [Fact]
     public async Task CreateUseCaseParticipation_WithValidCall_CreatesExpected()
     {
         // Arrange
-        SetupCreateUseCaseParticipation();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-        var documentId = Guid.NewGuid();
-        var documents = new List<Document>();
-        var ssiDetails = new List<CompanySsiDetail>();
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
-            .Returns(false);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .Invokes((Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields) =>
-            {
-                var ssiDetail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
-                setOptionalFields?.Invoke(ssiDetail);
-                ssiDetails.Add(ssiDetail);
-            });
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
-            {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-                setupOptionalFields?.Invoke(document);
-                documents.Add(document);
-            })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
 
         // Act
         await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, _identity.IdentityId, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        documents.Should().ContainSingle();
-        var document = documents.Single();
-        document.DocumentTypeId.Should().Be(DocumentTypeId.PRESENTATION);
-        document.CompanyUserId.Should().Be(_identity.IdentityId);
-        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, document.Id, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .MustHaveHappenedOnceExactly();
-        ssiDetails.Should().ContainSingle();
-        var detail = ssiDetails.Single();
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
-        detail.DocumentId.Should().Be(document.Id);
-        detail.VerifiedCredentialTypeId.Should().Be(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
-        detail.ExpiryDate.Should().Be(null);
-        detail.VerifiedCredentialExternalTypeUseCaseDetailId.Should().Be(_traceabilityExternalTypeDetailId);
     }
 
     #endregion
@@ -1840,14 +1757,6 @@ public class CompanyDataBusinessLogicTests
     #endregion
 
     #region Setup
-
-    private void SetupCreateUseCaseParticipation()
-    {
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
-            .Returns(true);
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
-            .Returns(false);
-    }
 
     private void SetupCreateSsiCertificate()
     {

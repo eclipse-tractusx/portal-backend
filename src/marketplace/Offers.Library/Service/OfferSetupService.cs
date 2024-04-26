@@ -582,7 +582,7 @@ public class OfferSetupService : IOfferSetupService
         await _dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId.Value, $"sa-{offerName}-{offerSubscriptionId}"), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             [
-                ProcessStepTypeId.AWAIT_DIM_RESPONSE
+                ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
             ],
             ProcessStepStatusId.DONE,
             true,

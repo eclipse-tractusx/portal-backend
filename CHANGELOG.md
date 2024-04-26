@@ -2,6 +2,16 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC5
+
+### Changes
+* **Administration Service**
+* adjusted POST: api/administration/companydata/useCaseParticipation to create framework credentials with the ssi credential issuer
+
+### Bugfix
+* **Process Worker**
+* adjusted technical user creation process
+
 ## 2.0.0-RC4
 
 ### Changes

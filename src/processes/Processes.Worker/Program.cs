@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
@@ -63,7 +64,8 @@ try
                 .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
                 .AddMailingProcessExecutor()
                 .AddInvitationProcessExecutor(hostContext.Configuration)
-                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"));
+                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
+                .AddDimUserCreationProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"));
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
