@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.Extensions;
 

@@ -212,12 +212,12 @@ public class ServiceAccountRepository : IServiceAccountRepository
          _dbContext.DimUserCreationData.Add(new DimUserCreationData(Guid.NewGuid(), serviceAccountId, processId));
 
     public Task<(bool IsValid, string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
-        _dbContext.DimCompanyServiceAccounts
+        _dbContext.DimUserCreationData
             .Where(x => x.Id == dimServiceAccountId)
             .Select(x => new ValueTuple<bool, string?, string?>(
                 true,
-                x.CompanyServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
-                x.CompanyServiceAccount!.Name))
+                x.ServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
+                x.ServiceAccount!.Name))
             .SingleOrDefaultAsync();
 
     public Task<Guid> GetDimServiceAccountIdForProcess(Guid processId) =>

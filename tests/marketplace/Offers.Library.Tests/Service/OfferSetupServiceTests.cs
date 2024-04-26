@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 using TechnicalUserData = Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models.TechnicalUserData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
@@ -1195,7 +1196,7 @@ public class OfferSetupServiceTests
         var result = await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
 
         // Assert
-        result.nextStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_DIM_RESPONSE);
+        result.nextStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE);
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
