@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -40,41 +41,25 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
+public class CompanyDataBusinessLogic(
+    IPortalRepositories portalRepositories,
+    ICustodianService custodianService,
+    IDateTimeProvider dateTimeProvider,
+    IIdentityService identityService,
+    IMailingProcessCreation mailingProcessCreation,
+    IIssuerComponentBusinessLogic _issuerComponentBusinessLogic,
+    IOptions<CompanyDataSettings> options) : ICompanyDataBusinessLogic
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly ICustodianService _custodianService;
-    private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly IIdentityData _identityData;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
-    private readonly CompanyDataSettings _settings;
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="portalRepositories"></param>
-    /// <param name="custodianService"></param>
-    /// <param name="dateTimeProvider"></param>
-    /// <param name="identityService"></param>
-    /// <param name="mailingProcessCreation"></param>
-    /// <param name="options"></param>
-    public CompanyDataBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService, IDateTimeProvider dateTimeProvider, IIdentityService identityService, IMailingProcessCreation mailingProcessCreation, IOptions<CompanyDataSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _custodianService = custodianService;
-        _dateTimeProvider = dateTimeProvider;
-        _identityData = identityService.IdentityData;
-        _mailingProcessCreation = mailingProcessCreation;
-        _settings = options.Value;
-    }
+    private readonly IIdentityData _identityData = identityService.IdentityData;
+    private readonly CompanyDataSettings _settings = options.Value;
 
     /// <inheritdoc/>
     public async Task<CompanyAddressDetailData> GetCompanyDetailsAsync()
     {
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyDetailsAsync(companyId)
+        var result = await portalRepositories.GetInstance<ICompanyRepository>().GetCompanyDetailsAsync(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
@@ -86,14 +71,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
     /// <inheritdoc/>
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-        _portalRepositories.GetInstance<ICompanyRepository>()
+        portalRepositories.GetInstance<ICompanyRepository>()
             .GetCompanyAssigendUseCaseDetailsAsync(_identityData.CompanyId);
 
     /// <inheritdoc/>
     public async Task<bool> CreateCompanyAssignedUseCaseDetailsAsync(Guid useCaseId)
     {
         var companyId = _identityData.CompanyId;
-        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyRepositories = portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!useCaseDetails.IsActiveCompanyStatus)
@@ -107,7 +92,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         companyRepositories.CreateCompanyAssignedUseCase(companyId, useCaseId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return true;
     }
 
@@ -115,7 +100,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     public async Task RemoveCompanyAssignedUseCaseDetailsAsync(Guid useCaseId)
     {
         var companyId = _identityData.CompanyId;
-        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyRepositories = portalRepositories.GetInstance<ICompanyRepository>();
         var useCaseDetails = await companyRepositories.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!useCaseDetails.IsActiveCompanyStatus)
@@ -129,18 +114,18 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         companyRepositories.RemoveCompanyAssignedUseCase(companyId, useCaseId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string? languageShortName)
     {
         var companyId = _identityData.CompanyId;
-        if (languageShortName != null && !await _portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(ConfigureAwaitOptions.None))
+        if (languageShortName != null && !await portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"language {languageShortName} is not a valid languagecode");
         }
 
-        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyRepositories = portalRepositories.GetInstance<ICompanyRepository>();
         var statusData = await companyRepositories.GetCompanyStatusDataAsync(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (statusData == default)
         {
@@ -180,7 +165,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             return;
         }
 
-        var companyRepositories = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyRepositories = portalRepositories.GetInstance<ICompanyRepository>();
         var result = await companyRepositories
             .GetCompanyRolesDataAsync(_identityData.CompanyId, companyRoleConsentDetails.Select(x => x.CompanyRole))
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -239,15 +224,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException($"Agreements not associated with requested companyRoles: [{string.Join(", ", extra.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.ExtraAgreementIds)}]"))}]");
         }
 
-        _portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
+        portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
             result.ConsentStatusDetails,
             joined.SelectMany(x => x.Agreements).DistinctBy(active => active.AgreementId)
                 .Select(active => (active.AgreementId, active.ConsentStatus)).ToList(),
             _identityData.CompanyId,
             _identityData.IdentityId,
-            _dateTimeProvider.OffsetNow);
+            dateTimeProvider.OffsetNow);
 
-        var companyRolesRepository = _portalRepositories.GetInstance<ICompanyRolesRepository>();
+        var companyRolesRepository = portalRepositories.GetInstance<ICompanyRolesRepository>();
 
         companyRolesRepository.CreateCompanyAssignedRoles(_identityData.CompanyId,
             joined.Where(j => j.AllActiveAgreements && !result.CompanyRoleIds.Contains(j.CompanyRoleId))
@@ -256,12 +241,12 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             joined.Where(j => j.AllInActiveAgreements && result.CompanyRoleIds.Contains(j.CompanyRoleId))
                 .Select(x => x.CompanyRoleId));
 
-        await _portalRepositories.SaveAsync();
+        await portalRepositories.SaveAsync();
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(string? language) =>
-        await _portalRepositories
+        await portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
             .GetUseCaseParticipationForCompany(_identityData.CompanyId, language ?? Constants.DefaultLanguage)
             .Select(x => new UseCaseParticipationData(
@@ -287,7 +272,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
     /// <inheritdoc />
     public async Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync() =>
-        await _portalRepositories
+        await portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
             .GetSsiCertificates(_identityData.CompanyId)
             .Select(x => new SsiCertificateData(
@@ -302,20 +287,8 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             .ConfigureAwait(false);
 
     /// <inheritdoc />
-    public async Task CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken)
-    {
-        var (verifiedCredentialExternalTypeDetailId, credentialTypeId, document) = data;
-        var documentContentType = document.ContentType.ParseMediaTypeId();
-        documentContentType.CheckDocumentContentType(_settings.UseCaseParticipationMediaTypes);
-
-        var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
-        if (!await companyCredentialDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(verifiedCredentialExternalTypeDetailId, credentialTypeId).ConfigureAwait(ConfigureAwaitOptions.None))
-        {
-            throw new ControllerArgumentException($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
-        }
-
-        await HandleSsiCreationAsync(credentialTypeId, VerifiedCredentialTypeKindId.USE_CASE, verifiedCredentialExternalTypeDetailId, document, documentContentType, companyCredentialDetailsRepository, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-    }
+    public Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken) =>
+        _issuerComponentBusinessLogic.CreateFrameworkCredentialData(data.VerifiedCredentialExternalTypeDetailId, data.Framework, _identityData.IdentityId, cancellationToken);
 
     /// <inheritdoc />
     public async Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken)
@@ -324,7 +297,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         var documentContentType = document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContentType(_settings.SsiCertificateMediaTypes);
 
-        var companyCredentialDetailsRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        var companyCredentialDetailsRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
         if (!await companyCredentialDetailsRepository.CheckSsiCertificateType(credentialTypeId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"{credentialTypeId} is not assigned to a certificate");
@@ -348,7 +321,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         }
 
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
+        var doc = portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
             hash, mediaTypeId, DocumentTypeId.PRESENTATION, x =>
             {
                 x.CompanyUserId = _identityData.IdentityId;
@@ -363,7 +336,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 }
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -372,7 +345,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContentType(_settings.CompanyCertificateMediaTypes);
 
-        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+        var companyCertificateRepository = portalRepositories.GetInstance<ICompanyCertificateRepository>();
         if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateType).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
@@ -389,7 +362,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         CancellationToken cancellationToken)
     {
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
+        var doc = portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
             hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, x =>
             {
                 x.CompanyUserId = _identityData.IdentityId;
@@ -402,13 +375,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 x.ValidTill = expiryDate?.ToUniversalTime();
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting)
     {
-        var query = _portalRepositories
+        var query = portalRepositories
             .GetInstance<ICompanySsiDetailsRepository>()
             .GetAllCredentialDetails(companySsiDetailStatusId, credentialTypeId, companyName);
         var sortedQuery = sorting switch
@@ -450,7 +423,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <inheritdoc />
     public async Task ApproveCredential(Guid credentialId, CancellationToken cancellationToken)
     {
-        var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        var companySsiRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
         var userId = _identityData.IdentityId;
         var (exists, data) = await companySsiRepository.GetSsiApprovalData(credentialId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
@@ -475,7 +448,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var typeValue = data.Type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {data.Type} does not exists");
         var content = JsonSerializer.Serialize(new { Type = data.Type, CredentialId = credentialId }, Options);
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.RequesterData.RequesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, n =>
+        portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.RequesterData.RequesterId, NotificationTypeId.CREDENTIAL_APPROVAL, false, n =>
             {
                 n.CreatorUserId = userId;
                 n.Content = content;
@@ -488,17 +461,17 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             c =>
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.ACTIVE;
-                c.DateLastChanged = _dateTimeProvider.OffsetNow;
+                c.DateLastChanged = dateTimeProvider.OffsetNow;
             });
 
         switch (data.Kind)
         {
             case VerifiedCredentialTypeKindId.USE_CASE:
-                await _custodianService.TriggerFrameworkAsync(data.Bpn, data.UseCaseDetailData!, cancellationToken)
+                await custodianService.TriggerFrameworkAsync(data.Bpn, data.UseCaseDetailData!, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
             case VerifiedCredentialTypeKindId.CERTIFICATE:
-                await _custodianService.TriggerDismantlerAsync(data.Bpn, data.Type, cancellationToken)
+                await custodianService.TriggerDismantlerAsync(data.Bpn, data.Type, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
             default:
@@ -518,15 +491,15 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                     "expiryDate", data.ExpiryDate == null ? string.Empty : data.ExpiryDate.Value.ToString("o", CultureInfo.InvariantCulture)
                 )
             });
-            _mailingProcessCreation.CreateMailProcess(data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
+            mailingProcessCreation.CreateMailProcess(data.RequesterData.RequesterEmail, "CredentialApproval", mailParameters);
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task RejectCredential(Guid credentialId)
     {
-        var companySsiRepository = _portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
+        var companySsiRepository = portalRepositories.GetInstance<ICompanySsiDetailsRepository>();
         var userId = _identityData.IdentityId;
         var (exists, status, type, requesterId, requesterEmail, requesterFirstname, requesterLastname) = await companySsiRepository.GetSsiRejectionData(credentialId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
@@ -541,7 +514,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
 
         var typeValue = type.GetEnumValue() ?? throw new UnexpectedConditionException($"VerifiedCredentialType {type} does not exists");
         var content = JsonSerializer.Serialize(new { Type = type, CredentialId = credentialId }, Options);
-        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, n =>
+        portalRepositories.GetInstance<INotificationRepository>().CreateNotification(requesterId, NotificationTypeId.CREDENTIAL_REJECTED, false, n =>
             {
                 n.CreatorUserId = userId;
                 n.Content = content;
@@ -554,7 +527,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             c =>
             {
                 c.CompanySsiDetailStatusId = CompanySsiDetailStatusId.INACTIVE;
-                c.DateLastChanged = _dateTimeProvider.OffsetNow;
+                c.DateLastChanged = dateTimeProvider.OffsetNow;
             });
 
         if (!string.IsNullOrWhiteSpace(requesterEmail))
@@ -565,14 +538,14 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
                 KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : requesterEmail),
                 KeyValuePair.Create("requestName", typeValue)
             });
-            _mailingProcessCreation.CreateMailProcess(requesterEmail, "CredentialRejected", mailParameters);
+            mailingProcessCreation.CreateMailProcess(requesterEmail, "CredentialRejected", mailParameters);
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes() =>
-        _portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
+        portalRepositories.GetInstance<ICompanySsiDetailsRepository>().GetCertificateTypes(_identityData.CompanyId);
 
     /// <inheritdoc />    
     public async IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber)
@@ -582,7 +555,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             throw new ControllerArgumentException("businessPartnerNumber must not be empty");
         }
 
-        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+        var companyCertificateRepository = portalRepositories.GetInstance<ICompanyCertificateRepository>();
 
         var companyId = await companyCertificateRepository.GetCompanyIdByBpn(businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyId == Guid.Empty)
@@ -601,18 +574,18 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             page,
             size,
             _settings.MaxPageSize,
-            _portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
+            portalRepositories.GetInstance<ICompanyCertificateRepository>().GetActiveCompanyCertificatePaginationSource(sorting, certificateStatus, certificateType, _identityData.CompanyId));
 
     public async Task<DimUrlsResponse> GetDimServiceUrls() =>
         new(
-            $"{await _portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None)}/oauth/token",
+            $"{await portalRepositories.GetInstance<ICompanyRepository>().GetWalletServiceUrl(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None)}/oauth/token",
             _settings.DecentralIdentityManagementAuthUrl
         );
 
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
-        var companyCertificateRepository = _portalRepositories.GetInstance<ICompanyCertificateRepository>();
+        var companyCertificateRepository = portalRepositories.GetInstance<ICompanyCertificateRepository>();
 
         var details = await companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -635,7 +608,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
         companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, c =>
             {
                 c.DocumentStatusId = DocumentStatusId.INACTIVE;
-                c.DateLastChanged = _dateTimeProvider.OffsetNow;
+                c.DateLastChanged = dateTimeProvider.OffsetNow;
             });
 
         if (certificateCount == 1)
@@ -646,13 +619,13 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
             });
         }
 
-        return await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentByCompanyIdAsync(Guid documentId)
     {
-        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
+        var documentDetails = await portalRepositories.GetInstance<ICompanyCertificateRepository>()
             .GetCompanyCertificateDocumentByCompanyIdDataAsync(documentId, _identityData.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -667,7 +640,7 @@ public class CompanyDataBusinessLogic : ICompanyDataBusinessLogic
     /// <inheritdoc />
     public async Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId)
     {
-        var documentDetails = await _portalRepositories.GetInstance<ICompanyCertificateRepository>()
+        var documentDetails = await portalRepositories.GetInstance<ICompanyCertificateRepository>()
             .GetCompanyCertificateDocumentDataAsync(documentId, DocumentTypeId.COMPANY_CERTIFICATE)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 

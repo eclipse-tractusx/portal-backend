@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,20 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 
-public record UseCaseParticipationCreationData
-(
-    Guid VerifiedCredentialExternalTypeDetailId,
-    UseCaseFrameworkId Framework,
-    IFormFile? Document
-);
-
-public record SsiCertificateCreationData
-(
-    VerifiedCredentialTypeId CredentialType,
-    IFormFile Document
+public record CreateFrameworkCredentialRequest(
+    [property: JsonPropertyName("holder")] string Holder,
+    [property: JsonPropertyName("businessPartnerNumber")] string HolderBpn,
+    [property: JsonPropertyName("useCaseFrameworkId")] UseCaseFrameworkId UseCaseFrameworkId,
+    [property: JsonPropertyName("useCaseFrameworkVersionId")] Guid UseCaseFrameworkVersionId,
+    [property: JsonPropertyName("technicalUserDetails")] TechnicalUserDetails? TechnicalUserDetails,
+    [property: JsonPropertyName("callbackUrl")] string? CallbackUrl
 );

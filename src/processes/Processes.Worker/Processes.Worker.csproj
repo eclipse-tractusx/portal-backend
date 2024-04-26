@@ -44,6 +44,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
+      <ProjectReference Include="..\DimUserCreationProcess.Executor\DimUserCreationProcess.Executor.csproj" />
       <ProjectReference Include="..\Invitation.Executor\Invitation.Executor.csproj" />
       <ProjectReference Include="..\Mailing.Executor\Mailing.Executor.csproj" />
       <ProjectReference Include="..\OfferSubscription.Executor\OfferSubscription.Executor.csproj" />

@@ -196,12 +196,12 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="processId">The processId that was passed as externalId with the request for creation of the technical user.</param>
     /// <param name="callbackData">Information of the technical user which was created.</param>
-    /// <remarks>Example: POST: api/administration/serviceaccount/cllback/{externalId}</remarks>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}</remarks>
     /// <response code="200">returns all service account roles</response>
     [HttpPost]
     [Authorize(Roles = "technical_roles_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("callback/{externalId}")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}")]
     public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid processId, [FromBody] AuthenticationDetail callbackData)
     {
         await _logic.HandleServiceAccountCreationCallback(processId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);

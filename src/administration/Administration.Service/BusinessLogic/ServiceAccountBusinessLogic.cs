@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -318,10 +319,10 @@ public class ServiceAccountBusinessLogic(
         switch (processData.ProcessTypeId)
         {
             case ProcessTypeId.OFFER_SUBSCRIPTION:
-                HandleOfferSubscriptionTechnicalUserCallback(processId, callbackData, context, processData.SubscriptionData ?? throw new UnexpectedConditionException("subcriptionData should never be null here"));
+                await HandleOfferSubscriptionTechnicalUserCallback(processId, callbackData, context, processData.SubscriptionData ?? throw new UnexpectedConditionException("subcriptionData should never be null here")).ConfigureAwait(false);
                 break;
             case ProcessTypeId.DIM_TECHNICAL_USER:
-                HandleDimTechnicalUserCallback(callbackData, processData.ServiceAccountData ?? throw new UnexpectedConditionException("serviceAccountData should never be null here"));
+                await HandleDimTechnicalUserCallback(callbackData, processData.ServiceAccountData ?? throw new UnexpectedConditionException("serviceAccountData should never be null here")).ConfigureAwait(false);
                 break;
             default:
                 throw new ControllerArgumentException($"process {processId} has invalid processType {processData.ProcessTypeId}");
@@ -331,7 +332,7 @@ public class ServiceAccountBusinessLogic(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private void HandleOfferSubscriptionTechnicalUserCallback(Guid processId, AuthenticationDetail callbackData, ManualProcessStepData context, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName) subscriptionData)
+    private async Task HandleOfferSubscriptionTechnicalUserCallback(Guid processId, AuthenticationDetail callbackData, ManualProcessStepData context, SubscriptionData subscriptionData)
     {
         if (subscriptionData.OfferSubscriptionId is null)
         {
@@ -349,11 +350,11 @@ public class ServiceAccountBusinessLogic(
         }
 
         var name = $"sa-{subscriptionData.OfferName}-{subscriptionData.OfferSubscriptionId}";
-        CreateDimServiceAccount(callbackData, subscriptionData.CompanyId.Value, name, CompanyServiceAccountTypeId.MANAGED, x => x.OfferSubscriptionId = subscriptionData.OfferSubscriptionId);
+        await CreateDimServiceAccount(callbackData, subscriptionData.CompanyId.Value, name, CompanyServiceAccountTypeId.MANAGED, x => x.OfferSubscriptionId = subscriptionData.OfferSubscriptionId).ConfigureAwait(false);
         context.ScheduleProcessSteps([ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION]);
     }
 
-    private void HandleDimTechnicalUserCallback(AuthenticationDetail callbackData, (string? ServiceAccountName, Guid? CompanyId) serviceAccountData)
+    private async Task HandleDimTechnicalUserCallback(AuthenticationDetail callbackData, ServiceAccountData serviceAccountData)
     {
         if (serviceAccountData.ServiceAccountName is null)
         {
@@ -366,10 +367,10 @@ public class ServiceAccountBusinessLogic(
         }
 
         var name = $"dim-{serviceAccountData.ServiceAccountName}";
-        CreateDimServiceAccount(callbackData, serviceAccountData.CompanyId.Value, name, CompanyServiceAccountTypeId.OWN, null);
+        await CreateDimServiceAccount(callbackData, serviceAccountData.CompanyId.Value, name, CompanyServiceAccountTypeId.OWN, null).ConfigureAwait(false);
     }
 
-    private void CreateDimServiceAccount(AuthenticationDetail callbackData, Guid companyId, string name, CompanyServiceAccountTypeId serviceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters)
+    private async Task CreateDimServiceAccount(AuthenticationDetail callbackData, Guid companyId, string name, CompanyServiceAccountTypeId serviceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters)
     {
         var identity = portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
@@ -380,6 +381,13 @@ public class ServiceAccountBusinessLogic(
             callbackData.ClientId,
             serviceAccountTypeId,
             setOptionalParameters);
+
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
+        var userRoleData = await userRolesRepository.GetUserRoleDataUntrackedAsync(_settings.DimCreationRoles).ToListAsync().ConfigureAwait(false);
+        foreach (var roleData in userRoleData)
+        {
+            userRolesRepository.CreateIdentityAssignedRole(serviceAccount.Id, roleData.UserRoleId);
+        }
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
         var (secret, initializationVector) = CryptoHelper.Encrypt(callbackData.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
