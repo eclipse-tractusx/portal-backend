@@ -992,10 +992,12 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetWalletServiceUrl(_validCompanyId);
+        var result = await sut.GetDimServiceUrls(_validCompanyId);
 
         // Assert
-        result.Should().Be("https://example.org/auth");
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.Did.Should().Be("did:web:test");
+        result.WalletUrl.Should().Be("https://example.org/auth");
     }
 
     #endregion
