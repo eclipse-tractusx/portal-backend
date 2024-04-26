@@ -43,7 +43,7 @@ public interface ICompanyDataBusinessLogic
 
     Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync();
 
-    Task CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
+    Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
     Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken);
 
     Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting);

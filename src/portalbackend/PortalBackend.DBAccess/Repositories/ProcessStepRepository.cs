@@ -113,10 +113,11 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName)? SubscriptionData, (string? ServiceAccountName, Guid? CompanyId)? ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, SubscriptionData? SubscriptionData, ServiceAccountData? ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
+            .AsNoTracking()
             .Where(x => x.Id == processId)
-            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, ValueTuple<Guid?, Guid?, string?>?, ValueTuple<string?, Guid?>?>(
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, SubscriptionData?, ServiceAccountData?>(
                 x.ProcessTypeId,
                 new VerifyProcessData(
                     x,
@@ -125,14 +126,14 @@ public class ProcessStepRepository : IProcessStepRepository
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
                 x.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION
-                    ? new ValueTuple<Guid?, Guid?, string?>(
+                    ? new(
                         x.OfferSubscription!.Id,
                         x.OfferSubscription.CompanyId,
                         x.OfferSubscription.Offer!.Name
                     )
                     : null,
                 x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER
-                    ? new ValueTuple<string?, Guid?>(
+                    ? new(
                         x.DimUserCreationData!.ServiceAccount!.Name,
                         x.DimUserCreationData.ServiceAccount.Identity!.CompanyId
                     )
