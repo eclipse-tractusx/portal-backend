@@ -1706,7 +1706,7 @@ public class IdentityProviderBusinessLogicTests
         var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.singleSignOnServiceUrl == "https://sso.com" && x.alias == "cl1")))
+        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.SingleSignOnServiceUrl == "https://sso.com" && x.Alias == "cl1")))
             .MustHaveHappenedOnceExactly();
         result.Mappers.Should().HaveCount(2);
         result.DisplayName.Should().Be("dis-saml");

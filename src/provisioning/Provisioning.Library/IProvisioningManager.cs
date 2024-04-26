@@ -54,7 +54,7 @@ public interface IProvisioningManager
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
-    Task<string> GetCentralIdentityProviderDisplayName(string alias);
+    Task<string?> GetCentralIdentityProviderDisplayName(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
     ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);

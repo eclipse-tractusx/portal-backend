@@ -423,7 +423,7 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var modified = await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+        var companyDisplayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
         var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
             KeyValuePair.Create("password", password),
