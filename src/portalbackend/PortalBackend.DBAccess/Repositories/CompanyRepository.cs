@@ -378,9 +378,13 @@ public class CompanyRepository(PortalDbContext context)
                     .Select(ca => ca.Id)))
             .SingleOrDefaultAsync();
 
-    public Task<string?> GetWalletServiceUrl(Guid companyId) =>
+    public Task<(string? Bpn, string? Did, string? WalletUrl)> GetDimServiceUrls(Guid companyId) =>
         context.Companies.Where(x => x.Id == companyId)
-            .Select(x => x.CompanyWalletData!.AuthenticationServiceUrl)
+            .Select(x => new ValueTuple<string?, string?, string?>(
+                x.BusinessPartnerNumber,
+                x.CompanyWalletData!.Did,
+                x.CompanyWalletData.AuthenticationServiceUrl
+            ))
             .SingleOrDefaultAsync();
 
     public Task<(string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetWalletData(Guid identityId) =>

@@ -101,7 +101,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test" });
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test", IssuerDid = "did:web:test", BpnDidResolverUrl = "https://example.org/bdrs" });
         _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, _issuerComponentBusinessLogic, options);
     }
 
@@ -1738,20 +1738,65 @@ public class CompanyDataBusinessLogicTests
     #region GetDimServiceUrls
 
     [Fact]
-    public async Task GetDimServiceUrls_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
+    public async Task GetDimServiceUrls_WithValid_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _companyRepository.GetWalletServiceUrl(A<Guid>._))
-            .Returns("https://example.org/service");
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", "https://example.org/service"));
 
         // Act
         var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        A.CallTo(() => _companyRepository.GetWalletServiceUrl(_identity.CompanyId))
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(_identity.CompanyId))
             .MustHaveHappenedOnceExactly();
         result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/service/oauth/token");
         result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/test");
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutBpn_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>(null, null, null));
+        Task Act() => _sut.GetDimServiceUrls();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Bpn must be set");
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutDid_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", null, null));
+        Task Act() => _sut.GetDimServiceUrls();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Did must be set");
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutWalletUrl_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", null));
+        Task Act() => _sut.GetDimServiceUrls();
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Wallet Url must be set");
     }
 
     #endregion
