@@ -129,7 +129,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
-        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
 
         await foreach (var result in
             _userProvisioningService

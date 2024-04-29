@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,14 +18,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public partial class ProvisioningManager
 {
-    private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string displayName, string? loginTheme)
+    private static async ValueTask UpdateSharedRealmAsync(KeycloakClient keycloak, string alias, string? displayName, string? loginTheme)
     {
         var realm = await keycloak.GetRealmAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         realm.DisplayName = displayName;
