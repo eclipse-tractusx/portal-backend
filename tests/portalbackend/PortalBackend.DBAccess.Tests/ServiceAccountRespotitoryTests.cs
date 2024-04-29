@@ -266,19 +266,21 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, true, UserStatusId.ACTIVE)(0, 10).ConfigureAwait(false);
 
         // Assert
-        result!.Count.Should().Be(13);
+        result!.Count.Should().Be(12);
         result.Data.Should().HaveCount(10)
+            .And.AllSatisfy(x => x.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN))
+            .And.BeInAscendingOrder(x => x.Name)
             .And.Satisfy(
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201024"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201028"),
-                x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN && x.ServiceAccountId == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2"));
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201024"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201028"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201007"));
     }
 
     [Fact]
