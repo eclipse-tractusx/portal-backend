@@ -236,7 +236,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         if (expected > 0)
         {
             result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
-            result.Data.First().IsOwner.Should().BeFalse();
+            result.Data.First().IsOwner.Should().BeTrue();
+            result.Data.First().IsProvider.Should().BeFalse();
         }
     }
 
@@ -253,6 +254,49 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
             .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithOwnerTrue_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, true, UserStatusId.ACTIVE)(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result!.Count.Should().Be(12);
+        result.Data.Should().HaveCount(10)
+            .And.AllSatisfy(x => x.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN))
+            .And.BeInAscendingOrder(x => x.Name)
+            .And.Satisfy(
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201024"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201028"),
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201007"));
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithOwnerFalse_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, false, UserStatusId.ACTIVE)(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result!.Count.Should().Be(1);
+        result.Data.Should().HaveCount(1)
+            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
+                && !x.IsOwner && x.IsProvider);
     }
 
     [Fact]
