@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -108,32 +107,26 @@ public interface IRegistrationBusinessLogic
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
 
-    /// Retrigger the TriggerDeleteIdpSharedRealm ProcessStepType
+    /// Retrigger the DeleteIdpSharedRealm ProcessStepType
     /// </summary>
     /// <param name="processId">Id of the Process</param>
     Task RetriggerDeleteIdpSharedRealm(Guid processId);
 
     /// <summary>
-    /// Retrigger the TriggerDeleteIdpSharedServiceAccount ProcessStepType
+    /// Retrigger the DeleteIdpSharedServiceAccount ProcessStepType
     /// </summary>
     /// <param name="processId">Id of the Process</param>
     Task RetriggerDeleteIdpSharedServiceAccount(Guid processId);
 
     /// <summary>
-    /// Retrigger the TriggerDeleteIdentityLinkedUsers ProcessStepType
-    /// </summary>
-    /// <param name="processId">Id of the Process</param>
-    Task RetriggerDeleteIdentityLinkedUsers(Guid processId);
-
-    /// <summary>
-    /// Retrigger the TriggerDeleteCentralIdentityProvider ProcessStepType
+    /// Retrigger the DeleteCentralIdentityProvider ProcessStepType
     /// </summary>
     /// <param name="processId">Id of the Process</param>
     Task RetriggerDeleteCentralIdentityProvider(Guid processId);
 
     /// <summary>
-    /// Retrigger the TriggerDeleteIdentityProvider ProcessStepType
+    /// Retrigger the DeleteCentralUser ProcessStepType
     /// </summary>
     /// <param name="processId">Id of the Process</param>
-    Task RetriggerDeleteIdentityProvider(Guid processId);
+    Task RetriggerDeleteCentralUser(Guid processId);
 }

@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -923,58 +924,154 @@ public class RegistrationBusinessLogic : IRegistrationBusinessLogic
     }
     public async Task DeclineApplicationRegistrationAsync(Guid applicationId)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetDeclineApplicationForApplicationId(applicationId, _settings.ApplicationDeclineStatusIds).ConfigureAwait(false);
-        if (result == null)
+        var (isValidApplicationId, isValidCompany, declineData) = await _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetDeclineApplicationDataForApplicationId(applicationId, _identityData.CompanyId, _settings.ApplicationDeclineStatusIds)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        if (!isValidApplicationId)
         {
             throw new NotFoundException($"Application {applicationId} does not exits");
         }
-        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.IDP_DELETION).Id;
-        foreach (var ipId in result.IdentityProviderId)
-        {
-            _portalRepositories.GetInstance<IIdentityProviderRepository>().AttachAndModifyIdentityProvider(ipId, null, identityProvider =>
-                identityProvider.ProcessId = processId
-            );
-        }
-        _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(new (ProcessStepTypeId, ProcessStepStatusId, Guid)[] { (ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM, ProcessStepStatusId.TODO, processId) });
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
-        {
-            application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
-            application.DateLastChanged = DateTimeOffset.UtcNow;
-        });
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(result.CompanyId, null, company =>
-        {
-            company.CompanyStatusId = CompanyStatusId.DELETED;
-        });
-        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(result.InvitationsStatusDatas.Select(
-            x =>
-                new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
-                    x.InvitationId,
-                    i => { i.InvitationStatusId = x.InvitationStatusId; },
-                    i => { i.InvitationStatusId = InvitationStatusId.DECLINED; })));
-        _portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentities(result.IdentityStatuDatas.
-            Select(identity => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(identity.IdentityId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
-        _portalRepositories.GetInstance<IDocumentRepository>()
-                       .AttachAndModifyDocuments(
-                           result.DocumentStatusDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
-                               x.DocumentId,
-                               document => document.DocumentStatusId = x.StatusId,
-                               document => document.DocumentStatusId = DocumentStatusId.INACTIVE)));
-        var emailData = await _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ToListAsync().ConfigureAwait(false);
-        foreach (var user in emailData)
-        {
-            var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
 
-            if (string.IsNullOrWhiteSpace(user.Email))
+        if (!isValidCompany)
+        {
+            throw new ForbiddenException($"User is not allowed to decline this application");
+        }
+
+        if (declineData == null)
+        {
+            throw new UnexpectedConditionException("ApplicationDeclineData should never be null here");
+        }
+
+        DeclineApplication(applicationId);
+        DeleteCompany(_identityData.CompanyId);
+        DeclineInvitations(declineData.InvitationsStatusDatas);
+        DeactivateDocuments(declineData.DocumentStatusDatas);
+        ScheduleDeleteIdentityProviders(_identityData.CompanyId, declineData.IdentityProviderStatusDatas);
+        ScheduleDeleteCompanyUsers(declineData.CompanyUserStatusDatas);
+        CreateDeclineApplicationEmailProcesses(declineData.CompanyUserStatusDatas.Select(x => (x.FirstName, x.LastName, x.Email)), declineData.CompanyName);
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+    }
+
+    private void DeclineApplication(Guid applicationId) =>
+        _portalRepositories.GetInstance<IApplicationRepository>()
+            .AttachAndModifyCompanyApplication(applicationId, application =>
+            {
+                application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
+                application.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+
+    private void DeleteCompany(Guid companyId) =>
+        _portalRepositories.GetInstance<ICompanyRepository>()
+            .AttachAndModifyCompany(
+                companyId,
+                null,
+                company => company.CompanyStatusId = CompanyStatusId.DELETED);
+
+    private void DeclineInvitations(IEnumerable<InvitationsStatusData> invitationsStatusDatas) =>
+        _portalRepositories.GetInstance<IInvitationRepository>()
+            .AttachAndModifyInvitations(
+                invitationsStatusDatas.Select(data => new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
+                    data.InvitationId,
+                    invitation => invitation.InvitationStatusId = data.InvitationStatusId,
+                    invitation => invitation.InvitationStatusId = InvitationStatusId.DECLINED)));
+
+    private void DeactivateDocuments(IEnumerable<DocumentStatusData> documentStatusDatas) =>
+        _portalRepositories.GetInstance<IDocumentRepository>()
+            .AttachAndModifyDocuments(
+                documentStatusDatas.Select(data => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
+                    data.DocumentId,
+                    document => document.DocumentStatusId = data.StatusId,
+                    document => document.DocumentStatusId = DocumentStatusId.INACTIVE)));
+
+    private void ScheduleDeleteIdentityProviders(Guid companyId, IEnumerable<IdentityProviderStatusData> identityProviderStatusDatas)
+    {
+        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+
+        identityProviderStatusDatas
+            .Where(data => data.IdentityProviderTypeId == IdentityProviderTypeId.MANAGED)
+            .IfAny(managed =>
+            {
+                identityProviderRepository.DeleteCompanyIdentityProviderRange(managed.Select(x => (companyId, x.IdentityProviderId)));
+            });
+
+        identityProviderStatusDatas
+            .Where(data => data.IdentityProviderTypeId == IdentityProviderTypeId.SHARED || data.IdentityProviderTypeId == IdentityProviderTypeId.OWN)
+            .IfAny(notManaged =>
+            {
+                var processDatas = notManaged
+                    .Zip(processStepRepository.CreateProcessRange(Enumerable.Repeat(ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, notManaged.Count())))
+                    .Select(x => (
+                        x.First.IdentityProviderTypeId,
+                        x.First.IdentityProviderId,
+                        ProcessId: x.Second.Id
+                    ))
+                    .ToImmutableList();
+
+                processStepRepository.CreateProcessStepRange(
+                    processDatas.Select(x => (
+                        x.IdentityProviderTypeId switch
+                        {
+                            IdentityProviderTypeId.SHARED => ProcessStepTypeId.DELETE_IDP_SHARED_REALM,
+                            IdentityProviderTypeId.OWN => ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER,
+                            _ => throw new UnexpectedConditionException("IdentityProviderTypeId should allways be shared or own here")
+                        },
+                        ProcessStepStatusId.TODO,
+                        x.ProcessId)));
+
+                identityProviderRepository.CreateIdentityProviderAssignedProcessRange(
+                    processDatas.Select(x => (
+                        x.IdentityProviderId,
+                        x.ProcessId)));
+            });
+    }
+
+    private void ScheduleDeleteCompanyUsers(IEnumerable<CompanyUserStatusData> companyUserDatas)
+    {
+        _portalRepositories.GetInstance<IUserRepository>()
+            .AttachAndModifyIdentities(
+                companyUserDatas
+                    .Select(data => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(
+                            data.CompanyUserId,
+                            identity => identity.UserStatusId = data.UserStatusId,
+                            identity =>
+                            {
+                                identity.UserStatusId = UserStatusId.DELETED;
+                            })));
+
+        _portalRepositories.GetInstance<IUserRolesRepository>()
+            .DeleteCompanyUserAssignedRoles(
+                companyUserDatas.SelectMany(data => data.IdentityAssignedRoleIds.Select(roleId => (data.CompanyUserId, roleId))));
+
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processIds = processStepRepository
+            .CreateProcessRange(Enumerable.Repeat(ProcessTypeId.USER_PROVISIONING, companyUserDatas.Count()))
+            .Select(x => x.Id)
+            .ToImmutableList();
+        processStepRepository.CreateProcessStepRange(
+            processIds.Select(processId => (ProcessStepTypeId.DELETE_CENTRAL_USER, ProcessStepStatusId.TODO, processId)));
+        _portalRepositories.GetInstance<IUserRepository>()
+            .CreateCompanyUserAssignedProcessRange(
+                companyUserDatas.Select(x => x.CompanyUserId).Zip(processIds));
+    }
+
+    private void CreateDeclineApplicationEmailProcesses(IEnumerable<(string? FirstName, string? LastName, string? Email)> emailData, string companyName)
+    {
+        foreach (var (FirstName, LastName, Email) in emailData)
+        {
+            var userName = string.Join(" ", new[] { FirstName, LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+
+            if (string.IsNullOrWhiteSpace(Email))
             {
                 throw new ConflictException($"user {userName} has no assigned email");
             }
             var mailParameters = ImmutableDictionary.CreateRange(new[]
             {
-                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
-                KeyValuePair.Create("companyName",  result.CompanyName)
+                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : Email),
+                KeyValuePair.Create("companyName",  companyName)
             });
-            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

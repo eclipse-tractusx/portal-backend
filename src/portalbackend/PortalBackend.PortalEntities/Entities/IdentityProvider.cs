@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -50,15 +49,14 @@ public class IdentityProvider : IBaseEntity
     public IdentityProviderTypeId IdentityProviderTypeId { get; private set; }
 
     public Guid OwnerId { get; set; }
-    public Guid? ProcessId { get; set; }
 
     // Navigation properties
     public virtual IdentityProviderCategory? IdentityProviderCategory { get; private set; }
     public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
     public virtual IdentityProviderType? IdentityProviderType { get; set; }
     public virtual Company? Owner { get; set; }
+    public virtual IdentityProviderAssignedProcess? IdentityProviderAssignedProcess { get; set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
     public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
-    public virtual Process? Process { get; private set; }
 }

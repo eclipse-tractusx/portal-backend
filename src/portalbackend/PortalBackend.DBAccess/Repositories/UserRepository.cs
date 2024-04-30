@@ -535,4 +535,16 @@ public class UserRepository : IUserRepository
             .Select(x => x.Id)
             .Take(2)
             .ToAsyncEnumerable();
+
+    public void CreateCompanyUserAssignedProcessRange(IEnumerable<(Guid CompanyUserId, Guid ProcessId)> companyUserProcessIds) =>
+        _dbContext.AddRange(companyUserProcessIds.Select(x => new CompanyUserAssignedProcess(x.CompanyUserId, x.ProcessId)));
+
+    public Task<Guid> GetCompanyUserIdForProcessIdAsync(Guid processId) =>
+        _dbContext.CompanyUserAssignedProcesses
+            .Where(cuap => cuap.ProcessId == processId)
+            .Select(cuap => cuap.CompanyUserId)
+            .SingleOrDefaultAsync();
+
+    public void DeleteCompanyUserAssignedProcess(Guid companyUserId, Guid processId) =>
+        _dbContext.Remove(new CompanyUserAssignedProcess(companyUserId, processId));
 }

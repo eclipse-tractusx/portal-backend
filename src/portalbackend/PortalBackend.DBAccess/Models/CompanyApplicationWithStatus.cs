@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,15 +21,17 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
 {
-    public record CompanyApplicationWithStatus
-    (
+    public record CompanyApplicationWithStatus(
         Guid ApplicationId,
         CompanyApplicationStatusId ApplicationStatus,
         CompanyApplicationTypeId ApplicationType,
         IEnumerable<ApplicationChecklistData> ApplicationChecklist
     );
 
-    public record ApplicationChecklistData(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId);
+    public record ApplicationChecklistData(
+        ApplicationChecklistEntryTypeId TypeId,
+        ApplicationChecklistEntryStatusId StatusId
+    );
 
     public record CompanyApplicationDeclineData(
         Guid ApplicationId,
@@ -41,17 +42,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
     );
 
     public record ApplicationDeclineData(
-        IEnumerable<Guid> IdentityProviderId,
-        Guid CompanyId,
+        IEnumerable<IdentityProviderStatusData> IdentityProviderStatusDatas,
         string CompanyName,
-        Guid applicationId,
         CompanyApplicationStatusId CompanyApplicationStatusId,
         IEnumerable<InvitationsStatusData> InvitationsStatusDatas,
-        IEnumerable<IdentityStatuData> IdentityStatuDatas,
+        IEnumerable<CompanyUserStatusData> CompanyUserStatusDatas,
         IEnumerable<DocumentStatusData> DocumentStatusDatas
-        );
+    );
 
-    public record InvitationsStatusData(Guid InvitationId, InvitationStatusId InvitationStatusId);
-    public record IdentityStatuData(Guid IdentityId, UserStatusId UserStatusId);
-    public record IdpData(Guid IdentityProviderId, string IamAlias, IdentityProviderTypeId TypeId);
+    public record IdentityProviderStatusData(
+        Guid IdentityProviderId,
+        IdentityProviderTypeId IdentityProviderTypeId
+    );
+
+    public record InvitationsStatusData(
+        Guid InvitationId,
+        InvitationStatusId InvitationStatusId
+    );
+
+    public record CompanyUserStatusData(
+        Guid CompanyUserId,
+        string? FirstName,
+        string? LastName,
+        string? Email,
+        UserStatusId UserStatusId,
+        IEnumerable<Guid> IdentityAssignedRoleIds
+    );
+
+    public record IdpData(
+        Guid IdentityProviderId,
+        string IamAlias,
+        IdentityProviderTypeId IdentityProviderTypeId
+    );
 }

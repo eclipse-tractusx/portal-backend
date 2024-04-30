@@ -76,8 +76,7 @@ public class TestDbFixture : IAsyncLifetime
     /// </summary>
     public async Task InitializeAsync()
     {
-        await _container.StartAsync()
-            ;
+        await _container.StartAsync();
 
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -107,7 +106,6 @@ public class TestDbFixture : IAsyncLifetime
     /// <inheritdoc />
     public async Task DisposeAsync()
     {
-        await _container.DisposeAsync()
-            ;
+        await _container.DisposeAsync();
     }
 }

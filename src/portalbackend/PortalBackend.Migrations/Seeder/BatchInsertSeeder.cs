@@ -84,6 +84,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyCertificateTypeAssignedStatus>("company_certificate_type_assigned_statuses", x => new { x.CompanyCertificateTypeId, x.CompanyCertificateTypeStatusId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyCertificateTypeDescription>("company_certificate_type_descriptions", x => new { x.CompanyCertificateTypeId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTable<IdentityProviderAssignedProcess>("identity_provider_assigned_processes", x => new { x.IdentityProviderId, x.ProcessId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConnectorAssignedOfferSubscription>("connector_assigned_offer_subscriptions", x => new { x.ConnectorId, x.OfferSubscriptionId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
