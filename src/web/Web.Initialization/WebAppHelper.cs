@@ -68,6 +68,6 @@ public static class WebAppHelper
                         }
                     }
 
-                    FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment(), false);
+                    FlurlErrorHandler.ConfigureErrorHandler(app.Services.GetRequiredService<ILogger<TProgram>>(), environment.IsDevelopment());
                 });
 }

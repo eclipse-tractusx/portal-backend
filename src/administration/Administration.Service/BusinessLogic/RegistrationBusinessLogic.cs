@@ -492,14 +492,18 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
             }
 
-            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
             if (idpType is IdentityProviderTypeId.OWN or IdentityProviderTypeId.SHARED)
             {
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
                 identityProviderRepository.DeleteIdentityProvider(idpId);
             }
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            else
+            {
+                // a managed identityprovider is just unlinked from company and users
+                identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+                userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            }
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
@@ -633,33 +637,28 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         return result.Single();
     }
 
-    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
 
     /// <inheritdoc />
-    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
 
     /// <inheritdoc />
-    public Task RetriggerDeleteIdentityLinkedUsers(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS);
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
 
-    /// <inheritdoc />
-    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
+    public Task RetriggerDeleteCentralUser(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER);
 
-    /// <inheritdoc />
-    public Task RetriggerDeleteIdentityProvider(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER);
-
-    private async Task TriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    private async Task RetriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
     {
-        var nextStep = stepToTrigger switch
+        var (processType, nextStep) = stepToTrigger switch
         {
-            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM,
-            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT,
-            ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS => ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS,
-            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => ProcessStepTypeId.TRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER,
-            ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER => ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_PROVIDER,
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_REALM),
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER => (ProcessTypeId.USER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_USER),
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 
-        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.IDP_DELETION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
         if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");

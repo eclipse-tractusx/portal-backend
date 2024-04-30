@@ -510,15 +510,6 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                     )))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
-        portalDbContext.CompanyApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => new ValueTuple<bool, Guid, CompanyApplicationStatusId>(
-                true,
-                a.CompanyId,
-                a.ApplicationStatusId))
-            .SingleOrDefaultAsync();
-
     public Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId) =>
         portalDbContext.CompanyApplications
             .Where(ca => ca.Id == applicationId)
@@ -536,20 +527,51 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.Company!.CompanyWalletData!.Did))
             .SingleOrDefaultAsync();
 
-    public Task<ApplicationDeclineData?> GetDeclineApplicationForApplicationId(Guid applicationId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds) =>
+    public Task<(bool IsValidApplicationId, bool IsValidCompany, ApplicationDeclineData? ApplicationDeclineData)> GetDeclineApplicationDataForApplicationId(Guid applicationId, Guid companyId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds) =>
         portalDbContext.CompanyApplications
+            .AsNoTracking()
+            .AsSplitQuery()
             .Where(application => application.Id == applicationId && companyApplicationStatusIds.Contains(application.ApplicationStatusId))
-            .Select(application => new ApplicationDeclineData(
-                application.Company!.IdentityProviders.Select(x => x.Id),
-                application.Company!.Id,
-                application.Company!.Name,
-                application.Id,
-                application.ApplicationStatusId,
-                application.Invitations.Select(invitation =>
-                    new InvitationsStatusData(invitation.Id, invitation.InvitationStatusId)),
-                application.Company.Identities.Select(identity =>
-                    new IdentityStatuData(identity.Id, identity.UserStatusId)),
-                application.Company.Identities.Select(cu => cu.CompanyUser!.Documents.Select(document =>
-                    new DocumentStatusData(document.Id, document.DocumentStatusId))).SingleOrDefault()!
-            )).SingleOrDefaultAsync();
+            .Select(application => new
+            {
+                IsValidCompany = application.CompanyId == companyId,
+                Application = application,
+                application.Company,
+                application.Company!.Identities
+            })
+            .Select(x => new ValueTuple<bool, bool, ApplicationDeclineData?>(
+                true,
+                x.IsValidCompany,
+                x.IsValidCompany
+                    ? new ApplicationDeclineData(
+                        x.Company!.IdentityProviders
+                            .Select(x => new IdentityProviderStatusData(
+                                x.Id,
+                                x.IdentityProviderTypeId)),
+                        x.Company.Name,
+                        x.Application.ApplicationStatusId,
+                        x.Application.Invitations
+                            .Where(invitation => invitation.InvitationStatusId != InvitationStatusId.DECLINED)
+                            .Select(invitation => new InvitationsStatusData(
+                                invitation.Id,
+                                invitation.InvitationStatusId)),
+                        x.Identities
+                            .Where(identity =>
+                                identity.IdentityTypeId == IdentityTypeId.COMPANY_USER &&
+                                identity.UserStatusId != UserStatusId.DELETED)
+                            .Select(identity => new CompanyUserStatusData(
+                                identity.Id,
+                                identity.CompanyUser!.Firstname,
+                                identity.CompanyUser.Lastname,
+                                identity.CompanyUser.Email,
+                                identity.UserStatusId,
+                                identity.IdentityAssignedRoles.Select(iar => iar.UserRoleId))),
+                        x.Identities.SelectMany(identity =>
+                            identity.CompanyUser!.Documents
+                                .Where(document => document.DocumentStatusId != DocumentStatusId.INACTIVE)
+                                .Select(document => new DocumentStatusData(
+                                    document.Id,
+                                    document.DocumentStatusId))))
+                    : null))
+            .SingleOrDefaultAsync();
 }

@@ -275,7 +275,7 @@ public class RegistrationBusinessLogicTest
         var bpn = "123";
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, bpn);
+        Task Act() => _logic.UpdateCompanyBpn(IdWithBpn, bpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -290,7 +290,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn);
+        Task Act() => _logic.UpdateCompanyBpn(NotExistingApplicationId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -304,7 +304,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn);
+        Task Act() => _logic.UpdateCompanyBpn(IdWithoutBpn, AlreadyTakenBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -318,7 +318,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn);
+        Task Act() => _logic.UpdateCompanyBpn(ActiveApplicationCompanyId, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -332,7 +332,7 @@ public class RegistrationBusinessLogicTest
         SetupForUpdateCompanyBpn();
 
         // Act
-        async Task Act() => await _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn);
+        Task Act() => _logic.UpdateCompanyBpn(IdWithBpn, ValidBpn);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -392,7 +392,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
+        Task Act() => _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -408,7 +408,7 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var data = new ClearinghouseResponseData(BusinessPartnerNumber, ClearinghouseResponseStatus.CONFIRM, null);
-        async Task Act() => await _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
+        Task Act() => _logic.ProcessClearinghouseResponseAsync(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -519,7 +519,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = Guid.NewGuid();
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
             .Returns<(Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)>(default);
-        async Task Act() => await _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
+        Task Act() => _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
@@ -600,7 +600,7 @@ public class RegistrationBusinessLogicTest
             .Returns<(bool, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>, IEnumerable<ProcessStepTypeId>)>(default);
 
         //Act
-        async Task Act() => await _logic.GetChecklistForApplicationAsync(applicationId);
+        Task Act() => _logic.GetChecklistForApplicationAsync(applicationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -655,7 +655,7 @@ public class RegistrationBusinessLogicTest
             .Throws(new ConflictException("Test"));
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
+        Task Act() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -747,7 +747,7 @@ public class RegistrationBusinessLogicTest
             .Returns<(bool, Guid, bool)>(default);
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
+        Task Act() => _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -763,7 +763,7 @@ public class RegistrationBusinessLogicTest
             .Returns((true, Guid.NewGuid(), false));
 
         // Act
-        async Task Act() => await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
+        Task Act() => _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -802,7 +802,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
 
         //Act
-        async Task Act() => await _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
+        Task Act() => _logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -841,7 +841,7 @@ public class RegistrationBusinessLogicTest
             .Returns<Document?>(null);
 
         // Act
-        async Task Act() => await _logic.GetDocumentAsync(documentId);
+        Task Act() => _logic.GetDocumentAsync(documentId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -980,17 +980,17 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
-        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM;
+        var processStepTypeId = ProcessStepTypeId.DELETE_IDP_SHARED_REALM;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((true, verifyProcessData));
 
         // Act
-        await _logic.RetriggerDeleteIdpSharedRealm(process.Id).ConfigureAwait(false);
+        await _logic.RetriggerDeleteIdpSharedRealm(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -1005,12 +1005,13 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
         var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _logic.RetriggerDeleteIdpSharedRealm(process.Id).ConfigureAwait(false);
+
+        Task Act() => _logic.RetriggerDeleteIdpSharedRealm(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -1021,17 +1022,17 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
-        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
+        var processStepTypeId = ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((true, verifyProcessData));
 
         // Act
-        await _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id).ConfigureAwait(false);
+        await _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -1046,53 +1047,13 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
         var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id).ConfigureAwait(false);
+
+        Task Act() => _logic.RetriggerDeleteIdpSharedServiceAccount(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
-
-        // Assert
-        ex.Message.Should().Be($"process {process.Id} does not exist");
-    }
-
-    [Fact]
-    public async Task RetriggerDeleteIdentityLinkedUsers_CallsExpected()
-    {
-        // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS;
-        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
-        var processStepId = Guid.NewGuid();
-        SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((true, verifyProcessData));
-
-        // Act
-        await _logic.RetriggerDeleteIdentityLinkedUsers(process.Id).ConfigureAwait(false);
-
-        // Assert
-        processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task RetriggerDeleteIdentityLinkedUsers_WithNotExistingProcess_ThrowsException()
-    {
-        // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS;
-        var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _logic.RetriggerDeleteIdentityLinkedUsers(process.Id).ConfigureAwait(false);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
@@ -1103,17 +1064,17 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
-        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
+        var processStepTypeId = ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((true, verifyProcessData));
 
         // Act
-        await _logic.RetriggerDeleteCentralIdentityProvider(process.Id).ConfigureAwait(false);
+        await _logic.RetriggerDeleteCentralIdentityProvider(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -1128,33 +1089,34 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
         var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _logic.RetriggerDeleteCentralIdentityProvider(process.Id).ConfigureAwait(false);
+
+        Task Act() => _logic.RetriggerDeleteCentralIdentityProvider(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");
     }
 
     [Fact]
-    public async Task RetriggerDeleteIdentityProvider_CallsExpected()
+    public async Task RetriggerDeleteCentralUser_CallsExpected()
     {
         // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER;
-        var processStepTypeId = ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_PROVIDER;
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER;
+        var processStepTypeId = ProcessStepTypeId.DELETE_CENTRAL_USER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((true, verifyProcessData));
 
         // Act
-        await _logic.RetriggerDeleteIdentityProvider(process.Id).ConfigureAwait(false);
+        await _logic.RetriggerDeleteCentralUser(process.Id);
 
         // Assert
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
@@ -1164,17 +1126,18 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
-    public async Task RetriggerDeleteIdentityProvider_WithNotExistingProcess_ThrowsException()
+    public async Task RetriggerDeleteCentralUser_WithNotExistingProcess_ThrowsException()
     {
         // Arrange
-        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER;
+        var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER;
         var process = _fixture.Create<Process>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDP_DELETION, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .Returns((false, _fixture.Create<VerifyProcessData>()));
-        async Task Act() => await _logic.RetriggerDeleteIdentityProvider(process.Id).ConfigureAwait(false);
+
+        Task Act() => _logic.RetriggerDeleteCentralUser(process.Id);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"process {process.Id} does not exist");

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -525,27 +524,6 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-identityLinkedUsers
-    /// <response code="204">Empty response on success.</response>
-    /// <response code="404">No Process found for the processId</response>
-    [HttpPost]
-    [Authorize(Roles = "decline_new_partner")]
-    [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Route("{processId}/retrigger-delete-identityLinkedUsers")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerDeleteIdentityLinkedUsers([FromRoute] Guid processId)
-    {
-        await _logic.RetriggerDeleteIdentityLinkedUsers(processId).ConfigureAwait(false);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Retriggers the last failed step
-    /// </summary>
-    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
-    /// <returns>NoContent</returns>
     /// Example: POST: api/administration/registration/{processId}/retrigger-delete-centralIdentityProvider
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No Process found for the processId</response>
@@ -567,19 +545,19 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-identityProvider
+    /// Example: POST: api/administration/registration/{processId}/retrigger-delete-centraluser
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">No Process found for the processId</response>
     [HttpPost]
     [Authorize(Roles = "decline_new_partner")]
     [Authorize(Policy = PolicyTypes.CompanyUser)]
-    [Route("{processId}/retrigger-delete-identityProvider")]
+    [Route("{processId}/retrigger-delete-centraluser")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<NoContentResult> RetriggerDeleteIdentityProvider([FromRoute] Guid processId)
+    public async Task<NoContentResult> RetriggerDeleteCentralUser([FromRoute] Guid processId)
     {
-        await _logic.RetriggerDeleteIdentityProvider(processId).ConfigureAwait(false);
+        await _logic.RetriggerDeleteCentralUser(processId).ConfigureAwait(false);
         return NoContent();
     }
 }

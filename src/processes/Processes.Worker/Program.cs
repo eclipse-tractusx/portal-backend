@@ -31,12 +31,14 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
@@ -66,7 +68,9 @@ try
                 .AddMailingProcessExecutor()
                 .AddInvitationProcessExecutor(hostContext.Configuration)
                 .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
-                .AddDimUserCreationProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"));
+                .AddDimUserCreationProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>();
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
@@ -84,7 +88,7 @@ try
         .AddLogging()
         .Build();
     Log.Information("Building worker completed");
-    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment, false);
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
 
     using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>

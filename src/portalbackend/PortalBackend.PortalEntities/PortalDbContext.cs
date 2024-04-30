@@ -129,6 +129,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedBusinessPartner> CompanyUserAssignedBusinessPartners { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; set; } = default!;
+    public virtual DbSet<CompanyUserAssignedProcess> CompanyUserAssignedProcesses { get; set; } = default!;
     public virtual DbSet<Connector> Connectors { get; set; } = default!;
     public virtual DbSet<ConnectorAssignedOfferSubscription> ConnectorAssignedOfferSubscriptions { get; set; } = default!;
     public virtual DbSet<ConnectorStatus> ConnectorStatuses { get; set; } = default!;
@@ -150,6 +151,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<Identity> Identities { get; set; } = default!;
     public virtual DbSet<IdentityAssignedRole> IdentityAssignedRoles { get; set; } = default!;
     public virtual DbSet<IdentityProvider> IdentityProviders { get; set; } = default!;
+    public virtual DbSet<IdentityProviderAssignedProcess> IdentityProviderAssignedProcesses { get; set; } = default!;
     public virtual DbSet<IdentityProviderType> IdentityProviderTypes { get; set; } = default!;
     public virtual DbSet<IdentityProviderCategory> IdentityProviderCategories { get; set; } = default!;
     public virtual DbSet<IdentityUserStatus> IdentityUserStatuses { get; set; } = default!;
@@ -552,12 +554,10 @@ public class PortalDbContext : DbContext
                     j => j
                         .HasOne(pt => pt.IdentityProvider!)
                         .WithMany()
-                        .HasForeignKey(pt => pt.IdentityProviderId)
-                        .OnDelete(DeleteBehavior.ClientSetNull),
+                        .HasForeignKey(pt => pt.IdentityProviderId),
                     j => j
                         .HasOne(pt => pt.Company!)
                         .WithMany()
-                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasForeignKey(pt => pt.CompanyId),
                     j =>
                     {
@@ -857,6 +857,9 @@ public class PortalDbContext : DbContext
             entity.ToTable("company_users");
         });
 
+        modelBuilder.Entity<CompanyUserAssignedProcess>()
+            .HasKey(e => new { e.CompanyUserId, e.ProcessId });
+
         modelBuilder.Entity<CompanyServiceAccount>(entity =>
         {
             entity.HasOne(x => x.Identity)
@@ -1050,6 +1053,9 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(x => x.OwnerId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        modelBuilder.Entity<IdentityProviderAssignedProcess>()
+            .HasKey(e => new { e.IdentityProviderId, e.ProcessId });
 
         modelBuilder.Entity<IdentityProviderType>()
             .HasData(
@@ -1548,20 +1554,8 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<NetworkRegistration>(x => x.ApplicationId);
         });
 
-        modelBuilder.Entity<CompanyUserAssignedIdentityProvider>(entity =>
-        {
-            entity.HasKey(e => new { e.CompanyUserId, e.IdentityProviderId });
-
-            entity.HasOne(e => e.CompanyUser)
-                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
-                .HasForeignKey(e => e.CompanyUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(e => e.IdentityProvider)
-                .WithMany(e => e.CompanyUserAssignedIdentityProviders)
-                .HasForeignKey(e => e.IdentityProviderId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-        });
+        modelBuilder.Entity<CompanyUserAssignedIdentityProvider>()
+            .HasKey(e => new { e.CompanyUserId, e.IdentityProviderId });
 
         modelBuilder.Entity<Document>()
             .HasAuditV1Triggers<Document, AuditDocument20231115>();

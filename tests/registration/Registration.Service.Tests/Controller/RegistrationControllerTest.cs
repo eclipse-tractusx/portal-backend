@@ -200,7 +200,7 @@ public class RegistrationControllerTest
         var applicationId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.DeclineApplicationRegistrationAsync(applicationId).ConfigureAwait(false);
+        var result = await _controller.DeclineApplicationRegistrationAsync(applicationId);
 
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.DeclineApplicationRegistrationAsync(applicationId)).MustHaveHappenedOnceExactly();
