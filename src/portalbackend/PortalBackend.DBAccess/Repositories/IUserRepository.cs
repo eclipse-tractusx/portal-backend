@@ -131,4 +131,7 @@ public interface IUserRepository
     void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify);
     Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId);
     Task<bool> CheckUserExists(Guid companyUserId);
+    void CreateCompanyUserAssignedProcessRange(IEnumerable<(Guid CompanyUserId, Guid ProcessId)> companyUserProcessIds);
+    Task<Guid> GetCompanyUserIdForProcessIdAsync(Guid processId);
+    void DeleteCompanyUserAssignedProcess(Guid companyUserId, Guid processId);
 }

@@ -41,6 +41,13 @@ public class ProcessStepRepository : IProcessStepRepository
     public Process CreateProcess(ProcessTypeId processTypeId) =>
         _context.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
 
+    public IEnumerable<Process> CreateProcessRange(IEnumerable<ProcessTypeId> processTypeIds)
+    {
+        var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToList();
+        _context.AddRange(processes);
+        return processes;
+    }
+
     public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
         _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
 

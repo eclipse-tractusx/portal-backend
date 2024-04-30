@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,20 +20,18 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.IdpDeletion.Executor.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor.Tests;
 
-public class IdpDeletionExtensisonsTest
+public class IdentityProviderProvisioningExtensionsTest
 {
     [Theory]
-    [InlineData(ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_REALM, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM)]
-    [InlineData(ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT)]
-    [InlineData(ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_LINKED_USERS)]
-    [InlineData(ProcessStepTypeId.TRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER)]
-    [InlineData(ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_PROVIDER, ProcessStepTypeId.RETRIGGER_DELETE_IDENTITY_PROVIDER)]
+    [InlineData(ProcessStepTypeId.DELETE_IDP_SHARED_REALM, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM)]
+    [InlineData(ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT)]
+    [InlineData(ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER)]
     public void GetRetriggerStep_WithValid_ReturnsExpected(ProcessStepTypeId processStep, ProcessStepTypeId expectedStep)
     {
         // Act
-        var result = processStep.GetIdpDeletionRetriggerStep();
+        var result = processStep.GetIdentityProviderProvisioningRetriggerStep();
 
         // Assert
         result.Should().ContainSingle()
@@ -45,9 +42,9 @@ public class IdpDeletionExtensisonsTest
     public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
     {
         // Act
-        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetIdpDeletionRetriggerStep());
+        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetIdentityProviderProvisioningRetriggerStep());
 
         // Assert
-        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process IdpDeletion");
+        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process IdentityProviderProvisioning");
     }
 }

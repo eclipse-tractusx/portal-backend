@@ -110,7 +110,7 @@ public class ProvisioningManagerTests
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" });
+        await _sut.SetupClientAsync($"{url}/*", url, ["adminRole"]);
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
@@ -129,7 +129,7 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "savalid" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
@@ -153,7 +153,7 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "savalid" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
@@ -183,12 +183,10 @@ public class ProvisioningManagerTests
         displayName.Should().Be("test");
     }
 
-    #region TriggerDeleteSharedRealm
+    #region DeleteSharedRealm
 
-    [Theory]
-    [InlineData("saidp123")]
-    [InlineData("notValidId")]
-    public async Task TriggerDeleteSharedRealmAsync_ReturnsExpected(string clinetId)
+    [Fact]
+    public async Task DeleteSharedRealmAsync_ReturnsExpected()
     {
         // Arrange
         const string alias = "idp123";
@@ -196,33 +194,24 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = clinetId } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "saidp123" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
         // Act
-        var result = await _sut.TriggerDeleteSharedRealmAsync(alias).ConfigureAwait(false);
+        await _sut.DeleteSharedRealmAsync(alias);
 
         //Assert
-        result.modified.Should().BeFalse();
-        result.nextStepTypeIds.Should().HaveCount(1).And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
-        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        if (clinetId != "saidp123")
-        {
-            result.processMessage.Should().Be("Entity not found");
-        }
-        else
-        {
-            result.processMessage.Should().BeNull();
-        }
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{alias}")
+            .WithVerb(HttpMethod.Delete)
+            .Times(1);
     }
 
     #endregion
 
-    #region
-    [Theory]
-    [InlineData("saidp123")]
-    [InlineData("notValidId")]
-    public async Task TriggerDeleteIdpSharedServiceAccount_ReturnsExpected(string clinetId)
+    #region DeleteIdpSharedServiceAccount
+
+    [Fact]
+    public async Task DeleteIdpSharedServiceAccount_ReturnsExpected()
     {
         // Arrange
         const string alias = "idp123";
@@ -230,24 +219,16 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = clinetId } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "saidp123" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
         // Act
-        var result = await _sut.TriggerDeleteIdpSharedServiceAccount(alias).ConfigureAwait(false);
+        await _sut.DeleteIdpSharedServiceAccount(alias);
 
         //Assert
-        result.modified.Should().BeFalse();
-        result.nextStepTypeIds.Should().HaveCount(1).And.Satisfy(x => x == ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS);
-        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        if (clinetId != "saidp123")
-        {
-            result.processMessage.Should().Be("Entity not found");
-        }
-        else
-        {
-            result.processMessage.Should().BeNull();
-        }
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/clients/{id}")
+            .WithVerb(HttpMethod.Delete)
+            .Times(1);
     }
 
     #endregion

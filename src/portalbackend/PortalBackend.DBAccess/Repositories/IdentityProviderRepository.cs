@@ -66,6 +66,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
     public void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
         _context.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
 
+    public void DeleteCompanyIdentityProviderRange(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdentityProviderIds) =>
+        _context.RemoveRange(companyIdentityProviderIds.Select(x => new CompanyIdentityProvider(x.CompanyId, x.IdentityProviderId)));
+
     public void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds) =>
         _context.CompanyIdentityProviders
             .AddRange(companyIdIdentityProviderIds.Select(x => new CompanyIdentityProvider(
@@ -345,27 +348,16 @@ public class IdentityProviderRepository : IIdentityProviderRepository
             .ToAsyncEnumerable();
 
     /// <inheritdoc />           
-    public Task<(IdpData? idpData, Guid companyId, Guid companyUserId)> GetIdentityProviderDataForProcessIdAsync(Guid processId) =>
-        _context.Processes
+    public Task<IdpData?> GetIdentityProviderDataForProcessIdAsync(Guid processId) =>
+        _context.IdentityProviderAssignedProcesses
             .AsNoTracking()
-            .Where(process => process.Id == processId)
-            .Select(process => new ValueTuple<IdpData?, Guid, Guid>(new IdpData(
-                process.IdentityProvider!.Id,
-                process.IdentityProvider.IamIdentityProvider!.IamIdpAlias,
-                process.IdentityProvider.IdentityProviderTypeId),
-                process.IdentityProvider.OwnerId,
-                process.IdentityProvider.CompanyUserAssignedIdentityProviders.Select(x => x.CompanyUserId).FirstOrDefault()))
+            .Where(ipap => ipap.ProcessId == processId)
+            .Select(ipap => new IdpData(
+                ipap.IdentityProviderId,
+                ipap.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                ipap.IdentityProvider.IdentityProviderTypeId))
             .SingleOrDefaultAsync();
-    public IAsyncEnumerable<Guid> GetIdentityproviderIdAsync(IEnumerable<string> alias) =>
-        _context.IamIdentityProviders
-            .AsNoTracking()
-            .Where(identites => alias.Contains(identites.IamIdpAlias))
-            .Select(x => x.IdentityProviderId).ToAsyncEnumerable();
-    public void AttachAndModifyIdentityProvider(Guid identityProviderId, Action<IdentityProvider>? initialize, Action<IdentityProvider> modify)
-    {
-        var identityProvider = new IdentityProvider(identityProviderId, default, default, default, default);
-        initialize?.Invoke(identityProvider);
-        _context.Attach(identityProvider);
-        modify(identityProvider);
-    }
+
+    public void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds) =>
+        _context.AddRange(identityProviderProcessIds.Select(x => new IdentityProviderAssignedProcess(x.IdentityProviderId, x.ProcessId)));
 }

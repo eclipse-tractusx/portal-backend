@@ -21,7 +21,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -276,32 +275,16 @@ public partial class ProvisioningManager : IProvisioningManager
         return _factory.CreateKeycloakClient("shared", clientId, secret);
     }
 
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerDeleteSharedRealmAsync(string alias)
+    public async Task DeleteSharedRealmAsync(string alias)
     {
-        try
-        {
-            var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
-            await deleteSharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false);
-            return (new[] { ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT }, ProcessStepStatusId.DONE, false, null);
-        }
-        catch (KeycloakEntityNotFoundException)
-        {
-            return (new[] { ProcessStepTypeId.TRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT }, ProcessStepStatusId.DONE, false, "Entity not found");
-        }
+        var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
+        await deleteSharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false);
     }
 
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerDeleteIdpSharedServiceAccount(string alias)
+    public async Task DeleteIdpSharedServiceAccount(string alias)
     {
-        try
-        {
-            var sharedKeycloak = _Factory.CreateKeycloakClient("shared");
-            await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
-            return (new[] { ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS }, ProcessStepStatusId.DONE, false, null);
-        }
-        catch (KeycloakEntityNotFoundException)
-        {
-            return (new[] { ProcessStepTypeId.TRIGGER_DELETE_IDENTITY_LINKED_USERS }, ProcessStepStatusId.DONE, false, "Entity not found");
-        }
+        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
     private static T Clone<T>(T cloneObject)

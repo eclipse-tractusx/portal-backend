@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-
-public interface IIdentityRepository
+public class IdentityProviderAssignedProcess
 {
-    Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId);
-    Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId);
-    Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId);
+    public IdentityProviderAssignedProcess(Guid identityProviderId, Guid processId)
+    {
+        IdentityProviderId = identityProviderId;
+        ProcessId = processId;
+    }
+
+    public Guid IdentityProviderId { get; private set; }
+    public Guid ProcessId { get; private set; }
+
+    // Navigation properties
+    public virtual IdentityProvider? IdentityProvider { get; private set; }
+    public virtual Process? Process { get; private set; }
 }

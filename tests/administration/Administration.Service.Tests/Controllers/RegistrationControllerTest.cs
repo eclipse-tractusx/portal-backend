@@ -312,12 +312,13 @@ public class RegistrationControllerTest
         var processId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerDeleteIdpSharedRealm(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerDeleteIdpSharedRealm(processId);
 
         // Assert
         A.CallTo(() => _logic.RetriggerDeleteIdpSharedRealm(processId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
     [Fact]
     public async Task RetriggerDeleteIdpSharedServiceAccount_ReturnsExpectedResult()
     {
@@ -325,25 +326,13 @@ public class RegistrationControllerTest
         var processId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerDeleteIdpSharedServiceAccount(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerDeleteIdpSharedServiceAccount(processId);
 
         // Assert
         A.CallTo(() => _logic.RetriggerDeleteIdpSharedServiceAccount(processId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
-    [Fact]
-    public async Task RetriggerDeleteIdentityLinkedUsers_ReturnsExpectedResult()
-    {
-        // Arrange
-        var processId = _fixture.Create<Guid>();
 
-        // Act
-        var result = await _controller.RetriggerDeleteIdentityLinkedUsers(processId).ConfigureAwait(false);
-
-        // Assert
-        A.CallTo(() => _logic.RetriggerDeleteIdentityLinkedUsers(processId)).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<NoContentResult>();
-    }
     [Fact]
     public async Task RetriggerDeleteCentralIdentityProvider_ReturnsExpectedResult()
     {
@@ -351,23 +340,24 @@ public class RegistrationControllerTest
         var processId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerDeleteCentralIdentityProvider(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerDeleteCentralIdentityProvider(processId);
 
         // Assert
         A.CallTo(() => _logic.RetriggerDeleteCentralIdentityProvider(processId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
     [Fact]
-    public async Task RetriggerDeleteIdentityProvider_ReturnsExpectedResult()
+    public async Task RetriggerDeleteCentralUser_ReturnsExpectedResult()
     {
         // Arrange
         var processId = _fixture.Create<Guid>();
 
         // Act
-        var result = await _controller.RetriggerDeleteIdentityProvider(processId).ConfigureAwait(false);
+        var result = await _controller.RetriggerDeleteCentralUser(processId);
 
         // Assert
-        A.CallTo(() => _logic.RetriggerDeleteIdentityProvider(processId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.RetriggerDeleteCentralUser(processId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 }
