@@ -35,8 +35,8 @@ public partial class ProvisioningManager
             return count switch
             {
                 0 => (idOfClient, Enumerable.Empty<Role>()),
-                1 => (idOfClient, Enumerable.Repeat(await _CentralIdp.GetRoleByNameAsync(_Settings.CentralRealm, idOfClient, roleNames.Single()).ConfigureAwait(ConfigureAwaitOptions.None), 1)),
-                _ => (idOfClient, (await _CentralIdp.GetRolesAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None)).Where(x => roleNames.Contains(x.Name))),
+                1 => (idOfClient, Enumerable.Repeat(await _centralIdp.GetRoleByNameAsync(_settings.CentralRealm, idOfClient, roleNames.Single()).ConfigureAwait(ConfigureAwaitOptions.None), 1)),
+                _ => (idOfClient, (await _centralIdp.GetRolesAsync(_settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None)).Where(x => roleNames.Contains(x.Name))),
             };
         }
         catch (KeycloakEntityNotFoundException)
@@ -53,7 +53,7 @@ public partial class ProvisioningManager
                 if (clientId == null || !roles.Any())
                     return;
 
-                await _CentralIdp.DeleteClientRoleMappingsFromUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(ConfigureAwaitOptions.None);
+                await _centralIdp.DeleteClientRoleMappingsFromUserAsync(_settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         )).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -72,7 +72,7 @@ public partial class ProvisioningManager
             Exception? error;
             try
             {
-                await _CentralIdp.AddClientRoleMappingsToUserAsync(_Settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(ConfigureAwaitOptions.None);
+                await _centralIdp.AddClientRoleMappingsToUserAsync(_settings.CentralRealm, centralUserId, clientId, roles).ConfigureAwait(ConfigureAwaitOptions.None);
                 assigned = roles.Select(role => role.Name ?? throw new KeycloakInvalidResponseException("name of role is null"));
                 error = null;
             }
@@ -101,7 +101,7 @@ public partial class ProvisioningManager
                     ClientRole = true
                 }))
         {
-            await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, result.ClientId, role).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _centralIdp.CreateRoleAsync(_settings.CentralRealm, result.ClientId, role).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -112,7 +112,7 @@ public partial class ProvisioningManager
             ClientRole = true
         }).Select(async role =>
             {
-                await _CentralIdp.CreateRoleAsync(_Settings.CentralRealm, clientId, role).ConfigureAwait(ConfigureAwaitOptions.None);
+                await _centralIdp.CreateRoleAsync(_settings.CentralRealm, clientId, role).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         ));
 }

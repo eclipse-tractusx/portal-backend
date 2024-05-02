@@ -160,32 +160,40 @@ public class ServiceAccountRepository : IServiceAccountRepository
             take,
             _dbContext.CompanyServiceAccounts
                 .AsNoTracking()
-                .Where(serviceAccount =>
-                    (!isOwner.HasValue && (serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId) ||
-                    isOwner.HasValue && (isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId || !isOwner.Value && serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId)) &&
-                    serviceAccount.Identity!.UserStatusId == userStatusId &&
-                    (clientId == null || EF.Functions.ILike(serviceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
-                .GroupBy(serviceAccount => serviceAccount.Identity!.UserStatusId),
-            serviceAccounts => serviceAccounts.OrderBy(serviceAccount => serviceAccount.Name),
-            serviceAccount => new CompanyServiceAccountData(
-                serviceAccount.Id,
-                serviceAccount.ClientClientId,
-                serviceAccount.Name,
-                serviceAccount.CompanyServiceAccountTypeId,
-                serviceAccount.CompaniesLinkedServiceAccount!.Provider == null,
-                serviceAccount.OfferSubscriptionId,
-                serviceAccount.Connector == null
+                .Select(serviceAccount => new
+                {
+                    ServiceAccount = serviceAccount,
+                    IsOwner = serviceAccount.CompaniesLinkedServiceAccount!.Owners == userCompanyId,
+                    IsProvider = serviceAccount.CompaniesLinkedServiceAccount!.Provider == userCompanyId
+                })
+                .Where(x =>
+                    (isOwner.HasValue
+                        ? isOwner.Value && x.IsOwner || !isOwner.Value && x.IsProvider
+                        : x.IsOwner || x.IsProvider) &&
+                    x.ServiceAccount.Identity!.UserStatusId == userStatusId &&
+                    (clientId == null || EF.Functions.ILike(x.ServiceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
+                .GroupBy(x => x.ServiceAccount.Identity!.UserStatusId),
+            x => x.OrderBy(x => x.ServiceAccount.Name),
+            x => new CompanyServiceAccountData(
+                x.ServiceAccount.Id,
+                x.ServiceAccount.ClientClientId,
+                x.ServiceAccount.Name,
+                x.ServiceAccount.CompanyServiceAccountTypeId,
+                x.IsOwner,
+                x.IsProvider,
+                x.ServiceAccount.OfferSubscriptionId,
+                x.ServiceAccount.Connector == null
                     ? null
                     : new ConnectorResponseData(
-                        serviceAccount.Connector.Id,
-                        serviceAccount.Connector.Name),
-                serviceAccount!.OfferSubscription == null
+                        x.ServiceAccount.Connector.Id,
+                        x.ServiceAccount.Connector.Name),
+                x!.ServiceAccount.OfferSubscription == null
                     ? null
                     : new OfferResponseData(
-                        serviceAccount.OfferSubscription.OfferId,
-                        serviceAccount.OfferSubscription.Offer!.OfferTypeId,
-                        serviceAccount.OfferSubscription.Offer.Name,
-                        serviceAccount.OfferSubscription.Id)))
+                        x.ServiceAccount.OfferSubscription.OfferId,
+                        x.ServiceAccount.OfferSubscription.Offer!.OfferTypeId,
+                        x.ServiceAccount.OfferSubscription.Offer.Name,
+                        x.ServiceAccount.OfferSubscription.Id)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

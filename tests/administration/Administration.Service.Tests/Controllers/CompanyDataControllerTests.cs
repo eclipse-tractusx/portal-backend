@@ -295,7 +295,7 @@ public class CompanyDataControllerTests
         var decentralIdentityManagementAuthUrl = "https://example.com/auth";
         var decentralIdentityManagementServiceUrl = "https://example.com/service";
         A.CallTo(() => _logic.GetDimServiceUrls())
-            .Returns(new DimUrlsResponse(decentralIdentityManagementAuthUrl, decentralIdentityManagementServiceUrl));
+            .Returns(new DimUrlsResponse("did:web:issuer:test:12345", "BPNL12345678", "did:web:holder:test:123234", "https://example.org/bdrs", decentralIdentityManagementAuthUrl, decentralIdentityManagementServiceUrl));
 
         //Act
         var result = await _controller.GetDimServiceUrls();

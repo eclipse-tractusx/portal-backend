@@ -32,6 +32,8 @@ public class CompanyDataSettings
         SsiCertificateMediaTypes = null!;
         CompanyCertificateMediaTypes = null!;
         DecentralIdentityManagementAuthUrl = null!;
+        IssuerDid = null!;
+        BpnDidResolverUrl = null!;
     }
 
     /// <summary>
@@ -65,6 +67,12 @@ public class CompanyDataSettings
 
     [Required(AllowEmptyStrings = true)]
     public string DecentralIdentityManagementAuthUrl { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; }
 }
 
 public static class CompanyDataSettingsExtensions
