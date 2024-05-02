@@ -523,19 +523,17 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderDataOidc?.Enabled,
             identityProviderMapper)
         {
-            Oidc = identityProviderDataOidc == null ?
-                null :
-                new IdentityProviderDetailsOidc(
+            Oidc = identityProviderDataOidc == null
+                ? null
+                : new IdentityProviderDetailsOidc(
                     metadataUrl,
                     identityProviderDataOidc.AuthorizationUrl,
                     identityProviderDataOidc.TokenUrl,
                     identityProviderDataOidc.LogoutUrl,
                     identityProviderDataOidc.ClientId,
                     !string.IsNullOrEmpty(identityProviderDataOidc.ClientSecret),
-                    identityProviderDataOidc.ClientAuthMethod)
-                {
-                    SignatureAlgorithm = identityProviderDataOidc.SignatureAlgorithm
-                }
+                    identityProviderDataOidc.ClientAuthMethod,
+                    identityProviderDataOidc.SignatureAlgorithm)
         };
     }
 
@@ -575,9 +573,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
             identityProviderDataSaml?.Enabled,
             identityProviderMapper)
         {
-            Saml = identityProviderDataSaml == null ?
-                null :
-                new IdentityProviderDetailsSaml(
+            Saml = identityProviderDataSaml == null
+                ? null
+                : new IdentityProviderDetailsSaml(
                     identityProviderDataSaml.EntityId,
                     identityProviderDataSaml.SingleSignOnServiceUrl)
         };

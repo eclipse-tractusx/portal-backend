@@ -41,13 +41,13 @@ public partial class ProvisioningManager
 
     public async Task UpdateCentralUserAsync(string userId, string firstName, string lastName, string email)
     {
-        var user = await _CentralIdp.GetUserAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var user = await _centralIdp.GetUserAsync(_settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (user.FirstName != firstName || user.LastName != lastName || user.Email != email)
         {
             user.FirstName = firstName;
             user.LastName = lastName;
             user.Email = email;
-            await _CentralIdp.UpdateUserAsync(_Settings.CentralRealm, userId, user).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _centralIdp.UpdateUserAsync(_settings.CentralRealm, userId, user).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -55,7 +55,7 @@ public partial class ProvisioningManager
     {
         try
         {
-            return (await _CentralIdp.GetUsersAsync(_Settings.CentralRealm, username: userName).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(user => user.UserName == userName)?.Id;
+            return (await _centralIdp.GetUsersAsync(_settings.CentralRealm, username: userName).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(user => user.UserName == userName)?.Id;
         }
         catch (FlurlHttpException ex)
         {
@@ -79,16 +79,16 @@ public partial class ProvisioningManager
     }
 
     public Task DeleteCentralRealmUserAsync(string userId) =>
-        _CentralIdp.DeleteUserAsync(_Settings.CentralRealm, userId);
+        _centralIdp.DeleteUserAsync(_settings.CentralRealm, userId);
 
     public async Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId) =>
-        (await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
+        (await _centralIdp.GetUserSocialLoginsAsync(_settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
             .SingleOrDefault(federatedIdentity => federatedIdentity.IdentityProvider == identityProvider)
             ?.UserId;
 
     public async IAsyncEnumerable<IdentityProviderLink> GetProviderUserLinkDataForCentralUserIdAsync(string userId)
     {
-        foreach (var federatedIdentity in await _CentralIdp.GetUserSocialLoginsAsync(_Settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
+        foreach (var federatedIdentity in await _centralIdp.GetUserSocialLoginsAsync(_settings.CentralRealm, userId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             yield return new IdentityProviderLink(
                 federatedIdentity.IdentityProvider ?? throw new KeycloakInvalidResponseException("identity_provider of ferderated_identity is null"),
@@ -98,8 +98,8 @@ public partial class ProvisioningManager
     }
 
     public Task AddProviderUserLinkToCentralUserAsync(string userId, IdentityProviderLink identityProviderLink) =>
-        _CentralIdp.AddUserSocialLoginProviderAsync(
-            _Settings.CentralRealm,
+        _centralIdp.AddUserSocialLoginProviderAsync(
+            _settings.CentralRealm,
             userId,
             identityProviderLink.Alias,
             new FederatedIdentity()
@@ -110,15 +110,15 @@ public partial class ProvisioningManager
             });
 
     public Task DeleteProviderUserLinkToCentralUserAsync(string userId, string alias) =>
-        _CentralIdp.RemoveUserSocialLoginProviderAsync(
-            _Settings.CentralRealm,
+        _centralIdp.RemoveUserSocialLoginProviderAsync(
+            _settings.CentralRealm,
             userId,
             alias);
 
     public async Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile)
     {
         var sharedKeycloak = await GetSharedKeycloakClient(realm).ConfigureAwait(ConfigureAwaitOptions.None);
-        var newUser = CloneUser(_Settings.SharedUser);
+        var newUser = CloneUser(_settings.SharedUser);
         newUser.UserName = profile.UserName;
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
@@ -129,7 +129,7 @@ public partial class ProvisioningManager
 
     public Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes)
     {
-        var newUser = CloneUser(_Settings.CentralUser);
+        var newUser = CloneUser(_settings.CentralUser);
         newUser.UserName = profile.UserName;
         newUser.FirstName = profile.FirstName;
         newUser.LastName = profile.LastName;
@@ -139,7 +139,7 @@ public partial class ProvisioningManager
         {
             newUser.Attributes = attributes.Where(a => a.Values.Any()).ToDictionary(a => a.Name, a => a.Values);
         }
-        return CreateAndRetrieveUserIdMappingError(_CentralIdp, _Settings.CentralRealm, newUser);
+        return CreateAndRetrieveUserIdMappingError(_centralIdp, _settings.CentralRealm, newUser);
     }
 
     private static readonly string ParamUserName = "userName";
