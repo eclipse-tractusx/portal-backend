@@ -2,6 +2,17 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC6
+
+### Feature
+* **Administration Service**
+* dim: enhanced endpoint with issuer did, bpnl and did of the holder and url for the bpn did resolver
+
+### Bugfix
+* **Administration Service**
+* allowed null values in GET and POST identityprovider response
+* fixed isOwner filter for GET api/administration/serviceaccount/owncompany/serviceaccounts
+
 ## 2.0.0-RC5
 
 ### Changes
