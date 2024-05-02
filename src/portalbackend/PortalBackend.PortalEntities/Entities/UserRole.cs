@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,13 +20,14 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditUserRole20231115))]
+[AuditEntityV1(typeof(AuditUserRole20240502))]
 public class UserRole : IAuditableV1, IBaseEntity
 {
     private UserRole()
@@ -55,10 +55,13 @@ public class UserRole : IAuditableV1, IBaseEntity
 
     public Guid OfferId { get; set; }
 
+    public ProviderInformationId ProviderInformationId { get; set; }
+
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }
+    public virtual ProviderInformation? ProviderInformation { get; private set; }
     public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
     public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }

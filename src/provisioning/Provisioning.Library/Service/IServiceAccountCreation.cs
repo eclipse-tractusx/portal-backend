@@ -18,11 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
@@ -37,14 +35,15 @@ public interface IServiceAccountCreation
     /// <param name="companyServiceAccountTypeId">The type of the created service account</param>
     /// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
     /// <param name="enabled">if <c>true</c> the technical user will be enabled, otherwise <c>false</c></param>
+    /// <param name="processData">The process that should be created if a role for a provider type was selected</param>
     /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
-    Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> CreateServiceAccountAsync(
-        ServiceAccountCreationInfo creationData,
-        Guid companyId,
-        IEnumerable<string> bpns,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        bool enhanceTechnicalUserName,
-        bool enabled,
-        Action<CompanyServiceAccount>? setOptionalParameter = null);
+    Task<(bool HasExternalServiceAccount, List<CreatedServiceAccountData> ServiceAccounts)> CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
+            Guid companyId,
+            IEnumerable<string> bpns,
+            CompanyServiceAccountTypeId companyServiceAccountTypeId,
+            bool enhanceTechnicalUserName,
+            bool enabled,
+            ServiceAccountCreationProcessData? processData,
+            Action<CompanyServiceAccount>? setOptionalParameter = null);
 }

@@ -17,23 +17,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public record ServiceAccountData(
-    string InternalClientId,
-    string IamUserId,
-    ClientAuthData AuthData
-);
+public class AuditUserRole20240502 : IAuditEntityV1
+{
+    /// <inheritdoc />
+    [Key]
+    public Guid AuditV1Id { get; set; }
 
-public record CreatedServiceAccountData(
-    Guid ServiceAccountId,
-    string Name,
-    string Description,
-    UserStatusId Status,
-    string ClientId,
-    ServiceAccountData ServiceAccountData,
-    IEnumerable<UserRoleData> UserRoleData
-);
+    public Guid Id { get; private set; }
+
+    [Column("user_role")]
+    public string? UserRoleText { get; set; }
+
+    public Guid? OfferId { get; set; }
+
+    public ProviderInformationId ProviderInformationId { get; set; }
+
+    [LastEditorV1]
+    public Guid? LastEditorId { get; set; }
+    /// <inheritdoc />
+    public Guid? AuditV1LastEditorId { get; set; }
+    /// <inheritdoc />
+    public AuditOperationId AuditV1OperationId { get; set; }
+    /// <inheritdoc />
+    public DateTimeOffset AuditV1DateLastChanged { get; set; }
+}
+

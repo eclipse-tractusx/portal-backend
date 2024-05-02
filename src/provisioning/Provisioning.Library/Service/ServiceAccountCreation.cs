@@ -24,7 +24,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
@@ -32,46 +34,96 @@ using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Libr
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 /// <inheritdoc />
-public class ServiceAccountCreation : IServiceAccountCreation
+public class ServiceAccountCreation(
+    IProvisioningManager provisioningManager,
+    IPortalRepositories portalRepositories,
+    IProvisioningDBAccess provisioningDbAccess,
+    IOptions<ServiceAccountCreationSettings> options) : IServiceAccountCreation
 {
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IProvisioningDBAccess _provisioningDbAccess;
-    private readonly ServiceAccountCreationSettings _settings;
-
-    /// <summary>
-    /// Creates a new instance of <see cref="ServiceAccountCreation"/>
-    /// </summary>
-    /// <param name="provisioningManager">Access to the provisioning Manager and keycloak</param>
-    /// <param name="portalRepositories">Access to the database</param>
-    /// <param name="provisioningDbAccess">Access to the provisioning database</param>
-    /// <param name="options">Options for the service account creation</param>
-    public ServiceAccountCreation(
-        IProvisioningManager provisioningManager,
-        IPortalRepositories portalRepositories,
-        IProvisioningDBAccess provisioningDbAccess,
-        IOptions<ServiceAccountCreationSettings> options)
-    {
-        _provisioningManager = provisioningManager;
-        _portalRepositories = portalRepositories;
-        _provisioningDbAccess = provisioningDbAccess;
-        _settings = options.Value;
-    }
+    private readonly ServiceAccountCreationSettings _settings = options.Value;
 
     /// <inheritdoc />
-    async Task<(string clientId, ServiceAccountData serviceAccountData, Guid serviceAccountId, IEnumerable<UserRoleData> userRoleData)> IServiceAccountCreation.CreateServiceAccountAsync(
-        ServiceAccountCreationInfo creationData,
-        Guid companyId,
-        IEnumerable<string> bpns,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        bool enhanceTechnicalUserName,
-        bool enabled,
-        Action<CompanyServiceAccount>? setOptionalParameter)
+    async Task<(bool HasExternalServiceAccount, List<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
+            Guid companyId,
+            IEnumerable<string> bpns,
+            CompanyServiceAccountTypeId companyServiceAccountTypeId,
+            bool enhanceTechnicalUserName,
+            bool enabled,
+            ServiceAccountCreationProcessData? processData,
+            Action<CompanyServiceAccount>? setOptionalParameter)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
-        var serviceAccountsRepository = _portalRepositories.GetInstance<IServiceAccountRepository>();
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var serviceAccountsRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
 
+        var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds);
+
+        var serviceAccounts = new List<CreatedServiceAccountData>();
+        var groupedRoles = userRoleData.GroupBy(x => x.ProviderId);
+        var hasExternalServiceAccount = false;
+        foreach (var providerRoles in groupedRoles)
+        {
+            switch (providerRoles.Key)
+            {
+                case ProviderInformationId.KEYCLOAK:
+                    {
+                        var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, providerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
+                        var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, companyServiceAccountTypeId, CompanyServiceAccountKindId.INTERNAL, name, clientId, description, providerRoles, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                        serviceAccounts.Add(new CreatedServiceAccountData(
+                            serviceAccountId,
+                            enhancedName,
+                            description,
+                            UserStatusId.ACTIVE,
+                            clientId,
+                            serviceAccountData,
+                            providerRoles.Select(x => new UserRoleData(x.UserRoleId, x.ClientClientId, x.UserRoleText))));
+                        break;
+                    }
+                case ProviderInformationId.SAP_DIM:
+                    {
+                        var dimSaName = $"dim-{name}";
+                        const string ClientPlaceholderId = "xxx";
+                        var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, ClientPlaceholderId, description, providerRoles, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+                        if (processData?.ProcessTypeId is not null)
+                        {
+                            Guid processId;
+                            if (processData.ProcessId is null)
+                            {
+                                var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
+                                processStepRepository.CreateProcessStep(processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(), ProcessStepStatusId.TODO, process.Id);
+                                processId = process.Id;
+                            }
+                            else
+                            {
+                                processId = processData.ProcessId.Value;
+                            }
+
+                            portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(serviceAccountId, processId);
+                        }
+
+                        hasExternalServiceAccount = true;
+                        serviceAccounts.Add(new CreatedServiceAccountData(
+                            serviceAccountId,
+                            dimSaName,
+                            description,
+                            UserStatusId.PENDING,
+                            ClientPlaceholderId,
+                            new ServiceAccountData("xxx", "xxx", new ClientAuthData(IamClientAuthMethod.JWT)),
+                            providerRoles.Select(x => new UserRoleData(x.UserRoleId, x.ClientClientId, x.UserRoleText))));
+                        break;
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        $"Only supported Providers are {ProviderInformationId.KEYCLOAK} and {ProviderInformationId.SAP_DIM}");
+            }
+        }
+
+        return (hasExternalServiceAccount, serviceAccounts);
+    }
+
+    private static async Task<List<UserRoleWithProviderData>> GetAndValidateUserRoleData(IUserRolesRepository userRolesRepository, IEnumerable<Guid> userRoleIds)
+    {
         var userRoleData = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(userRoleIds).ToListAsync().ConfigureAwait(false);
         if (userRoleData.Count != userRoleIds.Count())
@@ -84,9 +136,46 @@ public class ServiceAccountCreation : IServiceAccountCreation
             }
         }
 
+        return userRoleData;
+    }
+
+    private Guid CreateDatabaseServiceAccount(
+        Guid companyId,
+        UserStatusId userStatusId,
+        CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        CompanyServiceAccountKindId companyServiceAccountKindId,
+        string name,
+        string clientId,
+        string description,
+        IEnumerable<UserRoleWithProviderData> userRoleData,
+        IServiceAccountRepository serviceAccountsRepository,
+        IUserRolesRepository userRolesRepository,
+        Action<CompanyServiceAccount>? setOptionalParameter)
+    {
+        var identity = portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
+        var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
+            identity.Id,
+            name,
+            description,
+            clientId,
+            companyServiceAccountTypeId,
+            companyServiceAccountKindId,
+            setOptionalParameter);
+
+        foreach (var roleData in userRoleData)
+        {
+            userRolesRepository.CreateIdentityAssignedRole(serviceAccount.Id, roleData.UserRoleId);
+        }
+
+        return serviceAccount.Id;
+    }
+
+    private async Task<(string clientId, string enhancedName, ServiceAccountData serviceAccountData)> CreateKeycloakServiceAccount(IEnumerable<string> bpns, bool enhanceTechnicalUserName, bool enabled,
+        string name, string description, IamClientAuthMethod iamClientAuthMethod, IEnumerable<UserRoleWithProviderData> userRoleData)
+    {
         var clientId = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         var enhancedName = enhanceTechnicalUserName ? $"{clientId}-{name}" : name;
-        var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
+        var serviceAccountData = await provisioningManager.SetupCentralServiceAccountClientAsync(
             clientId,
             new ClientConfigRolesData(
                 enhancedName,
@@ -102,31 +191,16 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
         if (bpns.Any())
         {
-            await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
-
-        var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
-            identity.Id,
-            enhancedName,
-            description,
-            clientId,
-            companyServiceAccountTypeId,
-            setOptionalParameter);
-
-        foreach (var roleData in userRoleData)
-        {
-            userRolesRepository.CreateIdentityAssignedRole(serviceAccount.Id, roleData.UserRoleId);
-        }
-
-        return (clientId, serviceAccountData, serviceAccount.Id, userRoleData);
+        return (clientId, enhancedName, serviceAccountData);
     }
 
     private async Task<string> GetNextServiceAccountClientIdWithIdAsync()
     {
-        var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        var id = await provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return $"{_settings.ServiceAccountClientPrefix}{id}";
     }
 }

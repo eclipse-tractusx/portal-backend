@@ -3,150 +3,175 @@
     "id": "7410693c-c893-409e-852f-9ee886ce94a6",
     "user_role": "Company Admin",
     "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "7410693c-c893-409e-852f-9ee886ce94a7",
     "user_role": "Legal Manager",
     "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "ceec23fd-6b26-485c-a4bb-90571a29e148",
     "user_role": "Signing Manager",
     "offer_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "58f897ec-0aad-4588-8ffa-5f45d6638632",
     "user_role": "CX Admin",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "b05d86e1-6c98-4619-85fa-9a425e0800b6",
     "user_role": "Business Admin",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "58f897ec-0aad-4588-8ffa-5f45d6638633",
     "user_role": "CX User",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51154",
     "user_role": "IT Admin",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51180",
     "user_role": "Company Admin",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "95fe4014-4d1b-47af-a22e-72a12f9470db",
     "user_role": "App Developer",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "95fe4014-4d1b-47af-a22e-72a12f9470dc",
     "user_role": "Sales Manager",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "04231a30-df50-4d14-bb00-71ff012ae0cf",
     "user_role": "Purchaser",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "916e4be9-0ff7-48fb-bb80-97d2e93fca14",
     "user_role": "Service Manager",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "3ff68c40-6581-4e48-a03a-2a6c1c5aac89",
     "user_role": "App Manager",
     "offer_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "user_role": "BPDM Sharing Output Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "user_role": "BPDM Sharing Input Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   { 
     "id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "user_role": "BPDM Pool Admin",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "user_role": "Dataspace Discovery",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "user_role": "Identity Wallet Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 2
   },
   {
     "id": "34c42896-a003-4653-af8f-ba06ca595752",
     "user_role": "Registration External",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "user_role": "Offer Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "3940f9b0-4393-4463-b659-15463098557b",
     "user_role": "Semantic Model Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
     "user_role": "CX Membership Info",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
     "user_role": "BPDM Sharing Admin",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "user_role": "BPDM Sharing Input Manager",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   },
   {
     "id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "user_role": "BPDM Pool Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
-    "last_editor_id": null
+    "last_editor_id": null,
+    "provider_information_id": 1
   }
 ]

@@ -33,7 +33,7 @@ public class DimUserCreationProcessService(
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken)
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
-        var (isValid, bpn, serviceAccountName) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
+        var (isValid, bpn, clientClientId) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!isValid)
@@ -46,12 +46,12 @@ public class DimUserCreationProcessService(
             throw new ConflictException("Bpn must not be null");
         }
 
-        if (string.IsNullOrWhiteSpace(serviceAccountName))
+        if (string.IsNullOrWhiteSpace(clientClientId))
         {
             throw new ConflictException("Service Account Name must not be null");
         }
 
-        await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, $"dim-{serviceAccountName}"), cancellationToken).ConfigureAwait(false);
+        await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, $"dim-{clientClientId}"), cancellationToken).ConfigureAwait(false);
         return (Enumerable.Repeat(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null);
     }
 }

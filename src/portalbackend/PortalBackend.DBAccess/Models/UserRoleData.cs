@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -41,3 +42,9 @@ public record UserRoleWithDescription(
 public record UserRoleInformation(
     [property: JsonPropertyName("roleId")] Guid UserRoleId,
     [property: JsonPropertyName("roleName")] string UserRoleText);
+
+public record UserRoleWithProviderData(
+    Guid UserRoleId,
+    string ClientClientId,
+    string UserRoleText,
+    ProviderInformationId ProviderId);
