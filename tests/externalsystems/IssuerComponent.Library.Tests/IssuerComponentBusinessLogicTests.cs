@@ -507,7 +507,7 @@ public class IssuerComponentBusinessLogicTests
             .Returns(credentialId);
 
         // Act
-        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
@@ -523,7 +523,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>(null, null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -542,7 +542,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -561,7 +561,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", "BPNL0000001Test", null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

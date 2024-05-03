@@ -783,13 +783,13 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, _identity.IdentityId, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

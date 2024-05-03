@@ -288,7 +288,7 @@ public class CompanyDataBusinessLogic(
 
     /// <inheritdoc />
     public Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken) =>
-        _issuerComponentBusinessLogic.CreateFrameworkCredentialData(data.VerifiedCredentialExternalTypeDetailId, data.Framework, _identityData.IdentityId, cancellationToken);
+        _issuerComponentBusinessLogic.CreateFrameworkCredentialData(data.VerifiedCredentialExternalTypeDetailId, data.CredentialType, _identityData.IdentityId, cancellationToken);
 
     /// <inheritdoc />
     public async Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken)
