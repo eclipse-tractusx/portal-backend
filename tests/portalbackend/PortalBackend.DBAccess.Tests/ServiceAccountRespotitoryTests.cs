@@ -266,7 +266,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, true, UserStatusId.ACTIVE)(0, 10).ConfigureAwait(false);
 
         // Assert
-        result!.Count.Should().Be(13);
+        result!.Count.Should().Be(15);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN))
             .And.BeInAscendingOrder(x => x.Name)
@@ -275,12 +275,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
+                x => x.ServiceAccountId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
+                x => x.ServiceAccountId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"),
                 x => x.ServiceAccountId == new Guid("33480038-9acf-40e2-9127-c9c7a9cbed99"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201024"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201007"));
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"));
     }
 
     [Fact]
@@ -339,7 +339,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null, UserStatusId.ACTIVE)(0, 10);
 
         // Assert
-        result!.Count.Should().Be(11);
+        result!.Count.Should().Be(13);
         result.Data.Should().HaveCount(10);
     }
 
