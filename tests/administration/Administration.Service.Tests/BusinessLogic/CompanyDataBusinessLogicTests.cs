@@ -1760,13 +1760,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>(null, null, null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Bpn must be set");
+        result.Bpnl.Should().BeNull();
     }
 
     [Fact]
@@ -1775,13 +1774,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", null, null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Did must be set");
+        result.HolderDid.Should().BeNull();
     }
 
     [Fact]
@@ -1790,13 +1788,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Wallet Url must be set");
+        result.DecentralIdentityManagementAuthUrl.Should().BeNull();
     }
 
     #endregion
