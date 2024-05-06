@@ -23,9 +23,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record DimUrlsResponse(
     [property: JsonPropertyName("trusted_issuer")] string IssuerDid,
-    [property: JsonPropertyName("participant_id")] string Bpnl,
-    [property: JsonPropertyName("iatp_id")] string HolderDid,
+    [property: JsonPropertyName("participant_id")] string? Bpnl,
+    [property: JsonPropertyName("iatp_id")] string? HolderDid,
     [property: JsonPropertyName("did_resolver")] string BpnDidResolverUrl,
-    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string DecentralIdentityManagementAuthUrl,
+    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string? DecentralIdentityManagementAuthUrl,
     [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string DecentralIdentityManagementServiceUrl
 );

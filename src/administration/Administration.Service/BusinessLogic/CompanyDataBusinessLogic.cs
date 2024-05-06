@@ -579,28 +579,12 @@ public class CompanyDataBusinessLogic(
     public async Task<DimUrlsResponse> GetDimServiceUrls()
     {
         var (bpnl, did, walletServiceUrl) = await portalRepositories.GetInstance<ICompanyRepository>().GetDimServiceUrls(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (bpnl is null)
-        {
-            throw new ConflictException("Bpn must be set");
-        }
-
-        if (did is null)
-        {
-            throw new ConflictException("Did must be set");
-        }
-
-        if (walletServiceUrl is null)
-        {
-            throw new ConflictException("Wallet Url must be set");
-        }
-
         return new(
             _settings.IssuerDid,
             bpnl,
             did,
             _settings.BpnDidResolverUrl,
-            $"{walletServiceUrl}/oauth/token",
+            walletServiceUrl is null ? null : $"{walletServiceUrl}/oauth/token",
             _settings.DecentralIdentityManagementAuthUrl
         );
     }
