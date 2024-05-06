@@ -43,10 +43,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class CompanyDataBusinessLogicTests
 {
+    private const string Token = "test123";
+    private static readonly Guid _validDocumentId = Guid.NewGuid();
+
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
-    private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -786,10 +788,10 @@ public class CompanyDataBusinessLogicTests
         var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
-        await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
+        await _sut.CreateUseCaseParticipation(data, Token, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

@@ -36,6 +36,8 @@ public class IssuerComponentServiceTests
 {
     #region Initialization
 
+    private const string Token = "test123";
+
     private readonly ITokenService _tokenService;
     private readonly IOptions<IssuerComponentSettings> _options;
     private readonly IFixture _fixture;
@@ -120,7 +122,7 @@ public class IssuerComponentServiceTests
         using var httpClient = new HttpClient(httpMessageHandlerMock);
         httpClient.BaseAddress = new Uri("https://base.address.com");
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new IssuerComponentService(_tokenService, _options);
+        var sut = new IssuerComponentService(_tokenService, null!, _options);
 
         // Act
         async Task Act() => await sut.CreateBpnlCredential(data, CancellationToken.None);
@@ -177,7 +179,7 @@ public class IssuerComponentServiceTests
         using var httpClient = new HttpClient(httpMessageHandlerMock);
         httpClient.BaseAddress = new Uri("https://base.address.com");
         A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new IssuerComponentService(_tokenService, _options);
+        var sut = new IssuerComponentService(_tokenService, null!, _options);
 
         // Act
         async Task Act() => await sut.CreateMembershipCredential(data, CancellationToken.None);
@@ -199,13 +201,14 @@ public class IssuerComponentServiceTests
         var credentialId = Guid.NewGuid();
         var data = _fixture.Create<CreateFrameworkCredentialRequest>();
         HttpRequestMessage? request = null;
-        _fixture.ConfigureTokenServiceFixture<IssuerComponentService>(
+        _fixture.ConfigureHttpClientFactoryFixture(
+            nameof(IssuerComponentService),
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(credentialId.ToString())) },
             requestMessage => request = requestMessage);
         var sut = _fixture.Create<IssuerComponentService>();
 
         // Act
-        var result = await sut.CreateFrameworkCredential(data, CancellationToken.None);
+        var result = await sut.CreateFrameworkCredential(data, Token, CancellationToken.None);
 
         // Assert
         result.Should().Be(credentialId);
@@ -217,11 +220,11 @@ public class IssuerComponentServiceTests
     {
         // Arrange
         var data = _fixture.Create<CreateFrameworkCredentialRequest>();
-        _fixture.ConfigureTokenServiceFixture<IssuerComponentService>(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        _fixture.ConfigureHttpClientFactoryFixture(nameof(IssuerComponentService), new HttpResponseMessage(HttpStatusCode.BadRequest));
         var sut = _fixture.Create<IssuerComponentService>();
 
         // Act
-        async Task Act() => await sut.CreateFrameworkCredential(data, CancellationToken.None);
+        async Task Act() => await sut.CreateFrameworkCredential(data, Token, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -235,14 +238,15 @@ public class IssuerComponentServiceTests
         // Arrange
         var data = _fixture.Create<CreateFrameworkCredentialRequest>();
         var error = new Exception("random exception");
+        var httpClientFactory = _fixture.Create<IHttpClientFactory>();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, error);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
         httpClient.BaseAddress = new Uri("https://base.address.com");
-        A.CallTo(() => _tokenService.GetAuthorizedClient<IssuerComponentService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
-        var sut = new IssuerComponentService(_tokenService, _options);
+        A.CallTo(() => httpClientFactory.CreateClient(nameof(IssuerComponentService))).Returns(httpClient);
+        var sut = new IssuerComponentService(null!, httpClientFactory, _options);
 
         // Act
-        async Task Act() => await sut.CreateFrameworkCredential(data, CancellationToken.None);
+        async Task Act() => await sut.CreateFrameworkCredential(data, Token, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

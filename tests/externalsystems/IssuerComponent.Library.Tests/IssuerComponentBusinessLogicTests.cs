@@ -40,6 +40,7 @@ public class IssuerComponentBusinessLogicTests
 {
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private const string ValidBpn = "BPNL123698762345";
+    private const string Token = "test123";
 
     private readonly IApplicationRepository _applicationRepository;
     private readonly ICompanyRepository _companyRepository;
@@ -503,14 +504,14 @@ public class IssuerComponentBusinessLogicTests
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>("did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet"))
             );
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, Token, A<CancellationToken>._))
             .Returns(credentialId);
 
         // Act
-        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
+        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.Should().Be(credentialId);
     }
@@ -523,13 +524,13 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>(null, null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be($"The holder must be set");
     }
@@ -542,13 +543,13 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be("The bpn must be set");
     }
@@ -561,13 +562,13 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", "BPNL0000001Test", null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, CancellationToken.None);
+        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be("The wallet information must be set");
     }
