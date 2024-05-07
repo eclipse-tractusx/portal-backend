@@ -224,8 +224,8 @@ public class ClearinghouseBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetDidAndBpnForApplicationId(context.ApplicationId))
-            .Returns(new ValueTuple<bool, string?, string?>(false, null, null));
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
+            .Returns<(bool, string?)>(default);
         var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
@@ -238,6 +238,8 @@ public class ClearinghouseBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Did must be set for Application {context.ApplicationId}");
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(context.ApplicationId))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -253,8 +255,8 @@ public class ClearinghouseBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetDidAndBpnForApplicationId(context.ApplicationId))
-            .Returns(new ValueTuple<bool, string?, string?>(true, null, null));
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
+            .Returns((true, null));
         var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
@@ -267,6 +269,8 @@ public class ClearinghouseBusinessLogicTests
 
         // Assert
         ex.Message.Should().Be($"Did must be set for Application {context.ApplicationId}");
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(context.ApplicationId))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -283,8 +287,8 @@ public class ClearinghouseBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetDidAndBpnForApplicationId(context.ApplicationId))
-            .Returns(new ValueTuple<bool, string?, string?>(true, "did:web:test123456", null));
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
+            .Returns((true, "did:web:test123456"));
         SetupForHandleStartClearingHouse();
         var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
         {
@@ -296,6 +300,8 @@ public class ClearinghouseBusinessLogicTests
         var result = await logic.HandleClearinghouse(context, CancellationToken.None);
 
         // Assert
+        A.CallTo(() => _applicationRepository.GetDidForApplicationId(context.ApplicationId))
+            .MustHaveHappenedOnceExactly();
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);

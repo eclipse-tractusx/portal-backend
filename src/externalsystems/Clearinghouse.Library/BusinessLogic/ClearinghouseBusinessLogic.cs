@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -50,8 +50,8 @@ public class ClearinghouseBusinessLogic(
         string companyDid;
         if (_settings.UseDimWallet)
         {
-            var (exists, did, _) = await portalRepositories.GetInstance<IApplicationRepository>()
-                .GetDidAndBpnForApplicationId(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+            var (exists, did) = await portalRepositories.GetInstance<IApplicationRepository>()
+                .GetDidForApplicationId(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (!exists || string.IsNullOrWhiteSpace(did))
             {
                 throw new ConflictException($"Did must be set for Application {context.ApplicationId}");
@@ -75,7 +75,7 @@ public class ClearinghouseBusinessLogic(
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new[] { ProcessStepTypeId.END_CLEARING_HOUSE },
+            [ProcessStepTypeId.END_CLEARING_HOUSE],
             null,
             true,
             null);
@@ -115,9 +115,9 @@ public class ClearinghouseBusinessLogic(
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.END_CLEARING_HOUSE,
-                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+                processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
@@ -133,7 +133,7 @@ public class ClearinghouseBusinessLogic(
                 item.Comment = data.Message;
             },
             declined
-                ? new[] { ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }
-                : new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP });
+                ? [ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE]
+                : [ProcessStepTypeId.START_SELF_DESCRIPTION_LP]);
     }
 }
