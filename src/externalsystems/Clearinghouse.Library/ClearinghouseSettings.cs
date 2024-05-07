@@ -33,4 +33,6 @@ public class ClearinghouseSettings : KeyVaultAuthSettings
 
     [Required(AllowEmptyStrings = false)]
     public string CallbackUrl { get; set; } = null!;
+
+    public bool UseDimWallet { get; set; }
 }

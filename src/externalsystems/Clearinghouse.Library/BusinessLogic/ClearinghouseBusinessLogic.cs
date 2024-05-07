@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,27 +28,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
-public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
+public class ClearinghouseBusinessLogic(
+    IPortalRepositories portalRepositories,
+    IClearinghouseService clearinghouseService,
+    ICustodianBusinessLogic custodianBusinessLogic,
+    IApplicationChecklistService checklistService,
+    IOptions<ClearinghouseSettings> options)
+    : IClearinghouseBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IClearinghouseService _clearinghouseService;
-    private readonly ICustodianBusinessLogic _custodianBusinessLogic;
-    private readonly IApplicationChecklistService _checklistService;
-    private readonly ClearinghouseSettings _settings;
-
-    public ClearinghouseBusinessLogic(
-        IPortalRepositories portalRepositories,
-        IClearinghouseService clearinghouseService,
-        ICustodianBusinessLogic custodianBusinessLogic,
-        IApplicationChecklistService checklistService,
-        IOptions<ClearinghouseSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _clearinghouseService = clearinghouseService;
-        _custodianBusinessLogic = custodianBusinessLogic;
-        _checklistService = checklistService;
-        _settings = options.Value;
-    }
+    private readonly ClearinghouseSettings _settings = options.Value;
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
@@ -59,18 +47,35 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             _ => throw new UnexpectedConditionException($"HandleClearingHouse called for unexpected processStepTypeId {context.ProcessStepTypeId}. Expected {ProcessStepTypeId.START_CLEARING_HOUSE} or {ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE}")
         };
 
-        var walletData = await _custodianBusinessLogic.GetWalletByBpnAsync(context.ApplicationId, cancellationToken);
-        if (walletData == null || string.IsNullOrEmpty(walletData.Did))
+        string companyDid;
+        if (_settings.UseDimWallet)
         {
-            throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
+            var (exists, did) = await portalRepositories.GetInstance<IApplicationRepository>()
+                .GetDidForApplicationId(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (!exists || string.IsNullOrWhiteSpace(did))
+            {
+                throw new ConflictException($"Did must be set for Application {context.ApplicationId}");
+            }
+
+            companyDid = did;
+        }
+        else
+        {
+            var walletData = await custodianBusinessLogic.GetWalletByBpnAsync(context.ApplicationId, cancellationToken);
+            if (walletData == null || string.IsNullOrEmpty(walletData.Did))
+            {
+                throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
+            }
+
+            companyDid = walletData.Did;
         }
 
-        await TriggerCompanyDataPost(context.ApplicationId, walletData.Did, overwrite, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await TriggerCompanyDataPost(context.ApplicationId, companyDid, overwrite, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new[] { ProcessStepTypeId.END_CLEARING_HOUSE },
+            [ProcessStepTypeId.END_CLEARING_HOUSE],
             null,
             true,
             null);
@@ -78,7 +83,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
 
     private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var data = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data is null)
         {
@@ -101,23 +106,23 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
             _settings.CallbackUrl,
             overwrite);
 
-        await _clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.END_CLEARING_HOUSE,
-                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+                processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>
@@ -128,7 +133,7 @@ public class ClearinghouseBusinessLogic : IClearinghouseBusinessLogic
                 item.Comment = data.Message;
             },
             declined
-                ? new[] { ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }
-                : new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP });
+                ? [ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE]
+                : [ProcessStepTypeId.START_SELF_DESCRIPTION_LP]);
     }
 }

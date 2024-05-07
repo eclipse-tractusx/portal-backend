@@ -520,7 +520,14 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Select(ca => new ValueTuple<bool, string?, string?>(
                 true,
                 ca.Company!.CompanyWalletData!.Did,
-                ca.Company.BusinessPartnerNumber
-            ))
+                ca.Company.BusinessPartnerNumber))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, string? Did)> GetDidForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => new ValueTuple<bool, string?>(
+                true,
+                ca.Company!.CompanyWalletData!.Did))
             .SingleOrDefaultAsync();
 }
