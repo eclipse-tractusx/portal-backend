@@ -86,8 +86,7 @@ public class OfferRepository : IOfferRepository
                 a.LicenseTypeId,
                 _context.Languages.Any(l => l.ShortName == languageShortName)
                         ? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionShort
-                            ?? a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionShort
-                        : null,
+                            : a.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == defaultLanguageShortName)!.DescriptionShort,
                 a.OfferLicenses
                     .Select(license => license.Licensetext)
                     .FirstOrDefault()))
