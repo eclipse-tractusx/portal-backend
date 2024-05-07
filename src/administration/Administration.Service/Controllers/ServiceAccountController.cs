@@ -64,11 +64,8 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ServiceAccountDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
-    {
-        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(ConfigureAwaitOptions.None);
-        return serviceAccountDetails;
-    }
+    public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo) =>
+        _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
 
     /// <summary>
     /// Deletes the service account with the given id

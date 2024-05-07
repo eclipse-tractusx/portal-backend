@@ -118,7 +118,7 @@ public class OfferSetupService : IOfferSetupService
             await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
             await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
             await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-            return new OfferAutoSetupResponseData(new List<TechnicalUserInfoData>(), null);
+            return new OfferAutoSetupResponseData(Enumerable.Empty<TechnicalUserInfoData>(), null);
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -148,7 +148,7 @@ public class OfferSetupService : IOfferSetupService
             clientInfoData);
     }
 
-    private async Task<(bool HasExternalServiceAccount, List<CreatedServiceAccountData> ServiceAccounts)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, Guid? processId)
+    private async Task<(bool HasExternalServiceAccount, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, Guid? processId)
     {
         var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
 

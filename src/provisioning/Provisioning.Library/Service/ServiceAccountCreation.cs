@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using System.Collections.Immutable;
 using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -43,7 +44,7 @@ public class ServiceAccountCreation(
     private readonly ServiceAccountCreationSettings _settings = options.Value;
 
     /// <inheritdoc />
-    async Task<(bool HasExternalServiceAccount, List<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
+    async Task<(bool HasExternalServiceAccount, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
             CompanyServiceAccountTypeId companyServiceAccountTypeId,
@@ -56,11 +57,11 @@ public class ServiceAccountCreation(
         var serviceAccountsRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds);
-
-        var serviceAccounts = new List<CreatedServiceAccountData>();
+        var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
+        var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
         var groupedRoles = userRoleData.GroupBy(x => x.ProviderId);
         var hasExternalServiceAccount = false;
+
         foreach (var providerRoles in groupedRoles)
         {
             switch (providerRoles.Key)
@@ -119,7 +120,7 @@ public class ServiceAccountCreation(
             }
         }
 
-        return (hasExternalServiceAccount, serviceAccounts);
+        return (hasExternalServiceAccount, serviceAccounts.ToImmutable());
     }
 
     private static async Task<List<UserRoleWithProviderData>> GetAndValidateUserRoleData(IUserRolesRepository userRolesRepository, IEnumerable<Guid> userRoleIds)

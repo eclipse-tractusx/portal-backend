@@ -23,4 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record ServiceAccountCreationProcessData(
     ProcessTypeId? ProcessTypeId,
-    Guid? ProcessId);
+    Guid? ProcessId
+);

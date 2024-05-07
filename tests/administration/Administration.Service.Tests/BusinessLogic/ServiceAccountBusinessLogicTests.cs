@@ -598,7 +598,7 @@ public class ServiceAccountBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>());
+            .Returns<(ProcessTypeId, VerifyProcessData, Guid?)>(default);
         async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
@@ -642,7 +642,7 @@ public class ServiceAccountBusinessLogicTests
             .Returns<(string?, IEnumerable<Guid>)>(default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), null))
-            .Returns(new ValueTuple<bool, List<CreatedServiceAccountData>>(false, [new CreatedServiceAccountData(Guid.NewGuid(), "test", "description", UserStatusId.ACTIVE, ClientId, new(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Enumerable.Empty<UserRoleData>())]));
+            .Returns((false, [new CreatedServiceAccountData(Guid.NewGuid(), "test", "description", UserStatusId.ACTIVE, ClientId, new(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Enumerable.Empty<UserRoleData>())]));
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
     }
