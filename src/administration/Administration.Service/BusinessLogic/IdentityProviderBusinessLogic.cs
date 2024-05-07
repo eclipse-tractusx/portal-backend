@@ -762,7 +762,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IEnumerable<(Guid IdentityProviderId, string Alias)> existingIdps,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas)
+        await foreach (var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas.WithCancellation(cancellationToken))
         {
             Exception? error = null;
             var success = false;
@@ -784,6 +784,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     await UpdateUserProfileAsync(userRepository, iamUserId, companyUserId, profile, existingLinks, sharedIdp).ConfigureAwait(false);
                     updated = true;
                 }
+
                 success = updated;
             }
             catch (Exception e)
@@ -792,8 +793,10 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                 {
                     throw;
                 }
+
                 error = e;
             }
+
             yield return (success, error);
         }
     }
