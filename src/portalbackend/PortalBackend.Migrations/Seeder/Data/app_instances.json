@@ -1,0 +1,17 @@
+[
+  {
+    "id": "47fa908a-99a4-4265-9936-2c890ad97a4c",
+    "app_id": "9b957704-3505-4445-822c-d7ef80f27fcd",
+    "iam_client_id": "0c9051d0-d032-11ec-9d64-0242ac120002"
+  },
+  {
+    "id": "e080bb4b-567b-477e-adcf-080efc457d38",
+    "app_id": "9ef01c20-6d9d-41ef-b336-fa64e1e2e4c2",
+    "iam_client_id": "f032a034-d035-11ec-9d64-0242ac120002"
+  },
+  {
+    "id": "1ef3a9b0-e8ef-48cc-9b88-65bacd6f05fb",
+    "app_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "iam_client_id": "f032a049-d035-11ec-9d64-0242ac120002"
+  }
+]
