@@ -42,9 +42,3 @@ public record UserRoleWithDescription(
 public record UserRoleInformation(
     [property: JsonPropertyName("roleId")] Guid UserRoleId,
     [property: JsonPropertyName("roleName")] string UserRoleText);
-
-public record UserRoleWithProviderData(
-    Guid UserRoleId,
-    string ClientClientId,
-    string UserRoleText,
-    ProviderInformationId ProviderId);

@@ -159,23 +159,6 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.ChecklistProcessId = entry.ChecklistProcessId;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await SeedTable<ProviderInformation>("provider_informations",
-            x => x.Id,
-            x => x.dbEntity.Name != x.dataEntity.Name || x.dbEntity.AuthUrl != x.dataEntity.AuthUrl,
-            (dbEntry, entry) =>
-            {
-                dbEntry.Name = entry.Name;
-                dbEntry.AuthUrl = entry.AuthUrl;
-            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        await SeedTable<UserRole>("user_roles",
-            x => x.Id,
-            x => x.dbEntity.ProviderInformationId != x.dataEntity.ProviderInformationId,
-            (dbEntry, entry) =>
-            {
-                dbEntry.ProviderInformationId = entry.ProviderInformationId;
-            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }

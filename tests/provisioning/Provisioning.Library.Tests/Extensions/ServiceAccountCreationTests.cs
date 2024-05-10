@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -69,7 +70,8 @@ public class ServiceAccountCreationTests
 
         var settings = new ServiceAccountCreationSettings
         {
-            ServiceAccountClientPrefix = "sa"
+            ServiceAccountClientPrefix = "sa",
+            DimUserRoles = [new UserRoleConfig("technical_user_management", ["Identity Wallet Management"])]
         };
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
@@ -205,9 +207,9 @@ public class ServiceAccountCreationTests
             .Returns(new CompanyServiceAccount(_serviceAccountId, null!, null!, default, default));
 
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _validUserRoleId) == 1)))
-            .Returns(new[] { new UserRoleWithProviderData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole", ProviderInformationId.KEYCLOAK) }.ToAsyncEnumerable());
+            .Returns(new[] { new UserRoleData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole") }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _invalidUserRoleId) == 1)))
-            .Returns(Enumerable.Empty<UserRoleWithProviderData>().ToAsyncEnumerable());
+            .Returns(Enumerable.Empty<UserRoleData>().ToAsyncEnumerable());
     }
 
     #endregion

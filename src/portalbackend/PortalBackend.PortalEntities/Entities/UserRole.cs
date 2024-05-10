@@ -27,7 +27,7 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditUserRole20240502))]
+[AuditEntityV1(typeof(AuditUserRole20231115))]
 public class UserRole : IAuditableV1, IBaseEntity
 {
     private UserRole()
@@ -55,13 +55,10 @@ public class UserRole : IAuditableV1, IBaseEntity
 
     public Guid OfferId { get; set; }
 
-    public ProviderInformationId ProviderInformationId { get; set; }
-
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
     // Navigation properties
     public virtual Offer? Offer { get; set; }
-    public virtual ProviderInformation? ProviderInformation { get; private set; }
     public virtual Identity? LastEditor { get; private set; }
     public virtual ICollection<IdentityAssignedRole> IdentityAssignedRoles { get; private set; }
     public virtual ICollection<UserRoleCollection> UserRoleCollections { get; private set; }

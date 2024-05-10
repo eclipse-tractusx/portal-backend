@@ -130,6 +130,7 @@ public interface IOfferService
     /// <param name="catenaAdminRoles"></param>
     /// <param name="mailParams"></param>
     /// <param name="notificationRecipients"></param>
+    /// <param name="dimUserRoles"></param>
     /// <returns></returns>
     Task ApproveOfferRequestAsync(Guid offerId, OfferTypeId offerTypeId, IEnumerable<NotificationTypeId> approveOfferNotificationTypeIds, IEnumerable<UserRoleConfig> approveOfferRoles, IEnumerable<NotificationTypeId> submitOfferNotificationTypeIds, IEnumerable<UserRoleConfig> catenaAdminRoles, (string SubscriptionUrl, string DetailUrl) mailParams, IEnumerable<UserRoleConfig> notificationRecipients);
 

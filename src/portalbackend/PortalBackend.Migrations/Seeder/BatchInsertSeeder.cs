@@ -109,7 +109,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTable<ProviderInformation>("provider_informations", e => e.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");

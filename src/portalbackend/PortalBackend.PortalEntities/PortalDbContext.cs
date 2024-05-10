@@ -91,7 +91,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditIdentity20231115> AuditIdentity20231115 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20231115> AuditUserRole20231115 { get; set; } = default!;
-    public virtual DbSet<AuditUserRole20240502> AuditUserRole20240502 { get; set; } = default!;
     public virtual DbSet<AuditCompanyUserAssignedRole20221018> AuditCompanyUserAssignedRole20221018 { get; set; } = default!;
     public virtual DbSet<AuditCompanyAssignedRole2023316> AuditCompanyAssignedRole2023316 { get; set; } = default!;
     public virtual DbSet<AuditConsent20230412> AuditConsent20230412 { get; set; } = default!;
@@ -179,7 +178,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<OnboardingServiceProviderDetail> OnboardingServiceProviderDetails { get; set; } = default!;
     public virtual DbSet<Process> Processes { get; set; } = default!;
-    public virtual DbSet<ProviderInformation> ProviderInformations { get; set; } = default!;
     public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
     public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
     public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
@@ -746,10 +744,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.Property(x => x.ProviderInformationId)
-                .HasDefaultValue(ProviderInformationId.KEYCLOAK);
-
-            entity.HasAuditV1Triggers<UserRole, AuditUserRole20240502>();
+            entity.HasAuditV1Triggers<UserRole, AuditUserRole20231115>();
         });
 
         modelBuilder.Entity<UserRoleCollection>(entity =>
@@ -823,11 +818,6 @@ public class PortalDbContext : DbContext
 
             entity.HasAuditV1Triggers<Identity, AuditIdentity20231115>();
         });
-
-        modelBuilder.Entity<ProviderInformation>()
-            .HasData(
-                Enumerable.Repeat(new ProviderInformation(ProviderInformationId.KEYCLOAK, "Keycloak", "https://example.org/oauth/token"), 1) // the specific auth url value will be inserted from the seeding file
-            );
 
         modelBuilder.Entity<CompanyUser>(entity =>
         {

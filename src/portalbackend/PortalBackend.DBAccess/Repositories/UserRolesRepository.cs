@@ -71,15 +71,14 @@ public class UserRolesRepository : IUserRolesRepository
     public void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds) =>
         _dbContext.IdentityAssignedRoles.RemoveRange(companyUserAssignedRoleIds.Select(ids => new IdentityAssignedRole(ids.CompanyUserId, ids.UserRoleId)));
 
-    public IAsyncEnumerable<UserRoleWithProviderData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
+    public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(userRole => userRoleIds.Contains(userRole.Id))
-            .Select(userRole => new UserRoleWithProviderData(
+            .Select(userRole => new UserRoleData(
                 userRole.Id,
                 userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
-                userRole.UserRoleText,
-                userRole.ProviderInformationId))
+                userRole.UserRoleText))
             .ToAsyncEnumerable();
 
     public async IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)

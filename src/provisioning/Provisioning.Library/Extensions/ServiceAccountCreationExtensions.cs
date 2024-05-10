@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
@@ -31,6 +32,8 @@ public static class ServiceAccountCreationExtensions
     {
         services.AddOptions<ServiceAccountCreationSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
 
         services
