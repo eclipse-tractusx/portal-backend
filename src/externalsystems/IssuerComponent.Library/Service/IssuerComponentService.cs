@@ -36,7 +36,7 @@ public class IssuerComponentService(ITokenService tokenService, IHttpClientFacto
 
     public async Task<bool> CreateBpnlCredential(CreateBpnCredentialRequest data, CancellationToken cancellationToken)
     {
-        var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
         await httpClient.PostAsJsonAsync("/api/issuer/bpn", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("issuer-component-bpn-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
@@ -44,7 +44,7 @@ public class IssuerComponentService(ITokenService tokenService, IHttpClientFacto
 
     public async Task<bool> CreateMembershipCredential(CreateMembershipCredentialRequest data, CancellationToken cancellationToken)
     {
-        var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
+        using var httpClient = await tokenService.GetAuthorizedClient<IssuerComponentService>(_settings, cancellationToken).ConfigureAwait(false);
         await httpClient.PostAsJsonAsync("/api/issuer/membership", data, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("issuer-component-membership-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
         return true;
@@ -52,7 +52,7 @@ public class IssuerComponentService(ITokenService tokenService, IHttpClientFacto
 
     public async Task<Guid> CreateFrameworkCredential(CreateFrameworkCredentialRequest data, string token, CancellationToken cancellationToken)
     {
-        var httpClient = httpClientFactory.CreateClient(nameof(IssuerComponentService));
+        using var httpClient = httpClientFactory.CreateClient(nameof(IssuerComponentService));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var result = await httpClient.PostAsJsonAsync("/api/issuer/framework", data, Options, cancellationToken)
