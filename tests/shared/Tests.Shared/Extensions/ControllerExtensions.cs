@@ -41,7 +41,7 @@ public static class ControllerExtensions
         var claimsIdentity = new ClaimsIdentity();
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims([new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString())]);
         }
 
         var httpContext = new DefaultHttpContext
@@ -66,7 +66,7 @@ public static class ControllerExtensions
     public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string accessToken, IIdentityData identity)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
+        claimsIdentity.AddClaims([new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString())]);
 
         var httpContext = new DefaultHttpContext
         {

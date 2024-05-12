@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInje
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -175,7 +176,7 @@ public class IssuerComponentBusinessLogic(
                 : null);
     }
 
-    public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, UseCaseFrameworkId frameworkId, Guid identityId, CancellationToken cancellationToken)
+    public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, UseCaseFrameworkId frameworkId, Guid identityId, string token, CancellationToken cancellationToken)
     {
         var (holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<ICompanyRepository>().GetWalletData(identityId).ConfigureAwait(false);
         if (holder is null)
@@ -197,6 +198,6 @@ public class IssuerComponentBusinessLogic(
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId, new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), null);
-        return await service.CreateFrameworkCredential(data, cancellationToken).ConfigureAwait(false);
+        return await service.CreateFrameworkCredential(data, token, cancellationToken).ConfigureAwait(false);
     }
 }
