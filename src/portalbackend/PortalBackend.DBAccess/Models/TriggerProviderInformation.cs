@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,7 +45,7 @@ public record SubscriptionActivationData(
     Guid RequesterId,
     (bool IsSingleInstance, string? InstanceUrl) InstanceData,
     IEnumerable<Guid> AppInstanceIds,
-    bool HasOfferSubscriptionProcessData,
+    Guid? OfferSubscriptionProcessDataId,
     Guid? SalesManagerId,
     Guid? ProviderCompanyId,
     string? ClientClientId,

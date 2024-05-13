@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -42,15 +41,15 @@ public class BpnAccess : IBpnAccess
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var uri = new UriBuilder
         {
-            Path = $"pool/api/catena/legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
+            Path = $"legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}",
             Query = "idType=BPN"
         }.Uri;
-        var result = await _httpClient.GetAsync(uri.PathAndQuery, cancellationToken)
+        var result = await _httpClient.GetAsync(uri.PathAndQuery.TrimStart('/'), cancellationToken)
             .CatchingIntoServiceExceptionFor("bpn-fetch-legal-entity")
             .ConfigureAwait(false);
         try
         {
-            var legalEntityResponse = await result.Content.ReadFromJsonAsync<BpdmLegalEntityDto>(Options, cancellationToken).ConfigureAwait(false);
+            var legalEntityResponse = await result.Content.ReadFromJsonAsync<BpdmLegalEntityDto>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             if (legalEntityResponse?.Bpn == null)
             {
                 throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,8 +19,8 @@
 
 using Flurl;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Collections.Immutable;
@@ -62,29 +61,22 @@ public partial class ProvisioningManager
     }.ToImmutableDictionary();
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
-        $"{_Settings.IdpPrefix}{await _ProvisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(false)}";
+        $"{_settings.IdpPrefix}{await _provisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None)}";
 
-    private Task CreateCentralIdentityProviderAsync(string alias, string displayName, IdentityProvider identityProvider)
+    public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
+        => CreateCentralIdentityProviderAsyncInternal(alias, displayName, _settings.CentralIdentityProvider);
+
+    private Task CreateCentralIdentityProviderAsyncInternal(string alias, string displayName, IdentityProvider identityProvider)
     {
         var newIdp = CloneIdentityProvider(identityProvider);
         newIdp.Alias = alias;
         newIdp.DisplayName = displayName;
-        return _CentralIdp.CreateIdentityProviderAsync(_Settings.CentralRealm, newIdp);
-    }
-
-    private async ValueTask UpdateCentralIdentityProviderUrlsAsync(string alias, OpenIDConfiguration config)
-    {
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-        identityProvider.Config.AuthorizationUrl = config.AuthorizationEndpoint.ToString();
-        identityProvider.Config.TokenUrl = config.TokenEndpoint.ToString();
-        identityProvider.Config.LogoutUrl = config.EndSessionEndpoint.ToString();
-        identityProvider.Config.JwksUrl = config.JwksUri.ToString();
-        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
+        return _centralIdp.CreateIdentityProviderAsync(_settings.CentralRealm, newIdp);
     }
 
     private async ValueTask<IdentityProvider> SetIdentityProviderMetadataFromUrlAsync(IdentityProvider identityProvider, string url, CancellationToken cancellationToken)
     {
-        var metadata = await _CentralIdp.ImportIdentityProviderFromUrlAsync(_Settings.CentralRealm, url, cancellationToken).ConfigureAwait(false);
+        var metadata = await _centralIdp.ImportIdentityProviderFromUrlAsync(_settings.CentralRealm, url, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!metadata.Any())
         {
             throw new ServiceException("failed to import identityprovider metadata", HttpStatusCode.NotFound);
@@ -126,42 +118,34 @@ public partial class ProvisioningManager
 
     private Task<IdentityProvider> GetCentralIdentityProviderAsync(string alias)
     {
-        return _CentralIdp.GetIdentityProviderAsync(_Settings.CentralRealm, alias);
+        return _centralIdp.GetIdentityProviderAsync(_settings.CentralRealm, alias);
     }
 
     private Task UpdateCentralIdentityProviderAsync(string alias, IdentityProvider identityProvider) =>
-        _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider);
+        _centralIdp.UpdateIdentityProviderAsync(_settings.CentralRealm, alias, identityProvider);
 
     public Task DeleteCentralIdentityProviderAsync(string alias) =>
-        _CentralIdp.DeleteIdentityProviderAsync(_Settings.CentralRealm, alias);
+        _centralIdp.DeleteIdentityProviderAsync(_settings.CentralRealm, alias);
 
     public async IAsyncEnumerable<IdentityProviderMapperModel> GetIdentityProviderMappers(string alias)
     {
-        foreach (var mapper in await _CentralIdp.GetIdentityProviderMappersAsync(_Settings.CentralRealm, alias).ConfigureAwait(false))
+        foreach (var mapper in await _centralIdp.GetIdentityProviderMappersAsync(_settings.CentralRealm, alias).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             yield return new IdentityProviderMapperModel(
-                mapper.Id,
-                mapper.Name,
-                KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper),
-                mapper.Config
+                mapper.Id ?? throw new KeycloakInvalidResponseException("mapper.Id is null"),
+                mapper.Name ?? throw new KeycloakInvalidResponseException("mapper.Name is null"),
+                KeycloakIdentityProviderMapperTypeToEnum(mapper._IdentityProviderMapper ?? throw new KeycloakInvalidResponseException("mapper._IdentityProviderMapper is null")),
+                mapper.Config ?? throw new KeycloakInvalidResponseException("mapper.Config is null")
             );
         }
     }
 
     public async Task<string?> GetIdentityProviderDisplayName(string alias) =>
-        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false)).DisplayName;
-
-    private async ValueTask EnableCentralIdentityProviderAsync(string alias)
-    {
-        var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(false);
-        identityProvider.Enabled = true;
-        identityProvider.Config.HideOnLoginPage = "false";
-        await _CentralIdp.UpdateIdentityProviderAsync(_Settings.CentralRealm, alias, identityProvider).ConfigureAwait(false);
-    }
+        (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None)).DisplayName;
 
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
-        var openidconfig = await _CentralIdp.GetOpenIDConfigurationAsync(_Settings.CentralRealm).ConfigureAwait(false);
+        var openidconfig = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return new Url(openidconfig.Issuer)
             .AppendPathSegment("/broker/")
             .AppendPathSegment(alias, true)
@@ -171,7 +155,7 @@ public partial class ProvisioningManager
 
     private async ValueTask<string?> GetCentralBrokerEndpointSAMLAsync(string alias)
     {
-        var samlDescriptor = await _CentralIdp.GetSAMLMetaDataAsync(_Settings.CentralRealm).ConfigureAwait(false);
+        var samlDescriptor = await _centralIdp.GetSAMLMetaDataAsync(_settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);
         return samlDescriptor != null
             ? new Url(samlDescriptor.EntityId)
                 .AppendPathSegment("/broker/")
@@ -182,18 +166,18 @@ public partial class ProvisioningManager
     }
 
     private Task CreateCentralIdentityProviderOrganisationMapperAsync(string alias, string organisationName) =>
-        _CentralIdp.AddIdentityProviderMapperAsync(
-            _Settings.CentralRealm,
+        _centralIdp.AddIdentityProviderMapperAsync(
+            _settings.CentralRealm,
             alias,
             new IdentityProviderMapper
             {
-                Name = _Settings.MappedCompanyAttribute + "-mapper",
+                Name = _settings.MappedCompanyAttribute + "-mapper",
                 _IdentityProviderMapper = "hardcoded-attribute-idp-mapper",
                 IdentityProviderAlias = alias,
                 Config = new Dictionary<string, string>
                 {
                     ["syncMode"] = "INHERIT",
-                    ["attribute"] = _Settings.MappedCompanyAttribute,
+                    ["attribute"] = _settings.MappedCompanyAttribute,
                     ["attribute.value"] = organisationName
                 }
             });
@@ -203,11 +187,11 @@ public partial class ProvisioningManager
         switch (providerProtocol)
         {
             case IamIdentityProviderProtocol.OIDC:
-                return _Settings.OidcIdentityProvider;
+                return _settings.OidcIdentityProvider;
             case IamIdentityProviderProtocol.SAML:
-                return _Settings.SamlIdentityProvider;
+                return _settings.SamlIdentityProvider;
             default:
-                throw new ArgumentOutOfRangeException($"unexpexted value of providerProtocol: {providerProtocol.ToString()}");
+                throw new ArgumentOutOfRangeException($"unexpexted value of providerProtocol: {providerProtocol}");
         }
     }
 

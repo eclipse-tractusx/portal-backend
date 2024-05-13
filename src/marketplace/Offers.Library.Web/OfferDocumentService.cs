@@ -79,7 +79,7 @@ public class OfferDocumentService : IOfferDocumentService
         }
 
         var offerRepository = _portalRepositories.GetInstance<IOfferRepository>();
-        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identityData.CompanyId, offerStatusId, offerTypeId).ConfigureAwait(false);
+        var result = await offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identityData.CompanyId, offerStatusId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (result == default)
         {
@@ -94,7 +94,7 @@ public class OfferDocumentService : IOfferDocumentService
             throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of {offerTypeId} {id}");
         }
 
-        var documentData = await document.GetContentAndHash(cancellationToken).ConfigureAwait(false);
+        var documentData = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentData.Content, documentData.Hash, mediaTypeId, documentTypeId, x =>
         {
@@ -105,6 +105,6 @@ public class OfferDocumentService : IOfferDocumentService
         offerRepository.AttachAndModifyOffer(id, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

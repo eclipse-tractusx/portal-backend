@@ -26,17 +26,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
 public class RegistrationSettings
 {
-    public RegistrationSettings()
-    {
-        KeycloakClientID = null!;
-        BasePortalAddress = null!;
-    }
+    [Required(AllowEmptyStrings = false)]
+    public string KeycloakClientID { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string KeycloakClientID { get; set; }
-
-    [Required(AllowEmptyStrings = false)]
-    public string BasePortalAddress { get; set; }
+    public string BasePortalAddress { get; set; } = null!;
 
     /// <summary>
     /// Document Type Id
@@ -85,7 +79,8 @@ public class RegistrationSettings
     /// <summary>
     /// Url to the password resend of the portal
     /// </summary>
-    public string PasswordResendAddress { get; set; }
+    [Required]
+    public string PasswordResendAddress { get; set; } = null!;
 }
 
 public static class RegistrationSettingsExtension

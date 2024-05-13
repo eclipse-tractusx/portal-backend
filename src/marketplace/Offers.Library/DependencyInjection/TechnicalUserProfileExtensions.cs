@@ -25,8 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection
 
 public static class TechnicalUserProfileExtensions
 {
-    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services)
-    {
-        return services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
-    }
+    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services) =>
+        services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
 }

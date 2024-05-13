@@ -46,7 +46,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileData(offerId, offerTypeId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
             throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
@@ -62,7 +62,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileDataForSubscription(subscriptionId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
             throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");

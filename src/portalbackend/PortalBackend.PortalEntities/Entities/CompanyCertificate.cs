@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -24,7 +26,8 @@ using Document = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntitie
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class CompanyCertificate : IBaseEntity
+[AuditEntityV1(typeof(AuditCertificateManagement20240416))]
+public class CompanyCertificate : IAuditableV1, IBaseEntity
 {
     private CompanyCertificate() { }
 
@@ -45,6 +48,12 @@ public class CompanyCertificate : IBaseEntity
     public CompanyCertificateStatusId CompanyCertificateStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid DocumentId { get; private set; }
+
+    [LastChangedV1]
+    public DateTimeOffset? DateLastChanged { get; set; }
+
+    [LastEditorV1]
+    public Guid? LastEditorId { get; private set; }
 
     // Navigation Properties
     public virtual Company? Company { get; private set; }

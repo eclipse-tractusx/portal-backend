@@ -25,9 +25,6 @@ public class ConfigurationException : DetailException
     public ConfigurationException() : base() { }
     public ConfigurationException(string message) : base(message) { }
     public ConfigurationException(string message, Exception inner) : base(message, inner) { }
-    protected ConfigurationException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
     protected ConfigurationException(Type errorType, int errorCode, IEnumerable<ErrorParameter>? parameters = null, Exception? inner = null) : base(errorType, errorCode, parameters, inner) { }
 

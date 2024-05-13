@@ -40,7 +40,7 @@ public class ProcessIdentityDataDetermination : IProcessIdentityDataDeterminatio
     {
         (IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
 
-        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(_processIdentityDataBuilder.IdentityId).ConfigureAwait(false)) == default)
+        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(_processIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)) == default)
             throw new ConflictException($"Identity {_processIdentityDataBuilder.IdentityId} could not be found");
 
         _processIdentityDataBuilder.AddIdentityData(identityData.IdentityTypeId, identityData.CompanyId);

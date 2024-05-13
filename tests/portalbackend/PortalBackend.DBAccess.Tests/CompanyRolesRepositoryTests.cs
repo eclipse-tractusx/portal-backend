@@ -48,11 +48,11 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
     {
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
         var applicationId = new Guid("7e279133-2148-48b4-b855-9d7d291ecbb1");
         var companyId = new Guid("0dcd8209-85e2-4073-b130-ac094fb47106");
 
-        var result = await sut.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, companyId).ConfigureAwait(false);
+        var result = await sut.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, companyId);
 
         result.Should().NotBeNull()
             .And.Match<CompanyRoleAgreementConsents>(x =>
@@ -77,10 +77,10 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var agreementStatusData = new[] {
             new AgreementStatusData(new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011"), AgreementStatusId.ACTIVE)
         };
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetAgreementAssignedCompanyRolesUntrackedAsync(roles).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAgreementAssignedCompanyRolesUntrackedAsync(roles).ToListAsync();
 
         // Assert
         result.Should().NotBeNull()
@@ -104,10 +104,10 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var appAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1011") };
         var serviceAgreementIds = new[] { new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1017"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1018"), new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1094") };
         var onboardingAgreementIds = new[] { new Guid("311aac58-932b-4622-be8b-34337e48d70d") };
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCompanyRoleAgreementsUntrackedAsync().ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(4).And.Satisfy(
@@ -132,10 +132,10 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Arrange
         var applicationId = new Guid("7e279133-2148-48b4-b855-9d7d291ecbb1");
         var companyId = new Guid("0dcd8209-85e2-4073-b130-ac094fb47106");
-        var (sut, _) = await CreateSut().ConfigureAwait(false);
+        var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, companyId).ConfigureAwait(false);
+        var result = await sut.GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, companyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -151,7 +151,7 @@ public class CompanyRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<(ICompanyRolesRepository, PortalDbContext)> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new CompanyRolesRepository(context);
         return (sut, context);
     }

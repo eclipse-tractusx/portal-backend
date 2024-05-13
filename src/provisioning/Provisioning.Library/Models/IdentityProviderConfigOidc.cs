@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,5 +21,25 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public record IdentityProviderConfigOidc(string DisplayName, string RedirectUrl, string TokenUrl, string? LogoutUrl, string ClientId, string? ClientSecret, bool Enabled, string AuthorizationUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm);
-public record IdentityProviderEditableConfigOidc(string Alias, string DisplayName, string MetadataUrl, IamIdentityProviderClientAuthMethod ClientAuthMethod, string ClientId, string? Secret = null, IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm = null);
+public record IdentityProviderConfigOidc(
+    string? DisplayName,
+    string? RedirectUrl,
+    string? TokenUrl,
+    string? LogoutUrl,
+    string? ClientId,
+    string? ClientSecret,
+    bool? Enabled,
+    string? AuthorizationUrl,
+    IamIdentityProviderClientAuthMethod? ClientAuthMethod,
+    IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm
+);
+
+public record IdentityProviderEditableConfigOidc(
+    string Alias,
+    string DisplayName,
+    string MetadataUrl,
+    IamIdentityProviderClientAuthMethod ClientAuthMethod,
+    string ClientId,
+    string? Secret = null,
+    IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm = null
+);

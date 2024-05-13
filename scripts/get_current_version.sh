@@ -33,4 +33,4 @@ else
   version="$version_prefix-framework"
 fi
 
-echo "Version: $version"
+echo "v$version"

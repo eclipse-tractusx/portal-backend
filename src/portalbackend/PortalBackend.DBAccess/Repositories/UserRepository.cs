@@ -479,13 +479,13 @@ public class UserRepository : IUserRepository
     public void RemoveCompanyUserAssignedIdentityProviders(IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)> companyUserIdentityProviderIds) =>
         _dbContext.CompanyUserAssignedIdentityProviders.RemoveRange(companyUserIdentityProviderIds.Select(x => new CompanyUserAssignedIdentityProvider(x.CompanyUserId, x.IdentityProviderId, null!, null!)));
 
-    public IAsyncEnumerable<CompanyUserIdentityProviderProcessTransferData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
+    public IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId) =>
         _dbContext.CompanyUsers
             .Where(cu =>
                 cu.Identity!.UserStatusId == UserStatusId.PENDING &&
                 cu.Identity.Company!.NetworkRegistration!.Id == networkRegistrationId)
             .Select(cu =>
-                new CompanyUserIdentityProviderProcessTransferData(
+                new CompanyUserIdentityProviderProcessData(
                     cu.Id,
                     cu.Firstname,
                     cu.Lastname,
@@ -517,6 +517,15 @@ public class UserRepository : IUserRepository
         var updatedEntity = _dbContext.Attach(companyUser).Entity;
         modify.Invoke(updatedEntity);
     }
+
+    public Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId) =>
+        _dbContext.CompanyUsers
+            .Where(x => x.Id == companyUserId)
+            .Select(x => new ValueTuple<bool, string?>(true, x.Email))
+            .SingleOrDefaultAsync();
+
+    public Task<bool> CheckUserExists(Guid companyUserId) =>
+        _dbContext.CompanyUsers.AnyAsync(x => x.Id == companyUserId);
 
     public IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId, IEnumerable<UserStatusId> validUserStates) =>
         _dbContext.CompanyUsers

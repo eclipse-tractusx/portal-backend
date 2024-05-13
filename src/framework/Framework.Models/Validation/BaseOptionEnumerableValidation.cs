@@ -25,6 +25,7 @@ using System.Collections;
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
@@ -33,7 +34,8 @@ public abstract class SharedBaseOptionEnumerableValidation
     protected static readonly ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
         typeof(string),
         typeof(bool),
-        typeof(decimal));
+        typeof(decimal),
+        typeof(Encoding));
 }
 
 public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptionEnumerableValidation, IValidateOptions<TOptions> where TOptions : class
@@ -98,7 +100,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
                 (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
                 ?.ToIEnumerable()
                 .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
-                .SelectMany(section => GetValidationErrors(genericType!, section)),
-            _ => null
-        } ?? Enumerable.Empty<ValidationResult>();
+                .SelectMany(section => GetValidationErrors(genericType!, section)) ?? Enumerable.Empty<ValidationResult>(),
+            _ => Enumerable.Empty<ValidationResult>()
+        };
 }

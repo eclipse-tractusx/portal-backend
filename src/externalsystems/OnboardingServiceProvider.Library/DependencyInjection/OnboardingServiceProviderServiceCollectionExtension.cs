@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,6 +31,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
         var configSection = configuration.GetSection("OnboardingServiceProvider");
         services.AddOptions<OnboardingServiceProviderSettings>()
             .Bind(configSection)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(configSection)
             .ValidateOnStart();
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();

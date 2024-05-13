@@ -78,20 +78,20 @@
     "last_editor_id": null
   },
   {
-    "id": "9956fa8d-e454-49ca-a3b1-83e2c106fe59",
-    "user_role": "BPDM Management",
+    "id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
+    "user_role": "BPDM Sharing Output Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
-    "id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae538",
-    "user_role": "BPDM Partner Gate",
+    "id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
+    "user_role": "BPDM Sharing Input Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   { 
-    "id": "607818be-4978-41f4-bf63-fa8d2de51162",
-    "user_role": "BPDM Pool",
+    "id": "607818be-4978-41f4-bf63-fa8d2de52262",
+    "user_role": "BPDM Pool Admin",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
@@ -132,14 +132,20 @@
     "last_editor_id": null
   },
   {
-    "id": "ec3a3005-b59c-4319-a8eb-3228014cd6e6",
-    "user_role": "BPDM Gate Read",
+    "id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
+    "user_role": "BPDM Sharing Admin",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   },
   {
-    "id": "ec3a3005-b59c-4319-a8eb-3228014cd6e5",
-    "user_role": "BPDM Gate Read & Write",
+    "id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
+    "user_role": "BPDM Sharing Input Manager",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "607818be-4978-41f4-bf63-fa6d2de51262",
+    "user_role": "BPDM Pool Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
   }

@@ -19,7 +19,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -64,4 +63,26 @@ public interface ICompanyCertificateRepository
     /// </summary>
     /// <returns>Returns an Pagination</returns>
     Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId);
+
+    /// <summary>
+    /// Get the company certificate document data
+    /// </summary>
+    /// <param name="documentId">id of the document</param>   
+    /// <returns>Returns the document data</returns>
+    Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists, bool IsStatusLocked)> GetCompanyCertificateDocumentDataAsync(Guid documentId, DocumentTypeId documentTypeId);
+
+    Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> CompanyCertificateId, bool IsSameCompany)> GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyId);
+
+    void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields);
+
+    void AttachAndModifyCompanyCertificateDocumentDetails(Guid id, Action<Document>? initialize, Action<Document> updateFields);
+
+    /// <summary>
+    /// Get the company certificate document with own company id data
+    /// </summary>
+    /// <param name="documentId">id of the document</param> 
+    /// <param name="companyId">id of the company user</param> 
+    /// <param name="documentTypeId">document type id</param> 
+    /// <returns>Returns the document data</returns>
+    Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId, bool Exists)> GetCompanyCertificateDocumentByCompanyIdDataAsync(Guid documentId, Guid companyId, DocumentTypeId documentTypeId);
 }

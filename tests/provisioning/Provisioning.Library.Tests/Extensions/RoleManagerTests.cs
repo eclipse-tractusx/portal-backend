@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -69,7 +68,7 @@ public class RoleManagerTests
             .RespondWithJson(new { access_token = "123" });
 
         // Act
-        await _sut.AddRolesToClientAsync(ValidClientName, roles).ConfigureAwait(false);
+        await _sut.AddRolesToClientAsync(ValidClientName, roles);
 
         // Assert
         httpTest.ShouldHaveCalled($"*/admin/realms/test/clients/{clientId}/roles").WithVerb(HttpMethod.Post).Times(2);
@@ -93,7 +92,7 @@ public class RoleManagerTests
             .RespondWithJson(new { access_token = "123" });
 
         // Act
-        await _sut.AddRolesToClientAsync(ValidClientName, roles).ConfigureAwait(false);
+        await _sut.AddRolesToClientAsync(ValidClientName, roles);
 
         // Assert
         httpTest.ShouldHaveCalled($"*/admin/realms/test/clients/{clientId}/roles").WithVerb(HttpMethod.Post).Times(1);
@@ -109,11 +108,11 @@ public class RoleManagerTests
             "test"
         };
         var client = "notvalid";
-        var httpTest = new HttpTest();
+        using var httpTest = new HttpTest();
         httpTest.RespondWithJson(new { access_token = "123" }).RespondWithJson(new List<Client>());
 
         // Act
-        async Task Act() => await _sut.AddRolesToClientAsync("notvalid", roles).ConfigureAwait(false);
+        async Task Act() => await _sut.AddRolesToClientAsync("notvalid", roles);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

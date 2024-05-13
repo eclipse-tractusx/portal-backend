@@ -1,5 +1,4 @@
 <!--
-- Copyright (c) 2021, 2023 BMW Group AG
 - Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
@@ -23,7 +22,7 @@
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library</AssemblyName>
         <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library</RootNamespace>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UserSecretsId>10475eed-3b71-47aa-abf6-db32fca27634</UserSecretsId>

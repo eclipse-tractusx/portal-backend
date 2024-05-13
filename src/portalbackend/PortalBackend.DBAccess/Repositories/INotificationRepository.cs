@@ -37,8 +37,7 @@ public interface INotificationRepository
     /// <param name="notificationTypeId">id of the notification type</param>
     /// <param name="isRead"><c>true</c> if the notification is read, otherwise <c>false</c></param>
     /// <param name="setOptionalParameters">Optional Action to set the notifications optional properties</param>
-    Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId,
-        bool isRead, Action<Notification>? setOptionalParameters = null);
+    Notification CreateNotification(Guid receiverUserId, NotificationTypeId notificationTypeId, bool isRead, Action<Notification>? setOptionalParameters = null);
 
     void AttachAndModifyNotification(Guid notificationId, Action<Notification>? initialize, Action<Notification> updateFields);
 

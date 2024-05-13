@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,14 +19,13 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -51,50 +49,43 @@ public class RegistrationStatusBusinessLogic : IRegistrationStatusBusinessLogic
     {
         var companyId = _identityData.CompanyId;
         var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var (hasCompanyRole, ospDetails) = await companyRepository
+        var (hasCompanyRole, ospDetailId, ospDetails) = await companyRepository
             .GetCallbackEditData(companyId, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!hasCompanyRole)
         {
             throw new ForbiddenException($"Only {CompanyRoleId.ONBOARDING_SERVICE_PROVIDER} are allowed to set the callback url");
         }
 
-        using var aes = Aes.Create();
-        aes.Key = Encoding.UTF8.GetBytes(_settings.EncryptionKey);
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-        var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-        using (var memoryStream = new MemoryStream())
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
+        var (secret, initializationVector) = CryptoHelper.Encrypt(requestData.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        if (ospDetailId.HasValue && ospDetails != null)
         {
-            using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-            {
-                using var sw = new StreamWriter(cryptoStream, Encoding.UTF8);
-                sw.Write(requestData.ClientSecret);
-            }
-            var secret = memoryStream.ToArray();
-            if (ospDetails != null)
-            {
-                companyRepository.AttachAndModifyOnboardingServiceProvider(companyId, osp =>
-                    {
-                        osp.CallbackUrl = ospDetails.CallbackUrl;
-                        osp.AuthUrl = ospDetails.AuthUrl;
-                        osp.ClientId = ospDetails.ClientId;
-                        osp.ClientSecret = secret;
-                    },
-                    osp =>
-                    {
-                        osp.CallbackUrl = requestData.CallbackUrl;
-                        osp.AuthUrl = requestData.AuthUrl;
-                        osp.ClientId = requestData.ClientId;
-                        osp.ClientSecret = secret;
-                    });
-            }
-            else
-            {
-                companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret);
-            }
+            companyRepository.AttachAndModifyOnboardingServiceProvider(ospDetailId.Value, osp =>
+                {
+                    osp.CallbackUrl = ospDetails.CallbackUrl;
+                    osp.AuthUrl = ospDetails.AuthUrl;
+                    osp.ClientId = ospDetails.ClientId;
+                    osp.ClientSecret = ospDetails.ClientSecret;
+                    osp.EncryptionMode = ospDetails.EncryptionMode;
+                    osp.InitializationVector = ospDetails.InitializationVector;
+                },
+                osp =>
+                {
+                    osp.CallbackUrl = requestData.CallbackUrl;
+                    osp.AuthUrl = requestData.AuthUrl;
+                    osp.ClientId = requestData.ClientId;
+                    osp.ClientSecret = secret;
+                    osp.EncryptionMode = cryptoConfig.Index;
+                    osp.InitializationVector = initializationVector;
+                });
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        else
+        {
+            companyRepository.CreateOnboardingServiceProviderDetails(companyId, requestData.CallbackUrl, requestData.AuthUrl, requestData.ClientId, secret, initializationVector, cryptoConfig.Index);
+        }
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

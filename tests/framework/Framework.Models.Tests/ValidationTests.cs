@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -88,14 +87,17 @@ public class ValidationTests
                 }
             ]
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = config.Get<DistinctValuesTestSettings>();
+        settings.Should().NotBeNull();
         var name = _fixture.Create<string>();
 
         var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name, config);
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
@@ -115,7 +117,9 @@ public class ValidationTests
             ""StringProperty"": [],
             ""TypedProperty"": []
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = new DistinctValuesTestSettings();
         var name = _fixture.Create<string>();
 
@@ -159,14 +163,17 @@ public class ValidationTests
                 }
             ]
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = config.Get<DistinctValuesTestSettings>();
+        settings.Should().NotBeNull();
         var name = _fixture.Create<string>();
 
         var sut = new DistinctValuesValidation<DistinctValuesTestSettings>(name, config);
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
@@ -198,13 +205,16 @@ public class ValidationTests
                 }
             ]
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = config.Get<InvalidDistinctValuesTestSettings>();
+        settings.Should().NotBeNull();
         var name = _fixture.Create<string>();
 
         var sut = new DistinctValuesValidation<InvalidDistinctValuesTestSettings>(name, config);
 
-        var Act = () => sut.Validate(name, settings);
+        var Act = () => sut.Validate(name, settings!);
 
         // Act
         var result = Assert.Throws<UnexpectedConditionException>(Act);
@@ -222,7 +232,9 @@ public class ValidationTests
         {
             ""InvalidProperty"": []
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = new InvalidDistinctValuesTestSettings();
         var name = _fixture.Create<string>();
 
@@ -266,14 +278,17 @@ public class ValidationTests
                 ]   
             }
         }";
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(configuration))).Build();
+
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(configuration));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var settings = config.Get<WrappedDistinctValuesTestSettings>();
+        settings.Should().NotBeNull();
         var name = _fixture.Create<string>();
 
         var sut = new DistinctValuesValidation<WrappedDistinctValuesTestSettings>(name, config);
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
@@ -324,15 +339,17 @@ public class ValidationTests
             ]
         }";
 
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(appSettings));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var name = _fixture.Create<string>();
 
         var sut = new EnumEnumerableValidation<EnumEnumerableTestSettings>(name, config);
 
         var settings = config.Get<EnumEnumerableTestSettings>();
+        settings.Should().NotBeNull();
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
@@ -356,15 +373,17 @@ public class ValidationTests
             ]
         }";
 
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(appSettings));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var name = _fixture.Create<string>();
 
         var sut = new EnumEnumerableValidation<EnumEnumerableTestSettings>(name, config);
 
         var settings = config.Get<EnumEnumerableTestSettings>();
+        settings.Should().NotBeNull();
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>
@@ -387,14 +406,16 @@ public class ValidationTests
             ]
         }";
 
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(appSettings));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var name = _fixture.Create<string>();
 
         var sut = new EnumEnumerableValidation<InvalidEnumEnumerableTestSettings>(name, config);
 
         var settings = config.Get<InvalidEnumEnumerableTestSettings>();
+        settings.Should().NotBeNull();
 
-        var Act = () => sut.Validate(name, settings);
+        var Act = () => sut.Validate(name, settings!);
 
         // Act
         var result = Assert.Throws<UnexpectedConditionException>(Act);
@@ -420,15 +441,17 @@ public class ValidationTests
             }
         }";
 
-        var config = new ConfigurationBuilder().AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(appSettings))).Build();
+        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(appSettings));
+        var config = new ConfigurationBuilder().AddJsonStream(memoryStream).Build();
         var name = _fixture.Create<string>();
 
         var sut = new EnumEnumerableValidation<WrapperInvalidEnumEnumerableTestSettings>(name, config);
 
         var settings = config.Get<WrapperInvalidEnumEnumerableTestSettings>();
+        settings.Should().NotBeNull();
 
         // Act
-        var result = sut.Validate(name, settings);
+        var result = sut.Validate(name, settings!);
 
         // Assert
         result.Should().NotBeNull().And.Match<ValidateOptionsResult>(r =>

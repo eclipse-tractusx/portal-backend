@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,15 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class UserSettings
 {
-    public UserSettings()
-    {
-        Portal = null!;
-        PasswordReset = null!;
-    }
+    [Required]
+    public UserSetting Portal { get; set; } = null!;
 
     [Required]
-    public UserSetting Portal { get; set; }
-    public PasswordReset PasswordReset { get; set; }
+    public PasswordReset PasswordReset { get; set; } = null!;
+
+    [Required]
     public int ApplicationsMaxPageSize { get; set; }
 
     /// <summary>
@@ -57,21 +54,14 @@ public class UserSettings
 
 public class UserSetting
 {
-    public UserSetting()
-    {
-        KeycloakClientID = null!;
-        BasePortalAddress = null!;
-        PasswordResendAddress = null!;
-    }
+    [Required(AllowEmptyStrings = false)]
+    public string KeycloakClientID { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string KeycloakClientID { get; set; }
+    public string BasePortalAddress { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string BasePortalAddress { get; set; }
-
-    [Required(AllowEmptyStrings = false)]
-    public string PasswordResendAddress { get; set; }
+    public string PasswordResendAddress { get; set; } = null!;
 }
 
 public class PasswordReset

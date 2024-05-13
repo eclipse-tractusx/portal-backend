@@ -53,13 +53,13 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         var now = DateTimeOffset.UtcNow;
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
 
-        var sut = await CreateContext().ConfigureAwait(false);
-        using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
-        var ca = await sut.CompanyApplications.SingleAsync(x => x.Id == new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb2")).ConfigureAwait(false);
+        var sut = await CreateContext();
+        using var trans = await sut.Database.BeginTransactionAsync();
+        var ca = await sut.CompanyApplications.SingleAsync(x => x.Id == new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb2"));
 
         // Act
         ca.ApplicationStatusId = CompanyApplicationStatusId.SELECT_COMPANY_ROLE;
-        await sut.SaveChangesAsync().ConfigureAwait(false);
+        await sut.SaveChangesAsync();
 
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
@@ -68,7 +68,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         auditEntries.Should().HaveCount(2).And.Satisfy(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED && x.AuditV1OperationId == AuditOperationId.INSERT,
             x => x.ApplicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE && x.AuditV1OperationId == AuditOperationId.UPDATE && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     [Fact]
@@ -82,12 +82,12 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         var id = Guid.NewGuid();
         var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
-        var sut = await CreateContext().ConfigureAwait(false);
-        using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
+        var sut = await CreateContext();
+        using var trans = await sut.Database.BeginTransactionAsync();
 
         // Act
         sut.Add(ca);
-        await sut.SaveChangesAsync().ConfigureAwait(false);
+        await sut.SaveChangesAsync();
 
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
@@ -95,7 +95,7 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         var auditEntries = await sut.AuditCompanyApplication20231115.Where(x => x.Id == id).ToListAsync();
         auditEntries.Should().ContainSingle().Which.Should().Match<AuditCompanyApplication20231115>(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.INSERT && (x.AuditV1DateLastChanged - now) < TimeSpan.FromSeconds(1) && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     [Fact]
@@ -110,14 +110,14 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         var id = Guid.NewGuid();
         var ca = new CompanyApplication(id, new Guid("ac861325-bc54-4583-bcdc-9e9f2a38ff84"), CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, before);
 
-        var sut = await CreateContext().ConfigureAwait(false);
-        using var trans = await sut.Database.BeginTransactionAsync().ConfigureAwait(false);
+        var sut = await CreateContext();
+        using var trans = await sut.Database.BeginTransactionAsync();
 
         // Act
         sut.Add(ca);
-        await sut.SaveChangesAsync().ConfigureAwait(false);
+        await sut.SaveChangesAsync();
         sut.Remove(ca);
-        await sut.SaveChangesAsync().ConfigureAwait(false);
+        await sut.SaveChangesAsync();
 
         // Assert
         ca.LastEditorId.Should().NotBeNull().And.Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
@@ -126,11 +126,11 @@ public class PortalDbContextTests : IAssemblyFixture<TestDbFixture>
         auditEntries.Should().HaveCount(2).And.Satisfy(
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.INSERT && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"),
             x => x.ApplicationStatusId == CompanyApplicationStatusId.CREATED && (x.DateCreated - before) < TimeSpan.FromSeconds(1) && x.AuditV1OperationId == AuditOperationId.DELETE && (x.AuditV1DateLastChanged - later) < TimeSpan.FromSeconds(1) && x.LastEditorId == new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001"));
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     #endregion
 
     private async Task<PortalDbContext> CreateContext() =>
-        await _dbTestDbFixture.GetPortalDbContext(_dateTimeProvider).ConfigureAwait(false);
+        await _dbTestDbFixture.GetPortalDbContext(_dateTimeProvider);
 }

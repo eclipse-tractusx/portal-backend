@@ -61,7 +61,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var result = await _portalRepositories.GetInstance<INetworkRepository>().GetNetworkRegistrationDataForProcessIdAsync(processId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INetworkRepository>().GetNetworkRegistrationDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == Guid.Empty)
         {
             throw new NotFoundException($"process {processId} does not exist or is not associated with an offer subscription");
@@ -88,15 +88,15 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
                 ProcessStepTypeId.SYNCHRONIZE_USER => await _networkRegistrationHandler.SynchronizeUser(_networkRegistrationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => await _onboardingServiceProviderBusinessLogic.TriggerProviderCallback(_networkRegistrationId, ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED, cancellationToken)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.REMOVE_KEYCLOAK_USERS => await _networkRegistrationHandler.RemoveKeycloakUser(_networkRegistrationId)
-                    .ConfigureAwait(false),
+                    .ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };
         }
@@ -114,7 +114,7 @@ public class NetworkRegistrationProcessTypeExecutor : IProcessTypeExecutor
         return ex switch
         {
             ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
-            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetRetriggerStep())
+            _ => (ProcessStepStatusId.FAILED, ex.Message, processStepTypeId.GetNetworkRetriggerStep())
         };
     }
 }

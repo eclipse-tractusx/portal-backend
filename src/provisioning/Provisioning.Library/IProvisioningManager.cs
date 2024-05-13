@@ -25,10 +25,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 public interface IProvisioningManager
 {
     ValueTask<string> GetNextCentralIdentityProviderNameAsync();
-    Task SetupSharedIdpAsync(string idpName, string organisationName, string? loginTheme);
     Task<string> CreateSharedRealmUserAsync(string realm, UserProfile profile);
     Task<string> CreateCentralUserAsync(UserProfile profile, IEnumerable<(string Name, IEnumerable<string> Values)> attributes);
-    IAsyncEnumerable<(string Client, IEnumerable<string> Roles)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
+    IAsyncEnumerable<(string Client, IEnumerable<string> Roles, Exception? Error)> AssignClientRolesToCentralUserAsync(string centralUserId, IDictionary<string, IEnumerable<string>> clientRoleNames);
     Task AddRolesToClientAsync(string clientName, IEnumerable<string> roleNames);
     Task<string> CreateOwnIdpAsync(string displayName, string organisationName, IamIdentityProviderProtocol providerProtocol);
     Task<string?> GetProviderUserIdForCentralUserIdAsync(string identityProvider, string userId);
@@ -55,7 +54,7 @@ public interface IProvisioningManager
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
-    Task<string> GetCentralIdentityProviderDisplayName(string alias);
+    Task<string?> GetCentralIdentityProviderDisplayName(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
     ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);

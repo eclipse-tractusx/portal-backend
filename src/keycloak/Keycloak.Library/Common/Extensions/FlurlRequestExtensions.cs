@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,7 +44,7 @@ public static class FlurlRequestExtensions
                 new KeyValuePair<string, string>("client_id", "admin-cli")
             },
             cancellationToken)
-            .ReceiveJson().ConfigureAwait(false);
+            .ReceiveJson().ConfigureAwait(ConfigureAwaitOptions.None);
 
         string accessToken = result
             .access_token.ToString();
@@ -66,7 +65,7 @@ public static class FlurlRequestExtensions
                 new("client_id", clientId ?? "admin-cli")
             },
             cancellationToken)
-            .ReceiveJson().ConfigureAwait(false);
+            .ReceiveJson().ConfigureAwait(ConfigureAwaitOptions.None);
 
         string accessToken = result
             .access_token.ToString();
@@ -79,15 +78,15 @@ public static class FlurlRequestExtensions
         string? token;
         if (getTokenAsync != null)
         {
-            token = await getTokenAsync(cancellationToken).ConfigureAwait(false);
+            token = await getTokenAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         else if (clientSecret != null)
         {
-            token = await GetAccessTokenWithClientIdAsync(url, realm, clientSecret, clientId, useAuthTrail, cancellationToken).ConfigureAwait(false);
+            token = await GetAccessTokenWithClientIdAsync(url, realm, clientSecret, clientId, useAuthTrail, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         else if (userName != null)
         {
-            token = await GetAccessTokenAsync(url, realm, userName, password ?? "", useAuthTrail, cancellationToken).ConfigureAwait(false);
+            token = await GetAccessTokenAsync(url, realm, userName, password ?? "", useAuthTrail, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         else
         {

@@ -25,17 +25,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Librar
 
 public static class OfferSubscriptionExtensions
 {
-    public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
+    public static IEnumerable<ProcessStepTypeId> GetOfferSubscriptionRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
             ProcessStepTypeId.TRIGGER_PROVIDER => new[] { ProcessStepTypeId.RETRIGGER_PROVIDER },
             ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION => new[] { ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION },
             ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => new[] { ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION },
             ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK => new[] { ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK },
-            _ => null
+            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process OfferSubscription")
         };
 
-    public static ProcessStepTypeId GetStepToRetrigger(this ProcessStepTypeId retriggerProcessStep) =>
+    public static ProcessStepTypeId GetOfferSubscriptionStepToRetrigger(this ProcessStepTypeId retriggerProcessStep) =>
         retriggerProcessStep switch
         {
             ProcessStepTypeId.RETRIGGER_PROVIDER => ProcessStepTypeId.TRIGGER_PROVIDER,

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,5 +23,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 public interface ITemplateManager
 {
-    Task<Mail> ApplyTemplateAsync(string id, IDictionary<string, string> parameters);
+    Task<Mail> ApplyTemplateAsync(string id, IReadOnlyDictionary<string, string> parameters);
 }

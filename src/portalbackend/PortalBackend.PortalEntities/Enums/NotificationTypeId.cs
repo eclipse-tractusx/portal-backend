@@ -148,5 +148,10 @@ public enum NotificationTypeId
     /// <summary>
     /// Notification when a credential got rejected
     /// </summary>
-    CREDENTIAL_REJECTED = 25
+    CREDENTIAL_REJECTED = 25,
+
+    /// <summary>
+    /// Notification when a credential is expired
+    /// </summary>
+    CREDENTIAL_EXPIRY = 26
 }

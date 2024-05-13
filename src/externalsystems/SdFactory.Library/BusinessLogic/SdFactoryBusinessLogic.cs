@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -55,7 +54,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -73,7 +72,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     {
         var result = await _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(applicationId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -89,7 +88,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         await _sdFactoryService
             .RegisterSelfDescriptionAsync(applicationId, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
@@ -102,11 +101,11 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                 new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
                 processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (confirm)
         {
-            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(false);
+            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
@@ -132,7 +131,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         Guid? documentId = null;
         if (confirm)
         {
-            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(false);
+            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
@@ -167,7 +166,6 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
     private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        using var sha512Hash = SHA512.Create();
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
         var jsonDocument = JsonDocument.Parse(data.Content!);
@@ -175,7 +173,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
 
         await writer.FlushAsync(cancellationToken);
         var documentContent = ms.ToArray();
-        var hash = sha512Hash.ComputeHash(documentContent);
+        var hash = SHA512.HashData(documentContent);
 
         var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",

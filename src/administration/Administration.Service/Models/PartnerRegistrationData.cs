@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -38,7 +37,7 @@ public record PartnerRegistrationData
     IEnumerable<CompanyUniqueIdData> UniqueIds,
     IEnumerable<UserDetailData> UserDetails,
     IEnumerable<CompanyRoleId> CompanyRoles
-) : Registration.Common.RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, null, Region, null, StreetNumber, ZipCode, UniqueIds);
+) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, null, Region, null, StreetNumber, ZipCode, UniqueIds);
 
 public record UserDetailData(
     Guid? IdentityProviderId,

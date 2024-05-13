@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -90,7 +89,7 @@ public class ChecklistServiceTests
             });
 
         // Act
-        var result = await _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds).ConfigureAwait(false);
+        var result = await _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Assert
         result.Should().NotBeNull();
@@ -126,7 +125,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} is not associated with a checklist-process");
@@ -152,7 +151,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"checklist-process {process.Id} of {applicationId} is locked, lock expiry is set to {lockExpiryDate}");
@@ -171,12 +170,12 @@ public class ChecklistServiceTests
 
         // (bool IsValidApplicationId, bool IsSubmitted, Guid? ProcessId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((VerifyChecklistData?)null);
+            .Returns<VerifyChecklistData?>(null);
 
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not exist");
@@ -201,7 +200,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} is not in status SUBMITTED");
@@ -228,7 +227,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
@@ -252,7 +251,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be($"checklist or processSteps should never be null here");
@@ -279,7 +278,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} does not have a checklist entry for {entryTypeId} in status {string.Join(", ", entryStatusIds)}");
@@ -306,7 +305,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
@@ -333,7 +332,7 @@ public class ChecklistServiceTests
         var Act = () => _service.VerifyChecklistEntryAndProcessSteps(applicationId, entryTypeId, entryStatusIds, processStepTypeId, entryTypeIds, processStepTypeIds);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be($"processSteps should never have other status than TODO here");
@@ -676,7 +675,7 @@ public class ChecklistServiceTests
         var ex = new ServiceException("Test error");
 
         // Act
-        var result = await _service.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        var result = await _service.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
 
         // Assert
         result.Should().NotBeNull();
@@ -697,7 +696,7 @@ public class ChecklistServiceTests
         var ex = new ServiceException("Test error", true);
 
         // Act
-        var result = await _service.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE).ConfigureAwait(false);
+        var result = await _service.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE);
 
         // Assert
         result.Should().NotBeNull();

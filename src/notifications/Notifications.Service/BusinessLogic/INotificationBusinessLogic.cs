@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -71,4 +70,10 @@ public interface INotificationBusinessLogic
     /// </summary>
     /// <param name="notificationId">Id of the notification that should be deleted</param>
     Task DeleteNotificationAsync(Guid notificationId);
+
+    /// <summary>
+    /// Creates a notification with the given data
+    /// </summary>
+    /// <param name="data">The notification request data</param>
+    Task CreateNotification(NotificationRequest data);
 }

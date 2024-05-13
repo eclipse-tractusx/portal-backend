@@ -75,7 +75,7 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="bpns"></param>
     /// <returns></returns>
-    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string> bpns);
+    IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync(IEnumerable<string>? bpns);
 
     /// <summary>
     /// Processes the clearinghouse self description

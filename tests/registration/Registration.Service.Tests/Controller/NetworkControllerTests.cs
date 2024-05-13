@@ -37,7 +37,7 @@ public class NetworkControllerTests
     {
         _fixture = new Fixture();
         _logic = A.Fake<INetworkBusinessLogic>();
-        this._controller = new NetworkController(_logic);
+        _controller = new NetworkController(_logic);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class NetworkControllerTests
         var data = _fixture.Create<PartnerSubmitData>();
 
         // Act
-        var result = await this._controller.Submit(data).ConfigureAwait(false);
+        var result = await _controller.Submit(data);
 
         // Assert
         result.StatusCode.Should().Be(204);

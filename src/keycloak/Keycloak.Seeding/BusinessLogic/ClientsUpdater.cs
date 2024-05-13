@@ -52,15 +52,15 @@ public class ClientsUpdater : IClientsUpdater
         {
             if (update.ClientId == null)
                 throw new ConflictException($"clientId must not be null {update.Id}");
-            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(false)).SingleOrDefault(x => x.ClientId == update.ClientId);
+            var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.ClientId == update.ClientId);
             if (client == null)
             {
-                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(false);
+                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (id == null)
                     throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
 
                 // load newly created client as keycloak may create default protocolmappers on client-creation
-                client = await keycloak.GetClientAsync(realm, id).ConfigureAwait(false);
+                client = await keycloak.GetClientAsync(realm, id).ConfigureAwait(ConfigureAwaitOptions.None);
             }
 
             if (client.Id == null)
@@ -73,10 +73,10 @@ public class ClientsUpdater : IClientsUpdater
                     realm,
                     client.Id,
                     updateClient,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
 
-            await UpdateClientProtocollMappers(keycloak, realm, client.Id, client, update, cancellationToken).ConfigureAwait(false);
+            await UpdateClientProtocollMappers(keycloak, realm, client.Id, client, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             yield return (update.ClientId, client.Id);
         }
@@ -87,9 +87,9 @@ public class ClientsUpdater : IClientsUpdater
         var clientProtocolMappers = client.ProtocolMappers ?? Enumerable.Empty<ClientProtocolMapper>();
         var updateProtocolMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
 
-        await DeleteObsoleteClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(false);
-        await CreateMissingClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(false);
-        await UpdateExistingClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(false);
+        await DeleteObsoleteClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task DeleteObsoleteClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ClientProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
@@ -100,7 +100,7 @@ public class ClientsUpdater : IClientsUpdater
                 realm,
                 clientId,
                 mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -112,7 +112,7 @@ public class ClientsUpdater : IClientsUpdater
                 realm,
                 clientId,
                 ProtocolMappersUpdater.CreateProtocolMapper(null, update),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -132,7 +132,7 @@ public class ClientsUpdater : IClientsUpdater
                 clientId,
                 mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {mapper.Name}"),
                 ProtocolMappersUpdater.CreateProtocolMapper(mapper.Id, update),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

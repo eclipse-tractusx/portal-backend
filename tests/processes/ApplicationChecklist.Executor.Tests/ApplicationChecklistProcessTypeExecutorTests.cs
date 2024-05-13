@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -95,7 +95,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act
-        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBeNull();
@@ -140,7 +140,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns(stepTypeIds);
 
         // Act
-        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBeNull();
@@ -164,10 +164,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((false, Guid.Empty, default, null!));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
-        var result = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         result.Message.Should().Be($"process {processId} does not exist");
@@ -184,10 +184,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, Guid.Empty, default, null!));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"process {processId} is not associated with an application");
@@ -212,10 +212,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _checklistRepository.GetChecklistData(processId))
             .Returns((true, applicationId, CompanyApplicationStatusId.CREATED, checklist));
 
-        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var Act = async () => await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Act
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         result.Message.Should().Be($"application {applicationId} is not in status SUBMITTED");
@@ -232,10 +232,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(processStepTypeId, processStepTypeIds, CancellationToken.None);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be("applicationId or checklist should never be null or empty here");
@@ -257,7 +257,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns(Enumerable.Empty<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>());
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -267,10 +267,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
 
-        var Act = async () => await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Act
-        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         result.Message.Should().Be($"checklist should always contain an entry for {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER} here");
@@ -291,7 +291,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -322,7 +322,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             });
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -361,7 +361,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -402,7 +402,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             });
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -443,7 +443,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -470,7 +470,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
                     "Test Message"));
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(_firstStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -505,7 +505,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -514,7 +514,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
-        var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = _fixture.Create<TestException>();
 
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -531,7 +530,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             });
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -571,7 +570,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -580,7 +579,6 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
         // Arrange execute
         var executeProcessStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
-        var followupStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>();
         var error = new ServiceException(_fixture.Create<string>(), true);
 
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -597,7 +595,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             });
 
         // Act execute
-        var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var executionResult = await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -637,7 +635,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .Returns((true, applicationId, CompanyApplicationStatusId.SUBMITTED, checklist));
 
         // Act initialize
-        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializationResult = await _executor.InitializeProcess(processId, _fixture.CreateMany<ProcessStepTypeId>());
 
         // Assert initialize
         initializationResult.Should().NotBeNull();
@@ -651,10 +649,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
         A.CallTo(() => _secondProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
             .Throws(error);
 
-        var Act = async () => await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None).ConfigureAwait(false);
+        var Act = async () => await _executor.ExecuteProcessStep(_secondStepTypeId, executeProcessStepTypeIds, CancellationToken.None);
 
         // Act execute
-        var executionResult = await Assert.ThrowsAsync<SystemException>(Act).ConfigureAwait(false);
+        var executionResult = await Assert.ThrowsAsync<SystemException>(Act);
 
         // Assert execute
         A.CallTo(() => _firstProcessFunc(A<IApplicationChecklistService.WorkerChecklistProcessStepData>._, A<CancellationToken>._))
@@ -719,7 +717,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act
-        var result = await _executor.IsLockRequested(stepTypeId).ConfigureAwait(false);
+        var result = await _executor.IsLockRequested(stepTypeId);
 
         // Assert
         result.Should().Be(isLocked);
@@ -731,10 +729,10 @@ public class ApplicationChecklistProcessTypeExecutorTests
     {
         // Arrange
         var stepTypeId = Enum.GetValues<ProcessStepTypeId>().Except(_executableSteps).First();
-        var Act = async () => await _executor.IsLockRequested(stepTypeId).ConfigureAwait(false);
+        var Act = async () => await _executor.IsLockRequested(stepTypeId);
 
         // Assert
-        var result = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ConflictException>(Act);
         result.Message.Should().Be($"no execution defined for processStep {stepTypeId}");
         A.CallTo(() => _checklistHandlerService.GetProcessStepExecution(stepTypeId)).MustHaveHappenedOnceExactly();
     }
@@ -767,8 +765,8 @@ public class ApplicationChecklistProcessTypeExecutorTests
             .ReturnsLazily((ProcessStepTypeId stepTypeId) =>
                 stepTypeId switch
                 {
-                    _ when stepTypeId == _firstStepTypeId => _firstExecution,
-                    _ when stepTypeId == _secondStepTypeId => _secondExecution,
+                    var id when id == _firstStepTypeId => _firstExecution,
+                    var id when id == _secondStepTypeId => _secondExecution,
                     _ => throw new ConflictException($"no execution defined for processStep {stepTypeId}"),
                 }
             );
@@ -781,15 +779,4 @@ public class ApplicationChecklistProcessTypeExecutorTests
     }
 
     #endregion
-
-    [Serializable]
-    public class TestException : Exception
-    {
-        public TestException() { }
-        public TestException(string message) : base(message) { }
-        public TestException(string message, Exception inner) : base(message, inner) { }
-        protected TestException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
 }

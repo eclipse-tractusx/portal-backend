@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
@@ -26,25 +26,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 public class BPNAccessTest
 {
     private readonly IFixture _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-
-    private void ConfigureHttpClientFactoryFixture(HttpResponseMessage httpResponseMessage, Action<HttpRequestMessage?>? setMessage = null)
-    {
-        var messageHandler = A.Fake<HttpMessageHandler>();
-        A.CallTo(messageHandler) // mock protected method
-            .Where(x => x.Method.Name == "SendAsync")
-            .WithReturnType<Task<HttpResponseMessage>>()
-            .ReturnsLazily(call =>
-            {
-                var message = call.Arguments.Get<HttpRequestMessage>(0);
-                setMessage?.Invoke(message);
-                return Task.FromResult(httpResponseMessage);
-            });
-        var httpClient = new HttpClient(messageHandler) { BaseAddress = new Uri("http://localhost") };
-        _fixture.Inject(httpClient);
-
-        var httpClientFactory = _fixture.Freeze<Fake<IHttpClientFactory>>();
-        A.CallTo(() => httpClientFactory.FakedObject.CreateClient("bpn")).Returns(httpClient);
-    }
 
     #region FetchLegalEntityByBpns
 
@@ -55,70 +36,142 @@ public class BPNAccessTest
         HttpRequestMessage? request = null;
 
         const string json = @"{
-            ""legalName"": ""CX-Test-Access"",
-            ""bpnl"": ""BPNL00000007OR16"",
+            ""bpnl"": ""BPNL000000000001"",
+            ""legalName"": ""Comapany Test Auto"",
+            ""legalShortName"": ""CTA"",
+            ""legalForm"": {
+                ""technicalKey"": ""CUSTOM_LEGAL_FORM_f254bb28-92f2-4b49-81a8-f364cde5a5cc"",
+                ""name"": ""Legal Form for Test Automation"",
+                ""abbreviation"": null
+            },
             ""identifiers"": [
                 {
-                    ""value"": ""HRB 12345"",
+                    ""value"": ""1c4815e7-c5b6-41a3-862a-a815ee2a836e"",
                     ""type"": {
-                        ""technicalKey"": ""EU_VAT_ID_DE"",
-                        ""name"": ""Value added tax identification number""
+                        ""technicalKey"": ""CUSTOM_LE_ID_e6e534ac-ff59-40ab-bd0d-da94f73f700e"",
+                        ""name"": ""Custom Identifier Type of LE for Test Automation""
                     },
-                    ""issuingBody"": null
+                    ""issuingBody"": ""ISSUE_BODY_TEST_AUTO""
                 }
             ],
-            ""legalShortName"": ""CX-Test-Access"",
-            ""legalForm"": null,
-            ""states"": [],
-            ""classifications"": [],
+            ""states"": [
+                {
+                    ""validFrom"": ""2023-07-16T05:54:48.942"",
+                    ""validTo"": ""2024-06-09T07:31:01.213"",
+                    ""type"": {
+                        ""technicalKey"": ""ACTIVE"",
+                        ""name"": ""Active""
+                    }
+                }
+            ],
             ""relations"": [],
-            ""currentness"": ""2023-07-26T15:27:12.739650Z"",
-            ""createdAt"": ""2023-07-26T15:27:13.756713Z"",
-            ""updatedAt"": ""2023-07-26T15:27:13.756719Z"",
+            ""currentness"": ""2023-09-20T05:31:17.009357Z"",
+            ""confidenceCriteria"": {
+                ""sharedByOwner"": false,
+                ""checkedByExternalDataSource"": false,
+                ""numberOfSharingMembers"": 1,
+                ""lastConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                ""nextConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                ""confidenceLevel"": 0
+            },
+            ""isCatenaXMemberData"": true,
+            ""createdAt"": ""2023-09-20T05:31:17.090516Z"",
+            ""updatedAt"": ""2023-09-20T05:31:17.090523Z"",
             ""legalAddress"": {
-                ""bpna"": ""BPNA000000000LKR"",
-                ""name"": null,
-                ""states"": [],
-                ""identifiers"": [],
+                ""bpna"": ""BPNA000000000001"",
+                ""name"": ""ADDRESS_TEST_AUTO"",
+                ""states"": [
+                    {
+                        ""validFrom"": ""2023-07-16T05:54:48.942"",
+                        ""validTo"": ""2024-06-05T07:31:01.213"",
+                        ""type"": {
+                            ""technicalKey"": ""ACTIVE"",
+                            ""name"": ""Active""
+                        }
+                    }
+                ],
+                ""identifiers"": [
+                    {
+                        ""value"": ""1c4815e7-c5b6-41a3-862a-a815ee2a836e"",
+                        ""type"": {
+                            ""technicalKey"": ""CUSTOM_ADD_ID_0501e165-a446-40f9-b49b-63158abec717"",
+                            ""name"": ""Custom Identifier Type of Test Automation""
+                        }
+                    }
+                ],
                 ""physicalPostalAddress"": {
-                    ""geographicCoordinates"": null,
+                    ""geographicCoordinates"": {
+                        ""longitude"": 0.0,
+                        ""latitude"": 0.0,
+                        ""altitude"": 0.0
+                    },
                     ""country"": {
                         ""technicalKey"": ""DE"",
                         ""name"": ""Germany""
                     },
-                    ""postalCode"": ""1"",
-                    ""city"": ""Dresden"",
+                    ""administrativeAreaLevel1"": null,
+                    ""administrativeAreaLevel2"": ""test1"",
+                    ""administrativeAreaLevel3"": ""test2"",
+                    ""postalCode"": ""1111"",
+                    ""city"": ""TestCity"",
+                    ""district"": ""Test district"",
                     ""street"": {
-                        ""name"": ""Onisamili Road 236"",
-                        ""houseNumber"": """",
-                        ""milestone"": null,
-                        ""direction"": null
+                        ""name"": ""Stuttgarter Strasse"",
+                        ""houseNumber"": ""1"",
+                        ""houseNumberSupplement"": null,
+                        ""milestone"": ""Test milestone 1"",
+                        ""direction"": ""Test direction 1"",
+                        ""namePrefix"": null,
+                        ""additionalNamePrefix"": null,
+                        ""nameSuffix"": null,
+                        ""additionalNameSuffix"": null
+                    },
+                    ""companyPostalCode"": ""1234"",
+                    ""industrialZone"": ""Test industrialZone 1"",
+                    ""building"": ""Test building 1"",
+                    ""floor"": ""F"",
+                    ""door"": ""test door 1""
+                },
+                ""alternativePostalAddress"": {
+                    ""geographicCoordinates"": {
+                        ""longitude"": 0.0,
+                        ""latitude"": 0.0,
+                        ""altitude"": 0.0
+                    },
+                    ""country"": {
+                        ""technicalKey"": ""DE"",
+                        ""name"": ""Germany""
                     },
                     ""administrativeAreaLevel1"": null,
-                    ""administrativeAreaLevel2"": null,
-                    ""administrativeAreaLevel3"": null,
-                    ""district"": null,
-                    ""companyPostalCode"": null,
-                    ""industrialZone"": null,
-                    ""building"": null,
-                    ""floor"": null,
-                    ""door"": null
+                    ""postalCode"": ""2222"",
+                    ""city"": ""Test city 2"",
+                    ""deliveryServiceType"": ""PO_BOX"",
+                    ""deliveryServiceQualifier"": ""test deliveryServiceQualifier"",
+                    ""deliveryServiceNumber"": ""2222""
                 },
-                ""alternativePostalAddress"": null,
-                ""bpnLegalEntity"": ""BPNL00000007OR16"",
-                ""isLegalAddress"": true,
+                ""bpnLegalEntity"": ""BPNL000000000001"",
                 ""bpnSite"": null,
-                ""isMainAddress"": false,
-                ""createdAt"": ""2023-07-26T15:27:13.756112Z"",
-                ""updatedAt"": ""2023-07-26T15:27:14.267585Z""
+                ""isCatenaXMemberData"": true,
+                ""createdAt"": ""2023-09-20T05:31:17.084880Z"",
+                ""updatedAt"": ""2023-09-20T05:31:17.096188Z"",
+                ""confidenceCriteria"": {
+                    ""sharedByOwner"": false,
+                    ""checkedByExternalDataSource"": false,
+                    ""numberOfSharingMembers"": 1,
+                    ""lastConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                    ""nextConfidenceCheckAt"": ""2023-12-29T07:56:51.44798"",
+                    ""confidenceLevel"": 0
+                },
+                ""addressType"": ""LegalAddress""
             }
         }";
 
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        }, requestMessage => request = requestMessage);
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage, requestMessage => request = requestMessage);
 
         var businessPartnerNumber = _fixture.Create<string>();
         var sut = _fixture.Create<BpnAccess>();
@@ -130,12 +183,12 @@ public class BPNAccessTest
         request.Should().NotBeNull();
         request!.RequestUri.Should().NotBeNull();
         request.RequestUri.Should().NotBeNull();
-        request.RequestUri!.LocalPath.Should().Be($"/pool/api/catena/legal-entities/{businessPartnerNumber}");
+        request.RequestUri!.LocalPath.Should().Be($"/legal-entities/{businessPartnerNumber}");
         request.RequestUri.Query.Should().Be("?idType=BPN");
 
         result.Should().NotBeNull();
         result.LegalEntityAddress.Should().NotBeNull();
-        result.LegalEntityAddress!.Bpna.Should().Be("BPNA000000000LKR");
+        result.LegalEntityAddress!.Bpna.Should().Be("BPNA000000000001");
     }
 
     [Fact]
@@ -143,18 +196,19 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -166,18 +220,19 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -188,17 +243,18 @@ public class BPNAccessTest
     public async Task FetchLegalEntityByBpn_NoContentResponse_Throws()
     {
         //Arrange
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
-        });
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -210,18 +266,19 @@ public class BPNAccessTest
     {
         //Arrange
         const string json = "{\"some\": [{\"other\": \"json\"}]}";
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(json)
-        });
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Should().NotBeNull();
@@ -233,18 +290,19 @@ public class BPNAccessTest
     {
         //Arrange
         var json = _fixture.Create<string>();
-        ConfigureHttpClientFactoryFixture(new HttpResponseMessage
+        using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
             Content = new StringContent(json)
-        });
+        };
+        _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
         var sut = _fixture.Create<BpnAccess>();
 
         var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
 
         //Act
-        var result = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var result = await Assert.ThrowsAsync<ServiceException>(Act);
 
         //Assert
         result.Message.Should().Be($"call to external system bpn-fetch-legal-entity failed with statuscode {(int)HttpStatusCode.BadRequest}");

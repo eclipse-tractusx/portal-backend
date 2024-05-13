@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,8 +23,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models
     {
         public UserBpn(string userId, string bpn)
         {
-            this.UserId = userId;
-            this.BusinessPartnerNumber = bpn;
+            UserId = userId;
+            BusinessPartnerNumber = bpn;
         }
         public string UserId { get; set; }
         public string BusinessPartnerNumber { get; set; }

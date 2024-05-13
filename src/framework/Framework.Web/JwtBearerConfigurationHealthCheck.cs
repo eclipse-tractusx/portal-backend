@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -55,7 +54,7 @@ public class JwtBearerConfigurationHealthCheck : IHealthCheck
     {
         try
         {
-            await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);
+            await _configurationManager.GetConfigurationAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             return HealthCheckResult.Healthy();
         }
         catch (Exception e)

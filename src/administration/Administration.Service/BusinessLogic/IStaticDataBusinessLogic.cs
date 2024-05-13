@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -56,4 +57,11 @@ public interface IStaticDataBusinessLogic
     /// </summary>
     /// <returns>A list of company certificates</returns>
     IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes();
+
+    /// <summary>
+    /// Gets the did document for the bpn
+    /// </summary>
+    /// <param name="bpn">The business partner number of the company to get the did document for</param>
+    /// <returns>The did document</returns>
+    Task<JsonDocument> GetDidDocument(string bpn);
 }

@@ -31,6 +31,9 @@ public class CompanyDataSettings
         UseCaseParticipationMediaTypes = null!;
         SsiCertificateMediaTypes = null!;
         CompanyCertificateMediaTypes = null!;
+        DecentralIdentityManagementAuthUrl = null!;
+        IssuerDid = null!;
+        BpnDidResolverUrl = null!;
     }
 
     /// <summary>
@@ -61,6 +64,15 @@ public class CompanyDataSettings
     /// The maximum page size
     /// </summary>
     public int MaxPageSize { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; }
 }
 
 public static class CompanyDataSettingsExtensions
@@ -72,6 +84,7 @@ public static class CompanyDataSettingsExtensions
     {
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
             .ValidateEnumEnumeration(section)
             .ValidateOnStart();

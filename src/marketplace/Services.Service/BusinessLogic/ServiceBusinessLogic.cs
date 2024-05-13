@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -91,7 +90,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang)
     {
-        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityData.CompanyId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"Service {serviceId} does not exist");
@@ -116,7 +115,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     public async Task<SubscriptionDetailData> GetSubscriptionDetailAsync(Guid subscriptionId)
     {
         var subscriptionDetailData = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(false);
+            .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (subscriptionDetailData is null)
         {
             throw new NotFoundException($"Subscription {subscriptionId} does not exist");
@@ -138,7 +137,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerSetupService.AutoSetupOfferAsync(data, _settings.ITAdminRoles, OfferTypeId.SERVICE, _settings.UserManagementAddress, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName)
+    public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName = null)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -147,7 +146,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(false);
+                .GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, OfferTypeId.SERVICE, sorting, OfferSubscriptionService.GetOfferSubscriptionFilterStatusIds(statusId), offerId, companyName)(skip, take).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return offerCompanySubscriptionResponse == null
                 ? null
@@ -160,7 +159,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                             item.CompanySubscriptionStatuses.Select(x => x.GetCompanySubscriptionStatus(item.OfferId, _logger)),
                             item.Image == Guid.Empty ? null : item.Image)));
         }
-        return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(false);
+        return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -173,7 +172,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         async Task<Pagination.Source<AllOfferStatusData>?> GetCompanyProvidedServiceStatusData(int skip, int take)
         {
             var companyProvidedServiceStatusData = await _portalRepositories.GetInstance<IOfferRepository>()
-                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, _identityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName)(skip, take).ConfigureAwait(false);
+                .GetCompanyProvidedServiceStatusDataAsync(GetOfferStatusIds(statusId), OfferTypeId.SERVICE, _identityData.CompanyId, sorting ?? OfferSorting.DateDesc, offerName)(skip, take).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return companyProvidedServiceStatusData == null
                 ? null
@@ -185,7 +184,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                             LeadPictureId = item.LeadPictureId == Guid.Empty ? null : item.LeadPictureId
                         }));
         }
-        return await Pagination.CreateResponseAsync(page, size, 15, GetCompanyProvidedServiceStatusData).ConfigureAwait(false);
+        return await Pagination.CreateResponseAsync(page, size, 15, GetCompanyProvidedServiceStatusData).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static IEnumerable<OfferStatusId> GetOfferStatusIds(ServiceStatusIdFilter? serviceStatusIdFilter)

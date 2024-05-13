@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,7 +51,7 @@ public class OnboardingServiceProviderServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var ospDetails = new OspTriggerDetails("https://trigger.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
@@ -60,7 +59,7 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -71,7 +70,7 @@ public class OnboardingServiceProviderServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var ospDetails = new OspTriggerDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
@@ -79,10 +78,10 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -91,7 +90,7 @@ public class OnboardingServiceProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var ospDetails = new OspTriggerDetails("https://callback.com", "https://auth.com", "test1", "ZKU7jbfe9ZUNBVYxdXgrjqtihXfR2aRr");
@@ -99,10 +98,10 @@ public class OnboardingServiceProviderServiceTests
         var service = new OnboardingServiceProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerProviderCallback(ospDetails, data, CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion

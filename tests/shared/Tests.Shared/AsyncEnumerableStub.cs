@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -34,9 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared
 
         IQueryProvider IQueryable.Provider => new AsyncQueryProviderStub<T>(this);
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        {
-            return new AsyncEnumeratorStub<T>(this.AsEnumerable().GetEnumerator());
-        }
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+            new AsyncEnumeratorStub<T>(this.AsEnumerable().GetEnumerator());
     }
 }

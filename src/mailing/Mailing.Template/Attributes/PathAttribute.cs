@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Attributes
         /// <param name="path">Path to be attached to this attribute.</param>
         public PathAttribute(string path)
         {
-            this.Path = path;
+            Path = path;
         }
     }
 }

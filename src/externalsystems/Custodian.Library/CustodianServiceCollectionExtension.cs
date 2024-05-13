@@ -37,7 +37,8 @@ public static class CustodianServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<CustodianSettings>>();
-        services.AddCustomHttpClientWithAuthentication<CustodianService>(settings.Value.BaseAddress);
+        var baseAddress = settings.Value.BaseAddress;
+        services.AddCustomHttpClientWithAuthentication<CustodianService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
         services
             .AddTransient<ICustodianService, CustodianService>()
             .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>();

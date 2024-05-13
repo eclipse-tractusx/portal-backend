@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -93,7 +94,9 @@ public class NetworkRepository : INetworkRepository
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.CallbackUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.AuthUrl,
                         x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientId,
-                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientSecret),
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.ClientSecret,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.InitializationVector,
+                        x.OnboardingServiceProvider.OnboardingServiceProviderDetail.EncryptionMode),
                 x.ExternalId,
                 x.OnboardingServiceProvider.BusinessPartnerNumber,
                 x.ApplicationId,

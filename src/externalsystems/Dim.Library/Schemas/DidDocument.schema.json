@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eclipse-tractusx.github.io/DidDocument.schema.json",
+  "type": "object",
+  "required": ["@context", "id", "service", "verificationMethod"],
+  "properties": {
+    "@context": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "const": [
+        "https://www.w3.org/ns/did/v1"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "service": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "serviceEndpoint": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "verificationMethod": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "publicKeyJwk"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "controller": {
+            "type": "string"
+          },
+          "publicKeyJwk": {
+            "type": "object",
+            "required": ["kty", "crv", "x", "y"],
+            "properties": {
+              "kty": {
+                "type": "string"
+              },
+              "crv": {
+                "type": "string"
+              },
+              "x": {
+                "type": "string"
+              },
+              "y": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "authentication": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assertionMethod": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keyAgreement": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

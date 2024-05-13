@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -32,7 +31,7 @@ public class KeycloakRealmModelTests
         var sut = new SeedDataHandler();
 
         // Act
-        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None).ConfigureAwait(false);
+        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None);
 
         var keycloakRealm = sut.KeycloakRealm;
         var clients = sut.Clients;
@@ -41,7 +40,6 @@ public class KeycloakRealmModelTests
         var identityProviders = sut.IdentityProviders;
         var identityProviderMappers = sut.IdentityProviderMappers;
         var users = sut.Users;
-        var authenticationFlows = sut.TopLevelCustomAuthenticationFlows;
         var clientScopes = sut.ClientScopes;
 
         // Assert
@@ -53,7 +51,8 @@ public class KeycloakRealmModelTests
                 x.DisplayNameHtml == "TestRealm HTML Display Name" &&
                 x.NotBefore == 0 &&
                 x.DefaultSignatureAlgorithm == "RS256" &&
-                x.RevokeRefreshToken == false &&
+                x.RevokeRefreshToken.HasValue &&
+                !x.RevokeRefreshToken.Value &&
                 x.RefreshTokenMaxReuse == 0 &&
                 x.AccessTokenLifespan == 300 &&
                 x.AccessTokenLifespanForImplicitFlow == 900 &&
@@ -62,7 +61,8 @@ public class KeycloakRealmModelTests
                 x.SsoSessionIdleTimeoutRememberMe == 0 &&
                 x.SsoSessionMaxLifespanRememberMe == 0 &&
                 x.OfflineSessionIdleTimeout == 2592000 &&
-                x.OfflineSessionMaxLifespanEnabled == false &&
+                x.OfflineSessionMaxLifespanEnabled.HasValue &&
+                !x.OfflineSessionMaxLifespanEnabled.Value &&
                 x.OfflineSessionMaxLifespan == 5184000 &&
                 x.ClientSessionIdleTimeout == 0 &&
                 x.ClientSessionMaxLifespan == 0 &&
@@ -75,18 +75,29 @@ public class KeycloakRealmModelTests
                 x.ActionTokenGeneratedByUserLifespan == 300 &&
                 x.Oauth2DeviceCodeLifespan == 600 &&
                 x.Oauth2DevicePollingInterval == 5 &&
-                x.Enabled == true &&
+                x.Enabled.HasValue &&
+                x.Enabled.Value &&
                 x.SslRequired == "external" &&
-                x.RegistrationAllowed == false &&
-                x.RegistrationEmailAsUsername == false &&
-                x.RememberMe == false &&
-                x.VerifyEmail == false &&
-                x.LoginWithEmailAllowed == true &&
-                x.DuplicateEmailsAllowed == false &&
-                x.ResetPasswordAllowed == false &&
-                x.EditUsernameAllowed == false &&
-                x.BruteForceProtected == false &&
-                x.PermanentLockout == false &&
+                x.RegistrationAllowed.HasValue &&
+                !x.RegistrationAllowed.Value &&
+                x.RegistrationEmailAsUsername.HasValue &&
+                !x.RegistrationEmailAsUsername.Value &&
+                x.RememberMe.HasValue &&
+                !x.RememberMe.Value &&
+                x.VerifyEmail.HasValue &&
+                !x.VerifyEmail.Value &&
+                x.LoginWithEmailAllowed.HasValue &&
+                x.LoginWithEmailAllowed.Value &&
+                x.DuplicateEmailsAllowed.HasValue &&
+                !x.DuplicateEmailsAllowed.Value &&
+                x.ResetPasswordAllowed.HasValue &&
+                !x.ResetPasswordAllowed.Value &&
+                x.EditUsernameAllowed.HasValue &&
+                !x.EditUsernameAllowed.Value &&
+                x.BruteForceProtected.HasValue &&
+                !x.BruteForceProtected.Value &&
+                x.PermanentLockout.HasValue &&
+                !x.PermanentLockout.Value &&
                 x.MaxFailureWaitSeconds == 900 &&
                 x.MinimumQuickLoginWaitSeconds == 60 &&
                 x.WaitIncrementSeconds == 60 &&
@@ -95,17 +106,19 @@ public class KeycloakRealmModelTests
                 x.FailureFactor == 30 &&
                 x.Roles != null &&
                 x.Roles.Client != null &&
-                x.Roles.Client == clientRoles &&
+                x.Roles.Client.SequenceEqual(clientRoles) &&
                 x.Roles.Realm != null &&
-                x.Roles.Realm == realmRoles &&
+                x.Roles.Realm.SequenceEqual(realmRoles) &&
                 x.Groups != null &&
                 // roles and groups are being asserted separately
                 x.DefaultRole != null &&
                 x.DefaultRole.Id == "fd20bacb-f39f-499c-8fc3-c3d14e0770d9" &&
                 x.DefaultRole.Name == "default-roles-testrealm" &&
                 x.DefaultRole.Description == "${role_default-roles}" &&
-                x.DefaultRole.Composite == true &&
-                x.DefaultRole.ClientRole == false &&
+                x.DefaultRole.Composite.HasValue &&
+                x.DefaultRole.Composite.Value &&
+                x.DefaultRole.ClientRole.HasValue &&
+                !x.DefaultRole.ClientRole.Value &&
                 x.DefaultRole.ContainerId == "TestRealm" &&
                 x.RequiredCredentials != null &&
                 x.RequiredCredentials.SequenceEqual(new[] { "password" }) &&
@@ -127,7 +140,8 @@ public class KeycloakRealmModelTests
                 x.WebAuthnPolicyRequireResidentKey == "not specified" &&
                 x.WebAuthnPolicyUserVerificationRequirement == "not specified" &&
                 x.WebAuthnPolicyCreateTimeout == 0 &&
-                x.WebAuthnPolicyAvoidSameAuthenticatorRegister == false &&
+                x.WebAuthnPolicyAvoidSameAuthenticatorRegister.HasValue &&
+                !x.WebAuthnPolicyAvoidSameAuthenticatorRegister.Value &&
                 x.WebAuthnPolicyAcceptableAaguids != null &&
                 x.WebAuthnPolicyAcceptableAaguids.SequenceEqual(Enumerable.Empty<string>()) &&
                 x.WebAuthnPolicyPasswordlessRpEntityName == "keycloak" &&
@@ -139,16 +153,17 @@ public class KeycloakRealmModelTests
                 x.WebAuthnPolicyPasswordlessRequireResidentKey == "not specified" &&
                 x.WebAuthnPolicyPasswordlessUserVerificationRequirement == "not specified" &&
                 x.WebAuthnPolicyPasswordlessCreateTimeout == 0 &&
-                x.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister == false &&
+                x.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister.HasValue &&
+                !x.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister.Value &&
                 x.WebAuthnPolicyPasswordlessAcceptableAaguids != null &&
                 x.WebAuthnPolicyPasswordlessAcceptableAaguids.SequenceEqual(Enumerable.Empty<string>()) &&
                 x.Users != null &&
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
                 x.Clients != null &&
-                x.Clients == clients &&
+                x.Clients.SequenceEqual(clients) &&
                 x.ClientScopes != null &&
-                x.ClientScopes == clientScopes &&
+                x.ClientScopes.SequenceEqual(clientScopes) &&
                 // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
                 x.DefaultDefaultClientScopes != null &&
                 x.DefaultDefaultClientScopes.SequenceEqual(new[] { "role_list", "profile", "email", "roles", "web-origins" }) &&
@@ -179,19 +194,23 @@ public class KeycloakRealmModelTests
                 x.AccountTheme == "base" &&
                 x.AdminTheme == "base" &&
                 x.EmailTheme == "base" &&
-                x.EventsEnabled == false &&
+                x.EventsEnabled.HasValue &&
+                !x.EventsEnabled.Value &&
                 x.EventsListeners != null &&
                 x.EventsListeners.SequenceEqual(new[] { "jboss-logging" }) &&
                 x.EnabledEventTypes != null &&
                 x.EnabledEventTypes.SequenceEqual(Enumerable.Empty<string>()) &&
-                x.AdminEventsEnabled == false &&
-                x.AdminEventsDetailsEnabled == false &&
+                x.AdminEventsEnabled.HasValue &&
+                !x.AdminEventsEnabled.Value &&
+                x.AdminEventsDetailsEnabled.HasValue &&
+                !x.AdminEventsDetailsEnabled.Value &&
                 x.IdentityProviders != null &&
-                x.IdentityProviders == identityProviders &&
+                x.IdentityProviders.SequenceEqual(identityProviders) &&
                 x.IdentityProviderMappers != null &&
-                x.IdentityProviderMappers == identityProviderMappers &&
+                x.IdentityProviderMappers.SequenceEqual(identityProviderMappers) &&
                 // identityProviders, identityProviderMappers, components are being asserted separately
-                x.InternationalizationEnabled == true &&
+                x.InternationalizationEnabled.HasValue &&
+                x.InternationalizationEnabled.Value &&
                 x.SupportedLocales != null &&
                 x.SupportedLocales.SequenceEqual(new[] { "de", "no", "ru", "sv", "pt-BR", "lt", "en", "it", "fr", "hu", "zh-CN", "es", "cs", "ja", "sk", "pl", "da", "ca", "nl", "tr" }) &&
                 x.DefaultLocale == "en" &&
@@ -219,7 +238,8 @@ public class KeycloakRealmModelTests
                     { "frontendUrl", "http://frontend.url" }
                 }) &&
                 x.KeycloakVersion == "16.1.1" &&
-                x.UserManagedAccessAllowed == false
+                x.UserManagedAccessAllowed.HasValue &&
+                !x.UserManagedAccessAllowed.Value
             );
 
         keycloakRealm.Groups.Should().ContainSingle()
@@ -252,7 +272,8 @@ public class KeycloakRealmModelTests
                 x.Id == "fd20bacb-f39f-499c-8fc3-c3d14e0770d9" &&
                 x.Name == "default-roles-testrealm" &&
                 x.Description == "${role_default-roles}" &&
-                x.Composite == true &&
+                x.Composite.HasValue &&
+                x.Composite.Value &&
                 x.Composites != null &&
                 x.Composites.Realm != null &&
                 x.Composites.Realm.SequenceEqual(new[] { "offline_access", "uma_authorization" }) &&
@@ -264,7 +285,8 @@ public class KeycloakRealmModelTests
                     },
                     null
                 ) &&
-                x.ClientRole == false &&
+                x.ClientRole.HasValue &&
+                !x.ClientRole.Value &&
                 x.ContainerId == "TestRealm" &&
                 x.Attributes != null &&
                 !x.Attributes.Any(),
@@ -272,9 +294,11 @@ public class KeycloakRealmModelTests
                 x.Id == "e967f3b2-535a-4805-ac04-2b5004684b2f" &&
                 x.Name == "offline_access" &&
                 x.Description == "${role_offline-access}" &&
-                x.Composite == false &&
+                x.Composite.HasValue &&
+                !x.Composite.Value &&
                 x.Composites == null &&
-                x.ClientRole == false &&
+                x.ClientRole.HasValue &&
+                !x.ClientRole.Value &&
                 x.ContainerId == "TestRealm" &&
                 x.Attributes != null &&
                 !x.Attributes.Any(),
@@ -293,7 +317,8 @@ public class KeycloakRealmModelTests
                     x.Id == "889fd981-c56f-4b46-bc43-f62e1004185e" &&
                     x.Name == "Test Composite Role" &&
                     x.Description == "Test Composite Role Description" &&
-                    x.Composite == true &&
+                    x.Composite.HasValue &&
+                    x.Composite.Value &&
                     x.Composites != null &&
                     x.Composites.Client.NullOrContentEqual(
                         new Dictionary<string, IEnumerable<string>>
@@ -301,7 +326,8 @@ public class KeycloakRealmModelTests
                             { "TestClientId", new [] { "test_role_1" } }
                         },
                         null) &&
-                    x.ClientRole == true &&
+                    x.ClientRole.HasValue &&
+                    x.ClientRole.Value &&
                     x.ContainerId == "654052fa-59c4-484e-90f7-0c389c0e9d37" &&
                     x.Attributes.NullOrContentEqual(
                         new Dictionary<string, IEnumerable<string>>
@@ -314,9 +340,11 @@ public class KeycloakRealmModelTests
                     x.Id == "a178ae7c-be38-44b6-8b9b-c90ccf9c7d51" &&
                     x.Name == "test_role_1" &&
                     x.Description == "Test Role 1 Description" &&
-                    x.Composite == false &&
+                    x.Composite.HasValue &&
+                    !x.Composite.Value &&
                     x.Composites == null &&
-                    x.ClientRole == true &&
+                    x.ClientRole.HasValue &&
+                    x.ClientRole.Value &&
                     x.ContainerId == "654052fa-59c4-484e-90f7-0c389c0e9d37" &&
                     x.Attributes.NullOrContentEqual(
                         new Dictionary<string, IEnumerable<string>>
@@ -331,9 +359,12 @@ public class KeycloakRealmModelTests
                 x.Id == "345577d1-6232-4fac-ad44-6ef8e3924993" &&
                 x.CreatedTimestamp == 1690020450507 &&
                 x.Username == "service-account-testserviceaccount1" &&
-                x.Enabled == true &&
-                x.Totp == false &&
-                x.EmailVerified == false &&
+                x.Enabled.HasValue &&
+                x.Enabled.Value &&
+                x.Totp.HasValue &&
+                !x.Totp.Value &&
+                x.EmailVerified.HasValue &&
+                !x.EmailVerified.Value &&
                 x.ServiceAccountClientId == "TestServiceAccount1" &&
                 x.DisableableCredentialTypes != null &&
                 !x.DisableableCredentialTypes.Any() &&
@@ -348,9 +379,12 @@ public class KeycloakRealmModelTests
                 x.Id == "502dabcf-01c7-47d9-a88e-0be4279097b5" &&
                 x.CreatedTimestamp == 1652788086549 &&
                 x.Username == "testuser1" &&
-                x.Enabled == true &&
-                x.Totp == false &&
-                x.EmailVerified == false &&
+                x.Enabled.HasValue &&
+                x.Enabled.Value &&
+                x.Totp.HasValue &&
+                !x.Totp.Value &&
+                x.EmailVerified.HasValue &&
+                !x.EmailVerified.Value &&
                 x.FirstName == "Test" &&
                 x.LastName == "User" &&
                 x.Email == "test.user@mail.org" &&
@@ -373,8 +407,10 @@ public class KeycloakRealmModelTests
                 x.Alias == "CONFIGURE_TOTP" &&
                 x.Name == "Configure OTP" &&
                 x.ProviderId == "CONFIGURE_TOTP" &&
-                x.Enabled == true &&
-                x.DefaultAction == false &&
+                x.Enabled.HasValue &&
+                x.Enabled.Value &&
+                x.DefaultAction.HasValue &&
+                !x.DefaultAction.Value &&
                 x.Priority == 10 &&
                 x.Config != null,
             x =>

@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
@@ -46,42 +45,42 @@ public partial class ProvisioningManager
 
     public async Task<string> UpdateCentralClientAsync(string clientId, ClientConfigData config)
     {
-        var client = await GetCentralClientAsync(clientId).ConfigureAwait(false);
+        var client = await GetCentralClientAsync(clientId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (client.Id == null)
             throw new KeycloakEntityConflictException($"id of client {clientId} is null");
         client.Name = config.Name;
         client.ClientAuthenticatorType = IamClientAuthMethodToInternal(config.IamClientAuthMethod);
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, client.Id, client).ConfigureAwait(false);
+        await _centralIdp.UpdateClientAsync(_settings.CentralRealm, client.Id, client).ConfigureAwait(ConfigureAwaitOptions.None);
         return client.Id;
     }
 
     public async Task DeleteCentralClientAsync(string clientId)
     {
-        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false) ?? throw new KeycloakEntityNotFoundException($"client {clientId} not found in keycloak");
-        await _CentralIdp.DeleteClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakEntityNotFoundException($"client {clientId} not found in keycloak");
+        await _centralIdp.DeleteClientAsync(_settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task UpdateClient(string clientId, string url, string redirectUrl)
     {
-        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
+        var client = await _centralIdp.GetClientAsync(_settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None);
         client.BaseUrl = url;
         client.RedirectUris = Enumerable.Repeat(redirectUrl, 1);
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
+        await _centralIdp.UpdateClientAsync(_settings.CentralRealm, idOfClient, client).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task EnableClient(string clientId)
     {
-        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
-        var client = await _CentralIdp.GetClientAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var client = await _centralIdp.GetClientAsync(_settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None);
         client.Enabled = true;
-        await _CentralIdp.UpdateClientAsync(_Settings.CentralRealm, idOfClient, client).ConfigureAwait(false);
+        await _centralIdp.UpdateClientAsync(_settings.CentralRealm, idOfClient, client).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task<ClientAuthData> GetCentralClientAuthDataAsync(string internalClientId)
     {
-        var credentials = await _CentralIdp.GetClientSecretAsync(_Settings.CentralRealm, internalClientId).ConfigureAwait(false);
+        var credentials = await _centralIdp.GetClientSecretAsync(_settings.CentralRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
         {
@@ -91,8 +90,8 @@ public partial class ProvisioningManager
 
     public async Task<ClientAuthData> ResetCentralClientAuthDataAsync(string clientId)
     {
-        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(false);
-        var credentials = await _CentralIdp.GenerateClientSecretAsync(_Settings.CentralRealm, idOfClient).ConfigureAwait(false);
+        var idOfClient = await GetIdOfCentralClientAsync(clientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var credentials = await _centralIdp.GenerateClientSecretAsync(_settings.CentralRealm, idOfClient).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ClientAuthData(
             CredentialsTypeToIamClientAuthMethod(credentials.Type))
         {
@@ -101,25 +100,16 @@ public partial class ProvisioningManager
     }
 
     public async Task<string> GetIdOfCentralClientAsync(string clientId) =>
-        (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
+        (await _centralIdp.GetClientsAsync(_settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(ConfigureAwaitOptions.None))
             .SingleOrDefault()?.Id ?? throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
 
     private async Task<Client> GetCentralClientAsync(string clientId) =>
-        (await _CentralIdp.GetClientsAsync(_Settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(false))
+        (await _centralIdp.GetClientsAsync(_settings.CentralRealm, clientId: clientId, viewableOnly: true).ConfigureAwait(ConfigureAwaitOptions.None))
             .SingleOrDefault() ?? throw new KeycloakEntityNotFoundException($"clientId {clientId} not found in central keycloak");
-
-    private async Task CreateSharedRealmIdentityProviderClientAsync(KeycloakClient keycloak, string realm, IdentityProviderClientConfig config)
-    {
-        var newClient = Clone(_Settings.SharedRealmClient);
-        newClient.RedirectUris = Enumerable.Repeat(config.RedirectUri, 1);
-        newClient.Attributes ??= new Dictionary<string, string>();
-        newClient.Attributes["jwks.url"] = config.JwksUrl;
-        await keycloak.CreateClientAsync(realm, newClient).ConfigureAwait(false);
-    }
 
     private async Task<string> CreateCentralOIDCClientAsync(string clientId, string redirectUri, string? baseUrl, bool enabled)
     {
-        var newClient = Clone(_Settings.CentralOIDCClient);
+        var newClient = Clone(_settings.CentralOIDCClient);
         newClient.ClientId = clientId;
         newClient.RedirectUris = Enumerable.Repeat(redirectUri, 1);
         newClient.Enabled = enabled;
@@ -127,11 +117,11 @@ public partial class ProvisioningManager
         {
             newClient.BaseUrl = baseUrl;
         }
-        return await _CentralIdp.CreateClientAndRetrieveClientIdAsync(_Settings.CentralRealm, newClient).ConfigureAwait(false) ?? throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
+        return await _centralIdp.CreateClientAndRetrieveClientIdAsync(_settings.CentralRealm, newClient).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakNoSuccessException($"failed to create new client {clientId} in central realm");
     }
 
     private Task CreateCentralOIDCClientAudienceMapperAsync(string internalClientId, string clientAudienceId) =>
-        _CentralIdp.CreateClientProtocolMapperAsync(_Settings.CentralRealm, internalClientId, new ProtocolMapper
+        _centralIdp.CreateClientProtocolMapperAsync(_settings.CentralRealm, internalClientId, new ProtocolMapper
         {
             Name = $"{clientAudienceId}-mapper",
             Protocol = "openid-connect",
@@ -164,5 +154,5 @@ public partial class ProvisioningManager
     }
 
     private async Task<string> GetNextClientIdAsync() =>
-        _Settings.ClientPrefix + (await _ProvisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(false));
+        _settings.ClientPrefix + (await _provisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None));
 }

@@ -33,6 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Tests.BusinessLogic;
@@ -68,9 +69,7 @@ public class NetworkBusinessLogicTests
     public NetworkBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -114,10 +113,10 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns(new ValueTuple<bool, IEnumerable<ValueTuple<Guid, CompanyApplicationStatusId, string?>>, IEnumerable<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>, Guid?>());
+            .Returns<(bool, IEnumerable<(Guid, CompanyApplicationStatusId, string?)>, IEnumerable<(CompanyRoleId, IEnumerable<Guid>)>, Guid?)>(default);
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -130,10 +129,10 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Empty<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
+            .Returns((true, Enumerable.Empty<(Guid, CompanyApplicationStatusId, string?)>(), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -146,10 +145,10 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, _fixture.CreateMany<ValueTuple<Guid, CompanyApplicationStatusId, string?>>(2), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), null));
+            .Returns((true, _fixture.CreateMany<(Guid, CompanyApplicationStatusId, string?)>(2), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -163,10 +162,10 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var data = _fixture.Create<PartnerSubmitData>();
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), Enumerable.Empty<ValueTuple<CompanyRoleId, IEnumerable<Guid>>>(), Guid.NewGuid()));
+            .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.VERIFY, null), 1), Enumerable.Empty<(CompanyRoleId, IEnumerable<Guid>)>(), Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -183,15 +182,15 @@ public class NetworkBusinessLogicTests
         var data = new PartnerSubmitData(
             new[] { CompanyRoleId.APP_PROVIDER },
             new[] { new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE) });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        var companyRoleIds = new (CompanyRoleId, IEnumerable<Guid>)[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, notExistingAgreementId})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
+            .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -212,15 +211,15 @@ public class NetworkBusinessLogicTests
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
                 new AgreementConsentData(inactiveAgreementId, ConsentStatusId.INACTIVE),
             });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        var companyRoleIds = new (CompanyRoleId, IEnumerable<Guid>)[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, inactiveAgreementId})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
+            .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, null), 1), companyRoleIds, Guid.NewGuid()));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -241,15 +240,15 @@ public class NetworkBusinessLogicTests
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
                 new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
             });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        var companyRoleIds = new (CompanyRoleId, IEnumerable<Guid>)[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, null));
+            .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, null));
 
         // Act
-        async Task Act() => await _sut.Submit(data).ConfigureAwait(false);
+        async Task Act() => await _sut.Submit(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -275,12 +274,12 @@ public class NetworkBusinessLogicTests
                 new AgreementConsentData(agreementId, ConsentStatusId.ACTIVE),
                 new AgreementConsentData(agreementId1, ConsentStatusId.ACTIVE),
             });
-        var companyRoleIds = new ValueTuple<CompanyRoleId, IEnumerable<Guid>>[]
+        var companyRoleIds = new (CompanyRoleId, IEnumerable<Guid>)[]
         {
             (CompanyRoleId.APP_PROVIDER, new [] {agreementId, agreementId1})
         };
         A.CallTo(() => _networkRepository.GetSubmitData(_identity.CompanyId))
-            .Returns((true, Enumerable.Repeat<ValueTuple<Guid, CompanyApplicationStatusId, string?>>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, submitProcessId));
+            .Returns((true, Enumerable.Repeat<(Guid, CompanyApplicationStatusId, string?)>((applicationId, CompanyApplicationStatusId.CREATED, "https://callback.url"), 1), companyRoleIds, submitProcessId));
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(applicationId, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalFields) =>
             {
@@ -317,7 +316,7 @@ public class NetworkBusinessLogicTests
             .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
 
         // Act
-        await _sut.Submit(data).ConfigureAwait(false);
+        await _sut.Submit(data);
 
         // Assert
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
@@ -352,15 +351,15 @@ public class NetworkBusinessLogicTests
         var notExistingId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(notExistingId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
-            .Returns(new ValueTuple<bool, bool, bool, bool,
+            .Returns<(bool, bool, bool, bool,
                 (
                     (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
                     IEnumerable<(Guid, InvitationStatusId)>,
                     VerifyProcessData
-                )>());
+                )?)>(default);
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(notExistingId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(notExistingId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -374,20 +373,14 @@ public class NetworkBusinessLogicTests
         var applcationId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applcationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
-            .Returns(new ValueTuple<bool, bool, bool, bool,
-                (
-                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
-                IEnumerable<(Guid, InvitationStatusId)>,
-                VerifyProcessData
-                )>(
-                true,
-                true,
-                true,
-                false,
-                default));
+            .Returns((true, true, true, false,
+                default(
+                    ((CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                     IEnumerable<(Guid, InvitationStatusId)>,
+                     VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applcationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applcationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -401,21 +394,14 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
-            .Returns(new ValueTuple<bool, bool, bool, bool,
-                (
-                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
-                IEnumerable<(Guid, InvitationStatusId)>,
-                VerifyProcessData
-                )>(
-                true,
-                false,
-                true,
-                true,
-                default
-            ));
+            .Returns((true, false, true, true,
+                default(
+                    ((CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                     IEnumerable<(Guid, InvitationStatusId)>,
+                     VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applicationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -429,20 +415,14 @@ public class NetworkBusinessLogicTests
         var applicationId = Guid.NewGuid();
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
-            .Returns(new ValueTuple<bool, bool, bool, bool,
-                (
-                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
-                IEnumerable<(Guid, InvitationStatusId)>,
-                VerifyProcessData
-                )>(
-                true,
-                true,
-                false,
-                true,
-                default));
+            .Returns((true, true, false, true,
+                default(
+                    ((CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
+                      IEnumerable<(Guid, InvitationStatusId)>,
+                      VerifyProcessData))));
 
         // Act
-        async Task Act() => await _sut.DeclineOsp(applicationId, data).ConfigureAwait(false);
+        async Task Act() => await _sut.DeclineOsp(applicationId, data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -459,7 +439,7 @@ public class NetworkBusinessLogicTests
         var identityId = Guid.NewGuid();
         var currentVersion = Guid.NewGuid();
         var process = _fixture.Build<Process>()
-            .With(x => x.LockExpiryDate, (DateTimeOffset?)null)
+            .With(x => x.LockExpiryDate, default(DateTimeOffset?))
             .With(x => x.Version, currentVersion).Create();
         var currentProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
         var removeUsersProcessStep = new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
@@ -467,18 +447,10 @@ public class NetworkBusinessLogicTests
         var existingProcessSteps = new[] { currentProcessStep, removeUsersProcessStep, otherProcessStep };
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))
-            .Returns(new ValueTuple<bool, bool, bool, bool,
+            .Returns((true, true, true, true,
                 (
-                (CompanyStatusId, IEnumerable<(Guid, UserStatusId)>),
-                IEnumerable<(Guid, InvitationStatusId)>,
-                VerifyProcessData
-                )>(true,
-                true,
-                true,
-                true,
-                new ValueTuple<ValueTuple<CompanyStatusId, IEnumerable<(Guid, UserStatusId)>>, IEnumerable<(Guid, InvitationStatusId)>, VerifyProcessData>(
-                    new(company.CompanyStatusId, Enumerable.Repeat(new ValueTuple<Guid, UserStatusId>(identityId, UserStatusId.ACTIVE), 1)),
-                    Enumerable.Repeat(new ValueTuple<Guid, InvitationStatusId>(invitation.Id, invitation.InvitationStatusId), 1),
+                    (company.CompanyStatusId, Enumerable.Repeat((identityId, UserStatusId.ACTIVE), 1)),
+                    Enumerable.Repeat((invitation.Id, invitation.InvitationStatusId), 1),
                     new VerifyProcessData(process, existingProcessSteps)
                 )
             ));
@@ -493,7 +465,7 @@ public class NetworkBusinessLogicTests
                 initialize?.Invoke(company);
                 modify.Invoke(company);
             });
-        A.CallTo(() => _invitationRepository.AttachAndModifyInvitations(A<IEnumerable<ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>>>._))
+        A.CallTo(() => _invitationRepository.AttachAndModifyInvitations(A<IEnumerable<(Guid, Action<Invitation>?, Action<Invitation>)>>._))
             .Invokes((IEnumerable<(Guid InvitationId, Action<Invitation>? Initialize, Action<Invitation> Modify)> invitationData) =>
             {
                 var initial = invitationData.Select(x =>
@@ -504,7 +476,7 @@ public class NetworkBusinessLogicTests
                 ).ToList();
                 initial.ForEach(x => x.modify(x.Invitation));
             });
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)> processSteps) =>
             {
                 var initial = processSteps.Select(x =>
@@ -518,7 +490,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.DeclineOsp(application.Id, data).ConfigureAwait(false);
+        await _sut.DeclineOsp(application.Id, data);
 
         // Assert
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
@@ -559,19 +531,19 @@ public class NetworkBusinessLogicTests
             .Returns((false, ""));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))
-            .Returns((IdpId, (string?)"test-alias"));
+            .Returns((IdpId, "test-alias"));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoAliasIdpCompanyId))
-            .Returns((IdpId, (string?)null));
+            .Returns((IdpId, null));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoIdpCompanyId))
-            .Returns(((Guid, string?))default);
+            .Returns<(Guid, string?)>(default);
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(MultiIdpCompanyId))
             .Throws(new InvalidOperationException("Sequence contains more than one element."));
 
         A.CallTo(() => _identityProviderRepository.GetManagedIdentityProviderAliasDataUntracked(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId), A<IEnumerable<Guid>>._))
-            .Returns(new[] { (IdpId, (string?)"test-alias") }.ToAsyncEnumerable());
+            .Returns(new (Guid, string?)[] { (IdpId, "test-alias") }.ToAsyncEnumerable());
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { new UserRoleData(UserRoleId, "cl1", "Company Admin") }.ToAsyncEnumerable());

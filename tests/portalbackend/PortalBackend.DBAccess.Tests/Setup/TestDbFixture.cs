@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -62,13 +61,13 @@ public class TestDbFixture : IAsyncLifetime
                 .MigrationsHistoryTable("__efmigrations_history_portal")
         );
         var context = new PortalDbContext(optionsBuilder.Options, new AuditHandlerV1(new FakeIdentityService(), dateTimeProvider ?? new UtcDateTimeProvider()));
-        await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+        await context.Database.EnsureCreatedAsync();
         foreach (var seedAction in seedActions)
         {
             seedAction.Invoke(context);
         }
 
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
         return context;
     }
 
@@ -78,7 +77,7 @@ public class TestDbFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _container.StartAsync()
-            .ConfigureAwait(false);
+            ;
 
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -109,6 +108,6 @@ public class TestDbFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _container.DisposeAsync()
-            .ConfigureAwait(false);
+            ;
     }
 }

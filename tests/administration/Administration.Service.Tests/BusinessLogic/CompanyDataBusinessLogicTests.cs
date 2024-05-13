@@ -24,7 +24,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,7 +34,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -42,6 +46,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
+    private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -52,19 +57,17 @@ public class CompanyDataBusinessLogicTests
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanySsiDetailsRepository _companySsiDetailsRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ICustodianService _custodianService;
     private readonly IDateTimeProvider _dateTimeProvider;
-
     private readonly CompanyDataBusinessLogic _sut;
     private readonly IIdentityService _identityService;
+    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
 
     public CompanyDataBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _consentRepository = A.Fake<IConsentRepository>();
@@ -76,8 +79,9 @@ public class CompanyDataBusinessLogicTests
         _notificationRepository = A.Fake<INotificationRepository>();
         _companySsiDetailsRepository = A.Fake<ICompanySsiDetailsRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
+        _issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
-        _mailingService = A.Fake<IMailingService>();
         _custodianService = A.Fake<ICustodianService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identityService = A.Fake<IIdentityService>();
@@ -97,8 +101,8 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF } });
-        _sut = new CompanyDataBusinessLogic(_portalRepositories, _mailingService, _custodianService, _dateTimeProvider, _identityService, options);
+        var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, UseCaseParticipationMediaTypes = new[] { MediaTypeId.PDF }, SsiCertificateMediaTypes = new[] { MediaTypeId.PDF }, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test", IssuerDid = "did:web:test", BpnDidResolverUrl = "https://example.org/bdrs" });
+        _sut = new CompanyDataBusinessLogic(_portalRepositories, _custodianService, _dateTimeProvider, _identityService, _mailingProcessCreation, _issuerComponentBusinessLogic, options);
     }
 
     #region GetOwnCompanyDetails
@@ -109,7 +113,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyAddressDetailData = _fixture.Create<CompanyAddressDetailData>();
         A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
-            .ReturnsLazily(() => companyAddressDetailData);
+            .Returns(companyAddressDetailData);
 
         // Act
         var result = await _sut.GetCompanyDetailsAsync();
@@ -124,7 +128,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _companyRepository.GetCompanyDetailsAsync(_identity.CompanyId))
-            .ReturnsLazily(() => (CompanyAddressDetailData?)null);
+            .Returns<CompanyAddressDetailData?>(null);
 
         // Act
         async Task Act() => await _sut.GetCompanyDetailsAsync();
@@ -151,9 +155,9 @@ public class CompanyDataBusinessLogicTests
                 _fixture.Create<string>(),
                 true,
                 new ConsentAgreementData [] {
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), 0, _fixture.Create<string>()),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.ACTIVE, _fixture.Create<string>()),
-                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.INACTIVE, _fixture.Create<string>()),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), 0, _fixture.Create<string>(), true),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.ACTIVE, _fixture.Create<string>(), true),
+                    new (Guid.NewGuid(), _fixture.Create<string>(), Guid.NewGuid(), ConsentStatusId.INACTIVE, _fixture.Create<string>(), false),
                 }),
             _fixture.Create<CompanyRoleConsentData>(),
         };
@@ -169,7 +173,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(companyRoleConsentData.ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
         result.Should().NotBeNull()
@@ -181,7 +185,7 @@ public class CompanyDataBusinessLogicTests
                 z.Result.CompanyRoleId == z.Mock.CompanyRoleId &&
                 z.Result.RoleDescription == z.Mock.RoleDescription &&
                 z.Result.CompanyRolesActive == z.Mock.CompanyRolesActive &&
-                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.DocumentId, a.ConsentStatus == 0 ? null : a.ConsentStatus, a.AgreementLink)))));
+                z.Result.Agreements.SequenceEqual(z.Mock.Agreements.Select(a => new ConsentAgreementViewData(a.AgreementId, a.AgreementName, a.DocumentId, a.ConsentStatus == 0 ? null : a.ConsentStatus, a.AgreementLink, a.Mandatory)))));
 
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _languageRepository.IsValidLanguageCode(languageShortName)).MustHaveHappenedOnceExactly();
@@ -203,7 +207,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(true);
 
         // Act
-        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -226,7 +230,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(true);
 
         // Act
-        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -245,7 +249,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(false);
 
         // Act
-        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -255,7 +259,7 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
-    #region  CreateCompanyRoleAndConsentAgreementDetails
+    #region CreateCompanyRoleAndConsentAgreementDetails
 
     [Fact]
     public async Task CreateCompanyRoleAndConsentAgreementDetailsAsync_ReturnsExpected()
@@ -326,7 +330,7 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(companyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
@@ -374,7 +378,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, false, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -391,8 +395,6 @@ public class CompanyDataBusinessLogicTests
         var agreementId3 = _fixture.Create<Guid>();
         var agreementId4 = _fixture.Create<Guid>();
         var agreementId5 = _fixture.Create<Guid>();
-
-        var utcNow = DateTimeOffset.UtcNow;
 
         var consentStatusDetails = new ConsentStatusDetails[] {
             new (_fixture.Create<Guid>(), agreementId1, ConsentStatusId.INACTIVE),
@@ -427,7 +429,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(agreementData);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -444,8 +446,6 @@ public class CompanyDataBusinessLogicTests
         var agreementId3 = _fixture.Create<Guid>();
         var agreementId4 = _fixture.Create<Guid>();
         var agreementId5 = _fixture.Create<Guid>();
-
-        var utcNow = DateTimeOffset.UtcNow;
 
         var consentStatusDetails = new ConsentStatusDetails[] {
             new (_fixture.Create<Guid>(), agreementId1, ConsentStatusId.INACTIVE),
@@ -485,7 +485,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(agreementData);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -512,7 +512,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, true, Enumerable.Empty<CompanyRoleId>(), consentStatusDetails));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -526,10 +526,10 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var companyRoleConsentDetails = _fixture.CreateMany<CompanyRoleConsentDetails>(2);
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(A<Guid>._, A<IEnumerable<CompanyRoleId>>._))
-            .Returns(((bool, bool, IEnumerable<CompanyRoleId>?, IEnumerable<ConsentStatusDetails>?))default);
+            .Returns<(bool, bool, IEnumerable<CompanyRoleId>?, IEnumerable<ConsentStatusDetails>?)>(default);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -546,7 +546,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, true, null!, null!));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -563,7 +563,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, true, Enumerable.Empty<CompanyRoleId>(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -586,7 +586,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(companyAssignedUseCaseData);
 
         // Act
-        var result = await _sut.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCompanyAssigendUseCaseDetailsAsync().ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -606,7 +606,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((false, true, true));
 
         // Act
-        var result = await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        var result = await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
@@ -627,7 +627,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, true, true));
 
         // Act
-        var result = await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        var result = await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         result.Should().BeFalse();
@@ -649,7 +649,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((false, false, true));
 
         // Act
-        async Task Act() => await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -669,7 +669,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, true, true));
 
         // Act
-        await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
@@ -689,7 +689,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((true, false, true));
 
         // Act
-        async Task Act() => await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        async Task Act() => await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -709,7 +709,7 @@ public class CompanyDataBusinessLogicTests
             .Returns((false, true, true));
 
         // Act
-        async Task Act() => await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId).ConfigureAwait(false);
+        async Task Act() => await _sut.RemoveCompanyAssignedUseCaseDetailsAsync(useCaseId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -732,7 +732,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(_fixture.Build<UseCaseParticipationTransferData>().With(x => x.VerifiedCredentials, verifiedCredentials).CreateMany(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetUseCaseParticipationAsync("en").ConfigureAwait(false);
+        var result = await _sut.GetUseCaseParticipationAsync("en");
 
         // Assert
         result.Should().HaveCount(5);
@@ -752,7 +752,7 @@ public class CompanyDataBusinessLogicTests
         var Act = () => _sut.GetUseCaseParticipationAsync("en");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("There should only be one pending or active ssi detail be assigned");
     }
 
@@ -768,7 +768,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(_fixture.Build<SsiCertificateTransferData>().With(x => x.SsiDetailData, _fixture.CreateMany<CompanySsiDetailTransferData>(1)).CreateMany(5).ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetSsiCertificatesAsync().ConfigureAwait(false);
+        var result = await _sut.GetSsiCertificatesAsync();
 
         // Assert
         result.Should().HaveCount(5);
@@ -779,105 +779,18 @@ public class CompanyDataBusinessLogicTests
     #region CreateUseCaseParticipation
 
     [Fact]
-    public async Task CreateUseCaseParticipation_WithInvalidDocumentContentType_ThrowsUnsupportedMediaTypeException()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        ex.Message.Should().Be($"Document type not supported. File must match contentTypes :{MediaTypeId.PDF.MapToMediaType()}");
-    }
-
-    [Fact]
-    public async Task CreateUseCaseParticipation_WithNotExistingDetailId_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateUseCaseParticipation();
-        var verifiedCredentialExternalTypeDetailId = Guid.NewGuid();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(verifiedCredentialExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"VerifiedCredentialExternalTypeDetail {verifiedCredentialExternalTypeDetailId} does not exist");
-    }
-
-    [Fact]
-    public async Task CreateUseCaseParticipation_WithRequestAlreadyExisting_ThrowsControllerArgumentException()
-    {
-        // Arrange
-        SetupCreateUseCaseParticipation();
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
-            .Returns(true);
-
-        // Act
-        async Task Act() => await _sut.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Credential request already existing");
-    }
-
-    [Fact]
     public async Task CreateUseCaseParticipation_WithValidCall_CreatesExpected()
     {
         // Arrange
-        SetupCreateUseCaseParticipation();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
-        var documentId = Guid.NewGuid();
-        var documents = new List<Document>();
-        var ssiDetails = new List<CompanySsiDetail>();
-
-        A.CallTo(() => _companySsiDetailsRepository.CheckSsiDetailsExistsForCompany(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, VerifiedCredentialTypeKindId.USE_CASE, _traceabilityExternalTypeDetailId))
-            .Returns(false);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, A<Guid>._, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .Invokes((Guid companyId, VerifiedCredentialTypeId verifiedCredentialTypeId, Guid docId, CompanySsiDetailStatusId companySsiDetailStatusId, Guid userId, Action<CompanySsiDetail>? setOptionalFields) =>
-            {
-                var ssiDetail = new CompanySsiDetail(Guid.NewGuid(), companyId, verifiedCredentialTypeId, companySsiDetailStatusId, docId, userId, DateTimeOffset.UtcNow);
-                setOptionalFields?.Invoke(ssiDetail);
-                ssiDetails.Add(ssiDetail);
-            });
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
-            {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
-                setupOptionalFields?.Invoke(document);
-                documents.Add(document);
-            })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
-        await _sut.CreateUseCaseParticipation(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        documents.Should().ContainSingle();
-        var document = documents.Single();
-        document.DocumentTypeId.Should().Be(DocumentTypeId.PRESENTATION);
-        document.CompanyUserId.Should().Be(_identity.IdentityId);
-        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
-        A.CallTo(() => _companySsiDetailsRepository.CreateSsiDetails(_identity.CompanyId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, document.Id, CompanySsiDetailStatusId.PENDING, _identity.IdentityId, A<Action<CompanySsiDetail>>._))
-            .MustHaveHappenedOnceExactly();
-        ssiDetails.Should().ContainSingle();
-        var detail = ssiDetails.Single();
-        detail.CompanySsiDetailStatusId.Should().Be(CompanySsiDetailStatusId.PENDING);
-        detail.DocumentId.Should().Be(document.Id);
-        detail.VerifiedCredentialTypeId.Should().Be(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK);
-        detail.ExpiryDate.Should().Be(null);
-        detail.VerifiedCredentialExternalTypeUseCaseDetailId.Should().Be(_traceabilityExternalTypeDetailId);
     }
 
     #endregion
@@ -892,7 +805,7 @@ public class CompanyDataBusinessLogicTests
         var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
 
         // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
@@ -908,7 +821,7 @@ public class CompanyDataBusinessLogicTests
         var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -927,7 +840,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(true);
 
         // Act
-        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateSsiCertificate(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -964,7 +877,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
 
         // Act
-        await _sut.CreateSsiCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateSsiCertificate(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.PRESENTATION, A<Action<Document>>._))
@@ -997,7 +910,7 @@ public class CompanyDataBusinessLogicTests
         var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
@@ -1026,14 +939,14 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
             .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentTypeId);
                 setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             })
             .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
 
         // Act
-        await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        await _sut.CreateCompanyCertificate(data, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
@@ -1041,7 +954,7 @@ public class CompanyDataBusinessLogicTests
         documents.Should().ContainSingle();
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.COMPANY_CERTIFICATE);
-        document.DocumentStatusId.Should().Be(DocumentStatusId.PENDING);
+        document.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
         A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, A<Action<CompanyCertificate>>._))
             .MustHaveHappenedOnceExactly();
         companyCertificates.Should().ContainSingle();
@@ -1063,7 +976,7 @@ public class CompanyDataBusinessLogicTests
         .Returns(false);
 
         // Act
-        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -1077,10 +990,10 @@ public class CompanyDataBusinessLogicTests
     public async Task GetCompanyCertificateWithNullOrEmptyBpn_ReturnsExpected()
     {
         // Act
-        async Task Act() => await _sut.GetCompanyCertificatesByBpn(string.Empty).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(string.Empty).ToListAsync();
 
         // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith("businessPartnerNumber must not be empty");
     }
 
@@ -1095,10 +1008,10 @@ public class CompanyDataBusinessLogicTests
             .Returns(companyId);
 
         // Act
-        async Task Act() => await _sut.GetCompanyCertificatesByBpn(businessPartnerNumber).ToListAsync().ConfigureAwait(false);
+        async Task Act() => await _sut.GetCompanyCertificatesByBpn(businessPartnerNumber).ToListAsync();
 
         // Assert
-        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act).ConfigureAwait(false);
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().StartWith($"company does not exist for {businessPartnerNumber}");
     }
 
@@ -1120,7 +1033,7 @@ public class CompanyDataBusinessLogicTests
            .Returns(data);
 
         // Act
-        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync();
 
         // Assert
         result.Should().HaveCount(5);
@@ -1135,7 +1048,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(companyId);
 
         // Act
-        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCompanyCertificatesByBpn("BPNL07800HZ01643").ToListAsync();
 
         // Assert
         result.Should().BeEmpty();
@@ -1167,7 +1080,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(credentials.AsQueryable());
 
         // Act
-        var result = await _sut.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, CompanySsiDetailSorting.CompanyAsc).ConfigureAwait(false);
+        var result = await _sut.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, CompanySsiDetailSorting.CompanyAsc);
 
         // Assert
         result.Content.Should().HaveCount(credentials.Count());
@@ -1186,14 +1099,14 @@ public class CompanyDataBusinessLogicTests
         var notExistingId = Guid.NewGuid();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(notExistingId))
             .Returns(new ValueTuple<bool, SsiApprovalData>());
-        async Task Act() => await _sut.ApproveCredential(notExistingId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ApproveCredential(notExistingId, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1210,14 +1123,14 @@ public class CompanyDataBusinessLogicTests
             .Create();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyActiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1229,19 +1142,19 @@ public class CompanyDataBusinessLogicTests
         var alreadyActiveId = Guid.NewGuid();
         var approvalData = _fixture.Build<SsiApprovalData>()
             .With(x => x.Status, CompanySsiDetailStatusId.PENDING)
-            .With(x => x.Bpn, (string?)null)
+            .With(x => x.Bpn, default(string?))
             .With(x => x.CompanyName, "Test Company")
             .Create();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
         ex.Message.Should().Be($"Bpn should be set for company {approvalData.CompanyName}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1256,18 +1169,18 @@ public class CompanyDataBusinessLogicTests
             .With(x => x.Bpn, "test")
             .With(x => x.CompanyName, "Test Company")
             .With(x => x.Kind, VerifiedCredentialTypeKindId.USE_CASE)
-            .With(x => x.UseCaseDetailData, (UseCaseDetailData?)null)
+            .With(x => x.UseCaseDetailData, default(UseCaseDetailData?))
             .Create();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiApprovalData(alreadyActiveId))
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, approvalData));
-        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ApproveCredential(alreadyActiveId, CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be("The VerifiedCredentialExternalTypeUseCaseDetail must be set");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1328,10 +1241,10 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
+        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialApproval" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(recipientMail, "CredentialApproval", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1393,10 +1306,10 @@ public class CompanyDataBusinessLogicTests
             .Returns(new ValueTuple<bool, SsiApprovalData>(true, data));
 
         // Act
-        async Task Act() => await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
         ex.Message.Should().Be("VerifiedCredentialType 0 does not exists");
     }
 
@@ -1455,10 +1368,10 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None).ConfigureAwait(false);
+        await _sut.ApproveCredential(_validCredentialId, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         if (kindId == VerifiedCredentialTypeKindId.USE_CASE)
@@ -1496,14 +1409,14 @@ public class CompanyDataBusinessLogicTests
         var notExistingId = Guid.NewGuid();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(notExistingId))
             .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>());
-        async Task Act() => await _sut.RejectCredential(notExistingId).ConfigureAwait(false);
+        async Task Act() => await _sut.RejectCredential(notExistingId);
 
         // Act
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
         ex.Message.Should().Be($"CompanySsiDetail {notExistingId} does not exists");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1517,14 +1430,14 @@ public class CompanyDataBusinessLogicTests
         var alreadyInactiveId = Guid.NewGuid();
         A.CallTo(() => _companySsiDetailsRepository.GetSsiRejectionData(alreadyInactiveId))
             .Returns(new ValueTuple<bool, CompanySsiDetailStatusId, VerifiedCredentialTypeId, Guid, string?, string?, string?>(true, status, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, Guid.NewGuid(), null, null, null));
-        async Task Act() => await _sut.RejectCredential(alreadyInactiveId).ConfigureAwait(false);
+        async Task Act() => await _sut.RejectCredential(alreadyInactiveId);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
         ex.Message.Should().Be($"Credential {alreadyInactiveId} must be {CompanySsiDetailStatusId.PENDING}");
-        A.CallTo(() => _mailingService.SendMails(A<string>._, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -1557,10 +1470,10 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
+        await _sut.RejectCredential(_validCredentialId);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1577,7 +1490,6 @@ public class CompanyDataBusinessLogicTests
     public async Task RejectCredential_WithoutUserMail_ReturnsExpected()
     {
         // Arrange
-        const string recipientMail = "test@mail.com";
         var now = DateTimeOffset.UtcNow;
         var requesterId = Guid.NewGuid();
         var notifications = new List<Notification>();
@@ -1600,10 +1512,10 @@ public class CompanyDataBusinessLogicTests
             });
 
         // Act
-        await _sut.RejectCredential(_validCredentialId).ConfigureAwait(false);
+        await _sut.RejectCredential(_validCredentialId);
 
         // Assert
-        A.CallTo(() => _mailingService.SendMails(recipientMail, A<IDictionary<string, string>>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "CredentialRejected" })))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "CredentialRejected", A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
 
@@ -1628,7 +1540,7 @@ public class CompanyDataBusinessLogicTests
             .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
 
         // Act
-        var result = await _sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetCertificateTypes().ToListAsync();
 
         // Assert
         result.Should().HaveCount(1);
@@ -1658,7 +1570,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         const int expectedCount = 3;
-        SetupPagination(expectedCount);
+        SetupPagination();
         var sut = _fixture.Create<CompanyDataBusinessLogic>();
 
         // Act
@@ -1670,15 +1582,223 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
-    #region Setup
+    #region GetCompanyCertificateDocumentByCompanyId
 
-    private void SetupCreateUseCaseParticipation()
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyIdAsync_WithValidData_ReturnsExpected()
     {
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(_traceabilityExternalTypeDetailId, VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK))
-            .Returns(true);
-        A.CallTo(() => _companySsiDetailsRepository.CheckCredentialTypeIdExistsForExternalTypeDetailVersionId(A<Guid>.That.Not.Matches(x => x == _traceabilityExternalTypeDetailId), A<VerifiedCredentialTypeId>._))
-            .Returns(false);
+        // Arrange
+        SetupFakesForGetDocument();
+
+        // Act
+        var result = await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(_validDocumentId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
     }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentByCompanyIdAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentByCompanyIdAsync(documentId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+    }
+
+    #endregion
+
+    #region GetCompanyCertificateDocuments
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithValidData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetDocument();
+
+        // Act
+        var result = await _sut.GetCompanyCertificateDocumentAsync(_validDocumentId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.FileName.Should().Be("test.pdf");
+        result.MediaType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithNotExistingDocument_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+    }
+
+    [Fact]
+    public async Task GetCompanyCertificateDocumentAsync_WithDocumentStatusIsNotLocked_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751d");
+        SetupFakesForGetDocument();
+
+        // Act
+        async Task Act() => await _sut.GetCompanyCertificateDocumentAsync(documentId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"Document {documentId} status is not locked");
+    }
+
+    #endregion
+
+    #region DeleteCompanyCertificates
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithDocumentNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        //var sut = _fixture.Create<CompanyDataBusinessLogic>();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid.NewGuid(), _identity.CompanyId))
+            .Returns((Guid.NewGuid(), DocumentStatusId.LOCKED, new[] { Guid.NewGuid() }.AsEnumerable(), false));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(Guid.NewGuid());
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+        ex.Message.Should().Be($"Document is not existing");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithDifferentCompanyIdNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        var documentId = Guid.NewGuid();
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+            .Returns((documentId, DocumentStatusId.LOCKED, new[] { Guid.NewGuid() }.AsEnumerable(), false));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(documentId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
+        ex.Message.Should().Be($"User is not allowed to delete this document");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithHavingMoreThanOneComapnyCertificate_ConflictException()
+    {
+        // Arrange
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751f");
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+            .Returns((documentId, DocumentStatusId.LOCKED, new[] { new Guid("9f5b9934-4014-4099-91e9-7b1aee696c10"), Guid.NewGuid() }.AsEnumerable(), true));
+
+        // Act
+        async Task Act() => await _sut.DeleteCompanyCertificateAsync(documentId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"There must not be multiple active certificates for document {documentId}");
+    }
+
+    [Fact]
+    public async Task DeleteCompanyCertificateAsync_WithExpectedResult()
+    {
+        //Arrange        
+        var documentId = new Guid("aaf53459-c36b-408e-a805-0b406ce9751f");
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(documentId, _identity.CompanyId))
+           .Returns((documentId, DocumentStatusId.LOCKED, new[] { new Guid("9f5b9934-4014-4099-91e9-7b1aee696c10") }.AsEnumerable(), true));
+
+        //Act
+        await _sut.DeleteCompanyCertificateAsync(documentId);
+
+        //Assert
+        A.CallTo(() => _companyCertificateRepository.AttachAndModifyCompanyCertificateDetails(A<Guid>._, null, A<Action<CompanyCertificate>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+
+    }
+
+    #endregion
+
+    #region GetDimServiceUrls
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithValid_ReturnsExpected()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", "https://example.org/service"));
+
+        // Act
+        var result = await _sut.GetDimServiceUrls();
+
+        // Assert
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(_identity.CompanyId))
+            .MustHaveHappenedOnceExactly();
+        result.DecentralIdentityManagementAuthUrl.Should().Be("https://example.org/service/oauth/token");
+        result.DecentralIdentityManagementServiceUrl.Should().Be("https://example.org/test");
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutBpn_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>(null, null, null));
+
+        // Act
+        var result = await _sut.GetDimServiceUrls();
+
+        // Assert
+        result.Bpnl.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutDid_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", null, null));
+
+        // Act
+        var result = await _sut.GetDimServiceUrls();
+
+        // Assert
+        result.HolderDid.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDimServiceUrls_WithoutWalletUrl_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
+            .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", null));
+
+        // Act
+        var result = await _sut.GetDimServiceUrls();
+
+        // Assert
+        result.DecentralIdentityManagementAuthUrl.Should().BeNull();
+    }
+
+    #endregion
+
+    #region Setup
 
     private void SetupCreateSsiCertificate()
     {
@@ -1705,6 +1825,17 @@ public class CompanyDataBusinessLogicTests
             .Returns(paginationResult);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
+    }
+
+    private void SetupFakesForGetDocument()
+    {
+        var content = new byte[7];
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentByCompanyIdDataAsync(_validDocumentId, _identity.CompanyId, DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool>(content, "test.pdf", MediaTypeId.PDF, true));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(_validDocumentId, DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
+        A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
+            .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
     }
 
     #endregion

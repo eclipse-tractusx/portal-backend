@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -33,6 +33,8 @@ public class ChecklistCreationServiceTests
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationChecklistRepository _applicationChecklistRepository;
     private readonly IApplicationChecklistCreationService _service;
+    private readonly IOptions<ApplicationChecklistSettings> _options;
+    private readonly ApplicationChecklistSettings _settings;
 
     public ChecklistCreationServiceTests()
     {
@@ -46,7 +48,11 @@ public class ChecklistCreationServiceTests
         _applicationRepository = A.Fake<IApplicationRepository>();
         _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
 
-        _service = new ApplicationChecklistCreationService(_portalRepositories);
+        _settings = A.Fake<ApplicationChecklistSettings>();
+        _options = A.Fake<IOptions<ApplicationChecklistSettings>>();
+        A.CallTo(() => _options.Value).Returns(_settings);
+
+        _service = new ApplicationChecklistCreationService(_portalRepositories, _options);
     }
 
     #region CreateInitialChecklistAsync
@@ -58,7 +64,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        var result = await _service.CreateInitialChecklistAsync(ApplicationWithBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithBpnId);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -66,12 +72,12 @@ public class ChecklistCreationServiceTests
             A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
                 .That
                 .Matches(x =>
-                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2 &&
                     x.Count(y => y.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.DONE) == 1 &&
                     x.Count(y => y.TypeId != ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && y.StatusId == ApplicationChecklistEntryStatusId.TO_DO) == 5)))
             .MustHaveHappenedOnceExactly();
 
-        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2)
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.DONE,
@@ -89,23 +95,57 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        var result = await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId).ConfigureAwait(false);
+        var result = await _service.CreateInitialChecklistAsync(ApplicationWithoutBpnId);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
-            ApplicationWithoutBpnId,
-            A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
-                .That
-                .Matches(x =>
-                    x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
-                    x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
+                ApplicationWithoutBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
+                    .That
+                    .Matches(x =>
+                        x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2 &&
+                        x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
             .MustHaveHappenedOnceExactly();
 
-        result.Should().HaveSameCount(Enum.GetValues<ApplicationChecklistEntryTypeId>())
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length - 2)
             .And.Satisfy(
                 x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
+            );
+    }
+
+    [Fact]
+    public async Task CreateInitialChecklistAsync_WithUseDimWalletTrue_CreatesExpectedResult()
+    {
+        // Arrange
+        SetupFakesForCreate();
+        A.CallTo(() => _options.Value).Returns(new ApplicationChecklistSettings() { UseDimWallet = true });
+        IApplicationChecklistCreationService service = new ApplicationChecklistCreationService(_portalRepositories, _options);
+
+        // Act
+        var result = await service.CreateInitialChecklistAsync(ApplicationWithoutBpnId);
+
+        // Assert
+        A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
+                ApplicationWithoutBpnId,
+                A<IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)>>
+                    .That
+                    .Matches(x =>
+                        x.Count() == Enum.GetValues<ApplicationChecklistEntryTypeId>().Length &&
+                        x.All(y => y.StatusId == ApplicationChecklistEntryStatusId.TO_DO))))
+            .MustHaveHappenedOnceExactly();
+
+        result.Should().HaveCount(Enum.GetValues<ApplicationChecklistEntryTypeId>().Length)
+            .And.Satisfy(
+                x => x.TypeId == ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.IDENTITY_WALLET && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
+                x => x.TypeId == ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO,
                 x => x.TypeId == ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION && x.StatusId == ApplicationChecklistEntryStatusId.TO_DO
@@ -119,7 +159,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateInitialChecklistAsync(ApplicationWithChecklist).ConfigureAwait(false);
+        await _service.CreateInitialChecklistAsync(ApplicationWithChecklist);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -148,7 +188,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -171,7 +211,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithBpnId, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -198,7 +238,7 @@ public class ChecklistCreationServiceTests
         SetupFakesForCreate();
 
         // Act
-        await _service.CreateMissingChecklistItems(ApplicationWithChecklist, existingItems).ConfigureAwait(false);
+        await _service.CreateMissingChecklistItems(ApplicationWithChecklist, existingItems);
 
         // Assert
         A.CallTo(() => _applicationChecklistRepository.CreateChecklistForApplication(
@@ -261,11 +301,11 @@ public class ChecklistCreationServiceTests
             ApplicationChecklistEntryTypeId.CLEARING_HOUSE
         };
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithBpnId))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>("testbpn", new List<ApplicationChecklistEntryTypeId>()));
+            .Returns(("testbpn", Enumerable.Empty<ApplicationChecklistEntryTypeId>()));
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithoutBpnId))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>(null, new List<ApplicationChecklistEntryTypeId>()));
+            .Returns((null, Enumerable.Empty<ApplicationChecklistEntryTypeId>()));
         A.CallTo(() => _applicationRepository.GetBpnAndChecklistCheckForApplicationIdAsync(ApplicationWithChecklist))
-            .ReturnsLazily(() => new ValueTuple<string?, IEnumerable<ApplicationChecklistEntryTypeId>>("123", checklist));
+            .Returns(("123", checklist));
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);

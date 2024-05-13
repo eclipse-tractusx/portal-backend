@@ -44,17 +44,18 @@ public class JwtBearerConfigurationHealthCheckTests
         // Arrange
         var config = OpenIdConnectConfiguration.Create("{\"authorization_endpoint\": \"https://login.example.org/\",\n  \"token_endpoint\": \"https://login.example.org/oauth2/v2.0/token\",\n  \"token_endpoint_auth_methods_supported\": [\n    \"client_secret_post\",\n    \"private_key_jwt\"\n  ],\n  \"jwks_uri\": \"https://login.example.org/discovery/v2.0/keys\",\n  \"userinfo_endpoint\": \"https://graph.example.org/oidc/userinfo\",\n  \"subject_types_supported\": [\n      \"pairwise\"\n  ] }");
 
-        var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+        var jsonOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+        var httpMessageHandler = new HttpMessageHandlerMock(
+            HttpStatusCode.OK,
+            config.ToJsonContent(
+                jsonOptions,
+                "application/json"));
 
         var jwtOptions = new JwtBearerOptions()
         {
             MetadataAddress = "https://foo.bar",
-            BackchannelHttpHandler = new HttpMessageHandlerMock(
-            HttpStatusCode.OK,
-            config.ToJsonContent(
-                jsonOptions,
-                "application/json")
-            )
+            BackchannelHttpHandler = httpMessageHandler
         };
 
         var context = _fixture.Create<HealthCheckContext>();
@@ -62,7 +63,7 @@ public class JwtBearerConfigurationHealthCheckTests
         var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
         // Act
-        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        var result = await sut.CheckHealthAsync(context);
 
         // Assert
         result.Status.Should().Be(HealthStatus.Healthy);
@@ -72,10 +73,12 @@ public class JwtBearerConfigurationHealthCheckTests
     public async Task CheckHealthAsync_Failure_ReturnsExpected()
     {
         // Arrange
+        var httpMessageHandler = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+
         var jwtOptions = new JwtBearerOptions()
         {
             MetadataAddress = "https://foo.bar",
-            BackchannelHttpHandler = new HttpMessageHandlerMock(HttpStatusCode.BadRequest)
+            BackchannelHttpHandler = httpMessageHandler
         };
 
         var context = _fixture.Create<HealthCheckContext>();
@@ -83,7 +86,7 @@ public class JwtBearerConfigurationHealthCheckTests
         var sut = new JwtBearerConfigurationHealthCheck(Options.Create(jwtOptions));
 
         // Act
-        var result = await sut.CheckHealthAsync(context).ConfigureAwait(false);
+        var result = await sut.CheckHealthAsync(context);
 
         // Assert
         result.Status.Should().Be(HealthStatus.Unhealthy);

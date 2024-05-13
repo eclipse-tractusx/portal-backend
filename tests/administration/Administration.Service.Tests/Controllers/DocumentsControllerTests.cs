@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -59,7 +58,7 @@ public class DocumentsControllerTests
             .Returns((fileName, content, contentType));
 
         //Act
-        await this._controller.GetDocumentContentFileAsync(id).ConfigureAwait(false);
+        await _controller.GetDocumentContentFileAsync(id);
 
         //Assert
         A.CallTo(() => _logic.GetDocumentAsync(id)).MustHaveHappenedOnceExactly();
@@ -73,10 +72,10 @@ public class DocumentsControllerTests
         var id = Guid.NewGuid();
         var content = Encoding.UTF8.GetBytes("This is just test content");
         A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id))
-            .ReturnsLazily(() => (fileName, content, "application/json"));
+            .Returns((fileName, content, "application/json"));
 
         //Act
-        await this._controller.GetSelfDescriptionDocumentsAsync(id).ConfigureAwait(false);
+        await _controller.GetSelfDescriptionDocumentsAsync(id);
 
         //Assert
         A.CallTo(() => _logic.GetSelfDescriptionDocumentAsync(id)).MustHaveHappenedOnceExactly();
@@ -89,10 +88,10 @@ public class DocumentsControllerTests
         var id = Guid.NewGuid();
         var documentData = _fixture.Create<DocumentSeedData>();
         A.CallTo(() => _logic.GetSeedData(id))
-            .ReturnsLazily(() => documentData);
+            .Returns(documentData);
 
         //Act
-        await this._controller.GetDocumentSeedData(id).ConfigureAwait(false);
+        await _controller.GetDocumentSeedData(id);
 
         //Assert
         A.CallTo(() => _logic.GetSeedData(id)).MustHaveHappenedOnceExactly();
@@ -105,10 +104,10 @@ public class DocumentsControllerTests
         var documentId = _fixture.Create<Guid>();
         var content = new byte[7];
         A.CallTo(() => _logic.GetFrameDocumentAsync(documentId))
-            .ReturnsLazily(() => new ValueTuple<string, byte[]>("test.json", content));
+            .Returns(("test.json", content));
 
         //Act
-        var result = await this._controller.GetFrameDocumentAsync(documentId).ConfigureAwait(false);
+        var result = await _controller.GetFrameDocumentAsync(documentId);
 
         // Assert
         A.CallTo(() => _logic.GetFrameDocumentAsync(documentId)).MustHaveHappenedOnceExactly();

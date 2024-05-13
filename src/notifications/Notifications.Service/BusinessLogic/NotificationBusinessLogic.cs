@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,6 +33,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogi
 /// <inheritdoc />
 public class NotificationBusinessLogic : INotificationBusinessLogic
 {
+    private static readonly IEnumerable<NotificationTypeId> ValidNotificationTypes =
+        [
+            NotificationTypeId.CREDENTIAL_APPROVAL,
+            NotificationTypeId.CREDENTIAL_REJECTED,
+            NotificationTypeId.CREDENTIAL_EXPIRY
+        ];
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly IIdentityData _identityData;
     private readonly NotificationSettings _settings;
@@ -58,15 +65,17 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task<NotificationDetailData> GetNotificationDetailDataAsync(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().GetNotificationByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"Notification {notificationId} does not exist.");
+            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, [new("notificationId", notificationId.ToString())]);
         }
+
         if (!result.IsUserReceiver)
         {
-            throw new ForbiddenException("The user is not the receiver of the notification");
+            throw ForbiddenException.Create(NotificationErrors.USER_NOT_RECEIVER);
         }
+
         return result.NotificationDetailData;
     }
 
@@ -91,7 +100,7 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
     /// <inheritdoc />
     public async Task SetNotificationStatusAsync(Guid notificationId, bool isRead)
     {
-        var isReadFlag = await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(false);
+        var isReadFlag = await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<INotificationRepository>().AttachAndModifyNotification(notificationId, notification =>
             {
@@ -102,29 +111,52 @@ public class NotificationBusinessLogic : INotificationBusinessLogic
                 notification.IsRead = isRead;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task DeleteNotificationAsync(Guid notificationId)
     {
-        await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(false);
+        await CheckNotificationExistsAndValidateReceiver(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<INotificationRepository>().DeleteNotification(notificationId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
-
     private async Task<bool> CheckNotificationExistsAndValidateReceiver(Guid notificationId)
     {
-        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(false);
+        var result = await _portalRepositories.GetInstance<INotificationRepository>().CheckNotificationExistsByIdAndValidateReceiverAsync(notificationId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default || !result.IsNotificationExisting)
         {
-            throw new NotFoundException($"Notification {notificationId} does not exist.");
+            throw NotFoundException.Create(NotificationErrors.NOTIFICATION_NOT_FOUND, [new("notificationId", notificationId.ToString())]);
         }
+
         if (!result.IsUserReceiver)
         {
-            throw new ForbiddenException("The user is not the receiver of the notification");
+            throw ForbiddenException.Create(NotificationErrors.USER_NOT_RECEIVER);
         }
+
         return result.isRead;
+    }
+
+    /// <inheritdoc />
+    public async Task CreateNotification(NotificationRequest data)
+    {
+        if (!ValidNotificationTypes.Contains(data.NotificationTypeId))
+        {
+            throw ConflictException.Create(NotificationErrors.INVALID_NOTIFICATION_TYPE, [new("notificationTypeId", data.NotificationTypeId.ToString())]);
+        }
+
+        var userExists = await _portalRepositories.GetInstance<IUserRepository>().CheckUserExists(data.Requester).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!userExists)
+        {
+            throw NotFoundException.Create(NotificationErrors.USER_NOT_FOUND, [new("userId", data.Requester.ToString())]);
+        }
+
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(data.Requester, data.NotificationTypeId, false, n =>
+        {
+            n.CreatorUserId = _identityData.IdentityId;
+            n.Content = data.Content;
+        });
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

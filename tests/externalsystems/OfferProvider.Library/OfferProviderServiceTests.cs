@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -66,7 +65,7 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
@@ -74,7 +73,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -86,17 +85,17 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -105,17 +104,17 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion
@@ -128,7 +127,7 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
@@ -136,7 +135,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None).ConfigureAwait(false);
+        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -148,17 +147,17 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     [Fact]
@@ -167,17 +166,17 @@ public class OfferProviderServiceTests
         // Arrange
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
-        var httpClient = new HttpClient(httpMessageHandlerMock);
+        using var httpClient = new HttpClient(httpMessageHandlerMock);
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
 
         // Assert
-        await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ServiceException>(Act);
     }
 
     #endregion

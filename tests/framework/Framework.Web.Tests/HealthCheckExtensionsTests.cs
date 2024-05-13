@@ -18,14 +18,14 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web.Tests;
 
-public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<HealthCheckExtensionsTests>>
+public class HealthCheckExtensionsTests
 {
     private static readonly JsonSerializerOptions _options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly IFixture _fixture;
@@ -49,9 +49,9 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
             new () { Path = "/foo" }
         };
 
-        var app = WebApplication.Create();
+        using var app = WebApplication.Create();
 
-        var result = Assert.Throws<Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
+        var result = Assert.Throws<ConfigurationException>(() => app.MapDefaultHealthChecks(settings));
         result.Message.Should().Be("HealthChecks mapping /foo, /foo contains ambiguous pathes");
     }
 
@@ -77,7 +77,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Healthy" && x.Error == null);
@@ -109,7 +109,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Unhealthy");
         response.Info.Should().ContainSingle().Which.Should().Match<HealthInfo>(x => x.Key == name && x.Description == description && x.Status == "Unhealthy" && x.Error == error.Message);
@@ -138,7 +138,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
@@ -167,7 +167,7 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
         sut.MapDefaultHealthChecks(settings);
 
         // Assert
-        var response = await GetHealthResponse(sut).ConfigureAwait(false);
+        var response = await GetHealthResponse(sut);
         response.Should().NotBeNull().And.BeOfType<HealthResponse>();
         response!.Status.Should().Be("Healthy");
         response.Info.Should().BeEmpty();
@@ -187,16 +187,17 @@ public class HealthCheckExtensionsTests : IClassFixture<WebApplicationFactory<He
 
     private static async Task<HealthResponse?> GetHealthResponse(WebApplication app)
     {
-        await app.StartAsync().ConfigureAwait(false);
+        await app.StartAsync();
         try
         {
-            var result = await new HttpClient().GetAsync("http://localhost:5000/health").ConfigureAwait(false);
-            await using var responseStream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options).ConfigureAwait(false);
+            using var httpClient = new HttpClient();
+            using var result = await httpClient.GetAsync("http://localhost:5000/health");
+            await using var responseStream = await result.Content.ReadAsStreamAsync();
+            return await JsonSerializer.DeserializeAsync<HealthResponse>(responseStream, _options);
         }
         finally
         {
-            await app.StopAsync().ConfigureAwait(false);
+            await app.StopAsync();
         }
     }
 

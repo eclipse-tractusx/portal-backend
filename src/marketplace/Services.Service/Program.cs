@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,11 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -39,12 +39,12 @@ WebAppHelper
             .AddPublicInfos();
 
         builder.Services
-            .AddMailingAndTemplateManager(builder.Configuration)
             .AddPortalRepositories(builder.Configuration)
             .AddProvisioningManager(builder.Configuration);
 
         builder.Services.AddTransient<INotificationService, NotificationService>();
         builder.Services
+            .AddDimService(builder.Configuration.GetSection("Dim"))
             .AddServiceBusinessLogic(builder.Configuration)
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
             .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
@@ -54,4 +54,6 @@ WebAppHelper
         builder.Services
             .AddOfferServices()
             .AddProvisioningDBAccess(builder.Configuration);
+
+        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
     });

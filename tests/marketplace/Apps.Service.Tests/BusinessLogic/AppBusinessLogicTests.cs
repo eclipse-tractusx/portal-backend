@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -125,7 +124,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAllActiveAppsAsync(null).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllActiveAppsAsync(null).ToListAsync();
 
         // Assert
         result.Should().HaveCount(5);
@@ -144,7 +143,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAllUserUserBusinessAppsAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllUserUserBusinessAppsAsync().ToListAsync();
 
         // Assert
         result.Should().NotBeNullOrEmpty();
@@ -167,7 +166,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, offerService, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAppAgreement(appId).ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAppAgreement(appId).ToListAsync();
 
         // Assert
         result.Should().ContainSingle();
@@ -181,13 +180,6 @@ public class AppBusinessLogicTests
     public async Task AddServiceSubscription_ReturnsCorrectId()
     {
         // Arrange
-        var appsSettings = new AppsSettings
-        {
-            SubscriptionManagerRoles = new[]
-            {
-                new UserRoleConfig("portal", new [] { "App Manager", "Sales Manager" })
-            }
-        };
         var offerSubscriptionId = Guid.NewGuid();
         var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
         var consentData = _fixture.CreateMany<OfferAgreementConsentData>(2);
@@ -196,7 +188,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData).ConfigureAwait(false);
+        var result = await sut.AddOwnCompanyAppSubscriptionAsync(Guid.NewGuid(), consentData);
 
         // Assert
         result.Should().Be(offerSubscriptionId);
@@ -227,7 +219,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        var result = await sut.AutoSetupAppAsync(data).ConfigureAwait(false);
+        var result = await sut.AutoSetupAppAsync(data);
 
         // Assert
         result.Should().Be(offerAutoSetupResponseData);
@@ -247,7 +239,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        await sut.StartAutoSetupAsync(data).ConfigureAwait(false);
+        await sut.StartAutoSetupAsync(data);
 
         // Assert
         A.CallTo(() => offerSetupService.StartAutoSetupAsync(A<OfferAutoSetupData>._, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
@@ -267,7 +259,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, null!, offerSetupService, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        await sut.ActivateSingleInstance(offerSubscriptionId).ConfigureAwait(false);
+        await sut.ActivateSingleInstance(offerSubscriptionId);
 
         // Assert
         A.CallTo(() => offerSetupService.CreateSingleInstanceSubscriptionDetail(offerSubscriptionId)).MustHaveHappenedOnceExactly();
@@ -283,7 +275,6 @@ public class AppBusinessLogicTests
     public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_ReturnsExpected(string? offerIdTxt)
     {
         // Arrange
-        var iamUserId = _fixture.Create<string>();
         Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
         var data = _fixture.CreateMany<OfferCompanySubscriptionStatusData>(5).ToImmutableArray();
         A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(A<Guid>._, A<OfferTypeId>._, A<SubscriptionStatusSorting?>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<Guid?>._, A<string?>._))
@@ -297,7 +288,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
@@ -316,7 +307,6 @@ public class AppBusinessLogicTests
     public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_EmptyImage_ReturnsExpected()
     {
         // Arrange
-        var iamUserId = _fixture.Create<string>();
         var offerId = Guid.NewGuid();
         var data = new[] {
             _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
@@ -333,7 +323,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(2);
@@ -349,14 +339,9 @@ public class AppBusinessLogicTests
     public async Task GetCompanyProvidedAppSubscriptionStatusesForUserAsync_QueryNullResult_ReturnsExpected()
     {
         // Arrange
-        var iamUserId = _fixture.Create<string>();
         var offerId = Guid.NewGuid();
-        var data = new[] {
-            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.Empty).Create(),
-            _fixture.Build<OfferCompanySubscriptionStatusData>().With(x => x.Image, Guid.NewGuid()).Create()
-        };
         A.CallTo(() => _offerSubscriptionRepository.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(A<Guid>._, A<OfferTypeId>._, A<SubscriptionStatusSorting?>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<Guid?>._, A<string?>._))
-            .Returns((skip, take) => Task.FromResult((Pagination.Source<OfferCompanySubscriptionStatusData>?)null));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<OfferCompanySubscriptionStatusData>?>(null));
 
         var appsSettings = new AppsSettings
         {
@@ -366,7 +351,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, Options.Create(appsSettings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(0);
@@ -391,7 +376,7 @@ public class AppBusinessLogicTests
         }), _identityService, _logger);
 
         // Act
-        await sut.TriggerActivateOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
+        await sut.TriggerActivateOfferSubscription(offerSubscriptionId);
 
         // Assert
         A.CallTo(() => _offerSetupService.TriggerActivateSubscription(offerSubscriptionId))
@@ -409,7 +394,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         //  Act
-        await sut.UnsubscribeOwnCompanyAppSubscriptionAsync(_fixture.Create<Guid>()).ConfigureAwait(false);
+        await sut.UnsubscribeOwnCompanyAppSubscriptionAsync(_fixture.Create<Guid>());
 
         // Assert
         A.CallTo(() => _offerService.UnsubscribeOwnCompanySubscriptionAsync(A<Guid>._)).MustHaveHappened();
@@ -430,13 +415,22 @@ public class AppBusinessLogicTests
             AppImageDocumentTypeIds = _fixture.CreateMany<DocumentTypeId>(),
         };
 
+        var data = _fixture.Create<(byte[] Content, string ContentType, string FileName)>();
+        A.CallTo(() => _offerService.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._))
+            .Returns(data);
+
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(settings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetAppDocumentContentAsync(appId, documentId, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _offerService.GetOfferDocumentContentAsync(appId, documentId, settings.AppImageDocumentTypeIds, OfferTypeId.APP, A<CancellationToken>._)).MustHaveHappened();
+        result.Should().Match<(byte[] Content, string ContentType, string FileName)>(x =>
+            x.Content == data.Content &&
+            x.ContentType == data.ContentType &&
+            x.FileName == data.FileName
+        );
     }
 
     #endregion
@@ -462,7 +456,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, null!, null!, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         //Act
-        var result = await sut.GetCompanyProvidedAppsDataForUserAsync(2, 3, sorting, name, serviceStatusIdFilter).ConfigureAwait(false);
+        var result = await sut.GetCompanyProvidedAppsDataForUserAsync(2, 3, sorting, name, serviceStatusIdFilter);
 
         // Assert
         A.CallTo(() => _offerRepository.GetProvidedOffersData(A<IEnumerable<OfferStatusId>>
@@ -487,7 +481,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 10).ConfigureAwait(false);
+        var result = await sut.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 10);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
@@ -505,7 +499,6 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var data = _fixture.Create<AppProviderSubscriptionDetailData>();
         var settings = new AppsSettings
         {
@@ -519,7 +512,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetSubscriptionDetailForProvider(appId, subscriptionId).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForProvider(appId, subscriptionId);
 
         // Assert
         result.Should().Be(data);
@@ -537,7 +530,6 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var companyId = Guid.NewGuid();
         var settings = new AppsSettings
         {
             CompanyAdminRoles = new[]
@@ -554,7 +546,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _identityService, _logger);
 
         // Act
-        var result = await sut.GetSubscriptionDetailForSubscriber(appId, subscriptionId).ConfigureAwait(false);
+        var result = await sut.GetSubscriptionDetailForSubscriber(appId, subscriptionId);
 
         // Assert
         result.Should().Be(data);
@@ -595,7 +587,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAppDetailsByIdAsync(appId, language).ConfigureAwait(false);
+        var result = await sut.GetAppDetailsByIdAsync(appId, language);
 
         // Assert
         A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(appId, CompanyId, language, Constants.DefaultLanguage, OfferTypeId.APP))
@@ -641,19 +633,19 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Build<OfferDetailsData>()
-            .With(x => x.Title, (string?)null)
-            .With(x => x.ProviderUri, (string?)null)
-            .With(x => x.LongDescription, (string?)null)
-            .With(x => x.Price, (string?)null)
-            .With(x => x.IsSubscribed, (OfferSubscriptionStatusId)default)
+            .With(x => x.Title, default(string?))
+            .With(x => x.ProviderUri, default(string?))
+            .With(x => x.LongDescription, default(string?))
+            .With(x => x.Price, default(string?))
+            .With(x => x.IsSubscribed, default(OfferSubscriptionStatusId))
             .Create();
-        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string?>._, A<string>._!, A<OfferTypeId>._))
+        A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(A<Guid>._, A<Guid>._, A<string>._, A<string>._, A<OfferTypeId>._))
             .Returns(data);
 
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, Options.Create(new AppsSettings()), _identityService, _logger);
 
         // Act
-        var result = await sut.GetAppDetailsByIdAsync(appId, null).ConfigureAwait(false);
+        var result = await sut.GetAppDetailsByIdAsync(appId, null);
 
         // Assert
         A.CallTo(() => _offerRepository.GetOfferDetailsByIdAsync(appId, CompanyId, null, Constants.DefaultLanguage, OfferTypeId.APP))
@@ -681,7 +673,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        var result = await sut.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanyActiveSubscribedAppSubscriptionStatusesForUserAsync().ToListAsync();
 
         // Assert
         result.Should().HaveCount(5);
@@ -703,7 +695,7 @@ public class AppBusinessLogicTests
         var sut = new AppsBusinessLogic(_portalRepositories, null!, _offerService, null!, _fixture.Create<IOptions<AppsSettings>>(), _identityService, _logger);
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOwnCompanySubscribedAppOfferSubscriptionDataForUserAsync().ToListAsync();
 
         // Assert
         result.Should().HaveCount(5);

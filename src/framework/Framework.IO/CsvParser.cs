@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -92,7 +91,7 @@ public static class CsvParser
         Func<IAsyncEnumerable<TLineType>, IAsyncEnumerable<(bool Processed, Exception? Error)>> processLines,
         CancellationToken cancellationToken)
     {
-        var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
+        using var reader = new StreamReader(new CancellableStream(stream, cancellationToken), Encoding.UTF8);
 
         var numProcessed = 0;
         var errors = new List<(int Line, Exception Error)>();
@@ -135,7 +134,7 @@ public static class CsvParser
         Func<string, ValueTask<TLineType>> parseLineAsync,
         Action<Exception> onError)
     {
-        var nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        var nextLine = await reader.ReadLineAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         while (nextLine != null)
         {
@@ -147,17 +146,17 @@ public static class CsvParser
             catch (Exception e)
             {
                 onError(e);
-                nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+                nextLine = await reader.ReadLineAsync().ConfigureAwait(ConfigureAwaitOptions.None);
                 continue;
             }
             yield return result!;
-            nextLine = await reader.ReadLineAsync().ConfigureAwait(false);
+            nextLine = await reader.ReadLineAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
     private static async ValueTask ValidateFirstLineAsync(StreamReader reader, Action<string> validateFirstLine, string? documentParameterName = null)
     {
-        var firstLine = await reader.ReadLineAsync().ConfigureAwait(false);
+        var firstLine = await reader.ReadLineAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         if (firstLine == null)
         {
             throw new ControllerArgumentException("uploaded file contains no lines", documentParameterName ?? DefaultDocumentParameterName);

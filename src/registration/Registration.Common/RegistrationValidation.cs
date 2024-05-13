@@ -30,7 +30,7 @@ public static class RegistrationValidation
 
     public static void ValidateData(this RegistrationData data)
     {
-        if (data.BusinessPartnerNumber != null && !BpnRegex.IsMatch(data.BusinessPartnerNumber))
+        if (!string.IsNullOrEmpty(data.BusinessPartnerNumber) && !BpnRegex.IsMatch(data.BusinessPartnerNumber))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.BusinessPartnerNumber));
         }
@@ -76,12 +76,12 @@ public static class RegistrationValidation
 
     public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers, bool checkBpnAlreadyExists)
     {
-        if (data.BusinessPartnerNumber != null && checkBpnAlreadyExists && await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(false))
+        if (data.BusinessPartnerNumber != null && checkBpnAlreadyExists && await checkBpn(data.BusinessPartnerNumber.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"The Bpn {data.BusinessPartnerNumber} already exists", nameof(data.BusinessPartnerNumber));
         }
 
-        if (!await checkCountryExistByAlpha2Code(data.CountryAlpha2Code).ConfigureAwait(false))
+        if (!await checkCountryExistByAlpha2Code(data.CountryAlpha2Code).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw new ControllerArgumentException($"Location {data.CountryAlpha2Code} does not exist", nameof(data.CountryAlpha2Code));
         }
@@ -91,7 +91,7 @@ public static class RegistrationValidation
             var assignedIdentifiers = await getCountryAssignedIdentifiers(
                     data.CountryAlpha2Code,
                     data.UniqueIds.Select(uniqueId => uniqueId.UniqueIdentifierId))
-                .ConfigureAwait(false);
+                .ConfigureAwait(ConfigureAwaitOptions.None);
 
             if (!assignedIdentifiers.IsValidCountry)
             {

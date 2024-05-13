@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.Extensions;
 
@@ -86,7 +87,7 @@ public class ServiceAccountCreationTests
         Setup();
 
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true).ConfigureAwait(false);
+        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -111,7 +112,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true).ConfigureAwait(false);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true);
 
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
@@ -144,7 +145,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true).ConfigureAwait(false);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true);
 
         // Assert
         result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");

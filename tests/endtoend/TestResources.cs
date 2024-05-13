@@ -44,17 +44,17 @@ public static class TestResources
             .AddJsonFile(configPath)
             .AddEnvironmentVariables()
             .Build();
-        Env = configuration["ENVIRONMENT"];
-        NotificationOfferId = configuration["NOTIFICATION_OFFER_ID"];
-        PortalUserCompanyName = configuration["PORTAL_USER_COMPANY_NAME"];
-        BasePortalUrl = configuration["BASE_PORTAL_URL"].Replace("{Env}", Env);
-        BaseCentralIdpUrl = configuration["BASE_CENTRAL_IDP_URL"].Replace("{Env}", Env);
-        BasePortalBackendUrl = configuration["BASE_PORTAL_BACKEND_URL"].Replace("{Env}", Env);
-        BpdmUrl = configuration["BPDM_URL"].Replace("{Env}", Env);
-        ClearingHouseUrl = configuration["CLEARING_HOUSE_URL"];
-        ClearingHouseTokenUrl = configuration["CLEARING_HOUSE_TOKEN_URL"];
-        SdFactoryBaseUrl = configuration["SD_FACTORY_BASE_URL"].Replace("{Env}", Env);
-        WalletBaseUrl = configuration["WALLET_BASE_URL"].Replace("{Env}", Env);
+        Env = configuration["ENVIRONMENT"] ?? throw new Exception("ENVIRONMENT is not defined in configuration");
+        NotificationOfferId = configuration["NOTIFICATION_OFFER_ID"] ?? throw new Exception("NOTIFICATION_OFFER_ID is not defined in configuration");
+        PortalUserCompanyName = configuration["PORTAL_USER_COMPANY_NAME"] ?? throw new Exception("PORTAL_USER_COMPANY_NAME is not defined in configuration");
+        BasePortalUrl = (configuration["BASE_PORTAL_URL"] ?? throw new Exception("BASE_PORTAL_URL is not defined in configuration")).Replace("{Env}", Env);
+        BaseCentralIdpUrl = (configuration["BASE_CENTRAL_IDP_URL"] ?? throw new Exception(" is not defined in configuration")).Replace("{Env}", Env);
+        BasePortalBackendUrl = (configuration["BASE_PORTAL_BACKEND_URL"] ?? throw new Exception("BASE_PORTAL_BACKEND_URL is not defined in configuration")).Replace("{Env}", Env);
+        BpdmUrl = (configuration["BPDM_URL"] ?? throw new Exception("BPDM_URL is not defined in configuration")).Replace("{Env}", Env);
+        ClearingHouseUrl = configuration["CLEARING_HOUSE_URL"] ?? throw new Exception("CLEARING_HOUSE_URL is not defined in configuration");
+        ClearingHouseTokenUrl = configuration["CLEARING_HOUSE_TOKEN_URL"] ?? throw new Exception("CLEARING_HOUSE_TOKEN_URL is not defined in configuration");
+        SdFactoryBaseUrl = (configuration["SD_FACTORY_BASE_URL"] ?? throw new Exception("SD_FACTORY_BASE_URL is not defined in configuration")).Replace("{Env}", Env);
+        WalletBaseUrl = (configuration["WALLET_BASE_URL"] ?? throw new Exception("WALLET_BASE_URL is not defined in configuration")).Replace("{Env}", Env);
     }
 
     public static string GetSourceFilePathName([CallerFilePath] string? callerFilePath = null) => callerFilePath ?? "";

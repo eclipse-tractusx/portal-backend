@@ -50,8 +50,8 @@ public class AgreementRepository : IAgreementRepository
     /// <inheritdoc />
     public IAsyncEnumerable<AgreementData> GetOfferAgreementDataForOfferId(Guid offerId, OfferTypeId offerTypeId) =>
         _context.Agreements
-            .Where(x => x.AgreementAssignedOffers.Any(offer => offer.Offer!.OfferTypeId == offerTypeId && offer.OfferId == offerId))
-            .Select(x => new AgreementData(x.Id, x.Name))
+            .Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE && x.AgreementAssignedOffers.Any(offer => offer.Offer!.OfferTypeId == offerTypeId && offer.OfferId == offerId))
+            .Select(x => new AgreementData(x.Id, x.Name, x.Mandatory))
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<AgreementDocumentData> GetAgreementsForCompanyRolesUntrackedAsync() =>
@@ -62,19 +62,21 @@ public class AgreementRepository : IAgreementRepository
                 agreement.Id,
                 agreement.Name,
                 agreement.AgreementLink,
-                agreement.DocumentId))
+                agreement.DocumentId,
+                agreement.Mandatory))
             .AsAsyncEnumerable();
 
     ///<inheritdoc/>
     public IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId) =>
         _context.Agreements
             .AsNoTracking()
-            .Where(agreement => agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
+            .Where(agreement => agreement.AgreementStatusId == AgreementStatusId.ACTIVE && agreement.AgreementAssignedOfferTypes.Any(aaot => aaot.OfferTypeId == offerTypeId))
             .Select(agreement => new AgreementDocumentData(
                 agreement.Id,
                 agreement.Name,
                 agreement.AgreementLink,
-                agreement.DocumentId
+                agreement.DocumentId,
+                agreement.Mandatory
             ))
             .AsAsyncEnumerable();
 
@@ -86,10 +88,11 @@ public class AgreementRepository : IAgreementRepository
                 offer.OfferTypeId == offerTypeId)
             .Select(offer => new ValueTuple<OfferAgreementConsent, bool>(
                 new OfferAgreementConsent(
-                    offer.ConsentAssignedOffers.Select(consentAssignedOffer => new AgreementConsentStatus(
-                    consentAssignedOffer.Consent!.AgreementId,
-                    consentAssignedOffer.Consent.ConsentStatusId))),
-                offer.ProviderCompanyId == userCompanyId
+                    offer.ConsentAssignedOffers.Where(x => x.Consent!.Agreement!.AgreementStatusId == AgreementStatusId.ACTIVE)
+                        .Select(consentAssignedOffer => new AgreementConsentStatus(
+                            consentAssignedOffer.Consent!.AgreementId,
+                            consentAssignedOffer.Consent.ConsentStatusId))),
+                        offer.ProviderCompanyId == userCompanyId
             ))
             .SingleOrDefaultAsync();
 
@@ -107,7 +110,7 @@ public class AgreementRepository : IAgreementRepository
                         consentAssignedOffer.Consent!.AgreementId,
                         consentAssignedOffer.Consent.Id,
                         consentAssignedOffer.Consent.ConsentStatusId)),
-                    offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => assigned.AgreementId)),
+                    offer.OfferType!.AgreementAssignedOfferTypes.Select(assigned => new AgreementStatusData(assigned.AgreementId, assigned.Agreement!.AgreementStatusId))),
                 offer.ProviderCompanyId == companyId))
             .SingleOrDefaultAsync();
 
@@ -120,10 +123,10 @@ public class AgreementRepository : IAgreementRepository
                 aao.Offer.OfferSubscriptions.Any(subscription => subscription.Id == subscriptionId)));
 
     /// <inheritdoc />
-    public IAsyncEnumerable<Guid> GetAgreementIdsForOfferAsync(Guid offerId) =>
+    public IAsyncEnumerable<AgreementStatusData> GetAgreementIdsForOfferAsync(Guid offerId) =>
         _context.AgreementAssignedOffers
             .AsNoTracking()
             .Where(assigned => assigned.OfferId == offerId)
-            .Select(assigned => assigned.AgreementId)
+            .Select(assigned => new AgreementStatusData(assigned.AgreementId, assigned.Agreement!.AgreementStatusId))
             .AsAsyncEnumerable();
 }

@@ -45,11 +45,11 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        dotnet-version: [ '7.0' ]
+        dotnet-version: [ '8.0' ]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Setup JQ
         run:
@@ -69,7 +69,7 @@ jobs:
           ReportPortal.config.json > temp.json
           mv temp.json ReportPortal.config.json
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
@@ -95,7 +95,7 @@ jobs:
         run: dotnet test tests/endtoend --filter Category=InterfaceHC --no-restore --verbosity minimal --logger "html;logfilename=e2eInterfaceHealthCheckResults.html"
       - name: 'Upload Artifact'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2eInterfaceHealthCheckResults.html
@@ -113,7 +113,7 @@ jobs:
         run: dotnet test tests/endtoend --filter Category=PortalHC --no-restore --verbosity minimal --logger "html;logfilename=e2ePortalHealthCheckResults.html"
       - name: 'Upload Artifact'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2ePortalHealthCheckResults.html
@@ -132,7 +132,7 @@ jobs:
         run: dotnet test tests/endtoend --filter Category=Registration --no-restore --verbosity minimal --logger "html;logfilename=e2eRegistrationTestResults.html"
       - name: 'Upload Artifact'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2eRegistrationTestResults.html
@@ -152,7 +152,7 @@ jobs:
         run: dotnet test tests/endtoend --filter Category=Portal --no-restore --verbosity minimal --logger "html;logfilename=e2ePortalTestResults.html"
       - name: 'Upload Artifact'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2ePortalTestResults.html
@@ -181,7 +181,7 @@ jobs:
         run: dotnet test tests/endtoend --no-restore --verbosity minimal --logger "html;logfilename=e2eAllResults.html"
       - name: 'Upload Artifact'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: e2e-test-report
           path: tests/endtoend/TestResults/e2eAllResults.html

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -57,7 +56,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var notificationDueDate = DateTimeOffset.Now;
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
 
         // Act
         var results = sut.CreateNotification(Guid.NewGuid(), NotificationTypeId.INFO, false, notification =>
@@ -83,7 +82,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyNotification_WithExistingNotification_UpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
@@ -110,7 +109,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyNotification_WithExistingNotification_NotUpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.AttachAndModifyNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"), notification =>
@@ -140,7 +139,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task AttachAndModifyNotifications_WithExistingNotification_UpdatesStatus()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
         var notificationIds = _fixture.CreateMany<Guid>().ToImmutableArray();
 
         // Act
@@ -169,7 +168,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task DeleteNotification_WithExistingNotification_RemovesNotification()
     {
         // Arrange
-        var (sut, dbContext) = await CreateSutWithContext().ConfigureAwait(false);
+        var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
         sut.DeleteNotification(new Guid("19AFFED7-13F0-4868-9A23-E77C23D8C889"));
@@ -194,10 +193,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         if (count == 0)
@@ -219,10 +218,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateAsc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         if (count == 0)
@@ -244,10 +243,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_SortedByDateDesc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.DateDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         if (count == 0)
@@ -269,10 +268,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusAsc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         if (count == 0)
@@ -294,10 +293,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_SortedByReadStatusDesc_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         if (count == 0)
@@ -319,17 +318,17 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithUnreadStatus_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, false, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == false));
+        results.Data.Should().AllSatisfy(detailData => detailData.IsRead.Should().BeFalse());
     }
 
     [Theory]
@@ -338,17 +337,17 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatus_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
-        results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x => x.IsRead == true));
+        results.Data.Should().AllSatisfy(detailData => detailData.IsRead.Should().BeTrue());
     }
 
     [Theory]
@@ -357,18 +356,18 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndInfoType_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.INFO, null, false, NotificationSorting.ReadStatusDesc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
             searchSemanticTypeId == SearchSemanticTypeId.AND
-            ? (x.IsRead == true && x.TypeId == NotificationTypeId.INFO)
-            : (x.IsRead == true || x.TypeId == NotificationTypeId.INFO)));
+            ? (x.IsRead && x.TypeId == NotificationTypeId.INFO)
+            : (x.IsRead || x.TypeId == NotificationTypeId.INFO)));
     }
 
     [Theory]
@@ -377,18 +376,18 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithReadStatusAndActionType_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, true, NotificationTypeId.ACTION, null, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         results.Should().NotBeNull();
         results!.Data.Count().Should().Be(count);
         results.Data.Should().AllSatisfy(detailData => detailData.Should().Match<NotificationDetailData>(x =>
             searchSemanticTypeId == SearchSemanticTypeId.AND
-                ? (x.IsRead == true && x.TypeId == NotificationTypeId.ACTION)
-                : (x.IsRead == true || x.TypeId == NotificationTypeId.ACTION)));
+                ? (x.IsRead && x.TypeId == NotificationTypeId.ACTION)
+                : (x.IsRead || x.TypeId == NotificationTypeId.ACTION)));
     }
 
     [Theory]
@@ -397,10 +396,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithTopic_ReturnsExpectedNotificationDetailData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, NotificationTopicId.INFO, false, NotificationSorting.ReadStatusAsc, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -415,10 +414,10 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithDoneState_ReturnsExpectedNotificationDetailData(bool? doneState, int count)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, doneState, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, doneState, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -433,13 +432,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithUnlinkedNotificationTypeIdandTopicId_ReturnsExpectedNotificationDetailData()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
-        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
+        using var trans = await context.Database.BeginTransactionAsync();
         context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
 
         // Act
-        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15).ConfigureAwait(false);
+        var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, SearchSemanticTypeId.AND, null, null, null, false, null, null, Enumerable.Empty<NotificationTypeId>(), null)(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -448,7 +447,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Data.Should().AllBeOfType<NotificationDetailData>();
         results.Data.Where(x => x.NotificationTopic == null).Should().ContainSingle();
 
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     [Theory]
@@ -457,15 +456,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetAllAsDetailsByUserIdUntracked_WithSearchParams_ReturnsExpectedData(SearchSemanticTypeId searchSemanticTypeId, int count)
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
+        await context.SaveChangesAsync();
 
         // Act
         var results = await sut.GetAllNotificationDetailsByReceiver(_companyUserId, searchSemanticTypeId, null, null, null, false, null, null, new[]
         {
             NotificationTypeId.WELCOME_SERVICE_PROVIDER,
             NotificationTypeId.APP_RELEASE_REQUEST
-        }, "DNS")(0, 15).ConfigureAwait(false);
+        }, "DNS")(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -495,12 +494,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNotificationByIdAndIamUserId_ForExistingUser_GetsExpectedNotification()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var result = await sut
             .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         result.Should().NotBeNull();
@@ -513,15 +512,15 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNotificationByIdAndIamUserId_WithoutLinkedTopic_GetsExpectedNotification()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
-        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
+        using var trans = await context.Database.BeginTransactionAsync();
         context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
 
         // Act
         var result = await sut
             .GetNotificationByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         result.Should().NotBeNull();
@@ -529,7 +528,7 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.NotificationDetailData.IsRead.Should().BeTrue();
         result.NotificationDetailData.NotificationTopic.Should().BeNull();
 
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     #endregion
@@ -540,12 +539,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNotificationCountAsync_WithReadStatus_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetNotificationCountForUserAsync(_companyUserId, true)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().Be(3);
@@ -555,12 +554,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetNotificationCountAsync_WithoutStatus_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetNotificationCountForUserAsync(_companyUserId, null)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().Be(6);
@@ -574,12 +573,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCountDetailsForUser_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetCountDetailsForUserAsync(_companyUserId).ToListAsync()
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Count.Should().Be(4);
@@ -589,21 +588,21 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetCountDetailsForUserAsync_ReturnsExpectedCount()
     {
         // Arrange
-        var (sut, context) = await CreateSutWithContext().ConfigureAwait(false);
-        using var trans = await context.Database.BeginTransactionAsync().ConfigureAwait(false);
+        var (sut, context) = await CreateSutWithContext();
+        using var trans = await context.Database.BeginTransactionAsync();
         context.NotificationTypeAssignedTopics.Remove(new NotificationTypeAssignedTopic(NotificationTypeId.INFO, NotificationTopicId.INFO));
-        await context.SaveChangesAsync().ConfigureAwait(false);
+        await context.SaveChangesAsync();
 
         // Act
         var results = await sut
             .GetCountDetailsForUserAsync(_companyUserId).ToListAsync()
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Count.Should().Be(5);
         results.Where(x => x.NotificationTopicId == null).Should().ContainSingle().And.Satisfy(x => x.Count == 1);
 
-        await trans.RollbackAsync().ConfigureAwait(false);
+        await trans.RollbackAsync();
     }
 
     #endregion
@@ -614,12 +613,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckNotificationExistsByIdAndIamUserId_ReturnsExpectedCount()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .CheckNotificationExistsByIdAndValidateReceiverAsync(new Guid("500E4D2C-9919-4CA8-B75B-D523FBC99259"), _companyUserId)
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.IsUserReceiver.Should().BeTrue();
@@ -637,13 +636,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task GetUpdateData_ReturnsExpectedCount(IEnumerable<string> roleIds, IEnumerable<string>? userIds)
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .GetNotificationUpdateIds(roleIds.Select(x => new Guid(x)), userIds == null ? null : userIds.Select(x => new Guid(x)), new[] { NotificationTypeId.APP_RELEASE_REQUEST }, new Guid("0fc768e5-d4cf-4d3d-a0db-379efedd60f5"))
             .ToListAsync()
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().HaveCount(1)
@@ -658,12 +657,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckNotificationsExistsForParam_WithCorrectSearch_ReturnsTrue()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .CheckNotificationExistsForParam(new("ac1cf001-7fbc-1f2f-817f-bce058020001"), NotificationTypeId.APP_RELEASE_REQUEST, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd60f5")
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().BeTrue();
@@ -673,12 +672,12 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     public async Task CheckNotificationsExistsForParam_WithWrongOfferId_ReturnsFalse()
     {
         // Arrange
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .CheckNotificationExistsForParam(new("ac1cf001-7fbc-1f2f-817f-bce058020001"), NotificationTypeId.APP_RELEASE_REQUEST, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd6123")
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().BeFalse();
@@ -689,13 +688,13 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var receiver = new Guid("ac1cf001-7fbc-1f2f-817f-bce058020001");
-        var sut = await CreateSut().ConfigureAwait(false);
+        var sut = await CreateSut();
 
         // Act
         var results = await sut
             .CheckNotificationsExistsForParam(new[] { receiver }, new[] { NotificationTypeId.APP_RELEASE_REQUEST }, "offerId", "0fc768e5-d4cf-4d3d-a0db-379efedd60f5")
             .ToListAsync()
-            .ConfigureAwait(false);
+            ;
 
         // Assert
         results.Should().ContainSingle();
@@ -708,14 +707,14 @@ public class NotificationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<NotificationRepository> CreateSut()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NotificationRepository(context);
         return sut;
     }
 
     private async Task<(NotificationRepository repo, PortalDbContext context)> CreateSutWithContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         var sut = new NotificationRepository(context);
         return (sut, context);
     }

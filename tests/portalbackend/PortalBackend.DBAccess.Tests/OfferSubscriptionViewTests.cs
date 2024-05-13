@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -46,10 +45,10 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
     public async Task OfferSubscriptionView_GetAll_ReturnsExpected()
     {
         // Arrange
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.OfferSubscriptionView.ToListAsync().ConfigureAwait(false);
+        var result = await sut.OfferSubscriptionView.ToListAsync();
         result.Should().HaveCount(14);
     }
 
@@ -58,10 +57,10 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var subscriptionId = new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf");
-        var sut = await CreateContext().ConfigureAwait(false);
+        var sut = await CreateContext();
 
         // Act
-        var result = await sut.OfferSubscriptionView.SingleOrDefaultAsync(x => x.SubscriptionId == subscriptionId).ConfigureAwait(false);
+        var result = await sut.OfferSubscriptionView.SingleOrDefaultAsync(x => x.SubscriptionId == subscriptionId);
         result.Should().NotBeNull();
         result!.SubscriptionId.Should().Be(subscriptionId);
         result.OfferTypeId.Should().Be(OfferTypeId.SERVICE);
@@ -73,7 +72,7 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
 
     private async Task<PortalDbContext> CreateContext()
     {
-        var context = await _dbTestDbFixture.GetPortalDbContext().ConfigureAwait(false);
+        var context = await _dbTestDbFixture.GetPortalDbContext();
         return context;
     }
 }

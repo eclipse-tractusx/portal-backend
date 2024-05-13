@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,12 +25,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public class RegistrationSettings
 {
-    public RegistrationSettings()
-    {
-        DocumentTypeIds = null!;
-        HelpAddress = null!;
-    }
-
     public int ApplicationsMaxPageSize { get; set; }
 
     /// <summary>
@@ -41,10 +34,12 @@ public class RegistrationSettings
     [Required]
     [EnumEnumeration]
     [DistinctValues]
-    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; }
+    public IEnumerable<DocumentTypeId> DocumentTypeIds { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string HelpAddress { get; set; }
+    public string HelpAddress { get; set; } = null!;
+
+    public bool UseDimWallet { get; set; }
 }
 
 public static class RegistrationSettingsExtension

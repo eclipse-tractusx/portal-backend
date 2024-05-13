@@ -91,5 +91,5 @@ public interface IAgreementRepository
     /// </summary>
     /// <param name="offerId">Id of the offer the agreement must be associated with</param>
     /// <returns></returns>
-    IAsyncEnumerable<Guid> GetAgreementIdsForOfferAsync(Guid offerId);
+    IAsyncEnumerable<AgreementStatusData> GetAgreementIdsForOfferAsync(Guid offerId);
 }

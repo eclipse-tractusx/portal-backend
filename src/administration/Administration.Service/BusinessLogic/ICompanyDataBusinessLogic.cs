@@ -43,7 +43,7 @@ public interface ICompanyDataBusinessLogic
 
     Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync();
 
-    Task CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
+    Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
     Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken);
 
     Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting);
@@ -53,8 +53,17 @@ public interface ICompanyDataBusinessLogic
     Task RejectCredential(Guid credentialId);
 
     IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
+
     IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber);
+
     Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken);
 
+    Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentByCompanyIdAsync(Guid documentId);
+
+    Task<(string FileName, byte[] Content, string MediaType)> GetCompanyCertificateDocumentAsync(Guid documentId);
+
+    Task<int> DeleteCompanyCertificateAsync(Guid documentId);
+
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);
+    Task<DimUrlsResponse> GetDimServiceUrls();
 }

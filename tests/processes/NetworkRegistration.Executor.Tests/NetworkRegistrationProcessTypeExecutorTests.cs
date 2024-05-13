@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -122,7 +121,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public async Task IsLockRequested_ReturnsExpected()
     {
         // Act
-        var result = await _sut.IsLockRequested(ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
+        var result = await _sut.IsLockRequested(ProcessStepTypeId.SYNCHRONIZE_USER);
 
         // Assert
         result.Should().BeFalse();
@@ -139,7 +138,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(Guid.NewGuid());
 
         // Act
-        var result = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var result = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         result.Modified.Should().BeFalse();
@@ -155,7 +154,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(Guid.Empty);
 
         // Act
-        async Task Act() => await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        async Task Act() => await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -170,7 +169,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     public async Task ExecuteProcessStep_WithoutRegistrationId_ThrowsUnexpectedConditionException()
     {
         // Act
-        async Task Act() => await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -187,7 +186,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
@@ -198,7 +197,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeFalse();
@@ -218,7 +217,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
@@ -229,7 +228,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeFalse();
@@ -252,7 +251,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
@@ -263,7 +262,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(null, ProcessStepStatusId.DONE, false, null));
 
         // Act
-        var result = await _sut.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(processStepTypeId, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeFalse();
@@ -283,7 +282,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
@@ -294,7 +293,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Throws(new ServiceException("this is a test", true));
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -314,7 +313,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
@@ -325,7 +324,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Throws(new ServiceException("this is a test"));
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.SYNCHRONIZE_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
@@ -345,14 +344,14 @@ public class NetworkRegistrationProcessTypeExecutorTests
             .Returns(networkRegistrationId);
 
         // Act InitializeProcess
-        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>()).ConfigureAwait(false);
+        var initializeResult = await _sut.InitializeProcess(validProcessId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert InitializeProcess
         initializeResult.Modified.Should().BeFalse();
         initializeResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.START_AUTOSETUP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None).ConfigureAwait(false);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.START_AUTOSETUP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         A.CallTo(() => _networkRegistrationHandler.SynchronizeUser(networkRegistrationId)).MustNotHaveHappened();

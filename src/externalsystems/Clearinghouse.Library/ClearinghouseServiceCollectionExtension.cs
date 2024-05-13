@@ -37,8 +37,9 @@ public static class ClearinghouseServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
+        var baseAddress = settings.Value.BaseAddress;
         services
-            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(settings.Value.BaseAddress)
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/")
             .AddTransient<IClearinghouseService, ClearinghouseService>()
             .AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
 

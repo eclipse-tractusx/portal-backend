@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.Tests;
 
@@ -41,9 +41,7 @@ public class NetworkRegistrationProcessHelperTests
     public NetworkRegistrationProcessHelperTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
@@ -59,7 +57,7 @@ public class NetworkRegistrationProcessHelperTests
     public async Task TriggerProcessStep_WithUntriggerableProcessStep_ThrowsConflictException()
     {
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(Guid.NewGuid().ToString(), ProcessStepTypeId.SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -75,7 +73,7 @@ public class NetworkRegistrationProcessHelperTests
             .Returns((false, _fixture.Create<VerifyProcessData>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER).ConfigureAwait(false);
+        async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -117,7 +115,7 @@ public class NetworkRegistrationProcessHelperTests
                 });
 
         // Act
-        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId).ConfigureAwait(false);
+        await _sut.TriggerProcessStep(externalId.ToString(), processStepTypeId);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

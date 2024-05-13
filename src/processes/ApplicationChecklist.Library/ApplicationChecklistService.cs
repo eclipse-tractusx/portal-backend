@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -55,7 +54,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         };
 
         var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
-            .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(false);
+            .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
 
         checklistData.ValidateApplicationChecklistData(applicationId, entryTypeId, entryStatusIds, new[] { ProcessStepStatusId.TODO });
         var processStep = checklistData!.ProcessSteps!.SingleOrDefault(step => step.ProcessStepTypeId == processStepTypeId);
@@ -63,6 +62,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
         {
             throw new ConflictException($"application {applicationId} checklist entry {entryTypeId}, process step {processStepTypeId} is not eligible to run");
         }
+
         return checklistData.CreateManualChecklistProcessStepData(applicationId, entryTypeId, processStep);
     }
 

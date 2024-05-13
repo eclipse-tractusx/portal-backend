@@ -30,5 +30,5 @@ public class FakeIdentityService : IIdentityService
     public IIdentityData IdentityData =>
         new FakeIdentityData(_identityId, IdentityTypeId.COMPANY_USER, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
-    private record FakeIdentityData(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) : IIdentityData;
+    private sealed record FakeIdentityData(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) : IIdentityData;
 }

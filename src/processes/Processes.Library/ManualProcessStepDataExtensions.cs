@@ -57,7 +57,7 @@ public static class VerifyProcessDataExtensions
 
         if (processData.ProcessSteps.Any(step => step.ProcessStepStatusId != ProcessStepStatusId.TODO))
         {
-            throw new UnexpectedConditionException($"processSteps should never have any other status than TODO here");
+            throw new UnexpectedConditionException("processSteps should never have any other status than TODO here");
         }
 
         if (processData.ProcessSteps.All(step => step.ProcessStepTypeId != processStepTypeId))

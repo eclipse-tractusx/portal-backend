@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -62,7 +61,7 @@ public class AsyncEnumerableStringStreamTest
         var sut = new AsyncEnumerableStringStream(_data.ToAsyncEnumerable(), _encoding);
 
         using var result = new MemoryStream();
-        await sut.CopyToAsync(result).ConfigureAwait(false);
+        await sut.CopyToAsync(result);
 
         result.ToArray().SequenceEqual(expected.ToArray()).Should().BeTrue();
     }

@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -44,13 +43,13 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
     }
 
     [Fact]
-    public void ClearinghouseInterface_HealthCheck()
+    public async Task ClearinghouseInterface_HealthCheck()
     {
         ClearingHouseUserToken =
             TechTokenRetriever.GetToken(BaseTokenUrl,
                 Secrets.ClearingHouseClientId,
                 Secrets.ClearingHouseClientSecret);
-        if (ClearingHouseUserToken.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(ClearingHouseUserToken))
             throw new Exception("Could not fetch token for clearing house health check.");
 
         var body = DataHandleHelper.SerializeData(
@@ -80,6 +79,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
             .StatusCode(200)
             .Extract()
             .Response();
-        data.Content.ReadAsStringAsync().Result.Should().NotBeNullOrEmpty("Response should not be null or empty");
+        var result = await data.Content.ReadAsStringAsync();
+        result.Should().NotBeNullOrEmpty("Response should not be null or empty");
     }
 }

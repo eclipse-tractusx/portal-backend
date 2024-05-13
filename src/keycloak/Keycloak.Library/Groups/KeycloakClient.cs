@@ -2,7 +2,6 @@
  * MIT License
  *
  * Copyright (c) 2019 Luk Vermeulen
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,12 +34,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 public partial class KeycloakClient
 {
     public async Task CreateGroupAsync(string realm, Group group) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups")
             .PostJsonAsync(group)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Group>> GetGroupHierarchyAsync(string realm, int? first = null, int? max = null, string? search = null)
     {
@@ -52,13 +51,13 @@ public partial class KeycloakClient
             ["briefRepresentation"] = false
         };
 
-        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups")
             .SetQueryParams(queryParams)
             .GetJsonAsync<IEnumerable<Group>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task<int> GetGroupsCountAsync(string realm, string? search = null, bool? top = null)
@@ -69,66 +68,66 @@ public partial class KeycloakClient
             [nameof(top)] = top
         };
 
-        var result = await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        var result = await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/count")
             .SetQueryParams(queryParams)
             .GetJsonAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return Convert.ToInt32(DynamicExtensions.GetFirstPropertyValue(result));
     }
 
     public async Task<Group> GetGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .GetJsonAsync<Group>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task UpdateGroupAsync(string realm, string groupId, Group group) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .PutJsonAsync(group)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteGroupAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .DeleteAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task SetOrCreateGroupChildAsync(string realm, string groupId, Group group) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/children")
             .PostJsonAsync(group)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<ManagementPermission> GetGroupClientAuthorizationPermissionsInitializedAsync(string realm, string groupId) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
             .AppendPathSegment(groupId, true)
             .AppendPathSegment("/management/permissions")
             .GetJsonAsync<ManagementPermission>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<ManagementPermission> SetGroupClientAuthorizationPermissionsInitializedAsync(string realm, string groupId, ManagementPermission managementPermission) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
@@ -136,7 +135,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/management/permissions")
             .PutJsonAsync(managementPermission)
             .ReceiveJson<ManagementPermission>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<User>> GetGroupUsersAsync(string realm, string groupId, int? first = null, int? max = null)
     {
@@ -146,7 +145,7 @@ public partial class KeycloakClient
             [nameof(max)] = max
         };
 
-        return await (await GetBaseUrlAsync(realm).ConfigureAwait(false))
+        return await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/groups/")
@@ -154,6 +153,6 @@ public partial class KeycloakClient
             .AppendPathSegment("/members")
             .SetQueryParams(queryParams)
             .GetJsonAsync<IEnumerable<User>>()
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

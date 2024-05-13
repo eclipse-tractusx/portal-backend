@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,11 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -36,9 +38,7 @@ public class StaticDataBusinessLogicTest
     public StaticDataBusinessLogicTest()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _companyRepository = A.Fake<ICompanyRepository>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
@@ -63,7 +63,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllUseCase().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllUseCase().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllUseCase())
@@ -88,7 +88,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLicenseType().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLicenseType().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetLicenseTypeData())
@@ -110,7 +110,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetAllLanguage().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetAllLanguage().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetAllLanguage())
@@ -130,7 +130,7 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetCertificateTypes().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetCertificateTypes().ToListAsync();
 
         // Assert
         A.CallTo(() => _staticDataRepository.GetCertificateTypes())
@@ -150,11 +150,48 @@ public class StaticDataBusinessLogicTest
         var sut = new StaticDataBusinessLogic(_portalRepositories);
 
         // Act
-        var result = await sut.GetOperatorBpns().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetOperatorBpns().ToListAsync();
 
         // Assert
         A.CallTo(() => _companyRepository.GetOperatorBpns())
             .MustHaveHappenedOnceExactly();
         result.Should().HaveCount(3).And.ContainInOrder(data);
     }
+
+    #region GetDidDocument
+
+    [Fact]
+    public async Task GetDidDocument_ReturnsExpectedResult()
+    {
+        // Arrange
+        var jsonDocument = _fixture.Create<JsonDocument>();
+        A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
+            .Returns(new ValueTuple<bool, JsonDocument>(true, jsonDocument));
+
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+
+        // Act
+        var result = await sut.GetDidDocument("bpn");
+
+        // Assert
+        result.Should().Be(jsonDocument);
+    }
+
+    [Fact]
+    public async Task GetDidDocument_WithNotExisting_ThrowsNotFoundException()
+    {
+        // Arrange
+        A.CallTo(() => _companyRepository.GetDidDocumentById("bpn"))
+            .Returns(new ValueTuple<bool, JsonDocument>(false, null!));
+        var sut = new StaticDataBusinessLogic(_portalRepositories);
+        async Task Act() => await sut.GetDidDocument("bpn");
+
+        // Act
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("The did document does not exist");
+    }
+
+    #endregion
 }

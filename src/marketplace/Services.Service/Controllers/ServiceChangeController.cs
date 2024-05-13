@@ -69,7 +69,7 @@ public class ServiceChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeactivateService([FromRoute] Guid serviceId)
     {
-        await _serviceChangeBusinessLogic.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(false);
+        await _serviceChangeBusinessLogic.DeactivateOfferByServiceIdAsync(serviceId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 }

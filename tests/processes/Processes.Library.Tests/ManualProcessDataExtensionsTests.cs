@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library.Tests;
@@ -38,9 +39,7 @@ public class ManualProcessDataExtensionsTests
     public ManualProcessDataExtensionsTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
@@ -83,7 +82,7 @@ public class ManualProcessDataExtensionsTests
     public void CreateManualProcessData_WithNullVerifyProcessData_Throws()
     {
         // Arrange
-        var sut = (VerifyProcessData?)null;
+        var sut = default(VerifyProcessData?);
 
         var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
 
@@ -99,7 +98,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var sut = _fixture.Build<VerifyProcessData>()
-            .With(x => x.Process, (Process?)null)
+            .With(x => x.Process, default(Process?))
             .Create();
 
         var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
@@ -135,11 +134,10 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
-        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, x.Now)).ToImmutableArray();
 
         var sut = _fixture.Build<VerifyProcessData>()
             .With(x => x.Process, process)
-            .With(x => x.ProcessSteps, (IEnumerable<ProcessStep>?)null)
+            .With(x => x.ProcessSteps, default(IEnumerable<ProcessStep>?))
             .Create();
 
         var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _portalRepositories, _getProcessEntityName);
@@ -467,7 +465,7 @@ public class ManualProcessDataExtensionsTests
         var version = Guid.NewGuid();
         var process = _fixture.Build<Process>()
             .With(x => x.Version, version)
-            .With(x => x.LockExpiryDate, locked ? DateTimeOffset.UtcNow : (DateTimeOffset?)null)
+            .With(x => x.LockExpiryDate, locked ? DateTimeOffset.UtcNow : default(DateTimeOffset?))
             .Create();
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
         var before = DateTimeOffset.UtcNow.AddDays(-1);

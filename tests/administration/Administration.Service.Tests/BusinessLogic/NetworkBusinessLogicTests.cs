@@ -114,7 +114,6 @@ public class NetworkBusinessLogicTests
     #region HandlePartnerRegistration
 
     [Theory]
-    [InlineData("")]
     [InlineData("TEST00000012")]
     [InlineData("BPNL1234567899")]
     public async Task HandlePartnerRegistration_WithInvalidBusinessPartnerNumber_ThrowsControllerArgumentException(string? bpn)
@@ -125,7 +124,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -143,7 +142,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -162,7 +161,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -184,7 +183,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -203,7 +202,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -222,7 +221,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -241,7 +240,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -260,7 +259,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -281,7 +280,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(NoIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -301,7 +300,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(MultiIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -322,7 +321,7 @@ public class NetworkBusinessLogicTests
             .Create();
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
@@ -343,7 +342,7 @@ public class NetworkBusinessLogicTests
             .Throws(new ControllerArgumentException($"invalid roles: clientId: 'cl1', roles: [Company Admin]"));
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -381,10 +380,10 @@ public class NetworkBusinessLogicTests
             .Throws(new UnexpectedConditionException("Test message"));
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ServiceException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Contain("Errors occured while saving the users: ");
     }
 
@@ -409,10 +408,10 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(NoAliasIdpCompanyId);
 
         // Act
-        async Task Act() => await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Contain($"identityProvider {IdpId} has no alias");
     }
 
@@ -443,7 +442,7 @@ public class NetworkBusinessLogicTests
             "5",
             "00001",
             new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
-            Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, (Guid?)null).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
+            Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, default(Guid?)).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
         A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
@@ -509,7 +508,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        await _sut.HandlePartnerRegistration(data);
 
         // Assert
         addresses.Should().ContainSingle()
@@ -541,14 +540,15 @@ public class NetworkBusinessLogicTests
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, Bpn))
             .MustHaveHappened(10, Times.Exactly);
-        A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
+        var idpCreationData = new[] { (newCompanyId, IdpId) };
+        A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(idpCreationData)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
     [InlineData(Bpn)]
-    [InlineData((string?)null)]
+    [InlineData(null)]
     public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? BusinessPartnerNumberl)
     {
         // Arrange
@@ -616,7 +616,7 @@ public class NetworkBusinessLogicTests
                 processes.Add(process);
                 return process;
             });
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
                 processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
@@ -641,7 +641,7 @@ public class NetworkBusinessLogicTests
             });
 
         // Act
-        await _sut.HandlePartnerRegistration(data).ConfigureAwait(false);
+        await _sut.HandlePartnerRegistration(data);
 
         // Assert
         addresses.Should().ContainSingle()
@@ -673,7 +673,8 @@ public class NetworkBusinessLogicTests
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, BusinessPartnerNumberl))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(new[] { new ValueTuple<Guid, Guid>(newCompanyId, IdpId) })))
+        var idpCreationData = new[] { (newCompanyId, IdpId) };
+        A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(idpCreationData)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -690,7 +691,7 @@ public class NetworkBusinessLogicTests
         const ProcessStepTypeId ProcessStepId = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
         // Act
-        await _sut.RetriggerProcessStep(externalId, ProcessStepId).ConfigureAwait(false);
+        await _sut.RetriggerProcessStep(externalId, ProcessStepId);
 
         // Assert
         A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();
@@ -715,9 +716,9 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
         A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("DE", A<IEnumerable<UniqueIdentifierId>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI }));
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI }));
         A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "DE"), A<IEnumerable<UniqueIdentifierId>>._))
-            .Returns(new ValueTuple<bool, IEnumerable<UniqueIdentifierId>>(false, Enumerable.Empty<UniqueIdentifierId>()));
+            .Returns((false, Enumerable.Empty<UniqueIdentifierId>()));
 
         A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId)))
             .Returns((true, "testCompany"));
@@ -725,19 +726,19 @@ public class NetworkBusinessLogicTests
             .Returns((false, ""));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))
-            .Returns((IdpId, (string?)"test-alias"));
+            .Returns((IdpId, "test-alias"));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoAliasIdpCompanyId))
-            .Returns((IdpId, (string?)null));
+            .Returns((IdpId, null));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(NoIdpCompanyId))
-            .Returns(((Guid, string?))default);
+            .Returns<(Guid, string?)>(default);
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(MultiIdpCompanyId))
             .Throws(new InvalidOperationException("Sequence contains more than one element."));
 
         A.CallTo(() => _identityProviderRepository.GetManagedIdentityProviderAliasDataUntracked(A<Guid>.That.Matches(x => x == _identity.CompanyId || x == NoIdpCompanyId), A<IEnumerable<Guid>>._))
-            .Returns(new[] { (IdpId, (string?)"test-alias") }.ToAsyncEnumerable());
+            .Returns(new (Guid, string?)[] { (IdpId, "test-alias") }.ToAsyncEnumerable());
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(new[] { new UserRoleData(UserRoleId, "cl1", "Company Admin") }.ToAsyncEnumerable());

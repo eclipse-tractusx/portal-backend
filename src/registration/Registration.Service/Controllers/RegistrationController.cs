@@ -98,7 +98,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         public async Task<NoContentResult> UploadDocumentAsync([FromRoute] Guid applicationId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
         {
             await _registrationBusinessLogic.UploadDocumentAsync(applicationId, document, documentTypeId,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             return NoContent();
         }
 
@@ -279,7 +279,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="500">Internal Server Error</response>
         /// <response code="502">Service Unavailable.</response>
         [HttpPost]
-        [Authorize(Roles = "invite_user")]
+        // [Authorize(Roles = "invite_user")]
         [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/inviteNewUser")]

@@ -35,17 +35,42 @@ public class GeneralHttpErrorHandler
     private readonly IErrorMessageService? _errorMessageService;
     private readonly ILogger _logger;
 
-    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = new Dictionary<HttpStatusCode, MetaData>
+    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = ImmutableDictionary.CreateRange(new[]
     {
-        { HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.") },
-        { HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.") },
-        { HttpStatusCode.NotFound, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4", "Cannot find representation of target resource.") },
-        { HttpStatusCode.Forbidden, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3", "Access to requested resource is not permitted.") },
-        { HttpStatusCode.UnsupportedMediaType, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.13", "The server cannot process this type of content") },
-        { HttpStatusCode.BadGateway, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.3", "Error accessing external resource.") },
-        { HttpStatusCode.ServiceUnavailable, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4", "Service is currently unavailable.") },
-        { HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.") }
-    }.ToImmutableDictionary();
+        KeyValuePair.Create(HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.")),
+        KeyValuePair.Create(HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.")),
+        KeyValuePair.Create(HttpStatusCode.NotFound, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4", "Cannot find representation of target resource.")),
+        KeyValuePair.Create(HttpStatusCode.Forbidden, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3", "Access to requested resource is not permitted.")),
+        KeyValuePair.Create(HttpStatusCode.UnsupportedMediaType, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.13", "The server cannot process this type of content")),
+        KeyValuePair.Create(HttpStatusCode.BadGateway, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.3", "Error accessing external resource.")),
+        KeyValuePair.Create(HttpStatusCode.ServiceUnavailable, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4", "Service is currently unavailable.")),
+        KeyValuePair.Create(HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.")),
+    });
+
+    private static KeyValuePair<Type, (HttpStatusCode HttpStatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> CreateErrorEntry<T>(
+            HttpStatusCode httpStatusCode,
+            Func<T, (string?, IEnumerable<string>)>? messageFunc = null,
+            LogLevel logLevel = LogLevel.Information
+        ) where T : class =>
+            KeyValuePair.Create<Type, (HttpStatusCode, Func<Exception, (string?, IEnumerable<string>)>?, LogLevel)>(
+                typeof(T),
+                (httpStatusCode,
+                messageFunc == null
+                    ? null
+                    : (Exception e) => messageFunc.Invoke(e as T ?? throw new UnexpectedConditionException($"Exception type {e.GetType()} should always be of type {typeof(T)} here")),
+                logLevel));
+
+    private static readonly IReadOnlyDictionary<Type, (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> ErrorTypes = ImmutableDictionary.CreateRange(new[]
+    {
+        CreateErrorEntry<ArgumentException>(HttpStatusCode.BadRequest, argumentException => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1))),
+        CreateErrorEntry<ControllerArgumentException>(HttpStatusCode.BadRequest, caException => (caException.ParamName, Enumerable.Repeat(caException.Message, 1))),
+        CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
+        CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
+        CreateErrorEntry<ForbiddenException>(HttpStatusCode.Forbidden),
+        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, new[] { serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int) serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message })),
+        CreateErrorEntry<UnsupportedMediaTypeException>(HttpStatusCode.UnsupportedMediaType),
+        CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, new[] { $"Invalid service configuration: {configurationException.Message}" }))
+    });
 
     public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger, IErrorMessageService? errorMessageService = null) //TODO make errorMessageService mandatory as soon all dependant services are adjusted accordingly
     {
@@ -58,7 +83,7 @@ public class GeneralHttpErrorHandler
     {
         try
         {
-            await _next(context).ConfigureAwait(false);
+            await _next(context).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception error)
         {
@@ -70,68 +95,14 @@ public class GeneralHttpErrorHandler
             _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(false);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
-    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error)
-    {
-        HttpStatusCode statusCode;
-        var logLevel = LogLevel.Information;
-        Func<Exception, (string?, IEnumerable<string>)>? messageFunc = null;
-
-        if (error is ArgumentException argumentException)
-        {
-            statusCode = HttpStatusCode.BadRequest;
-            messageFunc = _ => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1));
-        }
-
-        else if (error is ControllerArgumentException caException)
-        {
-            statusCode = HttpStatusCode.BadRequest;
-            messageFunc = _ => (caException.ParamName, Enumerable.Repeat(caException.Message, 1));
-        }
-        else if (error is NotFoundException)
-        {
-            statusCode = HttpStatusCode.NotFound;
-        }
-        else if (error is ConflictException)
-        {
-            statusCode = HttpStatusCode.Conflict;
-        }
-        else if (error is ForbiddenException)
-        {
-            statusCode = HttpStatusCode.Forbidden;
-        }
-        else if (error is ServiceException serviceException)
-        {
-            statusCode = HttpStatusCode.BadGateway;
-            var serviceStatus = serviceException.StatusCode;
-            messageFunc = ex => (ex.Source, new[]
-            {
-                serviceStatus == null
-                    ? "remote service call failed"
-                    : $"remote service returned status code: {(int) serviceStatus} {serviceStatus}",
-                error.Message
-            });
-        }
-        else if (error is UnsupportedMediaTypeException)
-        {
-            statusCode = HttpStatusCode.UnsupportedMediaType;
-        }
-        else if (error is ConfigurationException)
-        {
-            statusCode = HttpStatusCode.InternalServerError;
-            messageFunc = ex => (ex.Source, new[] { $"Invalid service configuration: {ex.Message}" });
-        }
-        else
-        {
-            statusCode = HttpStatusCode.InternalServerError;
-            logLevel = LogLevel.Error;
-        }
-
-        return (statusCode, messageFunc, logLevel);
-    }
+    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error) =>
+        ErrorTypes.TryGetValue(error.GetType(), out var mapping)
+            ? mapping
+            : (HttpStatusCode.InternalServerError, null, LogLevel.Error);
 
     private ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages)
     {

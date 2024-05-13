@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor;
 
 public static class NetworkRegistrationExtensisons
 {
-    public static IEnumerable<ProcessStepTypeId>? GetRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
+    public static IEnumerable<ProcessStepTypeId> GetNetworkRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
             ProcessStepTypeId.SYNCHRONIZE_USER => new[] { ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER },
@@ -32,6 +33,6 @@ public static class NetworkRegistrationExtensisons
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_DECLINED },
             ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED => new[] { ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_APPROVED },
             ProcessStepTypeId.REMOVE_KEYCLOAK_USERS => new[] { ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS },
-            _ => null
+            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process NetworkRegistration")
         };
 }

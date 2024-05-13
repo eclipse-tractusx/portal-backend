@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,13 +51,13 @@ public class PartnerNetworkBusinessLogicTests
         var bpnIds = _fixture.CreateMany<string>(3);
         A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>._))
             .Returns(_fixture.CreateMany<string>(2).ToAsyncEnumerable());
+        var uppercaseIds = bpnIds.Select(x => x.ToUpper());
 
         // Act
-        var result = await _sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync().ConfigureAwait(false);
+        var result = await _sut.GetAllMemberCompaniesBPNAsync(bpnIds).ToListAsync();
 
         // Assert
         result.Should().NotBeNull().And.HaveCount(2);
-        A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameAs(bpnIds))).MustHaveHappenedOnceExactly();
-
+        A.CallTo(() => _companyRepository.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>>.That.IsSameSequenceAs(uppercaseIds))).MustHaveHappenedOnceExactly();
     }
 }

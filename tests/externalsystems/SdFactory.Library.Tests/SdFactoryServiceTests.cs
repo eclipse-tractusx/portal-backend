@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -77,10 +76,10 @@ public class SdFactoryServiceTests
         const string bpn = "BPNL000000000009";
         var id = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        CreateHttpClient(httpMessageHandlerMock);
+        using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None);
 
         // Assert
         _documents.Should().BeEmpty();
@@ -93,10 +92,10 @@ public class SdFactoryServiceTests
         var id = Guid.NewGuid();
         const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        CreateHttpClient(httpMessageHandlerMock);
+        using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", bpn, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -115,10 +114,10 @@ public class SdFactoryServiceTests
         const string bpn = "BPNL000000000009";
         var applicationId = Guid.NewGuid();
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        CreateHttpClient(httpMessageHandlerMock);
+        using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None);
 
         // Assert
         _documents.Should().BeEmpty();
@@ -131,10 +130,10 @@ public class SdFactoryServiceTests
         var applicationId = Guid.NewGuid();
         const string bpn = "BPNL000000000009";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        CreateHttpClient(httpMessageHandlerMock);
+        using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Action() => await _service.RegisterSelfDescriptionAsync(applicationId, UniqueIdentifiers, "de", bpn, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);
@@ -146,11 +145,12 @@ public class SdFactoryServiceTests
 
     #region Setup
 
-    private void CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
+    private HttpClient CreateHttpClient(HttpMessageHandler httpMessageHandlerMock)
     {
         var httpClient = new HttpClient(httpMessageHandlerMock) { BaseAddress = new Uri(_options.Value.SdFactoryUrl) };
         A.CallTo(() => _tokenService.GetAuthorizedClient<SdFactoryService>(_options.Value, CancellationToken.None))
-            .ReturnsLazily(() => httpClient);
+            .Returns(httpClient);
+        return httpClient;
     }
 
     private void SetupRepositoryMethods()

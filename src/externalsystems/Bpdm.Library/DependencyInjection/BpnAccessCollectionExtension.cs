@@ -30,7 +30,7 @@ public static class BpnAccessCollectionExtension
         services.AddTransient<LoggingHandler<BpnAccess>>();
         services.AddHttpClient(nameof(BpnAccess), c =>
             {
-                c.BaseAddress = new Uri(baseAddress);
+                c.BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
             })
             .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
         services.AddTransient<IBpnAccess, BpnAccess>();

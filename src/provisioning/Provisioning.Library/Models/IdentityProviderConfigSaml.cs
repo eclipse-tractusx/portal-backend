@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,5 +19,18 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public record IdentityProviderConfigSaml(string DisplayName, string RedirectUrl, string ClientId, bool Enabled, string EntityId, string SingleSignOnServiceUrl);
-public record IdentityProviderEditableConfigSaml(string alias, string displayName, string entityId, string singleSignOnServiceUrl);
+public record IdentityProviderConfigSaml(
+    string? DisplayName,
+    string? RedirectUrl,
+    string? ClientId,
+    bool? Enabled,
+    string? EntityId,
+    string? SingleSignOnServiceUrl
+);
+
+public record IdentityProviderEditableConfigSaml(
+    string Alias,
+    string DisplayName,
+    string EntityId,
+    string SingleSignOnServiceUrl
+);

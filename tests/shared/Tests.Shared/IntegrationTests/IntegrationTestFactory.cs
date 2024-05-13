@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -57,10 +56,8 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
 
         Environment.SetEnvironmentVariable("MVC_ROUTING_BASEPATH", "/api/test");
 
-        builder.ConfigureAppConfiguration((_, conf) =>
-        {
-            conf.AddJsonFile(configPath, true);
-        });
+        var config = new ConfigurationBuilder().AddJsonFile(configPath, true).Build();
+        builder.UseConfiguration(config);
         builder.ConfigureTestServices(services =>
         {
             var identityService = services.SingleOrDefault(d => d.ServiceType.GetInterfaces().Contains(typeof(IIdentityService)));

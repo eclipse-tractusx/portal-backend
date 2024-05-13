@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 
@@ -120,4 +121,19 @@ public class StaticDataController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<CompanyCertificateTypeData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyCertificateTypeData> GetCertificateTypes() =>
         _logic.GetCertificateTypes();
+
+    /// <summary>
+    /// Retrieve all certificate types 
+    /// </summary>
+    /// <returns>The did document</returns>
+    /// <remarks>
+    ///     Example: GET: /api/administration/staticdata/did/{bpn}/did.json
+    /// </remarks>
+    /// <response code="200">Returns a list of all of the Language i.e german and english</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [Route("did/{bpn}/did.json")]
+    [ProducesResponseType(typeof(IEnumerable<CompanyCertificateTypeData>), StatusCodes.Status200OK)]
+    public Task<JsonDocument> GetDidDocument(string bpn) =>
+        _logic.GetDidDocument(bpn);
 }

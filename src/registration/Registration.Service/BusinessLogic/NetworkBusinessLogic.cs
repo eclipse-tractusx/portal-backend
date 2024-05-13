@@ -50,7 +50,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var userId = _identityData.IdentityId;
         var data = await _portalRepositories.GetInstance<INetworkRepository>()
             .GetSubmitData(companyId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
             throw new NotFoundException($"Company {companyId} not found");
@@ -108,7 +108,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                 ca.ChecklistProcessId = processId;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task DeclineOsp(Guid applicationId, DeclineOspData declineData)
@@ -121,7 +121,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY
         };
         var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
-        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(false);
+        var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -161,6 +161,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         context.SkipProcessStepsExcept(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
         context.FinalizeProcessStep();
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

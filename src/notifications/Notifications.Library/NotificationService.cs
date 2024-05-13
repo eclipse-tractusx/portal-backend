@@ -106,7 +106,7 @@ public class NotificationService : INotificationService
     /// <inheritdoc />
     async Task INotificationService.SetNotificationsForOfferToDone(IEnumerable<UserRoleConfig> roles, IEnumerable<NotificationTypeId> notificationTypeIds, Guid offerId, IEnumerable<Guid>? additionalCompanyUserIds)
     {
-        var roleData = await ValidateRoleData(roles).ConfigureAwait(false);
+        var roleData = await ValidateRoleData(roles).ConfigureAwait(ConfigureAwaitOptions.None);
         var notificationRepository = _portalRepositories.GetInstance<INotificationRepository>();
 
         var notificationIds = await notificationRepository.GetNotificationUpdateIds(roleData, additionalCompanyUserIds, notificationTypeIds, offerId).ToListAsync().ConfigureAwait(false);

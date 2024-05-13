@@ -8,7 +8,7 @@ The companies involved want to increase the automotive industry's
 competitiveness, improve efficiency through industry-specific cooperation and
 accelerate company processes through standardization and access to information
 and data. A special focus is also on SMEs, whose active participation is of
-central importance for the networkâ€™s success. That is why Catena-X has been
+central importance for the network's success. That is why Catena-X has been
 conceived from the outset as an open network with solutions ready for SMEs,
 where these companies will be able to participate quickly and with little IT
 infrastructure investment. Tractus-X is meant to be the PoC project of the
@@ -50,6 +50,10 @@ fulfills the DCO's requirement that you sign-off on your contributions.
 
 For more information, please see the Eclipse Committer Handbook:
 https://www.eclipse.org/projects/handbook/#resources-commit
+
+## How To Contribute
+
+For more practical information, please refer to [Contribution details](https://github.com/eclipse-tractusx/portal-assets/blob/main/docs/developer/Technical%20Documentation/Dev%20Process/How%20to%20contribute.md).
 
 ## Contact
 

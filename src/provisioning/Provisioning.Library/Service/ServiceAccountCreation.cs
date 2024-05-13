@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
@@ -83,7 +84,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
             }
         }
 
-        var clientId = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(false);
+        var clientId = await GetNextServiceAccountClientIdWithIdAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         var enhancedName = enhanceTechnicalUserName ? $"{clientId}-{name}" : name;
         var serviceAccountData = await _provisioningManager.SetupCentralServiceAccountClientAsync(
             clientId,
@@ -97,12 +98,12 @@ public class ServiceAccountCreation : IServiceAccountCreation
                     .ToDictionary(group =>
                             group.Key,
                         group => group.Select(userRole => userRole.UserRoleText))),
-            enabled).ConfigureAwait(false);
+            enabled).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (bpns.Any())
         {
-            await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(false);
-            await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(false);
+            await _provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var identity = _portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
@@ -125,7 +126,7 @@ public class ServiceAccountCreation : IServiceAccountCreation
 
     private async Task<string> GetNextServiceAccountClientIdWithIdAsync()
     {
-        var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(false);
+        var id = await _provisioningDbAccess.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return $"{_settings.ServiceAccountClientPrefix}{id}";
     }
 }

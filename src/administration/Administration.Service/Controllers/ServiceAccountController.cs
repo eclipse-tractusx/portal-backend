@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -66,7 +66,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
     {
-        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(false);
+        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
     }
 
@@ -125,7 +125,7 @@ public class ServiceAccountController : ControllerBase
     /// <response code="404">Record was not found. Service account is either not existing or not connected to the respective company.</response>
     /// <response code="409">Undefined client for service account.</response>
     [HttpPut]
-    [Authorize(Roles = "add_tech_user_management")] // TODO check whether we also want an edit role
+    [Authorize(Roles = "add_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts/{serviceAccountId}")]
     [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status200OK)]
@@ -190,4 +190,21 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
         _logic.GetServiceAccountRolesAsync(languageShortName);
+
+    /// <summary>
+    /// Get all service account roles
+    /// </summary>
+    /// <param name="processId">The processId that was passed as externalId with the request for creation of the technical user.</param>
+    /// <param name="callbackData">Information of the technical user which was created.</param>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}</remarks>
+    /// <response code="200">returns all service account roles</response>
+    [HttpPost]
+    [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}")]
+    public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid processId, [FromBody] AuthenticationDetail callbackData)
+    {
+        await _logic.HandleServiceAccountCreationCallback(processId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);
+        return Ok();
+    }
 }

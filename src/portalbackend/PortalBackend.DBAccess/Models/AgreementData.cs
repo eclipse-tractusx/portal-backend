@@ -29,7 +29,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="AgreementName">Name of the agreement</param>
 public record AgreementData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
-    [property: JsonPropertyName("name")] string AgreementName);
+    [property: JsonPropertyName("name")] string AgreementName,
+    [property: JsonPropertyName("mandatory")] bool Mandatory);
 
 /// <summary>
 /// Agreement Assigned Document Data
@@ -42,4 +43,5 @@ public record AgreementDocumentData(
     [property: JsonPropertyName("agreementId")] Guid AgreementId,
     [property: JsonPropertyName("name")] string AgreementName,
     [property: JsonPropertyName("agreementLink")] string? AgreementLink,
-    [property: JsonPropertyName("documentId")] Guid? DocumentId);
+    [property: JsonPropertyName("documentId")] Guid? DocumentId,
+    [property: JsonPropertyName("mandatory")] bool Mandatory);

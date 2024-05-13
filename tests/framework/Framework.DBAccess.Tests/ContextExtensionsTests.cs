@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -125,8 +124,8 @@ public class ContextExtensionsTests
         IEnumerable<string> updatedEntityKeys, IEnumerable<string> updatedEntityValues,
         IEnumerable<string> removedEntityKeys)
     {
-        var initialItems = initialKeys.Zip(initialValues).Select(x => ((Guid InitialKey, string InitialValue))(new Guid(x.First), x.Second)).ToImmutableArray();
-        var updateItems = updateKeys.Zip(updateValues).Select(x => ((Guid UpdateKey, string UpdateValue))(new Guid(x.First), x.Second)).ToImmutableArray();
+        var initialItems = initialKeys.Zip(initialValues).Select(x => (InitialKey: new Guid(x.First), InitialValue: x.Second)).ToImmutableArray();
+        var updateItems = updateKeys.Zip(updateValues).Select(x => (UpdateKey: new Guid(x.First), UpdateValue: x.Second)).ToImmutableArray();
         var addedEntities = addedEntityKeys.Zip(addedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).ToImmutableArray();
         var updatedEntities = updatedEntityKeys.Zip(updatedEntityValues).Select(x => new TestValueEntity(new Guid(x.First), x.Second)).ToImmutableArray();
         var removedEntityIds = removedEntityKeys.Select(x => new Guid(x)).ToImmutableArray();

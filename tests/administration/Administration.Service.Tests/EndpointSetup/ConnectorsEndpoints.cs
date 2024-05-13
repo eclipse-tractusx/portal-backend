@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -30,12 +29,12 @@ public class ConnectorsEndpoints
 
     public ConnectorsEndpoints(HttpClient client)
     {
-        this._client = client;
+        _client = client;
     }
 
     public async Task<HttpResponseMessage> GetCompanyConnectorsForCurrentUserAsync()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
-        return await this._client.SendAsync(request);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{Path}");
+        return await _client.SendAsync(request);
     }
 }

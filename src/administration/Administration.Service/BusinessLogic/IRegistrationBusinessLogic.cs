@@ -20,7 +20,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -56,6 +58,14 @@ public interface IRegistrationBusinessLogic
     Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Processes the dim response
+    /// </summary>
+    /// <param name="bpn">the companies business partner number</param>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken"></param>
+    Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Gets the checklist details for the given application
     /// </summary>
     /// <param name="applicationId">Id of the application</param>
@@ -83,4 +93,18 @@ public interface IRegistrationBusinessLogic
     /// <param name="documentId">Id of the document to get</param>
     /// <returns>Returns the filename and content of the file</returns>
     Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId);
+
+    /// <summary>
+    /// Processes the issuer bpn response
+    /// </summary>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    Task ProcessIssuerBpnResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Processes the issuer membership response
+    /// </summary>
+    /// <param name="data">the response data</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
 }

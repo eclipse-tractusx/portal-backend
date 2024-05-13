@@ -2,6 +2,141 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC6
+
+### Feature
+* **Administration Service**
+* dim: enhanced endpoint with issuer did, bpnl and did of the holder and url for the bpn did resolver
+
+### Bugfix
+* **Administration Service**
+* allowed null values in GET and POST identityprovider response
+* fixed isOwner filter for GET api/administration/serviceaccount/owncompany/serviceaccounts
+
+## 2.0.0-RC5
+
+### Changes
+* **Administration Service**
+* adjusted POST: api/administration/companydata/useCaseParticipation to create framework credentials with the ssi credential issuer
+
+### Bugfix
+* **Process Worker**
+* adjusted technical user creation process
+
+## 2.0.0-RC4
+
+### Changes
+* **Administration Service**
+* adjusted GET: api/administration/adjust response of companydata/decentralidentity/urls to response the correct urls
+
+### Feature
+* **Backend Logic**
+* added auditing for certificate management
+* **Apps Service**
+* added GET: /api/apps/AppChange/{appId}/roles to receive the roles for a specific app
+
+### Bugfix
+* **Process Worker**
+* set the correct state for IDENTITY_WALLET application step after all steps are done
+
+## 2.0.0-RC3
+
+### Changes
+* **Administration Service**
+* adjust endpoint api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to return the secrets of a dim technical user as well
+
+### Feature
+* **Backend Logic**
+* adjusted offer autosetup process to create dim technical users
+* **Administration Service**
+* added GET: api/administration/companydata/decentralidentity/urls endpoint to receive wallet information
+
+### Bugfix
+* adjusted base url registration for http client setups
+* adjusted the did schema validation
+* added support for DUNS_ID for the BPDM gat endpoints
+* adjusted saving of mailing process steps
+
+## 2.0.0-RC2
+
+### Change
+* moved api paths from BPDM out of code into config / helm chart
+* merged all migrations since 2.0.0-alpha into one 2.0.0-rc2
+
+### Feature
+* added DID to DID BPN resolver
+* added new checklist steps
+
+### Bugfix
+* fixed company invite: changed invitation processStepType order and removed disposal of mimeMessage for mailing
+* fixed mail not being set at new user invite
+
+## 2.0.0-RC1
+
+### Change
+* **Backend Logic**
+  * Save the error details of the clearinghouse service inside the portal db of application checklist/process worker
+* **Apps Services**
+  * updated backend logic of `PUT /api/apps/AppReleaseProcess/{appId}/submit` to allow the submission without defined/configured technical user profile
+* **Administration Service**
+  * remove obsolete endpoint `GET /api/user/app/{appId}/roles`
+  * remove obsolete endpoint `PUT /api/user/app/{appId}/roles`
+  * added connector url inside the response body of `GET /api/administration/Connectors`
+  * added connector url inside the response body of `GET /api/administration/Connectors/managed`
+  * added connector url inside the response body of `GET /api/administration/Connectors/{connectorID}`
+* upgraded all services and jobs to .net 8
+* upgraded nuget packages
+* merged all migrations since v1.8.0-rc6 into one 2.0.0-alpha
+* updated swagger (endpoint documentation, payload examples and allowed values)
+* changed the CompanyInvitationData to class instead of record
+* updated seeding:
+  * removed service account sa-cl5-custodian-1
+  * removed the following roles: BPDM Gate Read, BPDM Gate Read & Write, BPDM Partner Gate, BPDM Management, BPDM Pool
+  * added the following roles: BPDM Sharing Admin, BPDM Sharing Input Manager, BPDM Sharing Input Consumer, BPDM Sharing Output Consumer, BPDM Pool Admin, BPDM Pool Consumer
+
+### Feature
+* **Certificate Management (Administration Service)**
+  * released new endpoint to delete company owned company certificates `DELETE /api/administration/companydata/companyCertificate/document/{documentId}`
+  * released new endpoint to view other companies certificates via the document ID `GET /api/administration/companydata/companyCertificates/documents/{documentId}`
+  * released specific document endpoint to fetch owned company certificates by documentID `GET /api/administration/companydata/companyCertificates/{documentId}`
+* **Registration Process Worker**
+  * implemented new backend logic for the process step "IDENTITY_WALLET_CREATION" by separating the step logic (bpm credential creation separated and payload changed) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added retrigger endpoint to restarted a failed dim wallet setup step
+  * added postback endpoint to receive the did document and authentication information ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* **Agreement Status**
+  * updated logic of POST and GET agreement endpoint (apps service) to only consider active agreements
+  * updated logic of POST and GET agreement endpoint (services service) to only consider active agreements
+  * enhanced response body payload by adding "mandatory" agreement flag inside the endpoint `GET /api/registration/companyRoleAgreementData`
+* **Seeding Data updated**
+  * new technical user profiles for BPDM services released inside the seeding files
+* **Business Process Worker**
+  * added new backend worker for invitations to run the invitation steps asynchronously
+  * added mailing worker and moved all backend functions for sending emails into the worker
+* Email Templates
+  * Enabled email service for create user account under owned IdP as well as for migration of an user account from any IdP to a ownedIdP
+
+### Technical Support
+* adjusted the get_current_version script for nuget packages to only return the tag name
+* introduced codeql scan
+* removed veracode workflow
+* removed unused deprecated packages
+* improved workflows and documentation
+* upgraded gh actions and change to pinned actions full length commit sha
+* add dependabot.yml file
+
+### Bugfix
+* adjusted endpoint `GET api/administration/serviceaccount/owncompany/serviceaccounts` to filter for active service accounts by default
+* fixed backend logic of the endpoint `POST /api/administration/companydata/companyCertificate` - document status is now automatically set tok "locked" with the document upload
+* endpoint `POST /api/administration/connectors/discovery` was running on an empty response when calling the endpoint without a body (instead of an empty array). Backend behavior fixed to allow both calls
+* corrected mail template that's send out after the network registration from 'CredentialRejected' to 'OspWelcomeMail'
+* fixed GetCompanyWithAddressAsync
+  * use identifier.Value instead of repeating its type
+  * use CompanyUniqueIdData instead of UniqueIdentifierData
+* fixed sonar findings
+* fixed codeql findings
+* CONTRIBUTING.md: linked to contribution details
+* updated eclipse dash tool for dependencies check
+
 ## 1.8.1
 
 ### Bugfix

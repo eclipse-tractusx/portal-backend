@@ -93,7 +93,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
 
         (Guid IdentityId, Guid CompanyId) serviceAccountData;
         var clientId = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.ClientId)?.Value;
-        if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _serviceAccountRepository.GetServiceAccountDataByClientId(clientId).ConfigureAwait(false)) != default)
+        if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _serviceAccountRepository.GetServiceAccountDataByClientId(clientId).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
             _identityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);
             _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
@@ -106,7 +106,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for sub {Sub}", preferredUserName, sub);
 
         (Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
-        if (!string.IsNullOrWhiteSpace(sub) && (identityData = await _identityRepository.GetActiveIdentityDataByUserEntityId(sub).ConfigureAwait(false)) != default)
+        if (!string.IsNullOrWhiteSpace(sub) && (identityData = await _identityRepository.GetActiveIdentityDataByUserEntityId(sub).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
             _identityDataBuilder.AddIdentityId(identityData.IdentityId);
             _identityDataBuilder.AddIdentityTypeId(identityData.IdentityTypeId);
@@ -123,7 +123,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
     {
         if (_identityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Initialized)
         {
-            _identityDataBuilder.AddCompanyId(await _identityRepository.GetActiveCompanyIdByIdentityId(_identityDataBuilder.IdentityId).ConfigureAwait(false));
+            _identityDataBuilder.AddCompanyId(await _identityRepository.GetActiveCompanyIdByIdentityId(_identityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None));
             _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
         }
         return _identityDataBuilder.CompanyId;

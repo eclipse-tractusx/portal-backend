@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,61 +51,67 @@ public class CancelableStreamTest
     [Fact]
     public async void TestReadAsyncNoOtherTokenSuccess()
     {
-        var (sut, _) = SetupForRead();
-        var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
-        var secondResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
+        var (sut, source) = SetupForRead();
+        var firstResult = await sut.ReadAsync(_memory);
+        var secondResult = await sut.ReadAsync(_memory);
         firstResult.Should().Be(_numBytesFirstRead);
         secondResult.Should().Be(_numBytesSecondRead);
+        source.Dispose();
     }
 
     [Fact]
     public async void TestReadAsyncWithUncancelledOtherTokenSuccess()
     {
-        var (sut, _) = SetupForRead();
-        var firstResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
-        var secondResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
+        var (sut, source) = SetupForRead();
+        using var firstSource = new CancellationTokenSource();
+        using var secondSource = new CancellationTokenSource();
+        var firstResult = await sut.ReadAsync(_memory, firstSource.Token);
+        var secondResult = await sut.ReadAsync(_memory, secondSource.Token);
         firstResult.Should().Be(_numBytesFirstRead);
         secondResult.Should().Be(_numBytesSecondRead);
+        source.Dispose();
     }
 
     [Fact]
     public async void TestReadAsyncSourceCancelledWithUncancelledOtherTokenSuccess()
     {
         var (sut, source) = SetupForRead();
-        var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
+        var firstResult = await sut.ReadAsync(_memory);
         source.Cancel();
-        var secondResult = await sut.ReadAsync(_memory, new CancellationTokenSource().Token).ConfigureAwait(false);
+        using var secondSource = new CancellationTokenSource();
+        var secondResult = await sut.ReadAsync(_memory, secondSource.Token);
         firstResult.Should().Be(_numBytesFirstRead);
         secondResult.Should().Be(_numBytesSecondRead);
+        source.Dispose();
     }
 
     [Fact]
     public async void TestReadAsyncWithCancelledOtherTokenThrows()
     {
         var (sut, source) = SetupForRead();
-
-        var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
+        var firstResult = await sut.ReadAsync(_memory);
         firstResult.Should().Be(_numBytesFirstRead);
 
         var exception = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await sut.ReadAsync(_memory, new CancellationToken(true)).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await sut.ReadAsync(_memory, new CancellationToken(true))
+        );
         exception.Should().Be(_otherTokenCanceledException);
+        source.Dispose();
     }
 
     [Fact]
     public async void TestReadAsyncSourceCancelledThrows()
     {
         var (sut, source) = SetupForRead();
-
-        var firstResult = await sut.ReadAsync(_memory).ConfigureAwait(false);
+        var firstResult = await sut.ReadAsync(_memory);
         firstResult.Should().Be(_numBytesFirstRead);
 
         source.Cancel();
         var exception = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await sut.ReadAsync(_memory).ConfigureAwait(false)
-        ).ConfigureAwait(false);
+            await sut.ReadAsync(_memory)
+        );
         exception.Should().Be(_sourceTokenCanceledException);
+        source.Dispose();
     }
 
     #endregion

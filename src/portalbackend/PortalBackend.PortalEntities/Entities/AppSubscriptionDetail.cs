@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -45,8 +44,8 @@ public class AppSubscriptionDetail : IAuditableV1, IBaseEntity
     public AppSubscriptionDetail(Guid id, Guid offerSubscriptionId)
         : this()
     {
-        this.Id = id;
-        this.OfferSubscriptionId = offerSubscriptionId;
+        Id = id;
+        OfferSubscriptionId = offerSubscriptionId;
     }
 
     /// <summary>

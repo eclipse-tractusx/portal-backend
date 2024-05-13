@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,12 +21,12 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -47,9 +46,9 @@ public class NetworkRegistrationHandlerTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserRepository _userRepository;
     private readonly INetworkRepository _networkRepository;
-
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly NetworkRegistrationHandler _sut;
-    private readonly IMailingService _mailingService;
+    private readonly IMailingProcessCreation _mailingProcessCreation;
 
     public NetworkRegistrationHandlerTests()
     {
@@ -61,10 +60,11 @@ public class NetworkRegistrationHandlerTests
         var portalRepositories = A.Fake<IPortalRepositories>();
         _userRepository = A.Fake<IUserRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _provisioningManager = A.Fake<IProvisioningManager>();
-        _mailingService = A.Fake<IMailingService>();
 
         var settings = new NetworkRegistrationProcessSettings
         {
@@ -75,8 +75,9 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
 
-        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, _mailingService, options);
+        _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, _mailingProcessCreation, options);
     }
 
     #region SynchronizeUser
@@ -86,10 +87,10 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
-            .Returns((string?)null);
+            .Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
@@ -104,7 +105,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(user1Id, firstName, lastName, email,
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, firstName, lastName, email,
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
 
@@ -119,7 +120,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -131,7 +132,7 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
+        var user1 = new CompanyUserIdentityProviderProcessData(user1Id, "tony", "stark", "tony@stark.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", null, "id1234"), 1));
 
         A.CallTo(() => _networkRepository.GetOspCompanyName(NetworkRegistrationId))
@@ -145,7 +146,7 @@ public class NetworkRegistrationHandlerTests
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -157,10 +158,10 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
+        var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
-        var user2 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "steven", "strange",
+        var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("drstrange", "idp1", "id9876"), 1));
 
@@ -175,15 +176,15 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns<string?>(null);
+        A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1")).Returns<string?>(null);
 
         // Act
-        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        async Task Act() => await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Display Name should not be null for alias: idp1");
+        ex.Message.Should().Be("DisplayName for idpAlias idp1 couldn't be determined");
     }
 
     [Fact]
@@ -191,13 +192,13 @@ public class NetworkRegistrationHandlerTests
     {
         // Arrange
         var user1Id = Guid.NewGuid().ToString();
-        var user1 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
+        var user1 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "tony", "stark", "tony@stark.com",
             "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("ironman", "idp1", "id1234"), 1));
-        var user2 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "steven", "strange",
+        var user2 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "steven", "strange",
             "steven@strange.com", "Test Company", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("drstrange", "idp1", "id9876"), 1));
-        var user3 = new CompanyUserIdentityProviderProcessTransferData(Guid.NewGuid(), "foo", "bar",
+        var user3 = new CompanyUserIdentityProviderProcessData(Guid.NewGuid(), "foo", "bar",
             "foo@bar.com", "Acme Corp", "BPNL00000001TEST",
             Enumerable.Repeat(new ProviderLinkTransferData("foobar", "idp2", "id4711"), 1));
 
@@ -213,15 +214,15 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(UserRoleIds, "cl1", "Company Admin"), 1).ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(user1.CompanyUserId.ToString())).Returns(user1Id);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns((string?)null);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(user3.CompanyUserId.ToString())).Returns((string?)null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user2.CompanyUserId.ToString())).Returns<string?>(null);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(user3.CompanyUserId.ToString())).Returns<string?>(null);
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp1"))
             .Returns("DisplayName for Idp1");
         A.CallTo(() => _provisioningManager.GetIdentityProviderDisplayName("idp2"))
             .Returns("DisplayName for Idp2");
 
         // Act
-        var result = await _sut.SynchronizeUser(NetworkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.SynchronizeUser(NetworkRegistrationId);
 
         // Assert
         A.CallTo(() => _userProvisioningService.HandleCentralKeycloakCreation(A<UserCreationRoleDataIdpInfo>._, user1.CompanyUserId, A<string>._, A<string>._, null, A<IEnumerable<IdentityProviderLink>>._, A<IUserRepository>._, A<IUserRolesRepository>._))
@@ -232,11 +233,11 @@ public class NetworkRegistrationHandlerTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(user2.CompanyUserId, A<Action<Identity>>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _mailingService.SendMails("tony@stark.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("tony@stark.com", "OspWelcomeMail", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("steven@strange.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("steven@strange.com", "OspWelcomeMail", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp1")))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingService.SendMails("foo@bar.com", A<IDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2"), A<IEnumerable<string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("foo@bar.com", "OspWelcomeMail", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x["idpAlias"] == "DisplayName for Idp2")))
             .MustHaveHappenedOnceExactly();
 
         result.modified.Should().BeFalse();
@@ -271,7 +272,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -297,7 +298,7 @@ public class NetworkRegistrationHandlerTests
                 identity.Id,
             }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._))
-            .Returns((string?)null);
+            .Returns<string?>(null);
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
             .Invokes((Guid _, Action<Identity>? initialize, Action<Identity> setOptionalFields) =>
             {
@@ -306,7 +307,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -341,7 +342,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();
@@ -378,7 +379,7 @@ public class NetworkRegistrationHandlerTests
             });
 
         // Act
-        var result = await _sut.RemoveKeycloakUser(networkRegistrationId).ConfigureAwait(false);
+        var result = await _sut.RemoveKeycloakUser(networkRegistrationId);
 
         // Assert
         result.modified.Should().BeTrue();

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -25,7 +24,15 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record IdentityProviderDetails(Guid IdentityProviderId, string? Alias, IdentityProviderCategoryId IdentityProviderCategoryId, IdentityProviderTypeId IdentityProviderTypeId, string? DisplayName, string? RedirectUrl, bool? Enabled, IEnumerable<IdentityProviderMapperModel>? Mappers)
+public record IdentityProviderDetails(
+    Guid IdentityProviderId,
+    string? Alias,
+    IdentityProviderCategoryId IdentityProviderCategoryId,
+    IdentityProviderTypeId IdentityProviderTypeId,
+    string? DisplayName,
+    string? RedirectUrl,
+    bool? Enabled,
+    IEnumerable<IdentityProviderMapperModel>? Mappers)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IdentityProviderDetailsOidc? Oidc { get; init; } = null;
@@ -34,10 +41,18 @@ public record IdentityProviderDetails(Guid IdentityProviderId, string? Alias, Id
     public IdentityProviderDetailsSaml? Saml { get; init; } = null;
 }
 
-public record IdentityProviderDetailsOidc(string? MetadataUrl, string AuthorizationUrl, string TokenUrl, string? LogoutUrl, string ClientId, bool HasClientSecret, IamIdentityProviderClientAuthMethod ClientAuthMethod)
-{
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm { get; init; } = null;
-}
+public record IdentityProviderDetailsOidc(
+    string? MetadataUrl,
+    string? AuthorizationUrl,
+    string? TokenUrl,
+    string? LogoutUrl,
+    string? ClientId,
+    bool HasClientSecret,
+    IamIdentityProviderClientAuthMethod? ClientAuthMethod,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IamIdentityProviderSignatureAlgorithm? SignatureAlgorithm
+);
 
-public record IdentityProviderDetailsSaml(string ServiceProviderEntityId, string SingleSignOnServiceUrl);
+public record IdentityProviderDetailsSaml(
+    string? ServiceProviderEntityId,
+    string? SingleSignOnServiceUrl
+);

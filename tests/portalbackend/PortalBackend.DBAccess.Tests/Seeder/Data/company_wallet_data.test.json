@@ -1,0 +1,13 @@
+[
+  {
+    "id": "ac17d2a4-3bf8-4d78-906f-b96aeddddfc2",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "did": "did:web:test",
+    "did_document": {},
+    "client_id": "cl1",
+    "client_secret": "",
+    "initialization_vector": null,
+    "encryption_mode": 0,
+    "authentication_service_url": "https://example.org/auth"
+  }
+]

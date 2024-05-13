@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -40,14 +39,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
             message.From.Add(MailboxAddress.Parse(sender));
             message.To.Add(MailboxAddress.Parse(recipient));
             message.Subject = subject;
-            if (useHtml)
-            {
-                message.Body = new TextPart("html") { Text = body };
-            }
-            else
-            {
-                message.Body = new TextPart("plain") { Text = body };
-            }
+            message.Body = useHtml
+                ? new TextPart("html") { Text = body }
+                : new TextPart("plain") { Text = body };
             return _send(message);
         }
 
@@ -59,6 +53,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
                 {
                     client.ProxyClient = new HttpProxyClient(_MailSettings.HttpProxy, _MailSettings.HttpProxyPort);
                 }
+
                 await client.ConnectAsync(_MailSettings.SmtpHost, _MailSettings.SmtpPort);
                 await client.AuthenticateAsync(_MailSettings.SmtpUser, _MailSettings.SmtpPassword);
                 await client.SendAsync(message);

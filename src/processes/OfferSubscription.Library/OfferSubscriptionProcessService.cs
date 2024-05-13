@@ -49,7 +49,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
 
         if (mustBePending)
         {
-            var subscriptionInfo = await offerSubscriptionsRepository.IsActiveOfferSubscription(offerSubscriptionId).ConfigureAwait(false);
+            var subscriptionInfo = await offerSubscriptionsRepository.IsActiveOfferSubscription(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (!subscriptionInfo.IsValidSubscriptionId)
             {
                 throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
@@ -61,7 +61,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         }
 
         var processData = await offerSubscriptionsRepository
-            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(false);
+            .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return processData.CreateManualProcessData(processStepTypeId, _portalRepositories, () => $"offer subscription {offerSubscriptionId}");
     }

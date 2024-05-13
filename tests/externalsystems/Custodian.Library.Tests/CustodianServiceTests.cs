@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -84,7 +83,7 @@ public class CustodianServiceTests
         var data = JsonSerializer.Serialize(new WalletCreationResponse(did), JsonOptions);
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -93,7 +92,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -115,7 +114,7 @@ public class CustodianServiceTests
         var httpMessageHandlerMock = content == null
             ? new HttpMessageHandlerMock(statusCode, null, null, isRequiredUri)
             : new HttpMessageHandlerMock(statusCode, new StringContent(content), null, isRequiredUri);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -123,7 +122,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.CreateWalletAsync(bpn, name, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -140,7 +139,7 @@ public class CustodianServiceTests
         var content = "this is no json data";
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, new StringContent(content));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -149,7 +148,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.CreateWalletAsync(bpn, name, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -172,7 +171,7 @@ public class CustodianServiceTests
                 false,
                 null));
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK, data.ToFormContent("application/vc+ld+json"));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -181,7 +180,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        var result = await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None);
 
         // Assert
         result.Bpn.Should().NotBeNullOrEmpty();
@@ -194,14 +193,8 @@ public class CustodianServiceTests
     {
         // Arrange
         const string validBpn = "BPNL00000003CRHK";
-        var data = JsonSerializer.Serialize(new WalletData("abc",
-            validBpn,
-            "123",
-            DateTime.UtcNow,
-            false,
-            null));
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -210,7 +203,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletByBpnAsync(validBpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -222,7 +215,7 @@ public class CustodianServiceTests
     {
         // Arrange
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -230,7 +223,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.GetWalletByBpnAsync("invalidBpn", CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -247,7 +240,7 @@ public class CustodianServiceTests
         // Arrange
         const string bpn = "123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -256,7 +249,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.SetMembership(bpn, CancellationToken.None);
 
         // Assert
         result.Should().Be("Membership Credential successfully created");
@@ -268,7 +261,7 @@ public class CustodianServiceTests
         // Arrange
         const string bpn = "123";
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.Conflict, new StringContent(JsonSerializer.Serialize(new MembershipErrorResponse("Credential of type MembershipCredential is already exists "))));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -277,7 +270,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        var result = await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+        var result = await sut.SetMembership(bpn, CancellationToken.None);
 
         // Assert
         result.Should().Be($"{bpn} already has a membership");
@@ -294,7 +287,7 @@ public class CustodianServiceTests
         var httpMessageHandlerMock = content == null
             ? new HttpMessageHandlerMock(statusCode)
             : new HttpMessageHandlerMock(statusCode, new StringContent(content));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -302,7 +295,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.SetMembership(bpn, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.SetMembership(bpn, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -322,7 +315,7 @@ public class CustodianServiceTests
         var data = _fixture.Create<UseCaseDetailData>();
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -331,7 +324,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
+        await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None);
 
         // Assert
         httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
@@ -349,7 +342,7 @@ public class CustodianServiceTests
     [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-framework-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-framework-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-framework-post failed with statuscode 403")]
-    public async Task TriggerFramework_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string content, string message)
+    public async Task TriggerFramework_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)
     {
         // Arrange
         const string bpn = "123";
@@ -357,7 +350,7 @@ public class CustodianServiceTests
         var httpMessageHandlerMock = content == null
             ? new HttpMessageHandlerMock(statusCode)
             : new HttpMessageHandlerMock(statusCode, new StringContent(content));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -365,7 +358,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.TriggerFrameworkAsync(bpn, data, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -384,7 +377,7 @@ public class CustodianServiceTests
         const string bpn = "123";
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK, null, null, true);
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -393,7 +386,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
+        await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None);
 
         // Assert
         httpMessageHandlerMock.RequestMessage.Should().Match<HttpRequestMessage>(x =>
@@ -409,14 +402,14 @@ public class CustodianServiceTests
     [InlineData(HttpStatusCode.BadRequest, "{ \"test\": \"123\" }", "call to external system custodian-dismantler-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.BadRequest, "this is no json", "call to external system custodian-dismantler-post failed with statuscode 400")]
     [InlineData(HttpStatusCode.Forbidden, null, "call to external system custodian-dismantler-post failed with statuscode 403")]
-    public async Task TriggerDismantler_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string content, string message)
+    public async Task TriggerDismantler_WithConflict_ThrowsServiceExceptionWithErrorContent(HttpStatusCode statusCode, string? content, string message)
     {
         // Arrange
         const string bpn = "123";
         var httpMessageHandlerMock = content == null
             ? new HttpMessageHandlerMock(statusCode)
             : new HttpMessageHandlerMock(statusCode, new StringContent(content));
-        var httpClient = new HttpClient(httpMessageHandlerMock)
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
             BaseAddress = new Uri("https://base.address.com")
         };
@@ -424,7 +417,7 @@ public class CustodianServiceTests
         var sut = new CustodianService(_tokenService, _dateTimeProvider, _options);
 
         // Act
-        async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None).ConfigureAwait(false);
+        async Task Act() => await sut.TriggerDismantlerAsync(bpn, VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);

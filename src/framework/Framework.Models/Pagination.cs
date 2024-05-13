@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -93,7 +92,7 @@ public class Pagination
         ValidatePaginationParameters(page, size, maxSize);
 
         var source = getSource(size * page, size);
-        var count = await source.Count.ConfigureAwait(false);
+        var count = await source.Count.ConfigureAwait(ConfigureAwaitOptions.None);
         var data = await source.Data.ToListAsync().ConfigureAwait(false);
 
         return new Response<T>(
@@ -101,7 +100,7 @@ public class Pagination
                 count,
                 count / size + Math.Clamp(count % size, 0, 1),
                 page,
-                data.Count()),
+                data.Count),
             data);
     }
 
@@ -109,7 +108,7 @@ public class Pagination
     {
         ValidatePaginationParameters(page, size, maxSize);
 
-        var source = await getSource(size * page, size).ConfigureAwait(false);
+        var source = await getSource(size * page, size).ConfigureAwait(ConfigureAwaitOptions.None);
         return source == null
             ? new Response<T>(new Metadata(0, 0, 0, 0), Enumerable.Empty<T>())
             : new Response<T>(
@@ -121,22 +120,20 @@ public class Pagination
                 source.Data);
     }
 
-    public static IQueryable<Pagination.Source<T>?> CreateSourceQueryAsync<TEntity, TKey, T>(int skip, int take, IQueryable<IGrouping<TKey, TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity, T>> select) where TEntity : class
+    public static IQueryable<Source<T>?> CreateSourceQueryAsync<TEntity, TKey, T>(int skip, int take, IQueryable<IGrouping<TKey, TEntity>> query, Expression<Func<IEnumerable<TEntity>, IOrderedEnumerable<TEntity>>>? orderBy, Expression<Func<TEntity, T>> select) where TEntity : class
     {
         var paramGroup = Expression.Parameter(typeof(IGrouping<TKey, TEntity>), "group");
 
-        var selector = Expression.Lambda<Func<IGrouping<TKey, TEntity>, Pagination.Source<T>>>(
-            Expression.New(typeof(Pagination.Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(int), typeof(IEnumerable<T>) })!,
-                new Expression[] {
-                    Expression.Call(typeof(Enumerable), "Count", new Type[] { typeof(TEntity) }, paramGroup),
-                    Expression.Call(typeof(Enumerable), "Select", new Type[] { typeof(TEntity), typeof(T) }, new Expression[] {
-                        Expression.Call(typeof(Enumerable), "Take", new Type[] { typeof(TEntity) }, new Expression [] {
-                            Expression.Call(typeof(Enumerable), "Skip", new Type[] { typeof(TEntity) }, new Expression[] {
-                                orderBy == null ? paramGroup : Expression.Invoke(orderBy, paramGroup),
-                                Expression.Constant(skip) }),
-                            Expression.Constant(take) }),
-                        select })
-                }
+        var selector = Expression.Lambda<Func<IGrouping<TKey, TEntity>, Source<T>>>(
+            Expression.New(typeof(Source<T>).GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, new[] { typeof(int), typeof(IEnumerable<T>) })!,
+                Expression.Call(typeof(Enumerable), "Count", new[] { typeof(TEntity) }, paramGroup),
+                Expression.Call(typeof(Enumerable), "Select", new[] { typeof(TEntity), typeof(T) },
+                    Expression.Call(typeof(Enumerable), "Take", new[] { typeof(TEntity) },
+                        Expression.Call(typeof(Enumerable), "Skip", new[] { typeof(TEntity) },
+                            orderBy == null ? paramGroup : Expression.Invoke(orderBy, paramGroup),
+                            Expression.Constant(skip)),
+                        Expression.Constant(take)),
+                    select)
             ),
             paramGroup);
 

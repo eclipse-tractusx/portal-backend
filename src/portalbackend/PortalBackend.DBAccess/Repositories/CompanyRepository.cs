@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,23 +23,14 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <inheritdoc/>
-public class CompanyRepository : ICompanyRepository
+public class CompanyRepository(PortalDbContext context)
+    : ICompanyRepository
 {
-    private readonly PortalDbContext _context;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="portalDbContext">Portal DB context.</param>
-    public CompanyRepository(PortalDbContext portalDbContext)
-    {
-        _context = portalDbContext;
-    }
-
     /// <inheritdoc/>
     Company ICompanyRepository.CreateCompany(string companyName, Action<Company>? setOptionalParameters)
     {
@@ -50,14 +40,14 @@ public class CompanyRepository : ICompanyRepository
             CompanyStatusId.PENDING,
             DateTimeOffset.UtcNow);
         setOptionalParameters?.Invoke(company);
-        return _context.Companies.Add(company).Entity;
+        return context.Companies.Add(company).Entity;
     }
 
     public void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify)
     {
         var company = new Company(companyId, null!, default, default);
         initialize?.Invoke(company);
-        _context.Attach(company);
+        context.Attach(company);
         modify(company);
     }
 
@@ -71,19 +61,19 @@ public class CompanyRepository : ICompanyRepository
             DateTimeOffset.UtcNow
         );
         setOptionalParameters?.Invoke(address);
-        return _context.Addresses.Add(address).Entity;
+        return context.Addresses.Add(address).Entity;
     }
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
         var address = new Address(addressId, null!, null!, null!, default);
         initialize?.Invoke(address);
-        _context.Attach(address);
+        context.Attach(address);
         modify(address);
     }
 
     public void CreateUpdateDeleteIdentifiers(Guid companyId, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> initialItems, IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> modifiedItems) =>
-        _context.AddAttachRemoveRange(
+        context.AddAttachRemoveRange(
             initialItems,
             modifiedItems,
             initial => initial.UniqueIdentifierId,
@@ -94,13 +84,13 @@ public class CompanyRepository : ICompanyRepository
             (entity, modified) => entity.Value = modified.Value);
 
     public Task<(bool IsValidCompany, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId) =>
-        _context.Companies
+        context.Companies
             .Where(x => x.Id == companyId)
             .Select(company => new ValueTuple<bool, string>(true, company.Name))
             .SingleOrDefaultAsync();
 
     public Task<(string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetBpnAndTechnicalUserRoleIds(Guid companyId, string technicalUserClientId) =>
-        _context.Companies
+        context.Companies
             .AsNoTracking()
             .Where(company => company.Id == companyId)
             .Select(company => new ValueTuple<string?, IEnumerable<Guid>>(
@@ -108,17 +98,17 @@ public class CompanyRepository : ICompanyRepository
                 company!.CompanyAssignedRoles.SelectMany(car => car.CompanyRole!.CompanyRoleAssignedRoleCollection!.UserRoleCollection!.UserRoles.Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == technicalUserClientId)).Select(ur => ur.Id)).Distinct()))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<string?> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
-        _context.Companies
+    public IAsyncEnumerable<string> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds) =>
+        context.Companies
             .AsNoTracking()
             .Where(company => company.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                (bpnIds == null || bpnIds.Select(x => x.ToUpper()).Contains(company.BusinessPartnerNumber) &&
+                (bpnIds == null || bpnIds.Contains(company.BusinessPartnerNumber) &&
                 company.BusinessPartnerNumber != null))
-            .Select(company => company.BusinessPartnerNumber)
+            .Select(company => company.BusinessPartnerNumber!)
             .AsAsyncEnumerable();
 
     public Task<CompanyAddressDetailData?> GetCompanyDetailsAsync(Guid companyId) =>
-        _context.Companies
+        context.Companies
             .AsNoTracking()
             .Where(company => company.Id == companyId)
             .Select(company => new CompanyAddressDetailData(
@@ -139,7 +129,7 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
-        _context.Companies.AsNoTracking()
+        context.Companies.AsNoTracking()
             .Where(company => company.Id == companyId)
             .Select(company => new ValueTuple<bool, bool>(
                 true,
@@ -149,7 +139,7 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
-        _context.ProviderCompanyDetails.AsNoTracking()
+        context.ProviderCompanyDetails.AsNoTracking()
             .Where(details => details.CompanyId == companyId)
             .Select(details => new ValueTuple<Guid, string>(details.Id, details.AutoSetupUrl))
             .SingleOrDefaultAsync();
@@ -159,12 +149,12 @@ public class CompanyRepository : ICompanyRepository
     {
         var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
         setOptionalParameter?.Invoke(providerCompanyDetail);
-        return _context.ProviderCompanyDetails.Add(providerCompanyDetail).Entity;
+        return context.ProviderCompanyDetails.Add(providerCompanyDetail).Entity;
     }
 
     /// <inheritdoc />
     public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId) =>
-        _context.Companies
+        context.Companies
             .Where(company => company.Id == companyId)
             .Select(company => new ValueTuple<ProviderDetailReturnData, bool>(
                 new ProviderDetailReturnData(
@@ -179,20 +169,20 @@ public class CompanyRepository : ICompanyRepository
     {
         var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default);
         initialize(details);
-        _context.Attach(details);
+        context.Attach(details);
         modify(details);
     }
 
     /// <inheritdoc />
     public Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId) =>
-        _context.Companies.AsNoTracking()
+        context.Companies.AsNoTracking()
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<string?, Guid?>(x.BusinessPartnerNumber, x.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync(Guid userCompanyId) =>
-        _context.Companies
+        context.Companies
         .Where(company => company.Id == userCompanyId)
         .SelectMany(company => company.CompanyAssignedUseCase)
         .Select(cauc => new CompanyAssignedUseCaseData(
@@ -202,7 +192,7 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public Task<(bool IsUseCaseIdExists, bool IsActiveCompanyStatus, bool IsValidCompany)> GetCompanyStatusAndUseCaseIdAsync(Guid companyId, Guid useCaseId) =>
-        _context.Companies
+        context.Companies
         .Where(company => company.Id == companyId)
         .Select(company => new ValueTuple<bool, bool, bool>(
             company.CompanyAssignedUseCase.Any(cauc => cauc.UseCaseId == useCaseId),
@@ -212,15 +202,15 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public CompanyAssignedUseCase CreateCompanyAssignedUseCase(Guid companyId, Guid useCaseId) =>
-        _context.CompanyAssignedUseCases.Add(new CompanyAssignedUseCase(companyId, useCaseId)).Entity;
+        context.CompanyAssignedUseCases.Add(new CompanyAssignedUseCase(companyId, useCaseId)).Entity;
 
     /// <inheritdoc /> 
     public void RemoveCompanyAssignedUseCase(Guid companyId, Guid useCaseId) =>
-        _context.CompanyAssignedUseCases.Remove(new CompanyAssignedUseCase(companyId, useCaseId));
+        context.CompanyAssignedUseCases.Remove(new CompanyAssignedUseCase(companyId, useCaseId));
 
     /// <inheritdoc />
     public IAsyncEnumerable<CompanyRoleConsentData> GetCompanyRoleAndConsentAgreementDataAsync(Guid companyId, string languageShortName) =>
-        _context.CompanyRoles
+        context.CompanyRoles
             .AsSplitQuery()
             .Where(companyRole => companyRole.CompanyRoleRegistrationData!.IsRegistrationRole)
             .Select(companyRole => new CompanyRoleConsentData(
@@ -234,13 +224,14 @@ public class CompanyRepository : ICompanyRepository
                         assigned.Agreement!.Name,
                         assigned.Agreement!.DocumentId,
                         assigned.Agreement.Consents.Where(consent => consent.CompanyId == companyId).OrderByDescending(consent => consent.DateCreated).Select(consent => consent.ConsentStatusId).FirstOrDefault(),
-                        assigned.Agreement.AgreementLink
+                        assigned.Agreement.AgreementLink,
+                        assigned.Agreement.Mandatory
                     ))))
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<(bool IsValidCompany, bool IsCompanyActive, IEnumerable<CompanyRoleId>? CompanyRoleIds, IEnumerable<ConsentStatusDetails>? ConsentStatusDetails)> GetCompanyRolesDataAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
-        _context.Companies
+        context.Companies
             .AsNoTracking()
             .AsSplitQuery()
             .Where(company => company.Id == companyId)
@@ -267,7 +258,7 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<(AgreementStatusData agreementStatusData, CompanyRoleId CompanyRoleId)> GetAgreementAssignedRolesDataAsync(IEnumerable<CompanyRoleId> companyRoleIds) =>
-        _context.AgreementAssignedCompanyRoles
+        context.AgreementAssignedCompanyRoles
             .Where(assigned => companyRoleIds.Contains(assigned.CompanyRoleId))
             .OrderBy(assigned => assigned.CompanyRoleId)
             .Select(assigned => new ValueTuple<AgreementStatusData, CompanyRoleId>(
@@ -277,7 +268,7 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public Task<(bool IsActive, bool IsValid)> GetCompanyStatusDataAsync(Guid companyId) =>
-        _context.Companies
+        context.Companies
         .Where(company => company.Id == companyId)
         .Select(company => new ValueTuple<bool, bool>(
             company.CompanyStatusId == CompanyStatusId.ACTIVE,
@@ -285,7 +276,7 @@ public class CompanyRepository : ICompanyRepository
         )).SingleOrDefaultAsync();
 
     public Task<CompanyInformationData?> GetOwnCompanyInformationAsync(Guid companyId, Guid companyUserId) =>
-        _context.Companies
+        context.Companies
             .AsNoTracking()
             .Where(c => c.Id == companyId)
             .Select(company => new CompanyInformationData(
@@ -299,14 +290,14 @@ public class CompanyRepository : ICompanyRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<CompanyRoleId> GetOwnCompanyRolesAsync(Guid companyId) =>
-        _context.CompanyAssignedRoles
+        context.CompanyAssignedRoles
             .Where(x => x.CompanyId == companyId)
             .Select(x => x.CompanyRoleId)
             .AsAsyncEnumerable();
 
     /// <inheritdoc />
     public IAsyncEnumerable<OperatorBpnData> GetOperatorBpns() =>
-        _context.Companies
+        context.Companies
             .Where(x =>
                 x.CompanyAssignedRoles.Any(car => car.CompanyRoleId == CompanyRoleId.OPERATOR) &&
                 !string.IsNullOrWhiteSpace(x.BusinessPartnerNumber))
@@ -316,7 +307,7 @@ public class CompanyRepository : ICompanyRepository
             .AsAsyncEnumerable();
 
     public Task<(bool IsValidCompany, string CompanyName, bool IsAllowed)> CheckCompanyAndCompanyRolesAsync(Guid companyId, IEnumerable<CompanyRoleId> companyRoles) =>
-        _context.Companies
+        context.Companies
             .Where(x => x.Id == companyId)
             .Select(x => new ValueTuple<bool, string, bool>(
                     true,
@@ -326,7 +317,7 @@ public class CompanyRepository : ICompanyRepository
             .SingleOrDefaultAsync();
 
     public Task<OnboardingServiceProviderCallbackResponseData> GetCallbackData(Guid companyId) =>
-        _context.Companies.Where(c => c.Id == companyId)
+        context.Companies.Where(c => c.Id == companyId)
             .Select(c => new OnboardingServiceProviderCallbackResponseData(
                     c.OnboardingServiceProviderDetail!.CallbackUrl,
                     c.OnboardingServiceProviderDetail.AuthUrl,
@@ -334,33 +325,87 @@ public class CompanyRepository : ICompanyRepository
                 ))
             .SingleAsync();
 
-    public Task<(bool hasCompanyRole, OspDetails? ospDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
-        _context.Companies.Where(c => c.Id == companyId)
-            .Select(c => new ValueTuple<bool, OspDetails?>(
+    public Task<(bool HasCompanyRole, Guid? OnboardingServiceProviderDetailId, OspDetails? OspDetails)> GetCallbackEditData(Guid companyId, CompanyRoleId companyRoleId) =>
+        context.Companies.Where(c => c.Id == companyId)
+            .Select(c => new ValueTuple<bool, Guid?, OspDetails?>(
                 c.CompanyAssignedRoles.Any(role => role.CompanyRoleId == companyRoleId),
-                c.OnboardingServiceProviderDetail == null ?
-                    null :
-                    new OspDetails(
-                        c.OnboardingServiceProviderDetail!.CallbackUrl,
+                c.OnboardingServiceProviderDetail!.Id,
+                c.OnboardingServiceProviderDetail == null
+                    ? null
+                    : new OspDetails(
+                        c.OnboardingServiceProviderDetail.CallbackUrl,
                         c.OnboardingServiceProviderDetail.AuthUrl,
                         c.OnboardingServiceProviderDetail.ClientId,
-                        c.OnboardingServiceProviderDetail.ClientSecret)
+                        c.OnboardingServiceProviderDetail.ClientSecret,
+                        c.OnboardingServiceProviderDetail.InitializationVector,
+                        c.OnboardingServiceProviderDetail.EncryptionMode)
                 ))
             .SingleOrDefaultAsync();
 
-    public void AttachAndModifyOnboardingServiceProvider(Guid companyId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
+    public void AttachAndModifyOnboardingServiceProvider(Guid onboardingServiceProviderDetailId, Action<OnboardingServiceProviderDetail>? initialize, Action<OnboardingServiceProviderDetail> setOptionalFields)
     {
-        var ospDetails = new OnboardingServiceProviderDetail(companyId, null!, null!, null!, null!);
+        var ospDetails = new OnboardingServiceProviderDetail(onboardingServiceProviderDetailId, Guid.Empty, null!, null!, null!, null!, null, default);
         initialize?.Invoke(ospDetails);
-        _context.OnboardingServiceProviderDetails.Attach(ospDetails);
+        context.OnboardingServiceProviderDetails.Attach(ospDetails);
         setOptionalFields.Invoke(ospDetails);
     }
 
-    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret) =>
-        _context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(companyId, callbackUrl, authUrl, clientId, clientSecret)).Entity;
+    public OnboardingServiceProviderDetail CreateOnboardingServiceProviderDetails(Guid companyId, string callbackUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode) =>
+        context.OnboardingServiceProviderDetails.Add(new OnboardingServiceProviderDetail(Guid.NewGuid(), companyId, callbackUrl, authUrl, clientId, clientSecret, initializationVector, encryptionMode)).Entity;
 
     /// <inheritdoc />
     public Task<bool> CheckBpnExists(string bpn) =>
-        _context.Companies
+        context.Companies
             .AnyAsync(x => x.BusinessPartnerNumber == bpn);
+
+    public void CreateWalletData(Guid companyId, string did, JsonDocument didDocument, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, string authenticationServiceUrl) =>
+        context.CompanyWalletDatas.Add(new CompanyWalletData(Guid.NewGuid(), companyId, did, didDocument, clientId, clientSecret, initializationVector, encryptionMode, authenticationServiceUrl));
+
+    public Task<(bool Exists, JsonDocument DidDocument)> GetDidDocumentById(string bpn) =>
+        context.CompanyWalletDatas
+            .Where(x => x.Company!.BusinessPartnerNumber == bpn)
+            .Select(x => new ValueTuple<bool, JsonDocument>(true, x.DidDocument))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn) =>
+        context.Companies
+            .Where(x => x.BusinessPartnerNumber == bpn)
+            .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(
+                true,
+                x.Id,
+                x.CompanyApplications
+                    .Where(ca => ca.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
+                    .Select(ca => ca.Id)))
+            .SingleOrDefaultAsync();
+
+    public Task<(string? Bpn, string? Did, string? WalletUrl)> GetDimServiceUrls(Guid companyId) =>
+        context.Companies.Where(x => x.Id == companyId)
+            .Select(x => new ValueTuple<string?, string?, string?>(
+                x.BusinessPartnerNumber,
+                x.CompanyWalletData!.Did,
+                x.CompanyWalletData.AuthenticationServiceUrl
+            ))
+            .SingleOrDefaultAsync();
+
+    public Task<(string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetWalletData(Guid identityId) =>
+        context.Identities
+            .Where(ca => ca.Id == identityId)
+            .Select(ca => new
+            {
+                Company = ca.Company!,
+                Wallet = ca.Company!.CompanyWalletData
+            })
+            .Select(c => new ValueTuple<string?, string?, WalletInformation?>(
+                c.Company.DidDocumentLocation,
+                c.Company.BusinessPartnerNumber,
+                c.Wallet == null ?
+                    null :
+                    new WalletInformation(
+                        c.Wallet.ClientId,
+                        c.Wallet.ClientSecret,
+                        c.Wallet.InitializationVector,
+                        c.Wallet.EncryptionMode,
+                        c.Wallet.AuthenticationServiceUrl
+                    )))
+            .SingleOrDefaultAsync();
 }

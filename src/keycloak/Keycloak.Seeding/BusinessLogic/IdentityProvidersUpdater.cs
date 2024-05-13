@@ -51,26 +51,26 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
 
             try
             {
-                var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
+                var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (!CompareIdentityProvider(identityProvider, updateIdentityProvider))
                 {
                     UpdateIdentityProvider(identityProvider, updateIdentityProvider);
-                    await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider, cancellationToken).ConfigureAwait(false);
+                    await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             }
             catch (KeycloakEntityNotFoundException)
             {
                 var identityProvider = new IdentityProvider();
                 UpdateIdentityProvider(identityProvider, updateIdentityProvider);
-                await keycloak.CreateIdentityProviderAsync(realm, identityProvider, cancellationToken).ConfigureAwait(false);
+                await keycloak.CreateIdentityProviderAsync(realm, identityProvider, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
 
             var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
-            var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(false);
+            var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
-            await CreateMissingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
-            await UpdateExistingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(false);
+            await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CreateMissingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await UpdateExistingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -88,7 +88,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                         IdentityProviderAlias = mapper.IdentityProviderAlias
                     },
                     mapper),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -108,7 +108,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 alias,
                 mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
                 UpdateIdentityProviderMapper(mapper, update),
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -123,12 +123,12 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                         realm,
                         alias,
                         mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             },
             out var deleteMappersTask))
         {
-            await deleteMappersTask!.ConfigureAwait(false);
+            await deleteMappersTask!.ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

@@ -125,8 +125,10 @@ public interface IUserRepository
     void AttachAndModifyIdentities(IEnumerable<(Guid IdentityId, Action<Identity>? Initialize, Action<Identity> Modify)> identities);
     CompanyUserAssignedIdentityProvider AddCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, string providerId, string userName);
     void RemoveCompanyUserAssignedIdentityProviders(IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)> companyUserIdentityProviderIds);
-    IAsyncEnumerable<CompanyUserIdentityProviderProcessTransferData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
+    IAsyncEnumerable<CompanyUserIdentityProviderProcessData> GetUserAssignedIdentityProviderForNetworkRegistration(Guid networkRegistrationId);
     IAsyncEnumerable<Guid> GetNextIdentitiesForNetworkRegistration(Guid networkRegistrationId, IEnumerable<UserStatusId> validUserStates);
     Task<(bool Exists, string ProviderId, string Username)> GetCompanyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId);
     void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify);
+    Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId);
+    Task<bool> CheckUserExists(Guid companyUserId);
 }

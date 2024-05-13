@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
  * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -97,4 +97,48 @@ public class ProcessStepRepository : IProcessStepRepository
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();
+
+    public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(x => x.Id == processId && x.ProcessTypeId == processTypeId)
+            .Select(x => new ValueTuple<bool, VerifyProcessData>(
+                true,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO))
+            ))
+            .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, SubscriptionData? SubscriptionData, ServiceAccountData? ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(x => x.Id == processId)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, SubscriptionData?, ServiceAccountData?>(
+                x.ProcessTypeId,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION
+                    ? new(
+                        x.OfferSubscription!.Id,
+                        x.OfferSubscription.CompanyId,
+                        x.OfferSubscription.Offer!.Name
+                    )
+                    : null,
+                x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER
+                    ? new(
+                        x.DimUserCreationData!.ServiceAccount!.Name,
+                        x.DimUserCreationData.ServiceAccount.Identity!.CompanyId
+                    )
+                    : null
+                )
+            )
+            .SingleOrDefaultAsync();
 }
