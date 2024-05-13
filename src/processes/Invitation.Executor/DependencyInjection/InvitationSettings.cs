@@ -46,6 +46,9 @@ public class InvitationSettings
     [Required]
     [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
+    public string CloseApplicationAddress { get; set; } = null!;
 }
 
 public static class InvitationSettingsExtension
