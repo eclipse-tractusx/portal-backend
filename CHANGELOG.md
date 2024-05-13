@@ -137,6 +137,11 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * CONTRIBUTING.md: linked to contribution details
 * updated eclipse dash tool for dependencies check
 
+## 1.8.1
+
+### Bugfix
+* fixed roles for Registration, Portal and technical_roles_management not being retrieved by endpoints [(718)](https://github.com/eclipse-tractusx/portal-backend/issues/718): added clients to base seeding of the app_instances table; the clients were accidentally maintained in consortia test data seeding
+
 ## 1.8.0
 
 ### Change
