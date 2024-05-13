@@ -49,7 +49,7 @@ try
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
-    Log.Fatal("Unhandled exception {Exception}", ex);
+    Log.Fatal(ex, "Unhandled exception {Exception}", ex);
     throw;
 }
 finally

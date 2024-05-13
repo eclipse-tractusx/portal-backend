@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 public record UseCaseParticipationCreationData
 (
     Guid VerifiedCredentialExternalTypeDetailId,
-    UseCaseFrameworkId Framework,
+    UseCaseFrameworkId CredentialType,
     IFormFile? Document
 );
 

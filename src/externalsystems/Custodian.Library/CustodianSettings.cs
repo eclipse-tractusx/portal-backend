@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,16 +24,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library
 {
     public class CustodianSettings : KeyVaultAuthSettings
     {
-        public CustodianSettings()
-        {
-            BaseAddress = null!;
-            MembershipErrorMessage = null!;
-        }
+        [Required(AllowEmptyStrings = false)]
+        public string MembershipErrorMessage { get; set; } = null!;
 
         [Required(AllowEmptyStrings = false)]
-        public string MembershipErrorMessage { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string BaseAddress { get; set; }
+        public string BaseAddress { get; set; } = null!;
     }
 }

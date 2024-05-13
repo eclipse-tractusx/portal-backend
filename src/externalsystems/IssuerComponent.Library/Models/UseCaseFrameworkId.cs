@@ -23,33 +23,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 
 public enum UseCaseFrameworkId
 {
-    [EnumMember(Value = "TraceabilityCredential")]
-    TRACEABILITY_CREDENTIAL = 1,
+    [EnumMember(Value = "Traceability Framework")]
+    TRACEABILITY_FRAMEWORK = 1,
 
-    [EnumMember(Value = "PcfCredential")]
-    PCF_CREDENTIAL = 2,
+    [EnumMember(Value = "PCF Framework")]
+    PCF_FRAMEWORK = 2,
 
-    [EnumMember(Value = "BehaviorTwinCredential")]
-    BEHAVIOR_TWIN_CREDENTIAL = 3,
+    [EnumMember(Value = "Behavior Twin Framework")]
+    BEHAVIOR_TWIN_FRAMEWORK = 3,
 
-    [EnumMember(Value = "vehicleDismantle")]
-    VEHICLE_DISMANTLE = 4,
+    [EnumMember(Value = "Dismantler Certificate")]
+    DISMANTLER_CERTIFICATE = 4,
 
-    [EnumMember(Value = "CircularEconomyCredential")]
+    [EnumMember(Value = "Circular Economy")]
     CIRCULAR_ECONOMY = 5,
-
-    [EnumMember(Value = "QualityCredential")]
-    QUALITY_CREDENTIAL = 6,
 
     [EnumMember(Value = "BusinessPartnerCredential")]
     BUSINESS_PARTNER_NUMBER = 7,
 
-    [EnumMember(Value = "DemandCapacityCredential")]
+    [EnumMember(Value = "Demand and Capacity Management")]
     DEMAND_AND_CAPACITY_MANAGEMENT = 8,
 
-    [EnumMember(Value = "DemandCapacityCredential")]
+    [EnumMember(Value = "Demand and Capacity Management")]
     DEMAND_AND_CAPACITY_MANAGEMENT_PURIS = 9,
 
-    [EnumMember(Value = "BusinessPartnerCredential")]
+    [EnumMember(Value = "Business Partner Data Management")]
     BUSINESS_PARTNER_DATA_MANAGEMENT = 10
 }

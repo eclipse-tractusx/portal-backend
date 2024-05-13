@@ -2,6 +2,20 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC7
+
+### Bugfix
+* **Migrations Seeding**
+* added missing service accounts and improve descriptions
+* **Administration Service**
+* adjusted request for framework credential creation
+* adjusted error tolerance for GET companyData/decentraldentity/urls
+* passed logging arguments to correct parameter
+* adjusted clearinghouse data: get the DID of the company from the database if the DIM wallet is enabled instead of requesting it from the MIW
+* adjusted framework credential creation to call the ssi issuer with the current user instead of the technical user
+* **Apps Service**
+* fixed short description returning error
+
 ## 2.0.0-RC6
 
 ### Feature
@@ -136,6 +150,11 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * fixed codeql findings
 * CONTRIBUTING.md: linked to contribution details
 * updated eclipse dash tool for dependencies check
+
+## 1.8.1
+
+### Bugfix
+* fixed roles for Registration, Portal and technical_roles_management not being retrieved by endpoints [(718)](https://github.com/eclipse-tractusx/portal-backend/issues/718): added clients to base seeding of the app_instances table; the clients were accidentally maintained in consortia test data seeding
 
 ## 1.8.0
 

@@ -40,6 +40,7 @@ public class IssuerComponentBusinessLogicTests
 {
     private static readonly Guid IdWithBpn = new("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
     private const string ValidBpn = "BPNL123698762345";
+    private const string Token = "test123";
 
     private readonly IApplicationRepository _applicationRepository;
     private readonly ICompanyRepository _companyRepository;
@@ -111,14 +112,26 @@ public class IssuerComponentBusinessLogicTests
             .ToImmutableDictionary();
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
 
         // Act
         var result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateBpnlCredential(A<CreateBpnCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService
+            .CreateBpnlCredential(
+                A<CreateBpnCredentialRequest>.That.Matches(x =>
+                    x.Holder == "did:123:testabc" &&
+                    x.BusinessPartnerNumber == ValidBpn &&
+                    x.TechnicalUserDetails != null &&
+                    x.TechnicalUserDetails.WalletUrl == "https://example.com/wallet" &&
+                    x.TechnicalUserDetails.ClientId == "cl1" &&
+                    x.TechnicalUserDetails.ClientSecret == "test123" &&
+                    x.CallbackUrl == "https://example.org/callback/api/administration/registration/issuer/bpncredential"),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.STORED_BPN_CREDENTIAL);
@@ -142,9 +155,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(false, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns<(bool, string?, string?, WalletInformation?)>(default);
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -152,6 +165,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateBpnlCredential(A<CreateBpnCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"CompanyApplication {IdWithBpn} does not exist");
     }
 
@@ -168,9 +183,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, null, null, null));
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -178,6 +193,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateBpnlCredential(A<CreateBpnCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The holder must be set");
     }
 
@@ -194,9 +211,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -204,6 +221,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateBpnlCredential(A<CreateBpnCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The bpn must be set");
     }
 
@@ -220,9 +239,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
             .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", ValidBpn, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -230,6 +249,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateBpnlCredential(A<CreateBpnCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The wallet information must be set");
     }
 
@@ -250,7 +271,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.STORED_BPN_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -276,7 +297,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -309,14 +330,27 @@ public class IssuerComponentBusinessLogicTests
             .ToImmutableDictionary();
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
 
         // Act
         var result = await _sut.CreateMembershipCredential(context, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateMembershipCredential(A<CreateMembershipCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService
+            .CreateMembershipCredential(
+                A<CreateMembershipCredentialRequest>.That.Matches(x =>
+                    x.Holder == "did:123:testabc" &&
+                    x.HolderBpn == ValidBpn &&
+                    x.TechnicalUserDetails != null &&
+                    x.TechnicalUserDetails.ClientId == "cl1" &&
+                    x.TechnicalUserDetails.ClientSecret == "test123" &&
+                    x.TechnicalUserDetails.WalletUrl == "https://example.com/wallet" &&
+                    x.CallbackUrl == "https://example.org/callback/api/administration/registration/issuer/membershipcredential"
+                ),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL);
@@ -340,9 +374,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(false, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns<(bool, string?, string?, WalletInformation?)>(default);
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -350,6 +384,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateMembershipCredential(A<CreateMembershipCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"CompanyApplication {IdWithBpn} does not exist");
     }
 
@@ -366,9 +402,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, null, null, null));
-        async Task Act() => await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, null, null, null));
+        Task Act() => _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -376,6 +412,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateMembershipCredential(A<CreateMembershipCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The holder must be set");
     }
 
@@ -392,9 +430,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", null, null));
-        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, "test123", null, null));
+        Task Act() => _sut.CreateMembershipCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -402,6 +440,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateMembershipCredential(A<CreateMembershipCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The bpn must be set");
     }
 
@@ -418,9 +458,9 @@ public class IssuerComponentBusinessLogicTests
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .Returns(new ValueTuple<bool, string?, string?, WalletInformation?>(true, "test123", ValidBpn, null));
-        async Task Act() => await _sut.CreateMembershipCredential(context, CancellationToken.None);
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, "test123", ValidBpn, null));
+        Task Act() => _sut.CreateMembershipCredential(context, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -428,6 +468,8 @@ public class IssuerComponentBusinessLogicTests
         // Assert
         A.CallTo(() => _issuerComponentService.CreateMembershipCredential(A<CreateMembershipCredentialRequest>._, A<CancellationToken>._))
             .MustNotHaveHappened();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be("The wallet information must be set");
     }
 
@@ -448,7 +490,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -474,7 +516,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -500,17 +542,30 @@ public class IssuerComponentBusinessLogicTests
         var useCaseFrameworkVersionId = Guid.NewGuid();
         var cryptoConfig = _options.Value.EncryptionConfigs.First();
         var (secret, vector) = CryptoHelper.Encrypt("test123", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-        A.CallTo(() => _companyRepository.GetWalletData(identityId))
-            .Returns(new ValueTuple<string?, string?, WalletInformation?>("did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet"))
-            );
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _companyRepository.GetWalletData(A<Guid>._))
+            .Returns(("did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .Returns(credentialId);
 
         // Act
-        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService
+            .CreateFrameworkCredential(
+                A<CreateFrameworkCredentialRequest>.That.Matches(x =>
+                    x.Holder == "did:123:testabc" &&
+                    x.HolderBpn == ValidBpn &&
+                    x.TechnicalUserDetails != null &&
+                    x.TechnicalUserDetails.WalletUrl == "https://example.com/wallet" &&
+                    x.TechnicalUserDetails.ClientId == "cl1" &&
+                    x.TechnicalUserDetails.ClientSecret == "test123" &&
+                    x.CallbackUrl == null
+                ),
+                Token,
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .MustHaveHappenedOnceExactly();
         result.Should().Be(credentialId);
     }
@@ -522,14 +577,14 @@ public class IssuerComponentBusinessLogicTests
         var useCaseFrameworkVersionId = Guid.NewGuid();
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
-            .Returns(new ValueTuple<string?, string?, WalletInformation?>(null, null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+            .Returns<(string?, string?, WalletInformation?)>(default);
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be($"The holder must be set");
     }
@@ -541,14 +596,14 @@ public class IssuerComponentBusinessLogicTests
         var useCaseFrameworkVersionId = Guid.NewGuid();
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
-            .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", null, null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+            .Returns(("test", null, null));
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be("The bpn must be set");
     }
@@ -560,14 +615,14 @@ public class IssuerComponentBusinessLogicTests
         var useCaseFrameworkVersionId = Guid.NewGuid();
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
-            .Returns(new ValueTuple<string?, string?, WalletInformation?>("test", "BPNL0000001Test", null));
-        async Task Act() => await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, identityId, CancellationToken.None);
+            .Returns(("test", "BPNL0000001Test", null));
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentService.CreateFrameworkCredential(A<CreateFrameworkCredentialRequest>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
         ex.Message.Should().Be("The wallet information must be set");
     }

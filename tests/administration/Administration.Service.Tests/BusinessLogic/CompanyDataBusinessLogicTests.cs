@@ -37,16 +37,16 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
 public class CompanyDataBusinessLogicTests
 {
+    private static readonly Guid _validDocumentId = Guid.NewGuid();
+
     private readonly IIdentityData _identity;
     private readonly Guid _traceabilityExternalTypeDetailId = Guid.NewGuid();
     private readonly Guid _validCredentialId = Guid.NewGuid();
-    private static readonly Guid _validDocumentId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IConsentRepository _consentRepository;
@@ -782,14 +782,15 @@ public class CompanyDataBusinessLogicTests
     public async Task CreateUseCaseParticipation_WithValidCall_CreatesExpected()
     {
         // Arrange
+        var token = _fixture.Create<string>();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
-        await _sut.CreateUseCaseParticipation(data, CancellationToken.None);
+        await _sut.CreateUseCaseParticipation(data, token, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, _identity.IdentityId, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -1760,13 +1761,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>(null, null, null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Bpn must be set");
+        result.Bpnl.Should().BeNull();
     }
 
     [Fact]
@@ -1775,13 +1775,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", null, null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Did must be set");
+        result.HolderDid.Should().BeNull();
     }
 
     [Fact]
@@ -1790,13 +1789,12 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         A.CallTo(() => _companyRepository.GetDimServiceUrls(A<Guid>._))
             .Returns(new ValueTuple<string?, string?, string?>("BPNL00012345677", "did:web:test.org:123234345", null));
-        Task Act() => _sut.GetDimServiceUrls();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.GetDimServiceUrls();
 
         // Assert
-        ex.Message.Should().Be("Wallet Url must be set");
+        result.DecentralIdentityManagementAuthUrl.Should().BeNull();
     }
 
     #endregion
