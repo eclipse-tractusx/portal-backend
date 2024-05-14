@@ -548,7 +548,7 @@ public class IssuerComponentBusinessLogicTests
             .Returns(credentialId);
 
         // Act
-        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
+        var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _issuerComponentService
@@ -578,7 +578,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns<(string?, string?, WalletInformation?)>(default);
-        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -597,7 +597,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(("test", null, null));
-        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -616,7 +616,7 @@ public class IssuerComponentBusinessLogicTests
         var identityId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .Returns(("test", "BPNL0000001Test", null));
-        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, identityId, Token, CancellationToken.None);
+        Task Act() => _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

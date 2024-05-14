@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -26,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 public record UseCaseParticipationCreationData
 (
     Guid VerifiedCredentialExternalTypeDetailId,
-    UseCaseFrameworkId CredentialType,
+    string CredentialType,
     IFormFile? Document
 );
 
