@@ -144,9 +144,14 @@ public partial class ProvisioningManager
         return iamClientAuthMethod;
     }
 
-    private static string IamClientAuthMethodToInternal(IamClientAuthMethod iamClientAuthMethod)
+    private static string IamClientAuthMethodToInternal(IamClientAuthMethod? iamClientAuthMethod)
     {
-        if (!IamClientAuthMethodsInternalDictionary.TryGetValue(iamClientAuthMethod, out var clientAuthMethod))
+        if (iamClientAuthMethod == null)
+        {
+            throw new ArgumentException($"IamClientAuthMethod must be set", nameof(iamClientAuthMethod));
+        }
+
+        if (!IamClientAuthMethodsInternalDictionary.TryGetValue(iamClientAuthMethod.Value, out var clientAuthMethod))
         {
             throw new ArgumentException($"unexpected value of IamClientAuthMethod: {iamClientAuthMethod}", nameof(iamClientAuthMethod));
         }

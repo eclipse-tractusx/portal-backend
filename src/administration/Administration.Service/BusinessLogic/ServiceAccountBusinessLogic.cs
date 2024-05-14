@@ -88,10 +88,10 @@ public class ServiceAccountBusinessLogic(
             sa.Name,
             sa.Description,
             sa.Status,
-            sa.ServiceAccountData.AuthData.IamClientAuthMethod,
+            sa.ServiceAccountData?.AuthData.IamClientAuthMethod,
             sa.UserRoleData,
             CompanyServiceAccountTypeId,
-            sa.ServiceAccountData.AuthData.Secret));
+            sa.ServiceAccountData?.AuthData.Secret));
     }
 
     public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId)

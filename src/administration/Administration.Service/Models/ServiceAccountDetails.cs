@@ -27,11 +27,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record ServiceAccountDetails(
     [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-    [property: JsonPropertyName("clientId")] string ClientId,
+    [property: JsonPropertyName("clientId")] string? ClientId,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("description")] string Description,
     [property: JsonPropertyName("status")] UserStatusId Status,
-    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod? IamClientAuthMethod,
     [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
     [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     [property: JsonPropertyName("secret")] string? Secret,

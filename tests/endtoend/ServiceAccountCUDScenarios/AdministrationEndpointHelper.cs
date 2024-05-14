@@ -152,7 +152,7 @@ public static class AdministrationEndpointHelper
         var serviceAccountDetails = await GetServiceAccountDetailsById(serviceAccountId);
         var updateServiceAccountEditableDetails =
             new ServiceAccountEditableDetails(serviceAccountDetails.ServiceAccountId, newName, newDescription,
-                serviceAccountDetails.IamClientAuthMethod);
+                serviceAccountDetails.IamClientAuthMethod!.Value);
         Given()
             .DisableSslCertificateValidation()
             .Header(

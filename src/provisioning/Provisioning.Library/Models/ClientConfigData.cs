@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public class ClientConfigData
 {
-    public ClientConfigData(string name, string description, IamClientAuthMethod iamClientAuthMethod)
+    public ClientConfigData(string name, string description, IamClientAuthMethod? iamClientAuthMethod)
     {
         Name = name;
         Description = description;
@@ -33,5 +33,5 @@ public class ClientConfigData
 
     public string Name { get; set; }
     public string Description { get; set; }
-    public IamClientAuthMethod IamClientAuthMethod { get; set; }
+    public IamClientAuthMethod? IamClientAuthMethod { get; set; }
 }
