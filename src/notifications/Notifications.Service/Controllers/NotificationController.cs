@@ -191,7 +191,7 @@ public class NotificationController : ControllerBase
     /// </summary>
     /// <param name="data">Data for the notification</param>
     /// <returns>Return NoContent</returns>
-    /// <remarks>Example: POST: /api/notification</remarks>
+    /// <remarks>Example: POST: /api/notification/ssi-credentials</remarks>
     /// <response code="204">Count of the notifications.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>

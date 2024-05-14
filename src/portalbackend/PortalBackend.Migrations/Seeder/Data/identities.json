@@ -96,5 +96,29 @@
     "user_status_id": 1,
     "user_entity_id": "b52bd8e5-98ce-48b4-af43-0b43b45d0358",
     "identity_type_id": 2
+  },
+  {
+    "id": "33480038-9acf-40e2-9127-c9c7a9cbed99",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "e4a7204c-2fa8-4909-baa9-3fbc2fa6ec12",
+    "identity_type_id": 2
+  },
+  {
+    "id": "f3498fe6-e0e5-413b-a725-39bf5c7c1959",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "2f44169e-c974-4655-a5bf-eea00ba7e654",
+    "identity_type_id": 2
+  },
+  {
+    "id": "ab7f01ea-cbb9-4d58-9efa-ea992395f997",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2022-06-01 18:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": "e8bc6470-28ee-4c40-a2d9-27c6e78f303b",
+    "identity_type_id": 2
   }
 ]

@@ -25,7 +25,9 @@ using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
@@ -41,6 +43,9 @@ public class CompanyDataControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<ICompanyDataBusinessLogic>();
         _controller = new CompanyDataController(_logic);
+        var identity = A.Fake<IIdentityData>();
+        A.CallTo(() => identity.IdentityId).Returns(Guid.NewGuid());
+        _controller.AddControllerContextWithClaimAndBearer("ac-token", identity);
     }
 
     [Fact]
@@ -202,13 +207,13 @@ public class CompanyDataControllerTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), UseCaseFrameworkId.TRACEABILITY_CREDENTIAL, file);
+        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
 
         // Act
         await _controller.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _logic.CreateUseCaseParticipation(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.CreateUseCaseParticipation(data, "ac-token", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
