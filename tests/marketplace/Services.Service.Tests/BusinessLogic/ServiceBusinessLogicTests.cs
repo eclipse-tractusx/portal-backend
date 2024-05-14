@@ -421,7 +421,7 @@ public class ServiceBusinessLogicTests
             "Sales Manager",
             "IT Manager"
         };
-        var responseData = new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
+        var responseData = new OfferAutoSetupResponseData(Enumerable.Repeat(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), 1), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
         A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IEnumerable<UserRoleConfig>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(responseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");

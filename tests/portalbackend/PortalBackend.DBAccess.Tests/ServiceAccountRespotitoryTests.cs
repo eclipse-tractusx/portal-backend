@@ -61,6 +61,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
             "Only a test service account",
             "sa1",
             CompanyServiceAccountTypeId.MANAGED,
+            CompanyServiceAccountKindId.INTERNAL,
             sa =>
             {
                 sa.OfferSubscriptionId = _validSubscriptionId;

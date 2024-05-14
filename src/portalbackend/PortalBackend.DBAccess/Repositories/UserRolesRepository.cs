@@ -61,6 +61,13 @@ public class UserRolesRepository : IUserRolesRepository
 
             )).Entity;
 
+    public void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds) =>
+        _dbContext.IdentityAssignedRoles.AddRange(
+            companyUserRoleIds.Select(x =>
+                new IdentityAssignedRole(
+                    x.CompanyUserId,
+                    x.CompanyUserRoleId)));
+
     public IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
         _dbContext.IdentityAssignedRoles.Remove(
             new IdentityAssignedRole(

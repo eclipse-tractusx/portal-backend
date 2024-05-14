@@ -40,13 +40,6 @@ public class ServiceAccountSettings
     [Required]
     [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
-
-    /// <summary>
-    /// Roles used to determine if a technical user should be created within the dim
-    /// </summary>
-    [Required]
-    [DistinctValues("x => x.ClientId")]
-    public IEnumerable<UserRoleConfig> DimCreationRoles { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions

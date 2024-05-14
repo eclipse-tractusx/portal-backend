@@ -27,6 +27,7 @@ public record CompanyServiceAccountDetailedData(
     string? ClientClientId,
     string Name,
     string Description,
+    UserStatusId Status,
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     Guid? SubscriptionId,

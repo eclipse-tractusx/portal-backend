@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240418093058_2.0.0-rc2")]
-    partial class _200rc2
+    [Migration("20240514145358_593-AdjustDimTechnicalUsers")]
+    partial class _593AdjustDimTechnicalUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -134,6 +134,67 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_audit_app_subscription_detail20231115");
 
                     b.ToTable("audit_app_subscription_detail20231115", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCertificateManagement20240416", b =>
+                {
+                    b.Property<Guid>("AuditV1Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1id");
+
+                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_v1date_last_changed");
+
+                    b.Property<Guid?>("AuditV1LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_v1last_editor_id");
+
+                    b.Property<int>("AuditV1OperationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audit_v1operation_id");
+
+                    b.Property<int?>("CompanyCertificateStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_status_id");
+
+                    b.Property<int?>("CompanyCertificateTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_id");
+
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<DateTimeOffset?>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTimeOffset?>("ValidTill")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_till");
+
+                    b.HasKey("AuditV1Id")
+                        .HasName("pk_audit_certificate_management20240416");
+
+                    b.ToTable("audit_certificate_management20240416", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyApplication20221005", b =>
@@ -2161,9 +2222,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("uuid")
                         .HasColumnName("company_id");
 
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
 
                     b.Property<DateTimeOffset>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
@@ -2188,7 +2257,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasIndex("DocumentId")
                         .HasDatabaseName("ix_company_certificates_document_id");
 
-                    b.ToTable("company_certificates", "portal");
+                    b.ToTable("company_certificates", "portal", t =>
+                        {
+                            t.HasTrigger("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE");
+
+                            t.HasTrigger("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE");
+                        });
+
+                    b
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE AFTER INSERT\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE AFTER UPDATE\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"();");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", b =>
@@ -3618,6 +3696,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("character varying(255)")
                         .HasColumnName("client_client_id");
 
+                    b.Property<int>("CompanyServiceAccountKindId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_service_account_kind_id");
+
                     b.Property<int>("CompanyServiceAccountTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("company_service_account_type_id");
@@ -3641,8 +3723,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_company_service_accounts");
 
                     b.HasIndex("ClientClientId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_company_service_accounts_client_client_id");
+                        .HasDatabaseName("ix_company_service_accounts_client_client_id")
+                        .HasFilter("client_client_id is not null AND company_service_account_kind_id = 1");
+
+                    b.HasIndex("CompanyServiceAccountKindId")
+                        .HasDatabaseName("ix_company_service_accounts_company_service_account_kind_id");
 
                     b.HasIndex("CompanyServiceAccountTypeId")
                         .HasDatabaseName("ix_company_service_accounts_company_service_account_type_id");
@@ -3651,6 +3736,36 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_company_service_accounts_offer_subscription_id");
 
                     b.ToTable("company_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountKind", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_service_account_kindes");
+
+                    b.ToTable("company_service_account_kindes", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "INTERNAL"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "EXTERNAL"
+                        });
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
@@ -4424,6 +4539,65 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_country_long_names_short_name");
 
                     b.ToTable("country_long_names", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthenticationServiceUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("authentication_service_url");
+
+                    b.Property<byte[]>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("client_secret");
+
+                    b.Property<int>("EncryptionMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("encryption_mode");
+
+                    b.Property<byte[]>("InitializationVector")
+                        .HasColumnType("bytea")
+                        .HasColumnName("initialization_vector");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_company_service_accounts");
+
+                    b.ToTable("dim_company_service_accounts", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.Property<Guid>("ServiceAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("service_account_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_dim_user_creation_data");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_process_id");
+
+                    b.HasIndex("ServiceAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dim_user_creation_data_service_account_id");
+
+                    b.ToTable("dim_user_creation_data", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -6473,6 +6647,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
+                            Id = 112,
+                            Label = "OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 113,
+                            Label = "RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 114,
+                            Label = "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 115,
+                            Label = "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
                             Id = 200,
                             Label = "SYNCHRONIZE_USER"
                         },
@@ -6635,6 +6829,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 419,
                             Label = "RETRIGGER_INVITATION_CREATE_DATABASE_IDP"
+                        },
+                        new
+                        {
+                            Id = 500,
+                            Label = "CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 501,
+                            Label = "RETRIGGER_CREATE_DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -6680,6 +6884,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 6,
                             Label = "INVITATION"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "DIM_TECHNICAL_USER"
                         });
                 });
 
@@ -8030,6 +8239,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", b =>
                 {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountKind", "CompanyServiceAccountKind")
+                        .WithMany("CompanyServiceAccounts")
+                        .HasForeignKey("CompanyServiceAccountKindId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_service_accounts_company_service_account_kindes_com");
+
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", "CompanyServiceAccountType")
                         .WithMany("CompanyServiceAccounts")
                         .HasForeignKey("CompanyServiceAccountTypeId")
@@ -8048,6 +8264,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithMany("CompanyServiceAccounts")
                         .HasForeignKey("OfferSubscriptionId")
                         .HasConstraintName("fk_company_service_accounts_offer_subscriptions_offer_subscrip");
+
+                    b.Navigation("CompanyServiceAccountKind");
 
                     b.Navigation("CompanyServiceAccountType");
 
@@ -8408,6 +8626,37 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Country");
 
                     b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
+                        .WithOne("DimCompanyServiceAccount")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimCompanyServiceAccount", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_company_service_accounts_company_service_accounts_id");
+
+                    b.Navigation("CompanyServiceAccount");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ProcessId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_processes_process_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "ServiceAccount")
+                        .WithOne("DimUserCreationData")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.DimUserCreationData", "ServiceAccountId")
+                        .IsRequired()
+                        .HasConstraintName("fk_dim_user_creation_data_company_service_accounts_service_acc");
+
+                    b.Navigation("Process");
+
+                    b.Navigation("ServiceAccount");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", b =>
@@ -9343,6 +9592,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompaniesLinkedServiceAccount");
 
                     b.Navigation("Connector");
+
+                    b.Navigation("DimCompanyServiceAccount");
+
+                    b.Navigation("DimUserCreationData");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountKind", b =>
+                {
+                    b.Navigation("CompanyServiceAccounts");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccountType", b =>
@@ -9605,6 +9863,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyApplication");
 
                     b.Navigation("CompanyInvitation");
+
+                    b.Navigation("DimUserCreationData");
 
                     b.Navigation("MailingInformation");
 

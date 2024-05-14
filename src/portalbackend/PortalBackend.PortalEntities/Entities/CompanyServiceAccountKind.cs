@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,18 +17,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class ServiceAccountCreationSettings
+public class CompanyServiceAccountKind
 {
-    [Required(AllowEmptyStrings = false)]
-    public string ServiceAccountClientPrefix { get; set; } = null!;
+    private CompanyServiceAccountKind()
+    {
+        Label = null!;
+        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+    }
 
-    [Required]
-    [DistinctValues("x => x.ClientId")]
-    public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
+    public CompanyServiceAccountKind(CompanyServiceAccountKindId companyServiceAccountKindId) : this()
+    {
+        Id = companyServiceAccountKindId;
+        Label = companyServiceAccountKindId.ToString();
+    }
+
+    [Key]
+    public CompanyServiceAccountKindId Id { get; private set; }
+
+    [MaxLength(255)]
+    public string Label { get; private set; }
+
+    // Navigation properties
+    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
 }

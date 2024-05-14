@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,18 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using System.ComponentModel.DataAnnotations;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
-
-public class ServiceAccountCreationSettings
+public enum CompanyServiceAccountKindId
 {
-    [Required(AllowEmptyStrings = false)]
-    public string ServiceAccountClientPrefix { get; set; } = null!;
-
-    [Required]
-    [DistinctValues("x => x.ClientId")]
-    public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
+    INTERNAL = 1,
+    EXTERNAL = 2
 }

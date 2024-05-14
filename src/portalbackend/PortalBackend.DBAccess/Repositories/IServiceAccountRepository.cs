@@ -29,8 +29,9 @@ public interface IServiceAccountRepository
     CompanyServiceAccount CreateCompanyServiceAccount(Guid identityId,
         string name,
         string description,
-        string clientClientId,
+        string? clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        CompanyServiceAccountKindId companyServiceAccountKindId,
         Action<CompanyServiceAccount>? setOptionalParameters = null);
 
     void AttachAndModifyCompanyServiceAccount(Guid id, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify);
@@ -42,6 +43,6 @@ public interface IServiceAccountRepository
     public Task<(Guid IdentityId, Guid CompanyId)> GetServiceAccountDataByClientId(string clientId);
     void CreateDimCompanyServiceAccount(Guid serviceAccountId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);
     void CreateDimUserCreationData(Guid serviceAccountId, Guid processId);
-    Task<(bool IsValid, string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId);
+    Task<(bool IsValid, string? Bpn, string? ClientClientId)> GetDimServiceAccountData(Guid dimServiceAccountId);
     Task<Guid> GetDimServiceAccountIdForProcess(Guid processId);
 }

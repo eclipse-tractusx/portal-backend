@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -69,7 +70,8 @@ public class ServiceAccountCreationTests
 
         var settings = new ServiceAccountCreationSettings
         {
-            ServiceAccountClientPrefix = "sa"
+            ServiceAccountClientPrefix = "sa",
+            DimUserRoles = [new UserRoleConfig("technical_user_management", ["Identity Wallet Management"])]
         };
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
@@ -87,7 +89,7 @@ public class ServiceAccountCreationTests
         Setup();
 
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true);
+        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null));
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -112,13 +114,15 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null));
 
         // Assert
-        result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
-        result.serviceAccountData.InternalClientId.Should().Be("internal-sa1");
-        result.serviceAccountData.IamUserId.Should().Be(_iamUserId);
-        result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+        result.ServiceAccounts.Should().ContainSingle();
+        var serviceAccount = result.ServiceAccounts.Single();
+        serviceAccount.UserRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
+        serviceAccount.ServiceAccountData.InternalClientId.Should().Be("internal-sa1");
+        serviceAccount.ServiceAccountData.IamUserId.Should().Be(_iamUserId);
+        serviceAccount.ServiceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -145,19 +149,21 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, true, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null));
 
         // Assert
-        result.userRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
-        result.serviceAccountData.InternalClientId.Should().Be("internal-sa1");
-        result.serviceAccountData.IamUserId.Should().Be(_iamUserId);
-        result.serviceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+        result.ServiceAccounts.Should().ContainSingle();
+        var technicalUser = result.ServiceAccounts.Single();
+        technicalUser.UserRoleData.Should().ContainSingle(x => x.UserRoleId == _validUserRoleId && x.UserRoleText == "UserRole");
+        technicalUser.ServiceAccountData.InternalClientId.Should().Be("internal-sa1");
+        technicalUser.ServiceAccountData.IamUserId.Should().Be(_iamUserId);
+        technicalUser.ServiceAccountData.AuthData.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         A.CallTo(() => _provisioningManager.SetupCentralServiceAccountClientAsync(A<string>._, A<ClientConfigRolesData>.That.Matches(x => x.Name == "sa1-testName"), A<bool>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(_iamUserId, bpns)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         serviceAccounts.Should().ContainSingle().Which.Should().Match<CompanyServiceAccount>(
-            x => x.Name == "sa1-testName" &&
+            x => x.Name == "testName" &&
                  x.ClientClientId == "sa1");
         identities.Should().ContainSingle().Which.Should().Match<Identity>(
             x => x.CompanyId == _companyId &&
@@ -183,21 +189,22 @@ public class ServiceAccountCreationTests
                 identities?.Add(identity);
             })
             .Returns(new Identity(_identityId, default, default, default, default));
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<Action<CompanyServiceAccount>>._))
-            .Invokes((Guid identityId, string name, string description, string clientClientId, CompanyServiceAccountTypeId companyServiceAccountTypeId, Action<CompanyServiceAccount>? setOptionalParameters) =>
+        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<CompanyServiceAccountKindId>._, A<Action<CompanyServiceAccount>>._))
+            .Invokes((Guid identityId, string name, string description, string clientClientId, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId, Action<CompanyServiceAccount>? setOptionalParameters) =>
             {
                 var sa = new CompanyServiceAccount(
                     identityId,
                     name,
                     description,
-                    companyServiceAccountTypeId)
+                    companyServiceAccountTypeId,
+                    companyServiceAccountKindId)
                 {
                     ClientClientId = clientClientId
                 };
                 setOptionalParameters?.Invoke(sa);
                 serviceAccounts?.Add(sa);
             })
-            .Returns(new CompanyServiceAccount(_serviceAccountId, null!, null!, default));
+            .Returns(new CompanyServiceAccount(_serviceAccountId, null!, null!, default, default));
 
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Matches(x => x.Count(y => y == _validUserRoleId) == 1)))
             .Returns(new[] { new UserRoleData(_validUserRoleId, Guid.NewGuid().ToString(), "UserRole") }.ToAsyncEnumerable());
