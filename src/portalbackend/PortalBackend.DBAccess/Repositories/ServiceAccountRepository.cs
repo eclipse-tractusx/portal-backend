@@ -40,7 +40,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
         Guid identityId,
         string name,
         string description,
-        string clientClientId,
+        string? clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         CompanyServiceAccountKindId companyServiceAccountKindId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)

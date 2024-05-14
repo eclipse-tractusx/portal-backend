@@ -29,7 +29,7 @@ public interface IServiceAccountRepository
     CompanyServiceAccount CreateCompanyServiceAccount(Guid identityId,
         string name,
         string description,
-        string clientClientId,
+        string? clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         CompanyServiceAccountKindId companyServiceAccountKindId,
         Action<CompanyServiceAccount>? setOptionalParameters = null);

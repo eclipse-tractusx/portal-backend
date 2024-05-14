@@ -33,7 +33,7 @@ public record CreatedServiceAccountData(
     string Name,
     string Description,
     UserStatusId Status,
-    string ClientId,
-    ServiceAccountData ServiceAccountData,
+    string? ClientId,
+    ServiceAccountData? ServiceAccountData,
     IEnumerable<UserRoleData> UserRoleData
 );

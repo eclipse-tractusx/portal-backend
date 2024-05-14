@@ -144,7 +144,7 @@ public class OfferSetupService : IOfferSetupService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return new OfferAutoSetupResponseData(
-            technicalUsers.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData.AuthData.Secret, x.ClientId)),
+            technicalUsers.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData?.AuthData.Secret, x.ClientId)),
             clientInfoData);
     }
 
@@ -167,7 +167,7 @@ public class OfferSetupService : IOfferSetupService
             return (false, []);
         }
 
-        var (hasExternalServiceAccounts, serviceAccounts) = await _serviceAccountCreation
+        return await _serviceAccountCreation
             .CreateServiceAccountAsync(
                 serviceAccountCreationInfo,
                 data.CompanyId,
@@ -178,8 +178,6 @@ public class OfferSetupService : IOfferSetupService
                 new ServiceAccountCreationProcessData(ProcessTypeId.OFFER_SUBSCRIPTION, processId),
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        return (hasExternalServiceAccounts, serviceAccounts);
     }
 
     /// <inheritdoc />
@@ -251,7 +249,7 @@ public class OfferSetupService : IOfferSetupService
         var technicalUserData = await CreateTechnicalUsersForOffer(offerId, OfferTypeId.APP, new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, internalClientId, true, true)).ToListAsync()
             .ConfigureAwait(false);
 
-        _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.SelectMany(x => x.Select(y => new ValueTuple<Guid, Guid>(instanceId, y.TechnicalUserId))));
+        _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.SelectMany(x => x.Select(y => (instanceId, y.TechnicalUserId))));
 
         return technicalUserData.SelectMany(x => x.Select(y => y.TechnicalClientId));
     }
@@ -274,7 +272,7 @@ public class OfferSetupService : IOfferSetupService
                     data.Enabled,
                     new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null))
                 .ConfigureAwait(ConfigureAwaitOptions.None);
-            yield return result.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData.AuthData.Secret, x.ClientId));
+            yield return result.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData?.AuthData.Secret, x.ClientId));
         }
     }
 
@@ -533,11 +531,11 @@ public class OfferSetupService : IOfferSetupService
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true, false);
         var (hasExternalServiceAccount, serviceAccounts) = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData, processId).ConfigureAwait(ConfigureAwaitOptions.None);
-        var technicalClientId = serviceAccounts.Select(x => x.ClientId);
+        var technicalClientIds = serviceAccounts.Select(x => x.ClientId);
 
         var content = JsonSerializer.Serialize(new
         {
-            technicalClientId,
+            technicalClientIds,
         });
 
         await _notificationService.CreateNotifications(

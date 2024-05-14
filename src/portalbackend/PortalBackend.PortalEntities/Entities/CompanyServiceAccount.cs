@@ -54,6 +54,7 @@ public class CompanyServiceAccount : IBaseEntity
     // Navigation properties
     public virtual Identity? Identity { get; set; }
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
+    public virtual CompanyServiceAccountKind? CompanyServiceAccountKind { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
     public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }

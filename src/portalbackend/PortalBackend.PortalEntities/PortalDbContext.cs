@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEnti
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 using System.Collections.Immutable;
 
@@ -122,6 +121,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccountKind> CompanyServiceAccountKindes { get; set; } = default!;
     public virtual DbSet<CompanySsiDetail> CompanySsiDetails { get; set; } = default!;
     public virtual DbSet<CompanySsiDetailStatus> CompanySsiDetailStatuses { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
@@ -789,6 +789,13 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyServiceAccountType(e))
             );
 
+        modelBuilder.Entity<CompanyServiceAccountKind>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyServiceAccountKindId))
+                    .Cast<CompanyServiceAccountKindId>()
+                    .Select(e => new CompanyServiceAccountKind(e))
+            );
+
         modelBuilder.Entity<IdentityType>()
             .HasData(
                 Enum.GetValues(typeof(IdentityTypeId))
@@ -859,6 +866,10 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.CompanyServiceAccountType)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountTypeId);
+
+            entity.HasOne(d => d.CompanyServiceAccountKind)
+                .WithMany(p => p.CompanyServiceAccounts)
+                .HasForeignKey(d => d.CompanyServiceAccountKindId);
 
             entity.HasOne(d => d.OfferSubscription)
                 .WithMany(p => p.CompanyServiceAccounts)

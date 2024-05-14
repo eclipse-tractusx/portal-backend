@@ -354,7 +354,7 @@ public class ServiceAccountBusinessLogic(
             i => { i.UserStatusId = UserStatusId.PENDING; },
             i => { i.UserStatusId = UserStatusId.ACTIVE; });
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId,
-            sa => { sa.ClientClientId = "xxx"; },
+            sa => { sa.ClientClientId = null; },
             sa => { sa.ClientClientId = callbackData.ClientId; });
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");

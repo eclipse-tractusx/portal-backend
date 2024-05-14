@@ -19,7 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -60,7 +60,6 @@ public class ServiceAccountCreation(
 
         var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
         var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
-        var hasExternalServiceAccount = false;
 
         var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, userRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
         var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, companyServiceAccountTypeId, CompanyServiceAccountKindId.INTERNAL, name, clientId, description, userRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
@@ -74,61 +73,55 @@ public class ServiceAccountCreation(
             userRoleData));
 
         var dimRoles = userRoleData
-            .Join(_settings.DimUserRoles, data => data.ClientClientId, config => config.ClientId,
-                (data, config) => new { data, config })
-            .Where(@t => t.config.UserRoleNames.Contains(@t.data.UserRoleText))
-            .Select(@t => t.data);
-        if (!dimRoles.Any())
-        {
-            return (hasExternalServiceAccount, serviceAccounts.ToImmutable());
-        }
+                .Join(_settings.DimUserRoles, data => data.ClientClientId, config => config.ClientId,
+                    (data, config) => new { data, config })
+                .Where(@t => t.config.UserRoleNames.Contains(@t.data.UserRoleText))
+                .Select(@t => t.data)
+                .ToImmutableList();
 
-        var dimSaName = $"dim-{name}";
-        const string ClientPlaceholderId = "xxx";
-        var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, ClientPlaceholderId, description, dimRoles, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
-        if (processData?.ProcessTypeId is not null)
-        {
-            Guid processId;
-            if (processData.ProcessId is null)
+        var hasExternalServiceAccount = dimRoles.IfAny(roles =>
             {
-                var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
-                processStepRepository.CreateProcessStep(processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(), ProcessStepStatusId.TODO, process.Id);
-                processId = process.Id;
-            }
-            else
-            {
-                processId = processData.ProcessId.Value;
-            }
+                var dimSaName = $"dim-{name}";
+                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, null, description, roles, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+                if (processData?.ProcessTypeId is not null)
+                {
+                    Guid processId;
+                    if (processData.ProcessId is null)
+                    {
+                        var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
+                        processStepRepository.CreateProcessStep(processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(), ProcessStepStatusId.TODO, process.Id);
+                        processId = process.Id;
+                    }
+                    else
+                    {
+                        processId = processData.ProcessId.Value;
+                    }
 
-            portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(serviceAccountId, processId);
-        }
+                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(serviceAccountId, processId);
+                }
 
-        hasExternalServiceAccount = true;
-        serviceAccounts.Add(new CreatedServiceAccountData(
-            dimServiceAccountId,
-            dimSaName,
-            description,
-            UserStatusId.PENDING,
-            ClientPlaceholderId,
-            new ServiceAccountData("xxx", "xxx", new ClientAuthData(IamClientAuthMethod.JWT)),
-            userRoleData.Select(x => new UserRoleData(x.UserRoleId, x.ClientClientId, x.UserRoleText))));
+                serviceAccounts.Add(new CreatedServiceAccountData(
+                    dimServiceAccountId,
+                    dimSaName,
+                    description,
+                    UserStatusId.PENDING,
+                    null,
+                    null,
+                    roles));
+            });
 
         return (hasExternalServiceAccount, serviceAccounts.ToImmutable());
     }
 
-    private static async Task<List<UserRoleData>> GetAndValidateUserRoleData(IUserRolesRepository userRolesRepository, IEnumerable<Guid> userRoleIds)
+    private static async Task<IEnumerable<UserRoleData>> GetAndValidateUserRoleData(IUserRolesRepository userRolesRepository, IEnumerable<Guid> userRoleIds)
     {
         var userRoleData = await userRolesRepository
             .GetUserRoleDataUntrackedAsync(userRoleIds).ToListAsync().ConfigureAwait(false);
         if (userRoleData.Count != userRoleIds.Count())
         {
-            var missingRoleIds = userRoleIds.Except(userRoleData.Select(x => x.UserRoleId));
-
-            if (missingRoleIds.Any())
-            {
-                throw NotFoundException.Create(ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, new ErrorParameter[] { new("missingRoleIds", string.Join(", ", missingRoleIds)) });
-            }
+            userRoleIds.Except(userRoleData.Select(x => x.UserRoleId)).IfAny(missingRoleIds =>
+                throw NotFoundException.Create(ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, [new("missingRoleIds", string.Join(", ", missingRoleIds))]));
         }
 
         return userRoleData;
@@ -140,7 +133,7 @@ public class ServiceAccountCreation(
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
         CompanyServiceAccountKindId companyServiceAccountKindId,
         string name,
-        string clientId,
+        string? clientId,
         string description,
         IEnumerable<UserRoleData> userRoleData,
         IServiceAccountRepository serviceAccountsRepository,
@@ -157,10 +150,8 @@ public class ServiceAccountCreation(
             companyServiceAccountKindId,
             setOptionalParameter);
 
-        foreach (var roleData in userRoleData)
-        {
-            userRolesRepository.CreateIdentityAssignedRole(serviceAccount.Id, roleData.UserRoleId);
-        }
+        userRolesRepository.CreateIdentityAssignedRoleRange(
+            userRoleData.Select(x => (identity.Id, x.UserRoleId)));
 
         return serviceAccount.Id;
     }
@@ -184,10 +175,13 @@ public class ServiceAccountCreation(
                         group => group.Select(userRole => userRole.UserRoleText))),
             enabled).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (bpns.Any())
+        if (bpns.IfAny(async businessPartnerNumbers =>
         {
-            await provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, bpns).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.AddBpnAttributetoUserAsync(serviceAccountData.IamUserId, businessPartnerNumbers).ConfigureAwait(ConfigureAwaitOptions.None);
             await provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        }, out var bpnTask))
+        {
+            await bpnTask!.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return (clientId, enhancedName, serviceAccountData);
