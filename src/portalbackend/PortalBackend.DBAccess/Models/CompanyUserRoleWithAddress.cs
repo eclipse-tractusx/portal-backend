@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -37,7 +38,10 @@ public record CompanyUserRoleWithAddress(
     string? CountryDe,
     IEnumerable<AgreementsData> AgreementsData,
     IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData,
-    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers
+    IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers,
+    IEnumerable<Document> Documents,
+    DateTimeOffset? Created,
+    DateTimeOffset? LastChanged
 );
 
 public record AgreementsData(CompanyRoleId CompanyRoleId, Guid AgreementId, ConsentStatusId? ConsentStatusId);

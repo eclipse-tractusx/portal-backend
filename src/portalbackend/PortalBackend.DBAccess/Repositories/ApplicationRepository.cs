@@ -294,7 +294,11 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                             x.CompanyUser!.Firstname,
                             x.CompanyUser.Lastname,
                             x.CompanyUser.Email)),
-                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
+                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)),
+                    companyApplication.Invitations.SelectMany(invitation =>
+                             invitation.CompanyUser!.Documents),
+                    companyApplication.DateCreated,
+                    companyApplication.DateLastChanged))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 

@@ -134,7 +134,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value)),
+            companyWithAddress.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
+                                new DocumentDetails(document.Id, document.DocumentTypeId)),
+            companyWithAddress.Created,
+            companyWithAddress.LastChanged
         );
     }
 
@@ -165,9 +169,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
-                        application.Invitations.SelectMany(invitation =>
-                            invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
