@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
  * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,16 +21,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
-public class ClientConfigData
-{
-    public ClientConfigData(string name, string description, IamClientAuthMethod? iamClientAuthMethod)
-    {
-        Name = name;
-        Description = description;
-        IamClientAuthMethod = iamClientAuthMethod;
-    }
-
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public IamClientAuthMethod? IamClientAuthMethod { get; set; }
-}
+public record ClientConfigData(
+    string Name,
+    string Description,
+    IamClientAuthMethod IamClientAuthMethod
+);

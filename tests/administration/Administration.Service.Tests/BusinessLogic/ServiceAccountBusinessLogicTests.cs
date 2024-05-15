@@ -37,7 +37,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
-using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -52,6 +51,7 @@ public class ServiceAccountBusinessLogicTests
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountWithDimDataId = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
+    private static readonly Guid ExternalServiceAccount = Guid.NewGuid();
     private readonly IIdentityData _identity;
     private readonly IEnumerable<Guid> _userRoleIds = Enumerable.Repeat(Guid.NewGuid(), 1);
     private readonly IServiceAccountCreation _serviceAccountCreation;
@@ -339,6 +339,10 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("new name");
+        A.CallTo(() => _provisioningManager.UpdateCentralClientAsync(A<string>._, A<ClientConfigData>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ValidServiceAccountId, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -416,6 +420,34 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         var exception = await Assert.ThrowsAsync<ConflictException>(Act);
         exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT.ToString());
+    }
+
+    [Fact]
+    public async Task UpdateOwnCompanyServiceAccountDetailsAsync_WithExternalServiceAccount_CallsExpected()
+    {
+        // Arrange
+        SetupUpdateOwnCompanyServiceAccountDetails();
+        var external = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
+            .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+            .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.EXTERNAL)
+            .Create();
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ExternalServiceAccount, ValidCompanyId))
+            .Returns(external);
+        var data = new ServiceAccountEditableDetails(ExternalServiceAccount, "new name", "changed description", IamClientAuthMethod.SECRET);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
+
+        // Act
+        var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ExternalServiceAccount, data);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Name.Should().Be("new name");
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ExternalServiceAccount, ValidCompanyId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.UpdateCentralClientAsync(A<string>._, A<ClientConfigData>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ExternalServiceAccount, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -679,6 +711,7 @@ public class ServiceAccountBusinessLogicTests
         var authData = new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "topsecret" };
         var data = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
             .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+            .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.INTERNAL)
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns(data);

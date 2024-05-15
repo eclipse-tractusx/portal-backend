@@ -266,14 +266,22 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
         }
 
-        var internalClientId = await provisioningManager.UpdateCentralClientAsync(
-            result.ClientClientId,
-            new ClientConfigData(
-                serviceAccountDetails.Name,
-                serviceAccountDetails.Description,
-                serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(ConfigureAwaitOptions.None);
+        ClientAuthData? authData;
+        if (result.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
+        {
+            var internalClientId = await provisioningManager.UpdateCentralClientAsync(
+                result.ClientClientId,
+                new ClientConfigData(
+                    serviceAccountDetails.Name,
+                    serviceAccountDetails.Description,
+                    serviceAccountDetails.IamClientAuthMethod)).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var authData = await provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            authData = await provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+        else
+        {
+            authData = null;
+        }
 
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(
             serviceAccountId,
@@ -296,10 +304,10 @@ public class ServiceAccountBusinessLogic(
             serviceAccountDetails.Name,
             serviceAccountDetails.Description,
             result.UserStatusId,
-            authData.IamClientAuthMethod,
+            authData?.IamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
-            authData.Secret,
+            authData?.Secret,
             result.OfferSubscriptionId);
     }
 
