@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -54,21 +54,18 @@ public class ServiceAccountController : ControllerBase
     /// <param name="serviceAccountCreationInfo"></param>
     /// <returns></returns>
     /// <remarks>Example: POST: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
-    /// <response code="201">The service account was created.</response>
+    /// <response code="200">The service account was created.</response>
     /// <response code="400">Missing mandatory input values (e.g. name) or not supported authenticationType selected.</response>
     /// <response code="404">Record was not found. Possible reason: invalid user role, requester user invalid.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
-    [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(IEnumerable<ServiceAccountDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
-    {
-        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(ConfigureAwaitOptions.None);
-        return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
-    }
+    public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo) =>
+        _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
 
     /// <summary>
     /// Deletes the service account with the given id

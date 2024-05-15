@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 public record CreateFrameworkCredentialRequest(
     [property: JsonPropertyName("holder")] string Holder,
     [property: JsonPropertyName("businessPartnerNumber")] string HolderBpn,
-    [property: JsonPropertyName("useCaseFrameworkId")] UseCaseFrameworkId UseCaseFrameworkId,
+    [property: JsonPropertyName("useCaseFrameworkId")] string UseCaseFrameworkId,
     [property: JsonPropertyName("useCaseFrameworkVersionId")] Guid UseCaseFrameworkVersionId,
     [property: JsonPropertyName("technicalUserDetails")] TechnicalUserDetails? TechnicalUserDetails,
     [property: JsonPropertyName("callbackUrl")] string? CallbackUrl

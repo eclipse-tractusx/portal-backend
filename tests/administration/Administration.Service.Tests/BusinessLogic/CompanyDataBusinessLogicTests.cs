@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -784,13 +784,13 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var token = _fixture.Create<string>();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, file);
+        var data = new UseCaseParticipationCreationData(_traceabilityExternalTypeDetailId, "TRACEABILITY_FRAMEWORK", file);
 
         // Act
         await _sut.CreateUseCaseParticipation(data, token, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, UseCaseFrameworkId.TRACEABILITY_FRAMEWORK, _identity.IdentityId, token, A<CancellationToken>._))
+        A.CallTo(() => _issuerComponentBusinessLogic.CreateFrameworkCredentialData(_traceabilityExternalTypeDetailId, "TRACEABILITY_FRAMEWORK", _identity.IdentityId, token, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

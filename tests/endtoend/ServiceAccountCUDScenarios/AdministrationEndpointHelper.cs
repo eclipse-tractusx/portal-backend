@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -89,7 +89,7 @@ public static class AdministrationEndpointHelper
     }
 
     //POST: api/administration/serviceaccount/owncompany/serviceaccounts - create a new service account
-    public static async Task<ServiceAccountDetails> CreateNewServiceAccount(string[] permissions)
+    public static async Task<IEnumerable<ServiceAccountDetails>> CreateNewServiceAccount(string[] permissions)
     {
         var now = DateTime.Now;
         var techUserName = $"NewTechUserName_{now:s}";
@@ -119,8 +119,8 @@ public static class AdministrationEndpointHelper
             .Extract()
             .Response();
 
-        var serviceAccountDetails = DataHandleHelper.DeserializeData<ServiceAccountDetails>(await response.Content.ReadAsStringAsync());
-        if (serviceAccountDetails is null)
+        var serviceAccountDetails = DataHandleHelper.DeserializeData<IEnumerable<ServiceAccountDetails>>(await response.Content.ReadAsStringAsync());
+        if (serviceAccountDetails is null || !serviceAccountDetails.Any())
         {
             throw new Exception($"Could not create service account with {endpoint}, response was null/empty.");
         }
@@ -152,7 +152,7 @@ public static class AdministrationEndpointHelper
         var serviceAccountDetails = await GetServiceAccountDetailsById(serviceAccountId);
         var updateServiceAccountEditableDetails =
             new ServiceAccountEditableDetails(serviceAccountDetails.ServiceAccountId, newName, newDescription,
-                serviceAccountDetails.IamClientAuthMethod);
+                serviceAccountDetails.IamClientAuthMethod ?? throw new Exception("IamClientAuthMethod is expected not to be null here"));
         Given()
             .DisableSslCertificateValidation()
             .Header(

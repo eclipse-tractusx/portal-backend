@@ -176,7 +176,7 @@ public class IssuerComponentBusinessLogic(
                 : null);
     }
 
-    public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, UseCaseFrameworkId frameworkId, Guid identityId, string token, CancellationToken cancellationToken)
+    public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, string frameworkId, Guid identityId, string token, CancellationToken cancellationToken)
     {
         var (holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<ICompanyRepository>().GetWalletData(identityId).ConfigureAwait(false);
         if (holder is null)

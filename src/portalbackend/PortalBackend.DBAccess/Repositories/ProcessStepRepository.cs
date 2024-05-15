@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -113,11 +113,11 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, SubscriptionData? SubscriptionData, ServiceAccountData? ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
             .AsNoTracking()
             .Where(x => x.Id == processId)
-            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, SubscriptionData?, ServiceAccountData?>(
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
                 x.ProcessTypeId,
                 new VerifyProcessData(
                     x,
@@ -125,20 +125,7 @@ public class ProcessStepRepository : IProcessStepRepository
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
-                x.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION
-                    ? new(
-                        x.OfferSubscription!.Id,
-                        x.OfferSubscription.CompanyId,
-                        x.OfferSubscription.Offer!.Name
-                    )
-                    : null,
-                x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER
-                    ? new(
-                        x.DimUserCreationData!.ServiceAccount!.Name,
-                        x.DimUserCreationData.ServiceAccount.Identity!.CompanyId
-                    )
-                    : null
-                )
+                x.DimUserCreationData!.ServiceAccountId)
             )
             .SingleOrDefaultAsync();
 }

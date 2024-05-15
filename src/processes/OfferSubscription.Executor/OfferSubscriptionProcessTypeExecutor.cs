@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -61,6 +61,7 @@ public class OfferSubscriptionProcessTypeExecutor(
 
     private Guid _offerSubscriptionId;
     private readonly OfferSubscriptionsProcessSettings _settings = options.Value;
+    private Guid _processId;
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.OFFER_SUBSCRIPTION;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => _executableProcessSteps.Contains(processStepTypeId);
@@ -69,6 +70,7 @@ public class OfferSubscriptionProcessTypeExecutor(
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
+        _processId = processId;
         _offerSubscriptionId = Guid.Empty;
 
         var result = await _offerSubscriptionsRepository.GetOfferSubscriptionDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -104,7 +106,7 @@ public class OfferSubscriptionProcessTypeExecutor(
                     .CreateClient(_offerSubscriptionId)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => await offerSetupService
-                    .CreateTechnicalUser(_offerSubscriptionId, _settings.ItAdminRoles, _settings.DimCreationRoles)
+                    .CreateTechnicalUser(_processId, _offerSubscriptionId, _settings.ItAdminRoles)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER => await offerSetupService
                     .CreateDimTechnicalUser(_offerSubscriptionId, cancellationToken)
