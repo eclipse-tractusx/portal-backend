@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -269,7 +269,7 @@ public class AppsControllerTests
         userRoleData.Add("IT Manager");
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
+            Enumerable.Repeat(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"), 1),
             new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
         A.CallTo(() => _logic.AutoSetupAppAsync(A<OfferAutoSetupData>._))

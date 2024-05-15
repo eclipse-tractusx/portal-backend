@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -61,6 +61,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
             "Only a test service account",
             "sa1",
             CompanyServiceAccountTypeId.MANAGED,
+            CompanyServiceAccountKindId.INTERNAL,
             sa =>
             {
                 sa.OfferSubscriptionId = _validSubscriptionId;
@@ -94,6 +95,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
+        result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
     }
 
     [Fact]

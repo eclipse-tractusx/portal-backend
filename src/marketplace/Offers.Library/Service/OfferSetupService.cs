@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -118,7 +118,7 @@ public class OfferSetupService : IOfferSetupService
             await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
             await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
             await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-            return new OfferAutoSetupResponseData(null, null);
+            return new OfferAutoSetupResponseData(Enumerable.Empty<TechnicalUserInfoData>(), null);
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -132,7 +132,7 @@ public class OfferSetupService : IOfferSetupService
 
         var technicalUserClientId = clientInfoData?.ClientId ?? $"{offerDetails.OfferName}-{offerDetails.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(offerDetails.CompanyId, offerDetails.OfferName, offerDetails.Bpn, technicalUserClientId, offerTypeId == OfferTypeId.APP, true);
-        var (technicalUserInfoData, _) = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData, Enumerable.Empty<UserRoleConfig>()).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (_, technicalUsers) = await CreateTechnicalUserForSubscription(data.RequestId, createTechnicalUserData, null).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -144,11 +144,11 @@ public class OfferSetupService : IOfferSetupService
 
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return new OfferAutoSetupResponseData(
-            technicalUserInfoData,
+            technicalUsers.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData?.AuthData.Secret, x.ClientId)),
             clientInfoData);
     }
 
-    private async Task<(TechnicalUserInfoData? TechnicalUserData, bool CreateDimTechnicalUser)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, IEnumerable<UserRoleConfig> dimCreationRoles)
+    private async Task<(bool HasExternalServiceAccount, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, Guid? processId)
     {
         var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -164,10 +164,10 @@ public class OfferSetupService : IOfferSetupService
 
         if (serviceAccountCreationInfo == null)
         {
-            return (null, false);
+            return (false, []);
         }
 
-        var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
+        return await _serviceAccountCreation
             .CreateServiceAccountAsync(
                 serviceAccountCreationInfo,
                 data.CompanyId,
@@ -175,12 +175,9 @@ public class OfferSetupService : IOfferSetupService
                 CompanyServiceAccountTypeId.MANAGED,
                 data.EnhanceTechnicalUserName,
                 data.Enabled,
+                new ServiceAccountCreationProcessData(ProcessTypeId.OFFER_SUBSCRIPTION, processId),
                 sa => { sa.OfferSubscriptionId = subscriptionId; })
             .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        var technicalUserForSubscription = new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
-        var createDimTechnicalUser = userRoleData.Any(userDataItem => dimCreationRoles.Any(configDataItem => userDataItem.ClientClientId == configDataItem.ClientId && configDataItem.UserRoleNames.Contains(userDataItem.UserRoleText)));
-        return (technicalUserForSubscription, createDimTechnicalUser);
     }
 
     /// <inheritdoc />
@@ -252,12 +249,12 @@ public class OfferSetupService : IOfferSetupService
         var technicalUserData = await CreateTechnicalUsersForOffer(offerId, OfferTypeId.APP, new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, internalClientId, true, true)).ToListAsync()
             .ConfigureAwait(false);
 
-        _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.Select(x => new ValueTuple<Guid, Guid>(instanceId, x.TechnicalUserId)));
+        _portalRepositories.GetInstance<IAppInstanceRepository>().CreateAppInstanceAssignedServiceAccounts(technicalUserData.SelectMany(x => x.Select(y => (instanceId, y.TechnicalUserId))));
 
-        return technicalUserData.Select(x => x.TechnicalClientId);
+        return technicalUserData.SelectMany(x => x.Select(y => y.TechnicalClientId));
     }
 
-    private async IAsyncEnumerable<TechnicalUserInfoData> CreateTechnicalUsersForOffer(
+    private async IAsyncEnumerable<IEnumerable<TechnicalUserInfoData>> CreateTechnicalUsersForOffer(
         Guid offerId,
         OfferTypeId offerTypeId,
         CreateTechnicalUserData data)
@@ -265,16 +262,17 @@ public class OfferSetupService : IOfferSetupService
         var creationData = await _technicalUserProfileService.GetTechnicalUserProfilesForOffer(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         foreach (var creationInfo in creationData)
         {
-            var (technicalClientId, serviceAccountData, serviceAccountId, userRoleData) = await _serviceAccountCreation
+            var (_, result) = await _serviceAccountCreation
                 .CreateServiceAccountAsync(
                     creationInfo,
                     data.CompanyId,
                     data.Bpn == null ? Enumerable.Empty<string>() : [data.Bpn],
                     CompanyServiceAccountTypeId.MANAGED,
                     data.EnhanceTechnicalUserName,
-                    data.Enabled)
+                    data.Enabled,
+                    new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null))
                 .ConfigureAwait(ConfigureAwaitOptions.None);
-            yield return new TechnicalUserInfoData(serviceAccountId, userRoleData.Select(x => x.UserRoleText), serviceAccountData.AuthData.Secret, technicalClientId);
+            yield return result.Select(x => new TechnicalUserInfoData(x.ServiceAccountId, x.UserRoleData.Select(ur => ur.UserRoleText), x.ServiceAccountData?.AuthData.Secret, x.ClientId));
         }
     }
 
@@ -515,7 +513,7 @@ public class OfferSetupService : IOfferSetupService
     }
 
     /// <inheritdoc />
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles, IEnumerable<UserRoleConfig> dimCreationRoles)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateTechnicalUser(Guid processId, Guid offerSubscriptionId, IEnumerable<UserRoleConfig> itAdminRoles)
     {
         var data = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetTechnicalUserCreationData(offerSubscriptionId)
@@ -532,12 +530,12 @@ public class OfferSetupService : IOfferSetupService
 
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
         var createTechnicalUserData = new CreateTechnicalUserData(data.CompanyId, data.OfferName, data.Bpn, technicalUserClientId, true, false);
-        var (technicalUserInfoData, createDimTechnicalUser) = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData, dimCreationRoles).ConfigureAwait(ConfigureAwaitOptions.None);
-        var technicalClientId = technicalUserInfoData?.TechnicalClientId;
+        var (hasExternalServiceAccount, serviceAccounts) = await CreateTechnicalUserForSubscription(offerSubscriptionId, createTechnicalUserData, processId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var technicalClientIds = serviceAccounts.Select(x => x.ClientId);
 
         var content = JsonSerializer.Serialize(new
         {
-            technicalClientId,
+            technicalClientIds,
         });
 
         await _notificationService.CreateNotifications(
@@ -550,7 +548,7 @@ public class OfferSetupService : IOfferSetupService
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
             [
-                createDimTechnicalUser
+                hasExternalServiceAccount
                     ? ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
                     : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
             ],

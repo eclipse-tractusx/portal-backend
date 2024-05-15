@@ -1,5 +1,5 @@
 <!--
-- Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+- Copyright (c) 2024 Contributors to the Eclipse Foundation
 -
 - See the NOTICE file(s) distributed with this work for additional
 - information regarding copyright ownership.
@@ -25,7 +25,7 @@
       <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
   </ItemGroup>

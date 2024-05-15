@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -27,12 +26,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 
 public class CompanyServiceAccount : IBaseEntity
 {
-    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId)
+    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId)
     {
         Id = id;
         Name = name;
         Description = description;
         CompanyServiceAccountTypeId = companyServiceAccountTypeId;
+        CompanyServiceAccountKindId = companyServiceAccountKindId;
         AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
 
@@ -48,12 +48,13 @@ public class CompanyServiceAccount : IBaseEntity
     public string Description { get; set; }
 
     public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
-
+    public CompanyServiceAccountKindId CompanyServiceAccountKindId { get; set; }
     public Guid? OfferSubscriptionId { get; set; }
 
     // Navigation properties
     public virtual Identity? Identity { get; set; }
     public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
+    public virtual CompanyServiceAccountKind? CompanyServiceAccountKind { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
     public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }

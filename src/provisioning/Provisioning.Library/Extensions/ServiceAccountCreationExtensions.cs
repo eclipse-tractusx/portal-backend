@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
@@ -31,6 +32,8 @@ public static class ServiceAccountCreationExtensions
     {
         services.AddOptions<ServiceAccountCreationSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateDistinctValues(section)
             .ValidateOnStart();
 
         services

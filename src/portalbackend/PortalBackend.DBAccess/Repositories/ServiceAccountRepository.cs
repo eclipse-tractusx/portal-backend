@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,15 +40,17 @@ public class ServiceAccountRepository : IServiceAccountRepository
         Guid identityId,
         string name,
         string description,
-        string clientClientId,
+        string? clientClientId,
         CompanyServiceAccountTypeId companyServiceAccountTypeId,
+        CompanyServiceAccountKindId companyServiceAccountKindId,
         Action<CompanyServiceAccount>? setOptionalParameters = null)
     {
         var entity = new CompanyServiceAccount(
             identityId,
             name,
             description,
-            companyServiceAccountTypeId)
+            companyServiceAccountTypeId,
+            companyServiceAccountKindId)
         {
             ClientClientId = clientClientId
         };
@@ -65,6 +67,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             id,
             null!,
             null!,
+            default,
             default);
         initialize?.Invoke(companyServiceAccount);
         _dbContext.Attach(companyServiceAccount);
@@ -83,6 +86,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.Name,
                     serviceAccount.Description,
                     serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.CompanyServiceAccountKindId,
                     serviceAccount.OfferSubscriptionId,
                     serviceAccount.ClientClientId,
                     serviceAccount.Identity!.IdentityAssignedRoles
@@ -119,7 +123,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.ClientClientId,
                     serviceAccount.Name,
                     serviceAccount.Description,
-                    serviceAccount.Identity!.IdentityAssignedRoles
+                    serviceAccount.Identity!.UserStatusId,
+                    serviceAccount.Identity.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
                         .Select(userRole => new UserRoleData(
                             userRole!.Id,
@@ -219,13 +224,13 @@ public class ServiceAccountRepository : IServiceAccountRepository
     public void CreateDimUserCreationData(Guid serviceAccountId, Guid processId) =>
          _dbContext.DimUserCreationData.Add(new DimUserCreationData(Guid.NewGuid(), serviceAccountId, processId));
 
-    public Task<(bool IsValid, string? Bpn, string? ServiceAccountName)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
+    public Task<(bool IsValid, string? Bpn, string? ClientClientId)> GetDimServiceAccountData(Guid dimServiceAccountId) =>
         _dbContext.DimUserCreationData
             .Where(x => x.Id == dimServiceAccountId)
             .Select(x => new ValueTuple<bool, string?, string?>(
                 true,
                 x.ServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
-                x.ServiceAccount!.Name))
+                x.ServiceAccount!.ClientClientId))
             .SingleOrDefaultAsync();
 
     public Task<Guid> GetDimServiceAccountIdForProcess(Guid processId) =>

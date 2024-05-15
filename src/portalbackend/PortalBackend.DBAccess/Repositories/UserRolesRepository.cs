@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -60,6 +60,13 @@ public class UserRolesRepository : IUserRolesRepository
                 companyUserRoleId
 
             )).Entity;
+
+    public void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds) =>
+        _dbContext.IdentityAssignedRoles.AddRange(
+            companyUserRoleIds.Select(x =>
+                new IdentityAssignedRole(
+                    x.CompanyUserId,
+                    x.CompanyUserRoleId)));
 
     public IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
         _dbContext.IdentityAssignedRoles.Remove(

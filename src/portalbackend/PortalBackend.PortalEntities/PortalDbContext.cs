@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -121,6 +121,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
     public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
+    public virtual DbSet<CompanyServiceAccountKind> CompanyServiceAccountKindes { get; set; } = default!;
     public virtual DbSet<CompanySsiDetail> CompanySsiDetails { get; set; } = default!;
     public virtual DbSet<CompanySsiDetailStatus> CompanySsiDetailStatuses { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
@@ -788,6 +789,13 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyServiceAccountType(e))
             );
 
+        modelBuilder.Entity<CompanyServiceAccountKind>()
+            .HasData(
+                Enum.GetValues(typeof(CompanyServiceAccountKindId))
+                    .Cast<CompanyServiceAccountKindId>()
+                    .Select(e => new CompanyServiceAccountKind(e))
+            );
+
         modelBuilder.Entity<IdentityType>()
             .HasData(
                 Enum.GetValues(typeof(IdentityTypeId))
@@ -859,13 +867,17 @@ public class PortalDbContext : DbContext
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.CompanyServiceAccountTypeId);
 
+            entity.HasOne(d => d.CompanyServiceAccountKind)
+                .WithMany(p => p.CompanyServiceAccounts)
+                .HasForeignKey(d => d.CompanyServiceAccountKindId);
+
             entity.HasOne(d => d.OfferSubscription)
                 .WithMany(p => p.CompanyServiceAccounts)
                 .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasIndex(e => e.ClientClientId)
-                .IsUnique();
+            entity.HasIndex(x => x.ClientClientId)
+                .HasFilter("client_client_id is not null AND company_service_account_kind_id = 1");
 
             entity.ToTable("company_service_accounts");
         });
