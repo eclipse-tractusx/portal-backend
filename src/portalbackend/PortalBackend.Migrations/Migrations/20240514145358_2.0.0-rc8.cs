@@ -26,7 +26,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class _593AdjustDimTechnicalUsers : Migration
+    public partial class _200rc8 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
