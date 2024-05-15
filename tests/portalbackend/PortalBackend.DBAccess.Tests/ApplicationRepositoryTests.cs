@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -55,7 +56,7 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut
-            .GetCompanyUserRoleWithAddressUntrackedAsync(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb2"));
+            .GetCompanyUserRoleWithAddressUntrackedAsync(new Guid("4f0146c6-32aa-4bb1-b844-df7e8babdcb2"), [DocumentTypeId.ADDITIONAL_DETAILS]);
 
         // Assert
         result.Should().NotBeNull();
@@ -76,10 +77,14 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.APP_PROVIDER).Should().HaveCount(1);
         result.AgreementsData.Where(x => x.CompanyRoleId == CompanyRoleId.ACTIVE_PARTICIPANT).Should().HaveCount(3);
 
-        result.InvitedCompanyUserData.Should().BeEmpty();
+        result.InvitedCompanyUserData.Should().ContainSingle()
+            .Which.Should().Match<InvitedCompanyUserData>(x => x.UserId == new Guid("8b42e6de-7b59-4217-a63c-198e83d93776") && x.FirstName == "First" && x.LastName == "User" && x.Email == "test@email.com");
 
-        result.CompanyIdentifiers.Should().HaveCount(1);
-        result.CompanyIdentifiers.First().Should().Match<(UniqueIdentifierId UniqueIdentifierId, string Value)>(identifier => identifier.UniqueIdentifierId == UniqueIdentifierId.VAT_ID && identifier.Value == "DE123456789");
+        result.CompanyIdentifiers.Should().ContainSingle()
+            .Which.Should().Match<(UniqueIdentifierId UniqueIdentifierId, string Value)>(identifier => identifier.UniqueIdentifierId == UniqueIdentifierId.VAT_ID && identifier.Value == "DE123456789");
+
+        result.DocumentData.Should().ContainSingle()
+            .Which.Should().Match<(Guid DocumentId, DocumentTypeId DocumentTypeId)>(x => x.DocumentId == new Guid("ec12dc7e-a8fa-4aa5-945a-f7e64be30841") && x.DocumentTypeId == DocumentTypeId.ADDITIONAL_DETAILS);
     }
 
     #endregion GetRegistrationDataUntrackedAsync
