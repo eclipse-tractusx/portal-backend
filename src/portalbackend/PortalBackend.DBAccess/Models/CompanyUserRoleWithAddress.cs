@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -39,7 +37,7 @@ public record CompanyUserRoleWithAddress(
     IEnumerable<AgreementsData> AgreementsData,
     IEnumerable<InvitedCompanyUserData> InvitedCompanyUserData,
     IEnumerable<(UniqueIdentifierId UniqueIdentifierId, string Value)> CompanyIdentifiers,
-    IEnumerable<Document> Documents,
+    IEnumerable<(Guid DocumentId, DocumentTypeId DocumentTypeId)> DocumentData,
     DateTimeOffset? Created,
     DateTimeOffset? LastChanged
 );
