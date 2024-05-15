@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240514145358_593-AdjustDimTechnicalUsers")]
-    partial class _593AdjustDimTechnicalUsers
+    [Migration("20240514145358_2.0.0-rc8")]
+    partial class _200rc8
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
