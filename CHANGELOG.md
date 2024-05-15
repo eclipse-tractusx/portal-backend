@@ -2,6 +2,21 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC8
+
+### Changes
+* upgraded Npgsql and EntityFrameworkCore packages
+* reworked year in file header
+
+### Bugfix
+* **Administration Service**
+* adjusted DIM service accounts
+* removed enum for framework credentials: to create a framework credential string values are used now instead of enums to be more flexible
+
+### Technical Support
+* **Dependabot**
+* introduced grouping of pull request for version updates
+
 ## 2.0.0-RC7
 
 ### Bugfix
