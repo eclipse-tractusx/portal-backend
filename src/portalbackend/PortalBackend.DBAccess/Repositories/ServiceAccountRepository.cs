@@ -86,6 +86,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     serviceAccount.Name,
                     serviceAccount.Description,
                     serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.CompanyServiceAccountKindId,
                     serviceAccount.OfferSubscriptionId,
                     serviceAccount.ClientClientId,
                     serviceAccount.Identity!.IdentityAssignedRoles
