@@ -99,10 +99,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWithAddress == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
         if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
         {
@@ -134,7 +134,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value)),
+            companyWithAddress.DocumentData.Select(data => new DocumentDetails(data.DocumentId, data.DocumentTypeId)),
+            companyWithAddress.Created,
+            companyWithAddress.LastChanged
         );
     }
 
@@ -165,9 +168,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
-                        application.Invitations.SelectMany(invitation =>
-                            invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
@@ -268,22 +268,22 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new[] {
+                [
                     ApplicationChecklistEntryStatusId.TO_DO,
                     ApplicationChecklistEntryStatusId.IN_PROGRESS,
                     ApplicationChecklistEntryStatusId.FAILED
-                },
+                ],
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-                entryTypeIds: new[] {
+                entryTypeIds: [
                     ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION
-                },
-                processStepTypeIds: new[] {
+                ],
+                processStepTypeIds: [
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_IDENTITY_WALLET
-                })
+                ])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
@@ -293,12 +293,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.SkipProcessSteps(
             context,
-            new[] {
+            [
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
-            });
+            ]);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
@@ -386,9 +386,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 entryTypeId,
-                new[] { ApplicationChecklistEntryStatusId.FAILED },
+                [ApplicationChecklistEntryStatusId.FAILED],
                 processStepTypeId,
-                processStepTypeIds: new[] { nextProcessStepTypeId })
+                processStepTypeIds: [nextProcessStepTypeId])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -405,7 +405,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
                 item.Comment = null;
             },
-            new[] { nextProcessStepTypeId });
+            [nextProcessStepTypeId]);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -438,10 +438,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO },
+                [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.VERIFY_REGISTRATION,
-                new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
-                new[] { CreateWalletStep() })
+                [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
+                [CreateWalletStep()])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -474,13 +474,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
+                [ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE],
                 ProcessStepTypeId.DECLINE_APPLICATION,
                 null,
-                new[] { ProcessStepTypeId.VERIFY_REGISTRATION, })
+                [ProcessStepTypeId.VERIFY_REGISTRATION,])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
+        _checklistService.SkipProcessSteps(context, [ProcessStepTypeId.VERIFY_REGISTRATION]);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -572,15 +572,15 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             case CompanyApplicationStatusFilter.Closed:
                 {
-                    return new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
             case CompanyApplicationStatusFilter.InReview:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED };
+                    return [CompanyApplicationStatusId.SUBMITTED];
                 }
             default:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
         }
     }
