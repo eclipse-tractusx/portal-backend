@@ -299,6 +299,7 @@ public class UserRolesRepository : IUserRolesRepository
                 x.Active
                     ? x.Roles.Select(role =>
                         new ActiveAppRoleDetails(
+                            role.Id,
                             role.UserRoleText,
                             role.UserRoleDescriptions.Where(description =>
                                 (languageShortName != null && description.LanguageShortName == languageShortName) ||
@@ -325,6 +326,7 @@ public class UserRolesRepository : IUserRolesRepository
                 x.Provider
                     ? x.Roles.Select(role =>
                         new ActiveAppRoleDetails(
+                            role.Id,
                             role.UserRoleText,
                             role.UserRoleDescriptions.Where(description =>
                                 (languageShortName != null && description.LanguageShortName == languageShortName) ||

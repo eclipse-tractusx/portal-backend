@@ -1252,10 +1252,12 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var userRole1 = new ActiveAppRoleDetails("TestRole1", [
+        var roleId1 = _fixture.Create<Guid>();
+        var roleId2 = _fixture.Create<Guid>();
+        var userRole1 = new ActiveAppRoleDetails(roleId1, "TestRole1", [
             new ActiveAppUserRoleDescription("en", "TestRole1 description")
         ]);
-        var userRole2 = new ActiveAppRoleDetails("TestRole2", [
+        var userRole2 = new ActiveAppRoleDetails(roleId2, "TestRole2", [
             new ActiveAppUserRoleDescription("en", "TestRole2 description")
         ]);
         var activeAppRoleDetails = (true, true, new[] {
@@ -1272,8 +1274,8 @@ public class AppReleaseBusinessLogicTest
         // Assert
         result.Should().HaveCount(2)
             .And.Satisfy(
-                x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
-                x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
+                x => x.RoleId == roleId1 && x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
+                x => x.RoleId == roleId2 && x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
         A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }
