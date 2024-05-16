@@ -60,9 +60,9 @@ public class DimUserCreationProcessServiceTests
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        var expectedServiceAccountName = "dim-sa-test";
+        var expectedServiceAccountName = "dim-sa-testFooBar";
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
-            .Returns((true, Bpn, "sa-test"));
+            .Returns((true, Bpn, "dim-sa-test Foo Bar"));
 
         // Act
         var result = await _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
@@ -86,7 +86,7 @@ public class DimUserCreationProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
-            .Returns(default((bool, string?, string?)));
+            .Returns(default((bool, string?, string)));
         Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
@@ -107,7 +107,7 @@ public class DimUserCreationProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
-            .Returns((true, null, null));
+            .Returns((true, null, "foo"));
         Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
@@ -128,14 +128,14 @@ public class DimUserCreationProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
-            .Returns((true, Bpn, null));
+            .Returns((true, Bpn, "   "));
         Task Act() => _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Act
-        ex.Message.Should().Be("Service Account Name must not be null");
+        ex.Message.Should().Be("Service Account Name must not be empty");
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
