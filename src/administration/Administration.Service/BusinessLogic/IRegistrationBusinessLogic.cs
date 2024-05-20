@@ -107,6 +107,7 @@ public interface IRegistrationBusinessLogic
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
 
+    /// <summary>
     /// Retrigger the DeleteIdpSharedRealm ProcessStepType
     /// </summary>
     /// <param name="processId">Id of the Process</param>

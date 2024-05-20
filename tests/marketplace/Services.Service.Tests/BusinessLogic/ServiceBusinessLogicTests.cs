@@ -670,7 +670,6 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
             .Returns(false);
 
-        var offerSubscription = _fixture.Create<OfferSubscription>();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
                 _validSubscriptionId,
                 _identity.CompanyId,
@@ -683,15 +682,15 @@ public class ServiceBusinessLogicTests
             .Returns<SubscriptionDetailData?>(null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 _existingServiceId, _identity.IdentityId, A<OfferTypeId>._))
-            .Returns((_identity.CompanyId, offerSubscription));
+            .Returns((_identity.CompanyId, true));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.IdentityId,
                 A<OfferTypeId>._))
-            .Returns((_identity.CompanyId, default(OfferSubscription?)));
+            .Returns((_identity.CompanyId, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 _existingServiceId, A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
                 A<OfferTypeId>._))
-            .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
+            .Returns<(Guid, bool)>(default);
 
         A.CallTo(() => _consentRepository.GetConsentDetailData(_validConsentId, OfferTypeId.SERVICE))
             .Returns(new ConsentDetailData(_validConsentId, "The Company", _companyUser.Id, ConsentStatusId.ACTIVE, "Agreed"));

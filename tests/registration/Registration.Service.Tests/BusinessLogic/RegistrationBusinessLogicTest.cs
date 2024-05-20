@@ -961,8 +961,8 @@ public class RegistrationBusinessLogicTest
             [
                 (firstIdData.UniqueIdentifierId, firstIdData.Value), // shall be left unmodified
                 (secondIdData.UniqueIdentifierId, _fixture.Create<string>()), // shall be modified
-                (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>())
-            ]) // shall be deleted
+                (uniqueIdentifiers.ElementAt(3), _fixture.Create<string>())   // shall be deleted
+            ])
             .With(x => x.IsUserOfCompany, true)
             .Create();
         var application = _fixture.Build<CompanyApplication>()
@@ -3317,9 +3317,8 @@ public class RegistrationBusinessLogicTest
             x.ApplicationId == applicationId &&
             x.ApplicationStatus == CompanyApplicationStatusId.CREATED &&
             x.CompanyName == "Acme Corp" &&
-            x.User == "Tony, Stark (t.stark@acme.corp)");
-
-        result.First().Users.Should().ContainInOrder(["Test, User (t.user@acme.corp)", "foo@bar.org"]);
+            x.User == "Tony, Stark (t.stark@acme.corp)" &&
+            x.Users.SequenceEqual(new[] { "Test, User (t.user@acme.corp)", "foo@bar.org" }));
     }
 
     #endregion
@@ -3420,19 +3419,9 @@ public class RegistrationBusinessLogicTest
                 return processes;
             });
 
-        var createdProcessStepsBuilder = ImmutableArray.CreateBuilder<ProcessStep>();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepStatusTypeIds) =>
-            {
-                var processSteps = processStepStatusTypeIds.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray();
-                createdProcessStepsBuilder.AddRange(processSteps);
-                return processSteps;
-            });
-
-        var createdIdentityProviderAssignedProcessesBuilder = ImmutableArray.CreateBuilder<IdentityProviderAssignedProcess>();
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProviderAssignedProcessRange(A<IEnumerable<(Guid, Guid)>>._))
-            .Invokes((IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds) =>
-                createdIdentityProviderAssignedProcessesBuilder.AddRange(identityProviderProcessIds.Select(x => new IdentityProviderAssignedProcess(x.IdentityProviderId, x.ProcessId))));
+                processStepStatusTypeIds.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray());
 
         var modifiedIdentitiesBuilder = ImmutableArray.CreateBuilder<(Identity Initial, Identity Modified)>();
         A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<(Guid IdentityId, Action<Identity>?, Action<Identity>)>>._))
@@ -3448,11 +3437,6 @@ public class RegistrationBusinessLogicTest
                 }
             });
 
-        var createdCompanyUserAssignedProcessesBuilder = ImmutableArray.CreateBuilder<CompanyUserAssignedProcess>();
-        A.CallTo(() => _userRepository.CreateCompanyUserAssignedProcessRange(A<IEnumerable<(Guid, Guid)>>._))
-            .Invokes((IEnumerable<(Guid CompanyUserId, Guid ProcessId)> companyUserProcessIds) =>
-                createdCompanyUserAssignedProcessesBuilder.AddRange(companyUserProcessIds.Select(x => new CompanyUserAssignedProcess(x.CompanyUserId, x.ProcessId))));
-
         var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
 
         // Act
@@ -3461,10 +3445,7 @@ public class RegistrationBusinessLogicTest
         var modifiedInvitations = modifiedInvitationsBuilder.ToImmutable();
         var modifiedDocuments = modifiedDocumentsBuilder.ToImmutable();
         var createdProcesses = createdProcessesBuilder.ToImmutable();
-        var createdProcessSteps = createdProcessStepsBuilder.ToImmutable();
-        var createdIdentityProviderAssignedProcesses = createdIdentityProviderAssignedProcessesBuilder.ToImmutable();
         var modifiedIdentities = modifiedIdentitiesBuilder.ToImmutable();
-        var createdCompanyUserAssignedProcesses = createdCompanyUserAssignedProcessesBuilder.ToImmutable();
 
         // Assert
 
@@ -3598,6 +3579,14 @@ public class RegistrationBusinessLogicTest
                     new(ProcessStepTypeId.DELETE_CENTRAL_USER, ProcessStepStatusId.TODO, createdProcesses[2].Id),
                     new(ProcessStepTypeId.DELETE_CENTRAL_USER, ProcessStepStatusId.TODO, createdProcesses[3].Id),
                     new(ProcessStepTypeId.DELETE_CENTRAL_USER, ProcessStepStatusId.TODO, createdProcesses[4].Id)
+                })))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _userRepository.CreateCompanyUserAssignedProcessRange(A<IEnumerable<(Guid CompanyUserId, Guid ProcessId)>>.That.IsSameSequenceAs(new (Guid, Guid)[]
+                {
+                    new(identityStatusData[0].CompanyUserId, createdProcesses[2].Id),
+                    new(identityStatusData[1].CompanyUserId, createdProcesses[3].Id),
+                    new(identityStatusData[2].CompanyUserId, createdProcesses[4].Id),
                 })))
             .MustHaveHappenedOnceExactly();
 

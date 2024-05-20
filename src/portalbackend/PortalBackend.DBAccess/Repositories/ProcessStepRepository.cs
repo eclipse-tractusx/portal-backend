@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -43,7 +44,7 @@ public class ProcessStepRepository : IProcessStepRepository
 
     public IEnumerable<Process> CreateProcessRange(IEnumerable<ProcessTypeId> processTypeIds)
     {
-        var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToList();
+        var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableList();
         _context.AddRange(processes);
         return processes;
     }
@@ -53,7 +54,7 @@ public class ProcessStepRepository : IProcessStepRepository
 
     public IEnumerable<ProcessStep> CreateProcessStepRange(IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
     {
-        var processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+        var processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
         _context.AddRange(processSteps);
         return processSteps;
     }
@@ -74,7 +75,7 @@ public class ProcessStepRepository : IProcessStepRepository
                 var step = new ProcessStep(data.ProcessStepId, default, default, Guid.Empty, default);
                 data.Initialize?.Invoke(step);
                 return (Step: step, data.Modify);
-            }).ToList();
+            }).ToImmutableList();
         _context.AttachRange(stepModifyData.Select(data => data.Step));
         stepModifyData.ForEach(data =>
             {
