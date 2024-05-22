@@ -332,10 +332,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
-        _context.Processes
+        _context.OfferSubscriptions
             .AsNoTracking()
-            .Where(process => process.Id == processId)
-            .Select(process => process.OfferSubscription!.Id)
+            .Where(os => os.ProcessId == processId)
+            .Select(os => os.Id)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

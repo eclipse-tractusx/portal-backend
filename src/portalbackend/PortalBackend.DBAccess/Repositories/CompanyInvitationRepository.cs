@@ -38,9 +38,10 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
     }
 
     public Task<Guid> GetCompanyInvitationForProcessId(Guid processId) =>
-        _context.Processes
-            .Where(process => process.Id == processId)
-            .Select(process => process.CompanyInvitation!.Id)
+        _context.CompanyInvitations
+            .AsNoTracking()
+            .Where(i => i.ProcessId == processId)
+            .Select(i => i.Id)
             .SingleOrDefaultAsync();
 
     public Task<string?> GetOrganisationNameForInvitation(Guid invitationId) =>
