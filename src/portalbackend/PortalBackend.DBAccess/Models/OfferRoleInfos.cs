@@ -30,6 +30,7 @@ public record OfferRoleInfos(
     [property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);
 
 public record ActiveAppRoleDetails(
+    [property: JsonPropertyName("roleId")] Guid RoleId,
     [property: JsonPropertyName("role")] string Role,
     [property: JsonPropertyName("descriptions")] IEnumerable<ActiveAppUserRoleDescription> Descriptions);
 

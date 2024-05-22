@@ -59,30 +59,36 @@ public class ServiceAccountCreation(
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
 
         var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
+        var dimConfigRoles = _settings.DimUserRoles.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
+
         var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
 
-        var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, userRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
-        var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, companyServiceAccountTypeId, CompanyServiceAccountKindId.INTERNAL, name, clientId, description, userRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
-        serviceAccounts.Add(new CreatedServiceAccountData(
-            serviceAccountId,
-            enhancedName,
-            description,
-            UserStatusId.ACTIVE,
-            clientId,
-            serviceAccountData,
-            userRoleData));
-
-        var dimRoles = userRoleData
-                .Join(_settings.DimUserRoles, data => data.ClientClientId, config => config.ClientId,
-                    (data, config) => new { data, config })
-                .Where(@t => t.config.UserRoleNames.Contains(@t.data.UserRoleText))
-                .Select(@t => t.data)
-                .ToImmutableList();
-
-        var hasExternalServiceAccount = dimRoles.IfAny(roles =>
+        if (userRoleData.ExceptBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
+            async roleData =>
             {
+                var keycloakRoleData = roleData.ToImmutableList();
+                var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
+                var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, companyServiceAccountTypeId, CompanyServiceAccountKindId.INTERNAL, name, clientId, description, keycloakRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                serviceAccounts.Add(new CreatedServiceAccountData(
+                    serviceAccountId,
+                    enhancedName,
+                    description,
+                    UserStatusId.ACTIVE,
+                    clientId,
+                    serviceAccountData,
+                    keycloakRoleData));
+            },
+            out var keycloakRolesTask))
+        {
+            await keycloakRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+
+        var hasExternalServiceAccount = userRoleData.IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
+            roleData =>
+            {
+                var dimRoleData = roleData.ToImmutableList();
                 var dimSaName = $"dim-{name}";
-                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, null, description, roles, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, null, description, dimRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
                 var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
                 if (processData?.ProcessTypeId is not null)
                 {
@@ -98,7 +104,7 @@ public class ServiceAccountCreation(
                         processId = processData.ProcessId.Value;
                     }
 
-                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(serviceAccountId, processId);
+                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(dimServiceAccountId, processId);
                 }
 
                 serviceAccounts.Add(new CreatedServiceAccountData(
@@ -108,7 +114,7 @@ public class ServiceAccountCreation(
                     UserStatusId.PENDING,
                     null,
                     null,
-                    roles));
+                    dimRoleData));
             });
 
         return (hasExternalServiceAccount, serviceAccounts.ToImmutable());

@@ -262,7 +262,7 @@ public class ServicesController : ControllerBase
     /// <response code="403">User's company does not provide the service.</response>
     /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "service_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/provider")]
     [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
@@ -282,7 +282,7 @@ public class ServicesController : ControllerBase
     /// <response code="403">User's company does not provide the service.</response>
     /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "subscribe_service")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/subscriber")]
     [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
@@ -299,7 +299,7 @@ public class ServicesController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
-    [Authorize(Roles = "view_subscription")]
+    [Authorize(Roles = "view_service_subscriptions")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]

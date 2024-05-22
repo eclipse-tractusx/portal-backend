@@ -360,6 +360,7 @@ public class InvitationProcessService : IInvitationProcessService
                 KeyValuePair.Create("companyName", companyName),
                 KeyValuePair.Create("url", _settings.RegistrationAppAddress),
                 KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
+                KeyValuePair.Create("closeApplicationUrl", _settings.CloseApplicationAddress)
             });
             _mailingProcessCreation.CreateMailProcess(userInformation.Email, template, mailParameters);
         }

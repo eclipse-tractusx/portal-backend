@@ -264,7 +264,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .AsNoTracking()
             .Where(application => companyName == null || EF.Functions.ILike(application.Company!.Name, $"%{companyName.EscapeForILike()}%"));
 
-    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId) =>
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         portalDbContext.CompanyApplications
             .AsSplitQuery()
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -294,7 +294,12 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                             x.CompanyUser!.Firstname,
                             x.CompanyUser.Lastname,
                             x.CompanyUser.Email)),
-                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
+                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)),
+                    companyApplication.Invitations.SelectMany(invitation =>
+                            invitation.CompanyUser!.Documents.Where(document => documentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
+                                new ValueTuple<Guid, DocumentTypeId>(document.Id, document.DocumentTypeId))),
+                    companyApplication.DateCreated,
+                    companyApplication.DateLastChanged))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
