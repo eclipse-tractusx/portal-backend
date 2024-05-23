@@ -183,6 +183,7 @@ public class ServiceAccountBusinessLogic(
             iamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
+            result.Status,
             secret,
             result.ConnectorData,
             result.OfferSubscriptionData,
@@ -311,12 +312,24 @@ public class ServiceAccountBusinessLogic(
             result.OfferSubscriptionId);
     }
 
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive) =>
-        Pagination.CreateResponseAsync(
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive, IEnumerable<UserStatusId>? userStatusIds)
+    {
+        IEnumerable<UserStatusId> filterUserStatusIds;
+        if (userStatusIds?.Any() ?? false)
+        {
+            filterUserStatusIds = userStatusIds;
+        }
+        else
+        {
+            filterUserStatusIds = filterForInactive ? [UserStatusId.INACTIVE] : [UserStatusId.ACTIVE, UserStatusId.PENDING];
+        }
+
+        return Pagination.CreateResponseAsync(
             page,
             size,
             15,
-            portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityData.CompanyId, clientId, isOwner, filterForInactive ? UserStatusId.INACTIVE : UserStatusId.ACTIVE));
+            portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
+    }
 
     public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
         portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
