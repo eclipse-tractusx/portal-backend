@@ -232,14 +232,16 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(newvalidCompanyId, null, null, [UserStatusId.ACTIVE])(page, size);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Count.Should().Be(count);
-        result.Data.Should().HaveCount(expected);
+        result.Should().NotBeNull()
+            .And.Match<Framework.Models.Pagination.Source<Models.CompanyServiceAccountData>>(x =>
+                x.Count == count &&
+                x.Data.Count() == expected);
         if (expected > 0)
         {
-            result.Data.First().CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
-            result.Data.First().IsOwner.Should().BeTrue();
-            result.Data.First().IsProvider.Should().BeFalse();
+            result!.Data.First().Should().Match<Models.CompanyServiceAccountData>(y =>
+                y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                y.IsOwner &&
+                !y.IsProvider);
         }
     }
 
@@ -268,6 +270,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, true, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(15);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
@@ -297,6 +300,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
             .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
@@ -313,6 +317,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
             .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED);
@@ -328,6 +333,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-2", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
             .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN);
@@ -343,6 +349,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(13);
         result.Data.Should().HaveCount(10);
     }
@@ -357,13 +364,41 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountsUntracked(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.INACTIVE])(0, 10);
 
         // Assert
+        result.Should().NotBeNull();
         result!.Count.Should().Be(1);
-        result.Data.Should().HaveCount(1)
-            .And.Satisfy(x =>
+        result.Data.Should().ContainSingle()
+            .Which.Should().Match<Models.CompanyServiceAccountData>(x =>
                 x.ServiceAccountId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
                 x.ClientId == "sa-x-inactive" &&
                 x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
                 x.UserStatusId == UserStatusId.INACTIVE);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithMultipleStatus_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.DistinctBy(x => x.UserStatusId).Should().HaveCountGreaterThan(1);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithInvalidCompanyId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+
+        // Assert
+        result.Should().BeNull();
     }
 
     #endregion
