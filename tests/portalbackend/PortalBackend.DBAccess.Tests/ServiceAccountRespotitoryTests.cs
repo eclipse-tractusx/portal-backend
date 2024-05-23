@@ -74,9 +74,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
         result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
+        changedEntries.Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
     }
 
     #endregion
@@ -169,10 +168,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, _validCompanyId);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
-        result.CompanyLastEditorData!.CompanyName.Should().Be("CX-Test-Access");
-        result.CompanyLastEditorData.Name.Should().Be("CX Admin");
+        result.Should().NotBeNull()
+            .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
+                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+                x.Status == UserStatusId.ACTIVE &&
+                x.CompanyLastEditorData != null &&
+                x.CompanyLastEditorData.CompanyName == "CX-Test-Access" &&
+                x.CompanyLastEditorData.Name == "CX Admin");
     }
 
     [Fact]
@@ -216,9 +218,27 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountDetailedDataUntrackedAsync_WithInactiveStatus_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+        Guid companyServiceAccountId = new("38c92162-6328-40ce-80f3-22e3f3e9b94d");
+        Guid companyId = new("729e0af2-6723-4a7f-85a1-833d84b39bdf");
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(companyServiceAccountId, companyId);
+
+        // Assert
+        result.Should().NotBeNull()
+            .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
+                x.ClientClientId == "sa-x-inactive" &&
+                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                x.Status == UserStatusId.INACTIVE);
+    }
+
     #endregion
 
-    #region GetOwnCompanyServiceAccountDetailedDataUntrackedAsync
+    #region GetOwnCompanyServiceAccountsUntracked
 
     [Theory]
     [InlineData(3, 0, 10, 3)]
@@ -335,8 +355,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
-        result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN);
+        result.Data.Should().ContainSingle()
+            .Which.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
     }
 
     [Fact]
