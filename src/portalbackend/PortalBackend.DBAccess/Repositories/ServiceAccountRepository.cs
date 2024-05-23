@@ -177,7 +177,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                         : x.IsOwner || x.IsProvider) &&
                     userStatusIds.Contains(x.ServiceAccount.Identity!.UserStatusId) &&
                     (clientId == null || EF.Functions.ILike(x.ServiceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
-                .GroupBy(x => x.ServiceAccount.Identity!.UserStatusId),
+                .GroupBy(x => x.ServiceAccount.Identity!.IdentityTypeId),
             x => x.OrderBy(x => x.ServiceAccount.Name),
             x => new CompanyServiceAccountData(
                 x.ServiceAccount.Id,
