@@ -116,7 +116,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
             .AsNoTracking()
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
-                serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                serviceAccount.Identity!.UserStatusId != UserStatusId.DELETED &&
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(serviceAccount => new CompanyServiceAccountDetailedData(
                     serviceAccount.Id,
