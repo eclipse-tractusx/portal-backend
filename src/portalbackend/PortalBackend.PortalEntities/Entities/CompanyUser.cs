@@ -66,6 +66,7 @@ public class CompanyUser : IBaseEntity, IAuditableV1
 
     public virtual Identity? Identity { get; set; }
     public virtual Identity? LastEditor { get; private set; }
+    public virtual CompanyUserAssignedProcess? CompanyUserAssignedProcess { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }

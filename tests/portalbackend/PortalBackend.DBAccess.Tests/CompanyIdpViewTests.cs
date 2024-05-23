@@ -46,7 +46,7 @@ public class CompanyIdpViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.CompanyIdpView.ToListAsync();
-        result.Should().HaveCount(6);
+        result.Should().HaveCount(7);
     }
 
     [Fact]

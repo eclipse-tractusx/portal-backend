@@ -35,6 +35,7 @@ public interface IIdentityProviderRepository
     void AttachAndModifyIamIdentityProvider(string idpAlias, Action<IamIdentityProvider>? initialize, Action<IamIdentityProvider> modify);
     CompanyIdentityProvider CreateCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
     void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId);
+    void DeleteCompanyIdentityProviderRange(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdentityProviderIds);
     void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds);
     Task<string?> GetSharedIdentityProviderIamAliasDataUntrackedAsync(Guid companyId);
     Task<(string? Alias, bool IsValidUser)> GetIdpCategoryIdByUserIdAsync(Guid companyUserId, Guid userCompanyId);
@@ -59,4 +60,6 @@ public interface IIdentityProviderRepository
     IAsyncEnumerable<Guid> GetIdpLinkedCompanyUserIds(Guid identityProviderId, Guid companyId);
     IAsyncEnumerable<(Guid CompanyId, CompanyStatusId CompanyStatusId, bool HasMoreIdentityProviders, IEnumerable<(Guid IdentityId, bool IsLinkedCompanyUser, (string? UserMail, string? FirstName, string? LastName) Userdata, bool IsInUserRoles, IEnumerable<Guid> UserRoleIds)> Identities)> GetManagedIdpLinkedData(Guid identityProviderId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, Guid identityProviderId);
+    Task<IdpData?> GetIdentityProviderDataForProcessIdAsync(Guid processId);
+    void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds);
 }

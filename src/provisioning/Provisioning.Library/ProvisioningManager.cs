@@ -275,6 +275,18 @@ public partial class ProvisioningManager : IProvisioningManager
         return _factory.CreateKeycloakClient("shared", clientId, secret);
     }
 
+    public async Task DeleteSharedRealmAsync(string alias)
+    {
+        var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(false);
+        await deleteSharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(false);
+    }
+
+    public async Task DeleteIdpSharedServiceAccount(string alias)
+    {
+        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
+    }
+
     private static T Clone<T>(T cloneObject)
         where T : class =>
         JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(cloneObject))!;

@@ -2628,19 +2628,18 @@ public class OfferServiceTests
         A.CallTo(() => _agreementRepository.CheckAgreementsExistsForSubscriptionAsync(A<IEnumerable<Guid>>.That.Matches(x => x.All(y => y != _existingAgreementId)), A<Guid>._, A<OfferTypeId>._))
             .Returns(false);
 
-        var offerSubscription = _fixture.Create<OfferSubscription>();
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), _companyUserId, A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE)))
-            .Returns((_companyId, offerSubscription));
+            .Returns((_companyId, true));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), _companyUserId, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
-            .Returns<(Guid, OfferSubscription?)>((_companyId, null));
+            .Returns((_companyId, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), _companyUserId, A<OfferTypeId>._))
-            .Returns<(Guid, OfferSubscription?)>((_companyId, null));
+            .Returns((_companyId, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Matches(x => x == _existingServiceId), A<Guid>.That.Not.Matches(x => x == _companyUserId),
                 A<OfferTypeId>._))
-            .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
+            .Returns<(Guid, bool)>(default);
 
         var agreementData = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => _agreementRepository.GetOfferAgreementDataForOfferId(A<Guid>.That.Matches(x => x == _existingServiceId), A<OfferTypeId>._))

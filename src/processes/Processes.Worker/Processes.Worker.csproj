@@ -52,6 +52,8 @@
       <ProjectReference Include="..\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
       <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
       <ProjectReference Include="..\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj" />
+      <ProjectReference Include="..\IdentityProviderProvisioning.Executor\IdentityProviderProvisioning.Executor.csproj" />
+      <ProjectReference Include="..\UserProvisioning.Executor\UserProvisioning.Executor.csproj" />
     </ItemGroup>
 
     <ItemGroup>

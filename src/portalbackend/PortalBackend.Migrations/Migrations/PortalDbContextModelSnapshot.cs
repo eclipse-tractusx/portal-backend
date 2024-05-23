@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -36,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -4075,6 +4075,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_user_assigned_identity_providers", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedProcess", b =>
+                {
+                    b.Property<Guid>("CompanyUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_user_id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.HasKey("CompanyUserId", "ProcessId")
+                        .HasName("pk_company_user_assigned_processes");
+
+                    b.HasIndex("CompanyUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_user_assigned_processes_company_user_id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_company_user_assigned_processes_process_id");
+
+                    b.ToTable("company_user_assigned_processes", "portal");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyWalletData", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4992,6 +5016,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasDatabaseName("ix_identity_providers_owner_id");
 
                     b.ToTable("identity_providers", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderAssignedProcess", b =>
+                {
+                    b.Property<Guid>("IdentityProviderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("identity_provider_id");
+
+                    b.Property<Guid>("ProcessId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("process_id");
+
+                    b.HasKey("IdentityProviderId", "ProcessId")
+                        .HasName("pk_identity_provider_assigned_processes");
+
+                    b.HasIndex("IdentityProviderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_identity_provider_assigned_processes_identity_provider_id");
+
+                    b.HasIndex("ProcessId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_identity_provider_assigned_processes_process_id");
+
+                    b.ToTable("identity_provider_assigned_processes", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
@@ -6836,6 +6884,56 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 501,
                             Label = "RETRIGGER_CREATE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 600,
+                            Label = "DELETE_CENTRAL_USER"
+                        },
+                        new
+                        {
+                            Id = 601,
+                            Label = "RETRIGGER_DELETE_CENTRAL_USER"
+                        },
+                        new
+                        {
+                            Id = 602,
+                            Label = "DELETE_COMPANYUSER_ASSIGNED_PROCESS"
+                        },
+                        new
+                        {
+                            Id = 700,
+                            Label = "DELETE_IDP_SHARED_REALM"
+                        },
+                        new
+                        {
+                            Id = 701,
+                            Label = "RETRIGGER_DELETE_IDP_SHARED_REALM"
+                        },
+                        new
+                        {
+                            Id = 702,
+                            Label = "DELETE_IDP_SHARED_SERVICEACCOUNT"
+                        },
+                        new
+                        {
+                            Id = 703,
+                            Label = "RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT"
+                        },
+                        new
+                        {
+                            Id = 704,
+                            Label = "DELETE_CENTRAL_IDENTITY_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 705,
+                            Label = "RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 706,
+                            Label = "DELETE_IDENTITY_PROVIDER"
                         });
                 });
 
@@ -6886,6 +6984,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 7,
                             Label = "DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "USER_PROVISIONING"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "IDENTITYPROVIDER_PROVISIONING"
                         });
                 });
 
@@ -8148,12 +8256,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_identity_providers_companies_company_id");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
                         .WithMany("CompanyIdentityProviders")
                         .HasForeignKey("IdentityProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_identity_providers_identity_providers_identity_prov");
 
@@ -8383,18 +8493,41 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
                         .WithMany("CompanyUserAssignedIdentityProviders")
                         .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_identity_providers_company_users_comp");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
                         .WithMany("CompanyUserAssignedIdentityProviders")
                         .HasForeignKey("IdentityProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_company_user_assigned_identity_providers_identity_providers");
 
                     b.Navigation("CompanyUser");
 
                     b.Navigation("IdentityProvider");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedProcess", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CompanyUser")
+                        .WithOne("CompanyUserAssignedProcess")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedProcess", "CompanyUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_user_assigned_processes_company_users_company_user_");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("CompanyUserAssignedProcess")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUserAssignedProcess", "ProcessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_user_assigned_processes_processes_process_id");
+
+                    b.Navigation("CompanyUser");
+
+                    b.Navigation("Process");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyWalletData", b =>
@@ -8789,6 +8922,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("IdentityProviderType");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderAssignedProcess", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProvider", "IdentityProvider")
+                        .WithOne("IdentityProviderAssignedProcess")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderAssignedProcess", "IdentityProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_identity_provider_assigned_processes_identity_providers_ide");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Process", "Process")
+                        .WithOne("IdentityProviderAssignedProcess")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderAssignedProcess", "ProcessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_identity_provider_assigned_processes_processes_process_id");
+
+                    b.Navigation("IdentityProvider");
+
+                    b.Navigation("Process");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Invitation", b =>
@@ -9623,6 +9777,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("CompanyUserAssignedIdentityProviders");
 
+                    b.Navigation("CompanyUserAssignedProcess");
+
                     b.Navigation("Consents");
 
                     b.Navigation("Documents");
@@ -9722,6 +9878,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyUserAssignedIdentityProviders");
 
                     b.Navigation("IamIdentityProvider");
+
+                    b.Navigation("IdentityProviderAssignedProcess");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.IdentityProviderCategory", b =>
@@ -9861,7 +10019,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("CompanyInvitation");
 
+                    b.Navigation("CompanyUserAssignedProcess");
+
                     b.Navigation("DimUserCreationData");
+
+                    b.Navigation("IdentityProviderAssignedProcess");
 
                     b.Navigation("MailingInformation");
 
