@@ -159,7 +159,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                             serviceAccount.DimCompanyServiceAccount.EncryptionMode)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, UserStatusId userStatusId) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
@@ -175,7 +175,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                     (isOwner.HasValue
                         ? isOwner.Value && x.IsOwner || !isOwner.Value && x.IsProvider
                         : x.IsOwner || x.IsProvider) &&
-                    x.ServiceAccount.Identity!.UserStatusId == userStatusId &&
+                    userStatusIds.Contains(x.ServiceAccount.Identity!.UserStatusId) &&
                     (clientId == null || EF.Functions.ILike(x.ServiceAccount.ClientClientId!, $"%{clientId.EscapeForILike()}%")))
                 .GroupBy(x => x.ServiceAccount.Identity!.UserStatusId),
             x => x.OrderBy(x => x.ServiceAccount.Name),
@@ -184,6 +184,7 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 x.ServiceAccount.ClientClientId,
                 x.ServiceAccount.Name,
                 x.ServiceAccount.CompanyServiceAccountTypeId,
+                x.ServiceAccount.Identity!.UserStatusId,
                 x.IsOwner,
                 x.IsProvider,
                 x.ServiceAccount.OfferSubscriptionId,
