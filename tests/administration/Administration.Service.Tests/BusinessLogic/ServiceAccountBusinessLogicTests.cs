@@ -237,7 +237,7 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidUser_NotFoundException()
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidCompany_NotFoundException()
     {
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
@@ -249,7 +249,7 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
@@ -265,7 +265,7 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
@@ -733,6 +733,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Build<CompanyServiceAccountDetailedData>()
+            .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
             .Create();
 

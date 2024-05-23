@@ -147,19 +147,24 @@ public class ServiceAccountBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var result = await portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
+
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+            throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
 
-        if (result.ClientClientId == null)
-        {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
-        }
-
-        IamClientAuthMethod iamClientAuthMethod;
+        IamClientAuthMethod? iamClientAuthMethod;
         string? secret;
-        if (result.DimServiceAccountData == null)
+
+        if (result.DimServiceAccountData != null)
+        {
+            iamClientAuthMethod = IamClientAuthMethod.SECRET;
+            secret = Decrypt(
+                result.DimServiceAccountData.ClientSecret,
+                result.DimServiceAccountData.InitializationVector,
+                result.DimServiceAccountData.EncryptionMode);
+        }
+        else if (result.ClientClientId != null)
         {
             var internalClientId = await provisioningManager.GetIdOfCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
             var authData = await provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -168,11 +173,8 @@ public class ServiceAccountBusinessLogic(
         }
         else
         {
-            iamClientAuthMethod = IamClientAuthMethod.SECRET;
-            secret = Decrypt(
-                result.DimServiceAccountData.ClientSecret,
-                result.DimServiceAccountData.InitializationVector,
-                result.DimServiceAccountData.EncryptionMode);
+            iamClientAuthMethod = null;
+            secret = null;
         }
 
         return new ServiceAccountConnectorOfferData(

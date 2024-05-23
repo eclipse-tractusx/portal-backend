@@ -114,49 +114,59 @@ public class ServiceAccountRepository : IServiceAccountRepository
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>
         _dbContext.CompanyServiceAccounts
             .AsNoTracking()
-            .Where(serviceAccount =>
-                serviceAccount.Id == serviceAccountId &&
-                serviceAccount.Identity!.UserStatusId != UserStatusId.DELETED &&
-                (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
-            .Select(serviceAccount => new CompanyServiceAccountDetailedData(
-                    serviceAccount.Id,
-                    serviceAccount.ClientClientId,
-                    serviceAccount.Name,
-                    serviceAccount.Description,
-                    serviceAccount.Identity!.UserStatusId,
-                    serviceAccount.Identity.IdentityAssignedRoles
-                        .Select(assignedRole => assignedRole.UserRole)
-                        .Select(userRole => new UserRoleData(
-                            userRole!.Id,
-                            userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
-                            userRole.UserRoleText)),
-                    serviceAccount.CompanyServiceAccountTypeId,
-                    serviceAccount.OfferSubscriptionId,
-                    serviceAccount.Connector == null
-                        ? null
-                        : new ConnectorResponseData(
-                            serviceAccount.Connector.Id,
-                            serviceAccount.Connector.Name),
-                    serviceAccount!.OfferSubscription == null
-                        ? null
-                        : new OfferResponseData(
-                            serviceAccount.OfferSubscription.OfferId,
-                            serviceAccount.OfferSubscription.Offer!.OfferTypeId,
-                            serviceAccount.OfferSubscription.Offer.Name,
-                            serviceAccount.OfferSubscription.Id),
-                    serviceAccount.Identity.LastEditorId == null
-                        ? null
-                        : new CompanyLastEditorData(
-                            serviceAccount.Identity.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
-                                ? serviceAccount.Identity.LastEditor.CompanyUser!.Lastname
-                                : serviceAccount.Identity.LastEditor.CompanyServiceAccount!.Name,
-                            serviceAccount.Identity.LastEditor.Company!.Name),
-                    serviceAccount.DimCompanyServiceAccount == null
-                        ? null
-                        : new DimServiceAccountData(
-                            serviceAccount.DimCompanyServiceAccount.ClientSecret,
-                            serviceAccount.DimCompanyServiceAccount.InitializationVector,
-                            serviceAccount.DimCompanyServiceAccount.EncryptionMode)))
+            .Select(serviceAccount => new
+            {
+                ServiceAccount = serviceAccount,
+                serviceAccount.Identity,
+                serviceAccount.Connector,
+                serviceAccount.OfferSubscription,
+                serviceAccount.Identity!.LastEditor,
+                serviceAccount.DimCompanyServiceAccount,
+                serviceAccount.CompaniesLinkedServiceAccount
+            })
+            .Where(x =>
+                x.ServiceAccount.Id == serviceAccountId &&
+                x.Identity!.UserStatusId != UserStatusId.DELETED &&
+                (x.CompaniesLinkedServiceAccount!.Owners == companyId || x.CompaniesLinkedServiceAccount!.Provider == companyId))
+            .Select(x => new CompanyServiceAccountDetailedData(
+                x.ServiceAccount.Id,
+                x.ServiceAccount.ClientClientId,
+                x.ServiceAccount.Name,
+                x.ServiceAccount.Description,
+                x.Identity!.UserStatusId,
+                x.Identity.IdentityAssignedRoles
+                    .Select(assignedRole => assignedRole.UserRole)
+                    .Select(userRole => new UserRoleData(
+                        userRole!.Id,
+                        userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
+                        userRole.UserRoleText)),
+                x.ServiceAccount.CompanyServiceAccountTypeId,
+                x.ServiceAccount.OfferSubscriptionId,
+                x.Connector == null
+                    ? null
+                    : new ConnectorResponseData(
+                        x.Connector.Id,
+                        x.Connector.Name),
+                x.OfferSubscription == null
+                    ? null
+                    : new OfferResponseData(
+                        x.OfferSubscription.OfferId,
+                        x.OfferSubscription.Offer!.OfferTypeId,
+                        x.OfferSubscription.Offer.Name,
+                        x.OfferSubscription.Id),
+                x.Identity.LastEditorId == null
+                    ? null
+                    : new CompanyLastEditorData(
+                        x.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
+                            ? x.LastEditor.CompanyUser!.Lastname
+                            : x.LastEditor.CompanyServiceAccount!.Name,
+                        x.LastEditor.Company!.Name),
+                x.ServiceAccount.DimCompanyServiceAccount == null
+                    ? null
+                    : new DimServiceAccountData(
+                        x.DimCompanyServiceAccount!.ClientSecret,
+                        x.DimCompanyServiceAccount.InitializationVector,
+                        x.DimCompanyServiceAccount.EncryptionMode)))
             .SingleOrDefaultAsync();
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds) =>
