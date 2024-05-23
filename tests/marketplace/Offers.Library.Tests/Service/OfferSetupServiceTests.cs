@@ -1118,7 +1118,7 @@ public class OfferSetupServiceTests
                     setOptionalParameter?.Invoke(companyServiceAccount);
                 }
             })
-            .Returns((withMatchingDimRoles, [
+            .Returns((withMatchingDimRoles, Guid.Empty, [
                 new CreatedServiceAccountData(
                     serviceAccountId,
                     "test",
@@ -1457,7 +1457,7 @@ public class OfferSetupServiceTests
                     setOptionalParameter?.Invoke(companyServiceAccount);
                 }
             })
-            .Returns(new ValueTuple<bool, List<CreatedServiceAccountData>>(false, [
+            .Returns(new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
                 new CreatedServiceAccountData(
                     _technicalUserId,
                     "sa2",

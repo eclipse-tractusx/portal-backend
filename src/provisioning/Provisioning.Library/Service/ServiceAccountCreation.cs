@@ -45,7 +45,7 @@ public class ServiceAccountCreation(
     private readonly ServiceAccountCreationSettings _settings = options.Value;
 
     /// <inheritdoc />
-    async Task<(bool HasExternalServiceAccount, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
+    async Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
             CompanyServiceAccountTypeId companyServiceAccountTypeId,
@@ -83,6 +83,7 @@ public class ServiceAccountCreation(
             await keycloakRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
+        Guid? processId = null;
         var hasExternalServiceAccount = userRoleData.IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
             roleData =>
             {
@@ -92,7 +93,6 @@ public class ServiceAccountCreation(
                 var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
                 if (processData?.ProcessTypeId is not null)
                 {
-                    Guid processId;
                     if (processData.ProcessId is null)
                     {
                         var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
@@ -104,7 +104,7 @@ public class ServiceAccountCreation(
                         processId = processData.ProcessId.Value;
                     }
 
-                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(dimServiceAccountId, processId);
+                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(dimServiceAccountId, processId.Value);
                 }
 
                 serviceAccounts.Add(new CreatedServiceAccountData(
@@ -117,7 +117,7 @@ public class ServiceAccountCreation(
                     dimRoleData));
             });
 
-        return (hasExternalServiceAccount, serviceAccounts.ToImmutable());
+        return (hasExternalServiceAccount, processId, serviceAccounts.ToImmutable());
     }
 
     private static async Task<IEnumerable<UserRoleData>> GetAndValidateUserRoleData(IUserRolesRepository userRolesRepository, IEnumerable<Guid> userRoleIds)
