@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240517135403_CPLP-3548-declineRegistration")]
-    partial class CPLP3548declineRegistration
+    [Migration("20240517135403_2.0.0-rc10")]
+    partial class _200rc10
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
