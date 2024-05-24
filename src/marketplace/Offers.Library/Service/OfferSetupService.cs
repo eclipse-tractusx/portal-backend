@@ -102,25 +102,32 @@ public class OfferSetupService : IOfferSetupService
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var offerDetails = await GetAndValidateOfferDetails(data.RequestId, _identityData.CompanyId, offerTypeId, offerSubscriptionsRepository).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (offerDetails.InstanceData.IsSingleInstance)
+        return await (offerDetails.InstanceData.IsSingleInstance
+            ? AutoSetupOfferSingleInstance(data, offerDetails, itAdminRoles, offerTypeId, serviceManagerRoles, offerSubscriptionsRepository)
+            : AutoSetupOfferMultiInstance(data, offerDetails, itAdminRoles, offerTypeId, basePortalAddress, serviceManagerRoles, offerSubscriptionsRepository)).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private async Task<OfferAutoSetupResponseData> AutoSetupOfferSingleInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, IEnumerable<UserRoleConfig> itAdminRoles, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> serviceManagerRoles, IOfferSubscriptionsRepository offerSubscriptionsRepository)
+    {
+        offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
         {
-            offerSubscriptionsRepository.AttachAndModifyOfferSubscription(data.RequestId, subscription =>
+            subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+        });
+
+        _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
+            .CreateAppSubscriptionDetail(data.RequestId, appSubscriptionDetail =>
             {
-                subscription.OfferSubscriptionStatusId = OfferSubscriptionStatusId.ACTIVE;
+                appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
+                appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
             });
+        await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return new OfferAutoSetupResponseData(Enumerable.Empty<TechnicalUserInfoData>(), null);
+    }
 
-            _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
-                .CreateAppSubscriptionDetail(data.RequestId, appSubscriptionDetail =>
-                {
-                    appSubscriptionDetail.AppInstanceId = offerDetails.AppInstanceIds.Single();
-                    appSubscriptionDetail.AppSubscriptionUrl = offerDetails.InstanceData.InstanceUrl;
-                });
-            await CreateNotifications(itAdminRoles, offerTypeId, offerDetails, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
-            await SetNotificationsToDone(serviceManagerRoles, offerTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-            return new OfferAutoSetupResponseData(Enumerable.Empty<TechnicalUserInfoData>(), null);
-        }
-
+    private async Task<OfferAutoSetupResponseData> AutoSetupOfferMultiInstance(OfferAutoSetupData data, OfferSubscriptionTransferData offerDetails, IEnumerable<UserRoleConfig> itAdminRoles, OfferTypeId offerTypeId, string basePortalAddress, IEnumerable<UserRoleConfig> serviceManagerRoles, IOfferSubscriptionsRepository offerSubscriptionsRepository)
+    {
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         ClientInfoData? clientInfoData = null;
         if (offerTypeId == OfferTypeId.APP)
@@ -154,7 +161,7 @@ public class OfferSetupService : IOfferSetupService
             clientInfoData);
     }
 
-    private async Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, Guid? processId)
+    private async Task<(bool HasExternalServiceAccount, Guid? ProcessId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateTechnicalUserForSubscription(Guid subscriptionId, CreateTechnicalUserData data, Guid? processId)
     {
         var technicalUserInfoCreations = await _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
 
