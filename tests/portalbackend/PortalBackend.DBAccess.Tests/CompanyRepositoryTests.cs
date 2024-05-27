@@ -1002,6 +1002,29 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region RemoveProviderCompanyDetails
+
+    [Fact]
+    public async Task RemoveProviderCompanyDetails_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.RemoveProviderCompanyDetails(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()
