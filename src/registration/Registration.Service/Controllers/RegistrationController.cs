@@ -502,7 +502,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="204">Successfully declined the application</response>
         /// <response code="404">Application ID not found.</response>
         [HttpPost]
-        [Authorize(Roles = "decline_new_partner")]
+        [Authorize(Roles = "view_registration")]
         [Authorize(Policy = PolicyTypes.CompanyUser)]
         [Route("applications/{applicationId}/declineregistration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
