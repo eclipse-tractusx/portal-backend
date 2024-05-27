@@ -204,6 +204,27 @@ public class SubscriptionConfigurationBusinessLogicTests
     }
 
     [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithProviderDetailsAndNoUrl_RemovesProviderDetails()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerCompanyId = Guid.NewGuid();
+        var providerDetailData = new ProviderDetailData(null, null);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((providerCompanyId, null!));
+
+        // Act
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(providerCompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task SetProviderCompanyDetailsAsync_WithServiceProviderDetailsId_ReturnsExpectedResult()
     {
         //Arrange
@@ -280,14 +301,13 @@ public class SubscriptionConfigurationBusinessLogicTests
     [Theory]
     [InlineData("foo")]
     [InlineData("")]
-    [InlineData(null)]
     [InlineData("http://www.service-url.com")]
     [InlineData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com")]
-    public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrl_ThrowsException(string? url)
+    public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrl_ThrowsException(string url)
     {
         //Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData(url!, null);
+        var providerDetailData = new ProviderDetailData(url, null);
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
