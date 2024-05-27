@@ -504,6 +504,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         [HttpPost]
         [Authorize(Roles = "view_registration")]
         [Authorize(Policy = PolicyTypes.CompanyUser)]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Route("applications/{applicationId}/declineregistration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
