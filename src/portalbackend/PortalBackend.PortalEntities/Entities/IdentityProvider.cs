@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -56,6 +55,7 @@ public class IdentityProvider : IBaseEntity
     public virtual IamIdentityProvider? IamIdentityProvider { get; set; }
     public virtual IdentityProviderType? IdentityProviderType { get; set; }
     public virtual Company? Owner { get; set; }
+    public virtual IdentityProviderAssignedProcess? IdentityProviderAssignedProcess { get; set; }
     public virtual ICollection<Company> Companies { get; private set; }
     public virtual ICollection<CompanyIdentityProvider> CompanyIdentityProviders { get; private set; }
     public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }

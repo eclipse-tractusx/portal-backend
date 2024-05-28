@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -99,10 +100,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWithAddress == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
         if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
         {
@@ -134,7 +135,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value)),
+            companyWithAddress.DocumentData.Select(data => new DocumentDetails(data.DocumentId, data.DocumentTypeId)),
+            companyWithAddress.Created,
+            companyWithAddress.LastChanged
         );
     }
 
@@ -165,9 +169,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
-                        application.Invitations.SelectMany(invitation =>
-                            invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
@@ -268,22 +269,22 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new[] {
+                [
                     ApplicationChecklistEntryStatusId.TO_DO,
                     ApplicationChecklistEntryStatusId.IN_PROGRESS,
                     ApplicationChecklistEntryStatusId.FAILED
-                },
+                ],
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-                entryTypeIds: new[] {
+                entryTypeIds: [
                     ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION
-                },
-                processStepTypeIds: new[] {
+                ],
+                processStepTypeIds: [
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_IDENTITY_WALLET
-                })
+                ])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
@@ -293,12 +294,12 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         _checklistService.SkipProcessSteps(
             context,
-            new[] {
+            [
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
-            });
+            ]);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
@@ -386,9 +387,9 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 entryTypeId,
-                new[] { ApplicationChecklistEntryStatusId.FAILED },
+                [ApplicationChecklistEntryStatusId.FAILED],
                 processStepTypeId,
-                processStepTypeIds: new[] { nextProcessStepTypeId })
+                processStepTypeIds: [nextProcessStepTypeId])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         _checklistService.FinalizeChecklistEntryAndProcessSteps(
@@ -405,7 +406,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
                 item.Comment = null;
             },
-            new[] { nextProcessStepTypeId });
+            [nextProcessStepTypeId]);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -438,10 +439,10 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO },
+                [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.VERIFY_REGISTRATION,
-                new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
-                new[] { CreateWalletStep() })
+                [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
+                [CreateWalletStep()])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -474,13 +475,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
+                [ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE],
                 ProcessStepTypeId.DECLINE_APPLICATION,
                 null,
-                new[] { ProcessStepTypeId.VERIFY_REGISTRATION, })
+                [ProcessStepTypeId.VERIFY_REGISTRATION,])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
+        _checklistService.SkipProcessSteps(context, [ProcessStepTypeId.VERIFY_REGISTRATION]);
 
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -491,14 +492,18 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
             }
 
-            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
             if (idpType is IdentityProviderTypeId.OWN or IdentityProviderTypeId.SHARED)
             {
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
                 identityProviderRepository.DeleteIdentityProvider(idpId);
             }
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            else
+            {
+                // a managed identityprovider is just unlinked from company and users
+                identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+                userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            }
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
@@ -572,15 +577,15 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         {
             case CompanyApplicationStatusFilter.Closed:
                 {
-                    return new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
             case CompanyApplicationStatusFilter.InReview:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED };
+                    return [CompanyApplicationStatusId.SUBMITTED];
                 }
             default:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
         }
     }
@@ -630,5 +635,39 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return result.Single();
+    }
+
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
+
+    public Task RetriggerDeleteCentralUser(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER);
+
+    private async Task RetriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    {
+        var (processType, nextStep) = stepToTrigger switch
+        {
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_REALM),
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER => (ProcessTypeId.USER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_USER),
+            _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
+        };
+
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.FinalizeProcessStep();
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

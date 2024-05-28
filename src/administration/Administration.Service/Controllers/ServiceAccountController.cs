@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
@@ -162,6 +163,7 @@ public class ServiceAccountController : ControllerBase
     /// <param name="isOwner">isOwner either true or false</param>
     /// <param name="clientId">clientId is string clientclientid</param>
     /// <param name="filterForInactive">isUserStatusActive is True or False</param>
+    /// <param name="userStatus">userStatus is ACTIVE, INACTIVE, PENDING or DELETED (optional, multiple values allowed)</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
@@ -170,8 +172,8 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive) =>
-        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive);
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive = false, [FromQuery] IEnumerable<UserStatusId>? userStatus = null) =>
+        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive, userStatus);
 
     /// <summary>
     /// Get all service account roles

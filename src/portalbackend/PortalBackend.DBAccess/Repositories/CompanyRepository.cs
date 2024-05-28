@@ -408,4 +408,8 @@ public class CompanyRepository(PortalDbContext context)
                         c.Wallet.AuthenticationServiceUrl
                     )))
             .SingleOrDefaultAsync();
+
+    public void RemoveProviderCompanyDetails(Guid providerCompanyDetailId) =>
+        context.ProviderCompanyDetails
+            .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default));
 }

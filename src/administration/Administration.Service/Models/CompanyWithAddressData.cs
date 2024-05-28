@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the CatenaX (ng) GitHub Organisation.
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,6 +40,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 /// <param name="AgreementsRoleData"></param>
 /// <param name="InvitedUserData"></param>
 /// <param name="UniqueIds"></param>
+/// <param name="Documents"></param>
+/// <param name="Created"></param>
+/// <param name="LastChanged"></param>
 /// <returns></returns>
 
 public record CompanyWithAddressData(
@@ -56,7 +59,10 @@ public record CompanyWithAddressData(
     string ZipCode,
     [property: JsonPropertyName("companyRoles")] IEnumerable<AgreementsRoleData> AgreementsRoleData,
     [property: JsonPropertyName("companyUser")] IEnumerable<InvitedUserData> InvitedUserData,
-    IEnumerable<CompanyUniqueIdData> UniqueIds
+    IEnumerable<CompanyUniqueIdData> UniqueIds,
+    [property: JsonPropertyName("documents")] IEnumerable<DocumentDetails> Documents,
+    DateTimeOffset? Created,
+    DateTimeOffset? LastChanged
 );
 
 /// <summary>
@@ -94,4 +100,15 @@ public record InvitedUserData(
     string FirstName,
     string LastName,
     string Email
+);
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="DocumentId"></param>
+/// <param name="DocumentTypeId"></param>
+/// <returns></returns>
+public record DocumentDetails(
+  [property: JsonPropertyName("documentId")] Guid DocumentId,
+  [property: JsonPropertyName("documentType")] DocumentTypeId? DocumentTypeId
 );

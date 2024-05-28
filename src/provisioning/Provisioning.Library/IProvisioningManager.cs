@@ -70,4 +70,6 @@ public interface IProvisioningManager
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
     Task<string?> GetUserByUserName(string userName);
     Task<string?> GetIdentityProviderDisplayName(string alias);
+    Task DeleteSharedRealmAsync(string alias);
+    Task DeleteIdpSharedServiceAccount(string alias);
 }

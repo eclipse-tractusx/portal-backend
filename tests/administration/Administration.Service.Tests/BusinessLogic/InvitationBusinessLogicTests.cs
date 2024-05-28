@@ -123,7 +123,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -168,7 +168,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -213,7 +213,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS;
         var processStepTypeId = ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -258,7 +258,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -303,7 +303,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -348,7 +348,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -393,7 +393,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -438,7 +438,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_USER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With<DateTimeOffset?>(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));

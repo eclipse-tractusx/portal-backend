@@ -256,9 +256,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithMultipleTechnicalUsers_ThrowsException()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
-        SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
+        SetupAutoSetup(OfferTypeId.APP);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
@@ -1118,16 +1116,20 @@ public class OfferSetupServiceTests
                     setOptionalParameter?.Invoke(companyServiceAccount);
                 }
             })
-            .Returns((withMatchingDimRoles, [
-                new CreatedServiceAccountData(
+            .Returns((
+                withMatchingDimRoles,
+                withMatchingDimRoles
+                    ? Guid.NewGuid()
+                    : null,
+                [new CreatedServiceAccountData(
                     serviceAccountId,
                     "test",
                     "test description",
                     withMatchingDimRoles ? UserStatusId.PENDING : UserStatusId.ACTIVE,
                     clientId ?? $"{data.OfferName}-{data.CompanyName}",
                     serviceAccountData,
-                    userRoleData)
-            ]));
+                    userRoleData)]
+            ));
         var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["AdminRoles"]), 1);
 
         // Act
@@ -1457,7 +1459,7 @@ public class OfferSetupServiceTests
                     setOptionalParameter?.Invoke(companyServiceAccount);
                 }
             })
-            .Returns(new ValueTuple<bool, List<CreatedServiceAccountData>>(false, [
+            .Returns(new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
                 new CreatedServiceAccountData(
                     _technicalUserId,
                     "sa2",

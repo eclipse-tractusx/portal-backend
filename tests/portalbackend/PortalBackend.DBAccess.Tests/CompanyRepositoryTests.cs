@@ -688,7 +688,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBe(default);
         result.Bpn.Should().Be("BPNL00000003CRHK");
-        result.TechnicalUserRoleIds.Should().HaveCount(12).And.OnlyHaveUniqueItems();
+        result.TechnicalUserRoleIds.Should().HaveCount(13).And.OnlyHaveUniqueItems();
     }
 
     #endregion
@@ -998,6 +998,29 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.Did.Should().Be("did:web:test");
         result.WalletUrl.Should().Be("https://example.org/auth");
+    }
+
+    #endregion
+
+    #region RemoveProviderCompanyDetails
+
+    [Fact]
+    public async Task RemoveProviderCompanyDetails_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.RemoveProviderCompanyDetails(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
     }
 
     #endregion

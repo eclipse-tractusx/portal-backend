@@ -33,7 +33,7 @@ public class DimUserCreationProcessService(
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken)
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
-        var (isValid, bpn, clientClientId) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
+        var (isValid, bpn, name) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!isValid)
@@ -46,12 +46,13 @@ public class DimUserCreationProcessService(
             throw new ConflictException("Bpn must not be null");
         }
 
-        if (string.IsNullOrWhiteSpace(clientClientId))
+        if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ConflictException("Service Account Name must not be null");
+            throw new ConflictException("Service Account Name must not be empty");
         }
 
-        await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, $"dim-{clientClientId}"), cancellationToken).ConfigureAwait(false);
+        var dimName = string.Concat(name.Where(c => !char.IsWhiteSpace(c))); // DIM doesn't accept whitespace chars in name
+        await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, dimName), cancellationToken).ConfigureAwait(false);
         return (Enumerable.Repeat(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null);
     }
 }

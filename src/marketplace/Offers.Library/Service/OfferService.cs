@@ -74,7 +74,7 @@ public class OfferService : IOfferService
     /// <inheritdoc />
     public async Task<Guid> CreateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId, Guid agreementId, ConsentStatusId consentStatusId, OfferTypeId offerTypeId)
     {
-        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (companyId, offerSubscriptionId, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!await _portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsForSubscriptionAsync(agreementId, subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None))
@@ -83,7 +83,7 @@ public class OfferService : IOfferService
         }
 
         var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId);
-        _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>().CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
+        _portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>().CreateConsentAssignedOfferSubscription(consent.Id, offerSubscriptionId);
 
         await _portalRepositories.SaveAsync();
         return consent.Id;
@@ -92,7 +92,7 @@ public class OfferService : IOfferService
     /// <inheritdoc />
     public async Task CreateOrUpdateOfferSubscriptionAgreementConsentAsync(Guid subscriptionId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, OfferTypeId offerTypeId)
     {
-        var (companyId, offerSubscription, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (companyId, offerSubscriptionId, companyUserId) = await GetOfferSubscriptionCompanyAndUserAsync(subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!await _portalRepositories
                 .GetInstance<IAgreementRepository>()
@@ -118,11 +118,11 @@ public class OfferService : IOfferService
         foreach (var consentData in offerAgreementConsentData.ExceptBy(offerSubscriptionConsents.Select(x => x.AgreementId), consentData => consentData.AgreementId))
         {
             var consent = _portalRepositories.GetInstance<IConsentRepository>().CreateConsent(consentData.AgreementId, companyId, companyUserId, consentData.ConsentStatusId);
-            consentAssignedOfferSubscriptionRepository.CreateConsentAssignedOfferSubscription(consent.Id, offerSubscription.Id);
+            consentAssignedOfferSubscriptionRepository.CreateConsentAssignedOfferSubscription(consent.Id, offerSubscriptionId);
         }
     }
 
-    private async Task<(Guid CompanyId, OfferSubscription OfferSubscription, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, OfferTypeId offerTypeId)
+    private async Task<(Guid CompanyId, Guid OfferSubscriptionId, Guid CompanyUserId)> GetOfferSubscriptionCompanyAndUserAsync(Guid subscriptionId, OfferTypeId offerTypeId)
     {
         var result = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(subscriptionId, _identityData.IdentityId, offerTypeId)
@@ -131,12 +131,11 @@ public class OfferService : IOfferService
         {
             throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(_identityData.IdentityId));
         }
-        var (companyId, offerSubscription) = result;
-        if (offerSubscription is null)
+        if (!result.IsValidOfferSubscription)
         {
             throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
         }
-        return (companyId, offerSubscription, _identityData.IdentityId);
+        return (result.CompanyId, subscriptionId, _identityData.IdentityId);
     }
 
     /// <inheritdoc />
