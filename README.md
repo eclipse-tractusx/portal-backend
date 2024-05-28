@@ -34,6 +34,10 @@ Run the following command from the CLI in the directory of the service you want 
 dotnet run
 ```
 
+## Known Issues and Limitations
+
+See [Known Knowns](/CHANGELOG.md#known-knowns).
+
 ## Notice for Docker image
 
 This application provides container images for demonstration purposes.
