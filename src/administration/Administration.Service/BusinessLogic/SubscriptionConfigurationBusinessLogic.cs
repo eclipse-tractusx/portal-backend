@@ -64,10 +64,10 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     /// <inheritdoc />
     public Task SetProviderCompanyDetailsAsync(ProviderDetailData data)
     {
-        data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
+        data.Url?.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
 
-        if (data.Url.Length > 100)
+        if (data.Url is { Length: > 100 })
         {
             throw new ControllerArgumentException(
                 "the maximum allowed length is 100 characters", nameof(data.Url));
@@ -82,29 +82,11 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (providerDetailData == default)
+        if (providerDetailData == default && data.Url != null)
         {
-            var result = await companyRepository
-                .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-            if (!result.IsValidCompanyId)
-            {
-                throw new ConflictException($"Company {companyId} not found");
-            }
-            if (!result.IsCompanyRoleOwner)
-            {
-                throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
-            }
-            companyRepository.CreateProviderCompanyDetail(companyId, data.Url, providerDetails =>
-            {
-                if (data.CallbackUrl != null)
-                {
-                    providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
-                }
-                providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
-            });
+            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository);
         }
-        else
+        else if (data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
@@ -115,7 +97,38 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
         }
+        else
+        {
+            companyRepository.RemoveProviderCompanyDetails(providerDetailData.ProviderCompanyDetailId);
+        }
+
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private static async Task HandleCreateProviderCompanyDetails(ProviderDetailData data, Guid companyId, ICompanyRepository companyRepository)
+    {
+        var result = await companyRepository
+            .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!result.IsValidCompanyId)
+        {
+            throw new ConflictException($"Company {companyId} not found");
+        }
+
+        if (!result.IsCompanyRoleOwner)
+        {
+            throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
+        }
+
+        companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>
+        {
+            if (data.CallbackUrl != null)
+            {
+                providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
+            }
+
+            providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
+        });
     }
 
     /// <inheritdoc />

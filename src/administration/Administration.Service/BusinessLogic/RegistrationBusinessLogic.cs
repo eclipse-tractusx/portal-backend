@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -491,14 +492,18 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
             }
 
-            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
             if (idpType is IdentityProviderTypeId.OWN or IdentityProviderTypeId.SHARED)
             {
                 await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
                 identityProviderRepository.DeleteIdentityProvider(idpId);
             }
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            else
+            {
+                // a managed identityprovider is just unlinked from company and users
+                identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+                userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            }
         }
 
         _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
@@ -630,5 +635,39 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return result.Single();
+    }
+
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
+
+    public Task RetriggerDeleteCentralUser(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER);
+
+    private async Task RetriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    {
+        var (processType, nextStep) = stepToTrigger switch
+        {
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_REALM),
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER => (ProcessTypeId.USER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_USER),
+            _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
+        };
+
+        var (validProcessId, processData) = await _portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.FinalizeProcessStep();
+        await _portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

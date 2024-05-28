@@ -27,12 +27,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
-    [property: JsonPropertyName("clientId")] string ClientId,
+    [property: JsonPropertyName("clientId")] string? ClientId,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,
+    [property: JsonPropertyName("authenticationType")] IamClientAuthMethod? IamClientAuthMethod,
     [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
     [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("secret")] string? Secret,
     [property: JsonPropertyName("connector")] ConnectorResponseData? Connector,
     [property: JsonPropertyName("offer")] OfferResponseData? Offer,

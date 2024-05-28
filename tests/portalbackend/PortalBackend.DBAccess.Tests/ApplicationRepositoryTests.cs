@@ -599,6 +599,69 @@ public class ApplicationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDeclineApplicationForApplicationId
+
+    [Fact]
+    public async Task GetDeclineApplicationForApplicationId_ReturnsExpected()
+    {
+        // Arrange
+        var companyApplicationStatusIds = new[] {
+            CompanyApplicationStatusId.CREATED,
+            CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER,
+            CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
+            CompanyApplicationStatusId.VERIFY
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetDeclineApplicationDataForApplicationId(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"), new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), companyApplicationStatusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Match<(bool IsValidApplicationId, bool IsValidCompany, ApplicationDeclineData? ApplicationDeclineData)>(x =>
+            x.IsValidApplicationId &&
+            x.IsValidCompany &&
+            x.ApplicationDeclineData != null
+        );
+        result.ApplicationDeclineData!.CompanyName.Should().Be("Onboarded Company");
+        result.ApplicationDeclineData.CompanyUserStatusDatas.Should().ContainSingle()
+            .Which.Should().Match<CompanyUserStatusData>(x =>
+                x.CompanyUserId == new Guid("8b42e6de-7b59-4217-a63c-198e83d93777") &&
+                x.FirstName == "First" &&
+                x.LastName == "User" &&
+                x.Email == "test@email.com" &&
+                x.UserStatusId == UserStatusId.ACTIVE &&
+                x.IdentityAssignedRoleIds.SequenceEqual(new Guid[] { new("7410693c-c893-409e-852f-9ee886ce94a6") }));
+    }
+
+    [Fact]
+    public async Task GetDeclineApplicationForApplicationId_WithInvalidCompanyId_ReturnsExpected()
+    {
+        // Arrange
+        var companyApplicationStatusIds = new[] {
+            CompanyApplicationStatusId.CREATED,
+            CompanyApplicationStatusId.ADD_COMPANY_DATA,
+            CompanyApplicationStatusId.INVITE_USER,
+            CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
+            CompanyApplicationStatusId.UPLOAD_DOCUMENTS,
+            CompanyApplicationStatusId.VERIFY
+        };
+        var sut = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetDeclineApplicationDataForApplicationId(new Guid("7f31e08c-4420-4eac-beab-9540fbd55595"), Guid.NewGuid(), companyApplicationStatusIds).ConfigureAwait(false);
+
+        // Assert
+        result.Should().Match<(bool IsValidApplicationId, bool IsValidCompany, ApplicationDeclineData? ApplicationDeclineData)>(x =>
+            x.IsValidApplicationId &&
+            !x.IsValidCompany &&
+            x.ApplicationDeclineData == null
+        );
+    }
+
+    #endregion
+
     private async Task<(IApplicationRepository sut, PortalDbContext context)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();

@@ -162,22 +162,22 @@
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Consumer - Beschreibung tbd"
+    "description": "BPDM Sharing Input Consumer"
   },
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Consumer - description tbd"
+    "description": "BPDM Sharing Input Consumer"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "de",
-    "description": "BPDM Pool Admin - Beschreibung tbd"
+    "description": "BPDM Pool Admin"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "en",
-    "description": "BPDM Pool Admin - description tbd"
+    "description": "BPDM Pool Admin"
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
@@ -202,17 +202,17 @@
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "de",
-    "description": "BPDM Sharing Output Consumer - Beschreibung tbd"
+    "description": "BPDM Sharing Output Consumer"
   },
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "en",
-    "description": "BPDM Sharing Output Consumer - description tbd"
+    "description": "BPDM Sharing Output Consumer"
   },
   {
     "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
     "language_short_name": "de",
-    "description": "BPDM Sharing Admin - Beschreibung tbd"
+    "description": "BPDM Sharing Admin"
   },
   {
     "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
@@ -222,21 +222,41 @@
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Manager - Beschreibung tbd"
+    "description": "BPDM Sharing Input Manager"
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Manager - description tbd"
+    "description": "BPDM Sharing Input Manager"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "de",
-    "description": "BPDM Pool Consumer - Beschreibung tbd"
+    "description": "BPDM Pool Consumer"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "en",
-    "description": "BPDM Pool Consumer - description tbd"
+    "description": "BPDM Pool Consumer"
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228884cd7e5",
+    "language_short_name": "de",
+    "description": "Business Partner Data Manager"
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228884cd7e5",
+    "language_short_name": "en",
+    "description": "Business Partner Data Manager"
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53267",
+    "language_short_name": "de",
+    "description": "BPDM Pool Sharing Consumer"
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53267",
+    "language_short_name": "en",
+    "description": "BPDM Pool Sharing Consumer"
   }
 ]

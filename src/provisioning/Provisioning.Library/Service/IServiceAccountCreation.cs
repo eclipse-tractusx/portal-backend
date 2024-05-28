@@ -37,7 +37,7 @@ public interface IServiceAccountCreation
     /// <param name="processData">The process that should be created if a role for a provider type was selected</param>
     /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
-    Task<(bool HasExternalServiceAccount, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateServiceAccountAsync(
+    Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateServiceAccountAsync(
             ServiceAccountCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,

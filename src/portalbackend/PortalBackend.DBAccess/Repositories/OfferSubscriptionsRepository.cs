@@ -115,13 +115,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
+    public Task<(Guid CompanyId, bool IsValidOfferSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
         _context.CompanyUsers
             .Where(user => user.Id == userId)
             .Select(user => user.Identity!.Company)
-            .Select(company => new ValueTuple<Guid, OfferSubscription?>(
+            .Select(company => new ValueTuple<Guid, bool>(
                 company!.Id,
-                company.OfferSubscriptions.SingleOrDefault(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId)
+                company.OfferSubscriptions.Any(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId)
             ))
             .SingleOrDefaultAsync();
 

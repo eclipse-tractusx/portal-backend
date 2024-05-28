@@ -237,7 +237,7 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidUser_NotFoundException()
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidCompany_NotFoundException()
     {
         // Arrange
         SetupGetOwnCompanyServiceAccountDetails();
@@ -249,7 +249,7 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
@@ -265,7 +265,7 @@ public class ServiceAccountBusinessLogicTests
         async Task Act() => await sut.GetOwnCompanyServiceAccountDetailsAsync(invalidServiceAccountId);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
         exception.Message.Should().Be(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT.ToString());
     }
 
@@ -455,24 +455,30 @@ public class ServiceAccountBusinessLogicTests
     #region GetOwnCompanyServiceAccountsDataAsync
 
     [Theory]
-    [InlineData(UserStatusId.ACTIVE, false)]
-    [InlineData(UserStatusId.INACTIVE, true)]
-    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(UserStatusId userStatusId, bool isUserInactive)
+    [InlineData(new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE }, false, new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE })]
+    [InlineData(new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE }, true, new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE })]
+    [InlineData(new UserStatusId[] { }, false, new UserStatusId[] { UserStatusId.ACTIVE, UserStatusId.PENDING })]
+    [InlineData(new UserStatusId[] { }, true, new UserStatusId[] { UserStatusId.INACTIVE })]
+    [InlineData(null, false, new[] { UserStatusId.ACTIVE, UserStatusId.PENDING })]
+    [InlineData(null, true, new[] { UserStatusId.INACTIVE })]
+    public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
     {
         // Arrange
         var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, userStatusId))
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive);
+        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive, userStatusIds);
 
         // Assert
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -674,7 +680,7 @@ public class ServiceAccountBusinessLogicTests
             .Returns<(string?, IEnumerable<Guid>)>(default);
 
         A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>.That.Matches(x => x == ValidCompanyId), A<IEnumerable<string>>._, CompanyServiceAccountTypeId.OWN, A<bool>._, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), null))
-            .Returns((false, [new CreatedServiceAccountData(Guid.NewGuid(), "test", "description", UserStatusId.ACTIVE, ClientId, new(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Enumerable.Empty<UserRoleData>())]));
+            .Returns((false, null, [new CreatedServiceAccountData(Guid.NewGuid(), "test", "description", UserStatusId.ACTIVE, ClientId, new(ClientId, Guid.NewGuid().ToString(), new ClientAuthData(IamClientAuthMethod.SECRET)), Enumerable.Empty<UserRoleData>())]));
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
     }
@@ -727,6 +733,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupGetOwnCompanyServiceAccount()
     {
         var data = _fixture.Build<CompanyServiceAccountDetailedData>()
+            .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
             .Create();
 

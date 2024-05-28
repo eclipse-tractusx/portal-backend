@@ -802,10 +802,9 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>.That.Matches(x => x.Count() == 3)))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
     }
@@ -841,9 +840,8 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>.That.Matches(x => x.Count() == 3)))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
     }
@@ -901,7 +899,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess("test@example.org", "DeleteManagedIdp", A<IReadOnlyDictionary<string, string>>._))

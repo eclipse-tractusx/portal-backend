@@ -376,22 +376,9 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         {
             await DeleteManagedIdpLinks(identityProviderId, alias, ownerCompanyName, identityProviderRepository).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        else
-        {
-            await DeleteOwnCompanyIdpLinks(identityProviderId, identityProviderRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
 
         identityProviderRepository.DeleteIdentityProvider(identityProviderId);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-    }
-
-    private async Task DeleteOwnCompanyIdpLinks(Guid identityProviderId, IIdentityProviderRepository identityProviderRepository)
-    {
-        var companyId = _identityData.CompanyId;
-        var companyUserIds = await identityProviderRepository.GetIdpLinkedCompanyUserIds(identityProviderId, companyId).ToListAsync();
-
-        identityProviderRepository.DeleteCompanyIdentityProvider(companyId, identityProviderId);
-        _portalRepositories.GetInstance<IUserRepository>().RemoveCompanyUserAssignedIdentityProviders(companyUserIds.Select(id => (id, identityProviderId)));
     }
 
     private async Task DeleteManagedIdpLinks(Guid identityProviderId, string? alias, string ownerCompanyName, IIdentityProviderRepository identityProviderRepository)
@@ -416,9 +403,6 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
                     userRolesRepository.DeleteCompanyUserAssignedRoles(data.Identities.SelectMany(i => i.UserRoleIds.Select(ur => (i.IdentityId, ur))));
                     await DeleteKeycloakUsers(data.Identities.Select(i => i.IdentityId));
                 }
-
-                identityProviderRepository.DeleteCompanyIdentityProvider(data.CompanyId, identityProviderId);
-                userRepository.RemoveCompanyUserAssignedIdentityProviders(data.Identities.Where(x => x.IsLinkedCompanyUser).Select(x => (x.IdentityId, identityProviderId)));
 
                 foreach (var userData in data.Identities.Where(i => i is { IsInUserRoles: true, Userdata.UserMail: not null }).Select(i => i.Userdata))
                 {

@@ -2,6 +2,29 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.0.0-RC10
+
+### Feature
+* **Processes Worker**
+* added process to decline own companies registration
+* **Administration Service**
+* enabled the retrieval of service accounts with userstatusid != DELETED
+* include pending serviceaccounts and add userstatus to result
+
+### Changes
+* **Seeding**
+* add bpdm roles
+
+### Bugfix
+* **Registration Service**
+* adjusted permission for /declineregistration
+* add valid company policy
+* **Administration Service**
+* allowed deletion of configured url for own company
+* fixed old autosetup process for dim technical user creation
+* fixed conflict errors for inactive and pending service accounts
+* fixed error "Sequence contains more than one element" for GET /serviceAccounts/{serviceAccountID} endpoint
+
 ## 2.0.0-RC9
 
 ### Changes
