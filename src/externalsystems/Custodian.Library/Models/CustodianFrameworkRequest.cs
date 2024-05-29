@@ -18,20 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 
 public record CustodianFrameworkRequest(
-    [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier,
-    [property: JsonPropertyName("type"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialExternalTypeId>))] VerifiedCredentialExternalTypeId Type,
-    [property: JsonPropertyName("contract-template")] string Template,
-    [property: JsonPropertyName("contract-version")] string Version
+    [property: JsonPropertyName("holderIdentifier")] string HolderIdentifier
 );
 
 public record CustodianDismantlerRequest(
-    [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("activityType"), JsonConverter(typeof(EnumMemberConverter<VerifiedCredentialTypeId>))] VerifiedCredentialTypeId Type
+    [property: JsonPropertyName("bpn")] string Bpn
 );

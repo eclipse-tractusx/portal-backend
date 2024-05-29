@@ -41,7 +41,6 @@ public class PortalRepositories : IPortalRepositories
         CreateTypeEntry<IClientRepository>(context => new ClientRepository(context)),
         CreateTypeEntry<ICompanyRepository>(context => new CompanyRepository(context)),
         CreateTypeEntry<ICompanyInvitationRepository>(context => new CompanyInvitationRepository(context)),
-        CreateTypeEntry<ICompanySsiDetailsRepository>(context => new CompanySsiDetailsRepository(context)),
         CreateTypeEntry<ICompanyRolesRepository>(context => new CompanyRolesRepository(context)),
         CreateTypeEntry<IConsentAssignedOfferSubscriptionRepository>(context => new ConsentAssignedOfferSubscriptionRepository(context)),
         CreateTypeEntry<IConnectorsRepository>(context => new ConnectorsRepository(context)),
