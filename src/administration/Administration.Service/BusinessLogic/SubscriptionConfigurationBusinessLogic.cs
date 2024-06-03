@@ -88,7 +88,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             await HandleCreateProviderCompanyDetails(data, companyId, companyRepository);
             hasChanges = true;
         }
-        else if (data.Url != null)
+        else if (providerDetailData != default && data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
@@ -100,7 +100,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                 });
             hasChanges = true;
         }
-        else if (providerDetailData != default)
+        else if (providerDetailData != default && data.Url == null)
         {
             companyRepository.RemoveProviderCompanyDetails(providerDetailData.ProviderCompanyDetailId);
             hasChanges = true;
