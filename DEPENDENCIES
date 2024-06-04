@@ -18,7 +18,7 @@ nuget/nuget/-/Laraue.EfCoreTriggers.Common/8.0.3, MIT, approved, #13968
 nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/8.0.3, MIT, approved, #13984
 nuget/nuget/-/MailKit/4.3.0, MIT AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust), approved, #13986
 nuget/nuget/-/MimeKit/4.3.0, MIT AND FSFULLRWD AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust) AND BSD-3-Clause AND MS-PL AND CC-BY-SA-4.0 AND LicenseRef-MIT-style AND CC-PDDC AND GPL-2.0-only, approved, #13987
-nuget/nuget/-/Mono.TextTemplating/2.2.1, MIT, approved, clearlydefined
+nuget/nuget/-/Mono.TextTemplating/2.2.1, MIT, approved, #15073
 nuget/nuget/-/NHamcrest/3.4.0, MIT, approved, #13964
 nuget/nuget/-/NJsonSchema/10.9.0, MIT, approved, #9300
 nuget/nuget/-/Namotion.Reflection/2.1.2, MIT, approved, #9320

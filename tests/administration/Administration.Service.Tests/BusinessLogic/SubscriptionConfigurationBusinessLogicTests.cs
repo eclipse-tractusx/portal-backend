@@ -199,8 +199,28 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         _serviceProviderDetails.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithNotExistingAndUrlNull_DoesNothing()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData(null, null);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((Guid.Empty, null!));
+
+        // Act
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        _serviceProviderDetails.Should().BeEmpty();
     }
 
     [Fact]
@@ -255,7 +275,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         initialDetail.Should().NotBeNull();
         initialDetail!.AutoSetupUrl.Should().Be(existingUrl);
         modifyDetail.Should().NotBeNull();
