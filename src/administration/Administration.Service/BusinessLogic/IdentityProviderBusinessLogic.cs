@@ -758,7 +758,7 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var identityProviderLink in identityProviderLinks)
+                foreach (var identityProviderLink in identityProviderLinks ?? throw new UnexpectedConditionException("identityProviderLinks should never be null here"))
                 {
                     updated |= await UpdateIdentityProviderLinksAsync(iamUserId, companyUserId, identityProviderLink, existingLinks, sharedIdp, existingIdps).ConfigureAwait(false);
                 }
