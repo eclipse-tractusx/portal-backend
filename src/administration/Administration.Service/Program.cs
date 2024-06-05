@@ -37,7 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebAppHelper
+await WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "administration", VERSION, builder =>
     {
         builder.Services
@@ -97,4 +97,4 @@ WebAppHelper
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
-    });
+    }).ConfigureAwait(ConfigureAwaitOptions.None);

@@ -31,7 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebAppHelper
+await WebAppHelper
     .BuildAndRunWebApplication<Program>(args, "registration", VERSION, builder =>
     {
         builder.Services
@@ -50,4 +50,4 @@ WebAppHelper
         builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
         builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
-    });
+    }).ConfigureAwait(ConfigureAwaitOptions.None);

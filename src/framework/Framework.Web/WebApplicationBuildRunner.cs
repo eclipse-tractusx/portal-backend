@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {
-    public static void BuildAndRunWebApplication<TProgram>(
+    public static async Task BuildAndRunWebApplication<TProgram>(
         string[] args,
         string path,
         string version,
@@ -63,7 +63,7 @@ public static class WebApplicationBuildRunner
 
             var app = builder.Build().CreateApp<TProgram>(path, version);
             configureApp?.Invoke(app, builder.Environment);
-            app.Run();
+            await app.RunAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {
@@ -72,7 +72,7 @@ public static class WebApplicationBuildRunner
         finally
         {
             Log.Information("Server Shutting down");
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync().ConfigureAwait(false);
         }
     }
 }
