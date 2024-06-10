@@ -48,6 +48,10 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
     public CompanyCertificateStatusId CompanyCertificateStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid DocumentId { get; private set; }
+    public string? ExternalCertificateNumber { get; set; }
+    public string? Issuer { get; set; }
+    public string? TrustLevel { get; set; }
+    public string? Validator { get; set; }
 
     [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
@@ -60,4 +64,5 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
     public virtual Document? Document { get; private set; }
     public virtual CompanyCertificateType? CompanyCertificateType { get; private set; }
     public virtual CompanyCertificateStatus? CompanyCertificateStatus { get; private set; }
+    public virtual ICollection<CompaniesCertificateAssignedSites> CompaniesCertificateAssignedSites { get; private set; }
 }
