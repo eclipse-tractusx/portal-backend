@@ -249,7 +249,7 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
         }
 
-        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExpiryDate, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ValidUnTill, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId,

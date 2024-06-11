@@ -64,5 +64,5 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
     public virtual Document? Document { get; private set; }
     public virtual CompanyCertificateType? CompanyCertificateType { get; private set; }
     public virtual CompanyCertificateStatus? CompanyCertificateStatus { get; private set; }
-    public virtual ICollection<CompaniesCertificateAssignedSites> CompaniesCertificateAssignedSites { get; private set; }
+    public virtual ICollection<CompaniesCertificateAssignedSite> CompaniesCertificateAssignedSites { get; private set; }
 }

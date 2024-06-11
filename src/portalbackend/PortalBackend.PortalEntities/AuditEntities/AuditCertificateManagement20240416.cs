@@ -37,6 +37,10 @@ public class AuditCertificateManagement20240416 : IAuditEntityV1
     public CompanyCertificateStatusId? CompanyCertificateStatusId { get; set; }
     public Guid? CompanyId { get; private set; }
     public Guid? DocumentId { get; private set; }
+    public string? ExternalCertificateNumber { get; set; }
+    public string? Issuer { get; set; }
+    public string? TrustLevel { get; set; }
+    public string? Validator { get; set; }
     public DateTimeOffset? DateLastChanged { get; set; }
     public Guid? LastEditorId { get; private set; }
 

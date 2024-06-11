@@ -19,9 +19,9 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 
-public class CompaniesCertificateAssignedSites
+public class CompaniesCertificateAssignedSite
 {
-    public CompaniesCertificateAssignedSites(Guid companyCertificateId, string sites)
+    public CompaniesCertificateAssignedSite(Guid companyCertificateId, string sites)
     {
         CompanyCertificateId = companyCertificateId;
         Sites = sites;
