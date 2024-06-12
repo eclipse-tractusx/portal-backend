@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -92,9 +93,11 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException(IdpNotSetErrorMessage);
         }
 
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
+
         var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var (secret, initializationVector, encryptionMode) = Encrypt(clientSecret);
+        var (secret, initializationVector) = cryptoHelper.Encrypt(clientSecret);
 
         companyInvitationRepository.AttachAndModifyCompanyInvitation(invitationId, x =>
             {
@@ -108,19 +111,12 @@ public class InvitationProcessService : IInvitationProcessService
                 x.ClientId = clientId;
                 x.ClientSecret = secret;
                 x.InitializationVector = initializationVector;
-                x.EncryptionMode = encryptionMode;
+                x.EncryptionMode = _settings.EncryptionConfigIndex;
                 x.ServiceAccountUserId = serviceAccountUserId;
                 x.IdpName = idpName;
             });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_ADD_REALM_ROLE, 1), ProcessStepStatusId.DONE, true, null);
-    }
-
-    private (byte[] Secret, byte[] InitializationVector, int EncryptionMode) Encrypt(string clientSecret)
-    {
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
-        var (secret, initializationVector) = CryptoHelper.Encrypt(clientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-        return (secret, initializationVector, _settings.EncryptionConfigIndex);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> AddRealmRoleMappingsToUserAsync(Guid invitationId)

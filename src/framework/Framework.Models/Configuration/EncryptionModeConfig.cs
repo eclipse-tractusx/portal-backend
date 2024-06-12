@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
@@ -38,4 +40,20 @@ public class EncryptionModeConfig
     [Required]
     [ValidateEnumValue]
     public PaddingMode PaddingMode { get; set; }
+}
+
+public static class EncryptionModeConfigExtension
+{
+    public static CryptoHelper GetCryptoHelper(this IEnumerable<EncryptionModeConfig> configs, int index)
+    {
+        var cryptoConfig = configs.SingleOrDefault(x => x.Index == index) ?? throw new ConfigurationException($"EncryptionModeIndex {index} is not configured");
+        try
+        {
+            return new(Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        }
+        catch (FormatException)
+        {
+            throw new ConfigurationException($"EncryptionModeConfig index {index} is not valid. EncryptionKey cannot be parsed as hex-string");
+        }
+    }
 }
