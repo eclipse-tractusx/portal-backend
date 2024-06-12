@@ -37,6 +37,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Test
 
 public class InvitationProcessServiceTests
 {
+    private readonly IPortalRepositories _portalRepositories;
     private readonly ICompanyInvitationRepository _companyInvitationRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IIdentityProviderRepository _identityProviderRepository;
@@ -56,7 +57,7 @@ public class InvitationProcessServiceTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        var portalRepositories = A.Fake<IPortalRepositories>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _companyInvitationRepository = A.Fake<ICompanyInvitationRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
@@ -66,13 +67,13 @@ public class InvitationProcessServiceTests
         _userProvisioningService = A.Fake<IUserProvisioningService>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
-        A.CallTo(() => portalRepositories.GetInstance<ICompanyInvitationRepository>())
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyInvitationRepository>())
             .Returns(_companyInvitationRepository);
-        A.CallTo(() => portalRepositories.GetInstance<ICompanyRepository>())
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
             .Returns(_companyRepository);
-        A.CallTo(() => portalRepositories.GetInstance<IIdentityProviderRepository>())
+        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>())
             .Returns(_identityProviderRepository);
-        A.CallTo(() => portalRepositories.GetInstance<IApplicationRepository>())
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>())
             .Returns(_applicationRepository);
 
         _encryptionKey = _fixture.CreateMany<byte>(32).ToArray();
@@ -103,7 +104,7 @@ public class InvitationProcessServiceTests
         _sut = new InvitationProcessService(
             _idpManagement,
             _userProvisioningService,
-            portalRepositories,
+            _portalRepositories,
             _mailingProcessCreation,
             _setting);
     }
@@ -202,6 +203,44 @@ public class InvitationProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Idp name must not be null");
+    }
+
+    [Fact]
+    public async Task CreateSharedIdpServiceAccount_WithInvalidEncryptionKey_Throws()
+    {
+        // Arrange
+        var companyInvitation = _fixture.Create<CompanyInvitation>();
+
+        var settings = Options.Create(new InvitationSettings
+        {
+            EncryptionConfigIndex = 0,
+            EncryptionConfigs = [
+                new EncryptionModeConfig
+                {
+                    Index = 0,
+                    CipherMode = CipherMode.CBC,
+                    PaddingMode = PaddingMode.PKCS7,
+                    EncryptionKey = _fixture.Create<string>()
+                }
+            ]
+        });
+
+        var sut = new InvitationProcessService(
+            _idpManagement,
+            _userProvisioningService,
+            _portalRepositories,
+            _mailingProcessCreation,
+            settings);
+
+        // Act
+        async Task Act() => await sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+
+        // Assert
+        A.CallTo(() => _idpManagement.GetNextCentralIdentityProviderNameAsync())
+            .MustNotHaveHappened();
+        A.CallTo(() => _idpManagement.CreateSharedIdpServiceAccountAsync(A<string>._))
+            .MustNotHaveHappened();
     }
 
     #endregion

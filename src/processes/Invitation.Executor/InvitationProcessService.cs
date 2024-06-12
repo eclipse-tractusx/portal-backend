@@ -85,6 +85,7 @@ public class InvitationProcessService : IInvitationProcessService
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpServiceAccount(Guid invitationId)
     {
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
         var idpName = await companyInvitationRepository.GetIdpNameForInvitationId(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -92,8 +93,6 @@ public class InvitationProcessService : IInvitationProcessService
         {
             throw new ConflictException(IdpNotSetErrorMessage);
         }
-
-        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
 
         var (clientId, clientSecret, serviceAccountUserId) = await _idpManagement.CreateSharedIdpServiceAccountAsync(idpName).ConfigureAwait(ConfigureAwaitOptions.None);
 
