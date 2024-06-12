@@ -130,7 +130,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateCentralIdp(companyInvitation.Id);
 
-        // Act
+        // Assert
         companyInvitation.IdpName.Should().Be("cl1-testCorp");
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
@@ -148,10 +148,10 @@ public class InvitationProcessServiceTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _sut.CreateCentralIdp(companyInvitation.Id);
+        Task Act() => _sut.CreateCentralIdp(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Org name must not be null");
     }
 
@@ -178,7 +178,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
 
-        // Act
+        // Assert
         companyInvitation.ClientId.Should().Be("cl1");
         companyInvitation.ClientSecret.Should().NotBeNull();
         result.modified.Should().BeTrue();
@@ -198,10 +198,10 @@ public class InvitationProcessServiceTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -233,7 +233,7 @@ public class InvitationProcessServiceTests
             settings);
 
         // Act
-        async Task Act() => await sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
+        Task Act() => sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
         await Assert.ThrowsAsync<ConfigurationException>(Act);
 
         // Assert
@@ -259,7 +259,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.AddRealmRoleMappingsToUserAsync(companyInvitationId);
 
-        // Act
+        // Assert
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
@@ -276,10 +276,10 @@ public class InvitationProcessServiceTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _sut.AddRealmRoleMappingsToUserAsync(companyInvitation.Id);
+        Task Act() => _sut.AddRealmRoleMappingsToUserAsync(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ServiceAccountUserId must not be null");
     }
 
@@ -300,7 +300,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.UpdateCentralIdpUrl(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _idpManagement.UpdateCentralIdentityProviderUrlsAsync("idp1", "testCorp", "TestLoginTheme", "cl1", password))
             .MustHaveHappenedOnceExactly();
         result.modified.Should().BeTrue();
@@ -319,10 +319,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", "idp1", null, null, null));
 
         // Act
-        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id);
+        Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientSecret must not be null");
     }
 
@@ -335,10 +335,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id);
+        Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientId must not be null");
     }
 
@@ -351,10 +351,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", null, null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.UpdateCentralIdpUrl(companyInvitation.Id);
+        Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -373,7 +373,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateCentralIdpOrgMapper(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _idpManagement.CreateCentralIdentityProviderOrganisationMapperAsync("idp1", "testCorp"))
             .MustHaveHappenedOnceExactly();
         result.modified.Should().BeTrue();
@@ -392,10 +392,10 @@ public class InvitationProcessServiceTests
             .Returns((true, "testCorp", null));
 
         // Act
-        async Task Act() => await _sut.CreateCentralIdpOrgMapper(companyInvitation.Id);
+        Task Act() => _sut.CreateCentralIdpOrgMapper(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -416,7 +416,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateSharedIdpRealm(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _idpManagement.CreateSharedRealmIdpClientAsync("idp1", "TestLoginTheme", "testCorp", "cl1", password))
             .MustHaveHappenedOnceExactly();
         result.modified.Should().BeTrue();
@@ -435,10 +435,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", "idp1", null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientSecret must not be null");
     }
 
@@ -451,10 +451,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientId must not be null");
     }
 
@@ -467,10 +467,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", null, null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedIdpRealm(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -491,7 +491,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateSharedClient(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _idpManagement.CreateSharedClientAsync("idp1", "cl1", password))
             .MustHaveHappenedOnceExactly();
         result.modified.Should().BeTrue();
@@ -510,10 +510,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", "idp1", null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientSecret must not be null");
     }
 
@@ -526,10 +526,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", "cl1", null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("ClientId must not be null");
     }
 
@@ -542,10 +542,10 @@ public class InvitationProcessServiceTests
             .Returns(("testCorp", null, null, null, null, null));
 
         // Act
-        async Task Act() => await _sut.CreateSharedClient(companyInvitation.Id);
+        Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -564,7 +564,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.EnableCentralIdp(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _idpManagement.EnableCentralIdentityProviderAsync("idp123"))
             .MustHaveHappenedOnceExactly();
 
@@ -584,10 +584,10 @@ public class InvitationProcessServiceTests
             .Returns((string?)null);
 
         // Act
-        async Task Act() => await _sut.EnableCentralIdp(companyInvitation.Id);
+        Task Act() => _sut.EnableCentralIdp(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Idp name must not be null");
     }
 
@@ -627,7 +627,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateIdpDatabase(companyInvitation.Id);
 
-        // Act
+        // Assert
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(idpId, "cl1-testCorp"))
@@ -649,10 +649,10 @@ public class InvitationProcessServiceTests
             .Returns((false, "testCorp", (string?)null));
 
         // Act
-        async Task Act() => await _sut.CreateIdpDatabase(companyInvitation.Id);
+        Task Act() => _sut.CreateIdpDatabase(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be($"CompanyInvitation {companyInvitation.Id} does not exist");
     }
 
@@ -665,10 +665,10 @@ public class InvitationProcessServiceTests
             .Returns((true, "testCorp", (string?)null));
 
         // Act
-        async Task Act() => await _sut.CreateIdpDatabase(companyInvitation.Id);
+        Task Act() => _sut.CreateIdpDatabase(companyInvitation.Id);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("IdpName must be set for the company invitation");
     }
 
@@ -700,7 +700,7 @@ public class InvitationProcessServiceTests
         // Act
         var result = await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
 
-        // Act
+        // Assert
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
@@ -722,10 +722,10 @@ public class InvitationProcessServiceTests
             .Returns(Enumerable.Repeat<ValueTuple<Guid, string, string?, Exception?>>((companyId, "ironman", "testPw", new ConflictException("test")), 1).ToAsyncEnumerable());
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("test");
     }
 
@@ -738,10 +738,10 @@ public class InvitationProcessServiceTests
             .Returns((false, null, null, string.Empty, Enumerable.Empty<ValueTuple<Guid, string>>(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be($"CompanyInvitation {companyInvitation.Id} does not exist");
     }
 
@@ -754,10 +754,10 @@ public class InvitationProcessServiceTests
             .Returns((true, null, null, string.Empty, Enumerable.Empty<ValueTuple<Guid, string>>(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Application must be set for the company invitation");
     }
 
@@ -771,10 +771,10 @@ public class InvitationProcessServiceTests
             .Returns((true, applicationId, null, string.Empty, Enumerable.Empty<ValueTuple<Guid, string>>(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("Company must be set for the company invitation");
     }
 
@@ -789,10 +789,10 @@ public class InvitationProcessServiceTests
             .Returns((true, applicationId, companyId, "testCorp", Enumerable.Empty<ValueTuple<Guid, string>>(), null!));
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("There must only exist one idp for the company invitation");
     }
 
@@ -809,10 +809,10 @@ public class InvitationProcessServiceTests
             .Throws(new ConflictException("test"));
 
         // Act
-        async Task Act() => await _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
+        Task Act() => _sut.CreateUser(companyInvitation.Id, CancellationToken.None);
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
 
-        // Act
+        // Assert
         ex.Message.Should().Be("InvitedUserInitialRoles: test");
     }
 
