@@ -234,7 +234,7 @@ public class InvitationProcessServiceTests
 
         // Act
         async Task Act() => await sut.CreateSharedIdpServiceAccount(companyInvitation.Id);
-        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+        await Assert.ThrowsAsync<ConfigurationException>(Act);
 
         // Assert
         A.CallTo(() => _idpManagement.GetNextCentralIdentityProviderNameAsync())
