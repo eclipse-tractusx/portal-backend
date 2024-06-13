@@ -24,7 +24,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -859,33 +858,20 @@ public class CompanyDataBusinessLogicTests
 
     #region GetAllCompanyCertificates
 
-    [Fact]
-    public async Task GetAllCompanyCertificatesAsync_WithDefaultRequest_GetsExpectedEntries()
+    [Theory]
+    [InlineData(10, 0, 7, 7)]
+    [InlineData(10, 1, 7, 3)]
+    [InlineData(10, 0, 15, 10)]
+    public async Task GetAllCompanyCertificatesAsync_GetsExpectedEntries(int num, int page, int requested, int expected)
     {
         // Arrange
-        SetupPagination();
-        var sut = _fixture.Create<CompanyDataBusinessLogic>();
+        SetupPagination(num);
 
         // Act
-        var result = await sut.GetAllCompanyCertificatesAsync(0, 5, null, null, null);
+        var result = await _sut.GetAllCompanyCertificatesAsync(page, requested, null, null, null);
 
         // Assert
-        result.Content.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task GetAllCompanyCertificatesAsync_WithSmallSize_GetsExpectedEntries()
-    {
-        // Arrange
-        const int expectedCount = 3;
-        SetupPagination();
-        var sut = _fixture.Create<CompanyDataBusinessLogic>();
-
-        // Act
-        var result = await sut.GetAllCompanyCertificatesAsync(0, expectedCount, null, null, null);
-
-        // Assert
-        result.Content.Should().HaveCount(expectedCount);
+        result.Content.Should().HaveCount(expected);
     }
 
     #endregion
@@ -979,7 +965,6 @@ public class CompanyDataBusinessLogicTests
     public async Task DeleteCompanyCertificateAsync_WithDocumentNotExisting_ThrowsNotFoundException()
     {
         // Arrange
-        //var sut = _fixture.Create<CompanyDataBusinessLogic>();
         A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDetailsForIdUntrackedAsync(Guid.NewGuid(), _identity.CompanyId))
             .Returns((Guid.NewGuid(), DocumentStatusId.LOCKED, new[] { Guid.NewGuid() }.AsEnumerable(), false));
 
