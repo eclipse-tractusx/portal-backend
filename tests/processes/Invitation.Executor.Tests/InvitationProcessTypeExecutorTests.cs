@@ -312,14 +312,14 @@ public class InvitationProcessTypeExecutorTests
     #region IsLockRequested
 
     [Theory]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, true)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT, true)]
     [InlineData(ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER, true)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM, true)]
     [InlineData(ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, false)]
-    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, false)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP, true)]
+    [InlineData(ProcessStepTypeId.INVITATION_CREATE_USER, true)]
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {
         // Act
