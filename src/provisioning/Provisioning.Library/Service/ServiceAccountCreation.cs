@@ -80,7 +80,7 @@ public class ServiceAccountCreation(
             },
             out var keycloakRolesTask))
         {
-            await keycloakRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await keycloakRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         Guid? processId = null;
@@ -187,7 +187,7 @@ public class ServiceAccountCreation(
             await provisioningManager.AddProtocolMapperAsync(serviceAccountData.InternalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         }, out var bpnTask))
         {
-            await bpnTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await bpnTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         return (clientId, enhancedName, serviceAccountData);

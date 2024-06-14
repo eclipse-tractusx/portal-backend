@@ -115,9 +115,9 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
     private static async Task DeleteObsoleteIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, CancellationToken cancellationToken)
     {
         if (mappers.ExceptBy(updateMappers.Select(x => x.Name), x => x.Name).IfAny(
-            async mappers =>
+            async deleteMappers =>
             {
-                foreach (var mapper in mappers)
+                foreach (var mapper in deleteMappers)
                 {
                     await keycloak.DeleteIdentityProviderMapperAsync(
                         realm,
@@ -128,7 +128,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
             },
             out var deleteMappersTask))
         {
-            await deleteMappersTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await deleteMappersTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

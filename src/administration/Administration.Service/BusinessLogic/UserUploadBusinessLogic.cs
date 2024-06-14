@@ -253,7 +253,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             unknownRoles => _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, companyId),
             out var roleDataTask))
         {
-            var roleData = await roleDataTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            var roleData = await roleDataTask.ConfigureAwait(ConfigureAwaitOptions.None);
             if (roleData != null)
             {
                 validRoleData.AddRange(roleData);
