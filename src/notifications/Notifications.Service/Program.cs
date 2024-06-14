@@ -26,7 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 var VERSION = "v2";
 
 await WebAppHelper
-    .BuildAndRunWebApplication<Program>(args, "notification", VERSION, builder =>
+    .BuildAndRunWebApplicationAsync<Program>(args, "notification", VERSION, builder =>
     {
         builder.Services
             .AddPublicInfos();

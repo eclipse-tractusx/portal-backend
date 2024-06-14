@@ -33,7 +33,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 var VERSION = "v2";
 
 await WebAppHelper
-    .BuildAndRunWebApplication<Program>(args, "services", VERSION, builder =>
+    .BuildAndRunWebApplicationAsync<Program>(args, "services", VERSION, builder =>
     {
         builder.Services
             .AddPublicInfos();

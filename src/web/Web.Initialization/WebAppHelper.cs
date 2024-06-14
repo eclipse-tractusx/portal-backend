@@ -35,9 +35,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 
 public static class WebAppHelper
 {
-    public static Task BuildAndRunWebApplication<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
+    public static Task BuildAndRunWebApplicationAsync<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
         WebApplicationBuildRunner
-            .BuildAndRunWebApplication<TProgram>(args, path, version, ".Portal",
+            .BuildAndRunWebApplicationAsync<TProgram>(args, path, version, ".Portal",
                 builder =>
                 {
                     configureBuilder.Invoke(builder);
