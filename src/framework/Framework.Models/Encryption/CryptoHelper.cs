@@ -65,7 +65,7 @@ public class CryptoHelper
         }
         catch (CryptographicException e)
         {
-            throw new ConflictException($"Data could not be encrypted: {e.Message}", e);
+            throw new ConflictException($"Data could not be decrypted: {e.Message}", e);
         }
     }
 
