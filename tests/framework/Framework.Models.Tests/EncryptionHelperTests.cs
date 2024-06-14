@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using System.Security.Cryptography;
 
@@ -56,13 +57,100 @@ public class CryptoHelperTests
     [InlineData(CipherMode.ECB, PaddingMode.ISO10126)]
     [InlineData(CipherMode.ECB, PaddingMode.PKCS7)]
 
-    public void EncryptDecrypt_WithIV_Success(CipherMode cipherMode, PaddingMode paddingMode)
+    public void EncryptDecryptStatic_WithIV_Success(CipherMode cipherMode, PaddingMode paddingMode)
     {
         var data = _fixture.Create<string>();
         var key = _fixture.CreateMany<byte>(32).ToArray();
         var (encrypted, iv) = CryptoHelper.Encrypt(data, key, cipherMode, paddingMode);
         var result = CryptoHelper.Decrypt(encrypted, iv, key, cipherMode, paddingMode);
         result.Should().Be(data);
+    }
+
+    [Theory]
+    [InlineData(CipherMode.CBC, PaddingMode.ANSIX923)]
+    [InlineData(CipherMode.CBC, PaddingMode.ISO10126)]
+    [InlineData(CipherMode.CBC, PaddingMode.PKCS7)]
+    [InlineData(CipherMode.CFB, PaddingMode.ANSIX923)]
+    [InlineData(CipherMode.CFB, PaddingMode.ISO10126)]
+    [InlineData(CipherMode.CFB, PaddingMode.None)]
+    [InlineData(CipherMode.CFB, PaddingMode.PKCS7)]
+    [InlineData(CipherMode.CFB, PaddingMode.Zeros)]
+    [InlineData(CipherMode.ECB, PaddingMode.ANSIX923)]
+    [InlineData(CipherMode.ECB, PaddingMode.ISO10126)]
+    [InlineData(CipherMode.ECB, PaddingMode.PKCS7)]
+    public void EncryptDecrypt_Success(CipherMode cipherMode, PaddingMode paddingMode)
+    {
+        var key = _fixture.CreateMany<byte>(32).ToArray();
+        var data = _fixture.Create<string>();
+        var sut = new CryptoHelper(key, cipherMode, paddingMode);
+        var (encrypted, iv) = sut.Encrypt(data);
+        var decrypted = sut.Decrypt(encrypted, iv);
+        decrypted.Should().Be(data);
+    }
+
+    [Fact]
+    public void Encrypt_InvalidKey_Throws()
+    {
+        var key = _fixture.CreateMany<byte>(5).ToArray();
+        var data = _fixture.Create<string>();
+        var sut = new CryptoHelper(key, CipherMode.CFB, PaddingMode.PKCS7);
+
+        Assert.Throws<ConfigurationException>(() => sut.Encrypt(data));
+    }
+
+    [Fact]
+    public void Encrypt_InvalidMode_Throws()
+    {
+        var key = _fixture.CreateMany<byte>(32).ToArray();
+        var data = _fixture.Create<string>();
+        var sut = new CryptoHelper(key, CipherMode.ECB, PaddingMode.None);
+
+        Assert.Throws<ConflictException>(() => sut.Encrypt(data));
+    }
+
+    [Fact]
+    public void Decrypt_InvalidKey_Throws()
+    {
+        var (encrypted, iv) = new CryptoHelper(_fixture.CreateMany<byte>(32).ToArray(), CipherMode.CFB, PaddingMode.PKCS7).Encrypt(_fixture.Create<string>());
+
+        var sut = new CryptoHelper(_fixture.CreateMany<byte>(5).ToArray(), CipherMode.CFB, PaddingMode.PKCS7);
+
+        Assert.Throws<ConflictException>(() => sut.Decrypt(encrypted, iv));
+    }
+
+    [Fact]
+    public void Decrypt_WrongKey_Throws()
+    {
+        var (encrypted, iv) = new CryptoHelper(_fixture.CreateMany<byte>(32).ToArray(), CipherMode.CFB, PaddingMode.PKCS7).Encrypt(_fixture.Create<string>());
+
+        var sut = new CryptoHelper(_fixture.CreateMany<byte>(32).ToArray(), CipherMode.CFB, PaddingMode.PKCS7);
+
+        Assert.Throws<ConflictException>(() => sut.Decrypt(encrypted, iv));
+    }
+
+    [Fact]
+    public void Decrypt_InvalidIV_Throws()
+    {
+        var key = _fixture.CreateMany<byte>(32).ToArray();
+        var (encrypted, _) = new CryptoHelper(key, CipherMode.CFB, PaddingMode.PKCS7).Encrypt(_fixture.Create<string>());
+
+        var sut = new CryptoHelper(key, CipherMode.CFB, PaddingMode.PKCS7);
+
+        Assert.Throws<ConflictException>(() => sut.Decrypt(encrypted, _fixture.CreateMany<byte>(5).ToArray()));
+    }
+
+    [Fact]
+    public void Decrypt_WrongIV_Throws()
+    {
+        var key = _fixture.CreateMany<byte>(32).ToArray();
+        var data = _fixture.Create<string>();
+        var (encrypted, _) = new CryptoHelper(key, CipherMode.CFB, PaddingMode.PKCS7).Encrypt(data);
+
+        var sut = new CryptoHelper(key, CipherMode.CFB, PaddingMode.PKCS7);
+
+        var decrypted = sut.Decrypt(encrypted, _fixture.CreateMany<byte>(16).ToArray());
+
+        decrypted.Should().NotBeNullOrEmpty().And.NotBe(data);
     }
 
     [Theory]
