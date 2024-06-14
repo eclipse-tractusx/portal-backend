@@ -109,32 +109,4 @@ public static class IfAnyExtension
         returnValue = default;
         return false;
     }
-
-    public static bool IfAny<T, R>(this IEnumerable<T> source, Func<IEnumerable<T>, Task<R>> process, [MaybeNullWhen(false)] out Task<R> returnTask)
-    {
-        var enumerator = source.GetEnumerator();
-
-        if (enumerator.MoveNext())
-        {
-            returnTask = process(new IfAnyEnumerable<T>(source, enumerator));
-            return true;
-        }
-
-        returnTask = null;
-        return false;
-    }
-
-    public static bool IfAny<T>(this IEnumerable<T> source, Func<IEnumerable<T>, Task> process, [MaybeNullWhen(false)] out Task returnTask)
-    {
-        var enumerator = source.GetEnumerator();
-
-        if (enumerator.MoveNext())
-        {
-            returnTask = process(new IfAnyEnumerable<T>(source, enumerator))!;
-            return true;
-        }
-
-        returnTask = null;
-        return false;
-    }
 }
