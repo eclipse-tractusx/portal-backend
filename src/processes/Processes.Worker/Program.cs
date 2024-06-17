@@ -110,5 +110,5 @@ catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", Str
 finally
 {
     Log.Information("Server Shutting down");
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync().ConfigureAwait(false);
 }

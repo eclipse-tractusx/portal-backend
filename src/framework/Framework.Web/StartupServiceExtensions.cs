@@ -73,7 +73,7 @@ public static class StartupServiceExtensions
             .ValidateOnStart();
 
         services.AddHealthChecks()
-            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: new[] { "keycloak" });
+            .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: ["keycloak"]);
 
         services.AddHttpContextAccessor();
 

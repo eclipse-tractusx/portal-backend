@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,7 +28,23 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {
+    [Obsolete("use BuildAndRunWebApplicationAsync instead")]
     public static void BuildAndRunWebApplication<TProgram>(
+        string[] args,
+        string path,
+        string version,
+        string cookieName,
+        Action<WebApplicationBuilder>? configureBuilder,
+        Action<WebApplication, IHostEnvironment>? configureApp) =>
+            BuildAndRunWebApplicationAsync<TProgram>(
+                args,
+                path,
+                version,
+                cookieName,
+                configureBuilder,
+                configureApp).GetAwaiter().GetResult();
+
+    public static async Task BuildAndRunWebApplicationAsync<TProgram>(
         string[] args,
         string path,
         string version,
@@ -63,7 +78,7 @@ public static class WebApplicationBuildRunner
 
             var app = builder.Build().CreateApp<TProgram>(path, version);
             configureApp?.Invoke(app, builder.Environment);
-            app.Run();
+            await app.RunAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
         {
@@ -72,7 +87,7 @@ public static class WebApplicationBuildRunner
         finally
         {
             Log.Information("Server Shutting down");
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync().ConfigureAwait(false);
         }
     }
 }

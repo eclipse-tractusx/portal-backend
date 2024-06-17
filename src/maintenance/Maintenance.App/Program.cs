@@ -46,7 +46,7 @@ try
         .AddLogging()
         .Build();
 
-    host.Run();
+    await host.RunAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {
@@ -55,5 +55,5 @@ catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", Str
 finally
 {
     Log.Information("Server Shutting down");
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync().ConfigureAwait(false);
 }
