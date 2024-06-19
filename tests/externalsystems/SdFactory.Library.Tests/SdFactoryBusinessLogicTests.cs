@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -41,22 +42,24 @@ public class SdFactoryBusinessLogicTests
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private readonly Process _process;
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
+
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
-        new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
+        new(UniqueIdentifierId.VAT_ID, "JUSTATEST")
     };
 
     private readonly IApplicationRepository _applicationRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly IConnectorsRepository _connectorsRepository;
-    private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryService _service;
     private readonly ICollection<Document> _documents;
 
     private readonly SdFactoryBusinessLogic _sut;
     private readonly IFixture _fixture;
     private readonly IApplicationChecklistService _checklistService;
+    private readonly IOptions<SdFactorySettings> _options;
+    private readonly IPortalRepositories _portalRepositories;
 
     public SdFactoryBusinessLogicTests()
     {
@@ -79,7 +82,12 @@ public class SdFactoryBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
 
-        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService);
+        _options = Options.Create(new SdFactorySettings
+        {
+            SdFactoryUrl = "https://www.api.sdfactory.com",
+            SdFactoryIssuerBpn = "BPNL00000003CRHK"
+        });
+        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, _options);
     }
 
     #endregion
@@ -105,8 +113,10 @@ public class SdFactoryBusinessLogicTests
 
     #region StartSelfDescriptionRegistration
 
-    [Fact]
-    public async Task StartSelfDescriptionRegistration_WithValidData_CompanyIsUpdated()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task StartSelfDescriptionRegistration_WithValidData_CompanyIsUpdated(bool clearinghouseConnectDisabled)
     {
         // Arrange
         var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
@@ -120,18 +130,24 @@ public class SdFactoryBusinessLogicTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns((CompanyId, Bpn, CountryCode, UniqueIdentifiers));
+        var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
+        {
+            SdFactoryUrl = "https://www.api.sdfactory.com",
+            SdFactoryIssuerBpn = "BPNL00000003CRHK",
+            ClearinghouseConnectDisabled = clearinghouseConnectDisabled
+        }));
 
         // Act
-        var result = await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
+        var result = await sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _service.RegisterSelfDescriptionAsync(ApplicationId, UniqueIdentifiers, CountryCode, Bpn, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
+            .MustHaveHappened(clearinghouseConnectDisabled ? 0 : 1, Times.Exactly);
         result.Should().NotBeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entry);
-        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(clearinghouseConnectDisabled ? ApplicationChecklistEntryStatusId.DONE : ApplicationChecklistEntryStatusId.IN_PROGRESS);
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ACTIVATE_APPLICATION : x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }

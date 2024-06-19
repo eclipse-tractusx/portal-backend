@@ -35,7 +35,7 @@ public class SdFactoryServiceTests
 
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
-        new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
+        new(UniqueIdentifierId.VAT_ID, "JUSTATEST")
     };
 
     private readonly IPortalRepositories _portalRepositories;

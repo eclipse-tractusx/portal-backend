@@ -46,6 +46,11 @@ public class ConnectorsSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string SelfDescriptionDocumentUrl { get; set; } = null!;
+
+    /// <summary>
+    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
+    /// </summary>
+    public bool ClearinghouseConnectDisabled { get; set; }
 }
 
 public static class ConnectorsSettingsExtensions
