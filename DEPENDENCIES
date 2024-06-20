@@ -11,7 +11,7 @@ nuget/nuget/-/Flurl.Http.Signed/3.2.4, MIT, approved, #3503
 nuget/nuget/-/Flurl.Signed/3.0.6, MIT, approved, #3501
 nuget/nuget/-/HtmlAgilityPack/1.11.59, MIT, approved, #9293
 nuget/nuget/-/Humanizer.Core/2.14.1, MIT, approved, #10060
-nuget/nuget/-/Json.More.Net/2.0.0, MIT, approved, clearlydefined
+nuget/nuget/-/Json.More.Net/2.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
 nuget/nuget/-/JsonPointer.Net/4.0.0, MIT, approved, clearlydefined
 nuget/nuget/-/JsonSchema.Net/6.0.5, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #13370
 nuget/nuget/-/Laraue.EfCoreTriggers.Common/8.0.3, MIT, approved, #13968
