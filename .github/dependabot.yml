@@ -23,7 +23,6 @@ updates:
   # NuGet
   -
     package-ecosystem: "nuget"
-    target-branch: dev
     directory: /
     labels:
       - "dependabot"
@@ -42,7 +41,6 @@ updates:
   # Github Actions
   -
     package-ecosystem: "github-actions"
-    target-branch: dev
     directory: /
     labels:
       - "dependabot"
@@ -56,7 +54,6 @@ updates:
   # Docker
   -
     package-ecosystem: "docker"
-    target-branch: dev
     directory: ./docker/
     labels:
       - "dependabot"
