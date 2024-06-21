@@ -31,7 +31,7 @@ on:
       - 'docker/Dockerfile-iam-seeding'
 
     branches:
-      - 'dev'
+      - 'main'
   workflow_dispatch:
 
 env:
@@ -64,7 +64,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=dev
+            type=raw,value=main
             type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
