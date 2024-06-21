@@ -69,7 +69,11 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             ccb.CompanyCertificateStatusId,
             ccb.DocumentId,
             ccb.ValidFrom,
-            ccb.ValidTill))
+            ccb.ValidTill,
+            ccb.ExternalCertificateNumber,
+            ccb.CompaniesCertificateAssignedSites.Select(x => x.Sites),
+            ccb.Issuer,
+            ccb.Validator))
         .ToAsyncEnumerable();
 
     public Func<int, int, Task<Pagination.Source<CompanyCertificateData>?>> GetActiveCompanyCertificatePaginationSource(CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType, Guid companyId) =>
@@ -96,7 +100,11 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 companyCertificate.CompanyCertificateStatusId,
                 companyCertificate.DocumentId,
                 companyCertificate.ValidFrom,
-                companyCertificate.ValidTill
+                companyCertificate.ValidTill,
+                companyCertificate.ExternalCertificateNumber,
+                companyCertificate.CompaniesCertificateAssignedSites.Select(x => x.Sites),
+                companyCertificate.Issuer,
+                companyCertificate.Validator
                 ))
         .SingleOrDefaultAsync();
 
@@ -141,4 +149,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                x.CompanyUser!.Identity!.CompanyId == companyId)
         .Select(x => new ValueTuple<byte[], string, MediaTypeId, bool>(x.DocumentContent, x.DocumentName, x.MediaTypeId, true))
     .SingleOrDefaultAsync();
+
+    public void CreateCompanyCertificateAssignedSites(Guid companyCertificateId, IEnumerable<string> sites) =>
+        _context.AddRange(sites.Select(companyCertificateAssignedSite => new CompaniesCertificateAssignedSite(companyCertificateId, companyCertificateAssignedSite)));
 }

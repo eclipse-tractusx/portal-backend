@@ -707,7 +707,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, null, null, DateTime.UtcNow, DateTime.UtcNow.AddDays(2), null);
 
         // Act
         async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
@@ -722,9 +722,12 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         SetupCreateCompanyCertificate();
-        var expiryDate = DateTime.UtcNow;
+        var validFrom = DateTime.UtcNow;
+        var validTill = DateTime.UtcNow.AddDays(2);
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, expiryDate);
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNL00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, validFrom, validTill, "Accenture");
         var documentId = Guid.NewGuid();
         var documents = new List<Document>();
         var companyCertificates = new List<CompanyCertificate>();
@@ -770,7 +773,7 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         SetupCreateCompanyCertificate();
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, null, null, DateTime.UtcNow, DateTime.UtcNow.AddDays(2), null);
 
         A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
         .Returns(false);

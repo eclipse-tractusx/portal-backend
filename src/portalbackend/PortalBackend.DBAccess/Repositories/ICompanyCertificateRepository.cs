@@ -44,6 +44,8 @@ public interface ICompanyCertificateRepository
     /// <returns>The created entity</returns>
     CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
 
+    void CreateCompanyCertificateAssignedSites(Guid companyCertificateId, IEnumerable<string> sites);
+
     /// <summary>
     /// Get companyId against businessPartnerNumber
     /// </summary>

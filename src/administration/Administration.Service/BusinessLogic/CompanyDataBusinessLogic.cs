@@ -31,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -41,6 +42,9 @@ public class CompanyDataBusinessLogic(
     IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
     IOptions<CompanyDataSettings> options) : ICompanyDataBusinessLogic
 {
+    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex EcmRegex = new(ValidationExpressions.ExternalCertificateNumber, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly CompanyDataSettings _settings = options.Value;
 
@@ -240,6 +244,31 @@ public class CompanyDataBusinessLogic(
     /// <inheritdoc />
     public async Task CreateCompanyCertificate(CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
+        if (data.ExternalCertificateNumber != null && !EcmRegex.IsMatch(data.ExternalCertificateNumber))
+        {
+            throw new ControllerArgumentException("ExternalCertificateNumber must be alphanumeric and length should not be greater than 36", nameof(data.ExternalCertificateNumber));
+        }
+
+        if (data.Sites != null && data.Sites.Any() && data.Sites!.Any(bpn => !BpnRegex.IsMatch(bpn)))
+        {
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Sites));
+        }
+
+        if (data.ValidFrom?.ToUniversalTime() > DateTimeOffset.Now.ToUniversalTime())
+        {
+            throw new ControllerArgumentException("ValidFrom date should not be greater than current date", nameof(data.ValidFrom));
+        }
+
+        if (data.ValidTill?.ToUniversalTime() < DateTimeOffset.Now.ToUniversalTime())
+        {
+            throw new ControllerArgumentException("ValidTill date should be greater than current date", nameof(data.ValidTill));
+        }
+
+        if (data.Issuer != null && !Company.IsMatch(data.Issuer!))
+        {
+            throw new ControllerArgumentException("Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(data.Issuer));
+        }
+
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();
         documentContentType.CheckDocumentContentType(_settings.CompanyCertificateMediaTypes);
 
@@ -249,14 +278,18 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
         }
 
-        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ValidUnTill, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExternalCertificateNumber, data.Sites, data.ValidFrom, data.ValidTill, data.Issuer, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task HandleCompanyCertificateCreationAsync(CompanyCertificateTypeId companyCertificateTypeId,
         IFormFile document,
         MediaTypeId mediaTypeId,
         ICompanyCertificateRepository companyCertificateRepository,
-        DateTimeOffset? expiryDate,
+        string? externalCertificateNumber,
+        IEnumerable<string>? sites,
+        DateTimeOffset? validFrom,
+        DateTimeOffset? validTill,
+        string? issuer,
         CancellationToken cancellationToken)
     {
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -267,11 +300,20 @@ public class CompanyDataBusinessLogic(
                 x.DocumentStatusId = DocumentStatusId.LOCKED;
             });
 
-        companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
+        var companyCertificate = companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
             x =>
             {
-                x.ValidTill = expiryDate?.ToUniversalTime();
+                x.ExternalCertificateNumber = externalCertificateNumber;
+                x.Issuer = issuer;
+                x.ValidTill = validTill?.ToUniversalTime();
+                x.ValidFrom = validFrom?.ToUniversalTime();
             });
+
+        if (sites != null && sites.Any())
+        {
+            companyCertificateRepository.CreateCompanyCertificateAssignedSites(companyCertificate.Id, sites);
+        }
+
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

@@ -42,7 +42,7 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
     }
 
     public Guid Id { get; private set; }
-    public DateTimeOffset ValidFrom { get; private set; }
+    public DateTimeOffset? ValidFrom { get; set; }
     public DateTimeOffset? ValidTill { get; set; }
     public CompanyCertificateTypeId CompanyCertificateTypeId { get; private set; }
     public CompanyCertificateStatusId CompanyCertificateStatusId { get; set; }
