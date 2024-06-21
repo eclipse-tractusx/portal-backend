@@ -70,7 +70,6 @@ public class BatchDeleteService : BackgroundService
                     !x.Companies.Any() &&
                     x.Connector == null &&
                     !x.Consents.Any() &&
-                    x.CompanySsiDetail == null &&
                     x.DocumentStatusId == DocumentStatusId.INACTIVE)
                     .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
                         doc.Id,

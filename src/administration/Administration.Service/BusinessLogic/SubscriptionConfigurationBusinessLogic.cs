@@ -82,11 +82,13 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
+        var hasChanges = false;
         if (providerDetailData == default && data.Url != null)
         {
             await HandleCreateProviderCompanyDetails(data, companyId, companyRepository);
+            hasChanges = true;
         }
-        else if (data.Url != null)
+        else if (providerDetailData != default && data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
@@ -96,13 +98,18 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                     details.AutoSetupUrl = data.Url;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
+            hasChanges = true;
         }
-        else
+        else if (providerDetailData != default && data.Url == null)
         {
             companyRepository.RemoveProviderCompanyDetails(providerDetailData.ProviderCompanyDetailId);
+            hasChanges = true;
         }
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        if (hasChanges)
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
     }
 
     private static async Task HandleCreateProviderCompanyDetails(ProviderDetailData data, Guid companyId, ICompanyRepository companyRepository)

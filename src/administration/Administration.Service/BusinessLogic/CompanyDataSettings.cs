@@ -28,29 +28,11 @@ public class CompanyDataSettings
 {
     public CompanyDataSettings()
     {
-        UseCaseParticipationMediaTypes = null!;
-        SsiCertificateMediaTypes = null!;
         CompanyCertificateMediaTypes = null!;
         DecentralIdentityManagementAuthUrl = null!;
         IssuerDid = null!;
         BpnDidResolverUrl = null!;
     }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for use case participation
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> UseCaseParticipationMediaTypes { get; set; }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for ssi certificate
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
 
     /// <summary>
     /// The media types that are allowed for the uploaded document for company certificate
