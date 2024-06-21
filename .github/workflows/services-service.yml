@@ -36,7 +36,7 @@ on:
       - 'docker/Dockerfile-services-service'
 
     branches:
-      - 'dev'
+      - 'main'
   workflow_dispatch:
 
 env:
@@ -69,7 +69,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=dev
+            type=raw,value=main
             type=raw,value=${{ github.sha }}
 
       - name: Build and push Docker image
@@ -115,5 +115,5 @@ jobs:
             --url https://api.github.com/repos/eclipse-tractusx/portal/actions/workflows/services-service-image-update.yml/dispatches \
             --header "authorization: Bearer $TOKEN" \
             --header "Accept: application/vnd.github.v3+json" \
-            --data '{"ref":"dev", "inputs": { "new-image":"${{ github.sha }}" }}' \
+            --data '{"ref":"main", "inputs": { "new-image":"${{ github.sha }}" }}' \
             --fail

@@ -159,7 +159,7 @@ jobs:
           if [[ ${{ steps.rc-check.outputs.rc }} == 'true' ]]; then
             echo "branch=release-candidate" >> $GITHUB_OUTPUT
           else
-            echo "branch=dev" >> $GITHUB_OUTPUT
+            echo "branch=main" >> $GITHUB_OUTPUT
           fi
         if: steps.hf-check.outputs.hf == 'false'
 
