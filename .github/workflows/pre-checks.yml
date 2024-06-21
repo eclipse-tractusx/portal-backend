@@ -23,7 +23,7 @@ name: Pre Checks
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - 'src/**'
   pull_request:
