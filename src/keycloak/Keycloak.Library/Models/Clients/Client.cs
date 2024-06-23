@@ -93,4 +93,6 @@ public class Client
     public string? Secret { get; set; }
     [JsonProperty("authorizationServicesEnabled")]
     public bool? AuthorizationServicesEnabled { get; set; }
+    [JsonProperty("adminUrl")]
+    public string? AdminUrl { get; set; }
 }
