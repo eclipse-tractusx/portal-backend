@@ -20,6 +20,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+ARG TARGETARCH
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/ src/
