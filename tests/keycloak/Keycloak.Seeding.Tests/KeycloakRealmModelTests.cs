@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -28,7 +29,44 @@ public class KeycloakRealmModelTests
     public async Task SeedDataHandlerImportsExpected()
     {
         // Arrange
-        var sut = new SeedDataHandler();
+        var settings = new KeycloakSeederSettings()
+        {
+            Realms = [
+                new()
+                {
+                    Realm = "TestRealm",
+                    Clients = [
+                        new()
+                        {
+                            ClientId = "TestClientId",
+                            Secret = "testsecret",
+                            RedirectUris = [
+                                "https://redirect.url"
+                            ],
+                            Attributes = [
+                                new()
+                                {
+                                    Name = "login_theme",
+                                    Value = "test"
+                                }
+                            ]
+                        }
+                    ],
+                    IdentityProviders = [
+                        new()
+                        {
+                            Alias = "Test Identity Provider",
+                            Config = new()
+                            {
+                                TokenUrl = "https://token.test",
+                                ClientSecret = "foobarsecret"
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+        var sut = new SeedDataHandler(Options.Create(settings));
 
         // Act
         await sut.Import("TestSeeds/test-realm.json", CancellationToken.None);
@@ -161,7 +199,7 @@ public class KeycloakRealmModelTests
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
                 x.Clients != null &&
-                x.Clients.SequenceEqual(clients) &&
+                // clients are being asserted separately
                 x.ClientScopes != null &&
                 x.ClientScopes.SequenceEqual(clientScopes) &&
                 // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
@@ -205,7 +243,6 @@ public class KeycloakRealmModelTests
                 x.AdminEventsDetailsEnabled.HasValue &&
                 !x.AdminEventsDetailsEnabled.Value &&
                 x.IdentityProviders != null &&
-                x.IdentityProviders.SequenceEqual(identityProviders) &&
                 x.IdentityProviderMappers != null &&
                 x.IdentityProviderMappers.SequenceEqual(identityProviderMappers) &&
                 // identityProviders, identityProviderMappers, components are being asserted separately
@@ -240,6 +277,24 @@ public class KeycloakRealmModelTests
                 x.KeycloakVersion == "16.1.1" &&
                 x.UserManagedAccessAllowed.HasValue &&
                 !x.UserManagedAccessAllowed.Value
+            );
+
+        keycloakRealm.Clients.Should().Contain(x => x.ClientId == "TestClientId")
+            .Which.Should().Match<ClientModel>(x =>
+                x.Name == "TestClient Name" &&
+                x.Secret == "testsecret" &&
+                x.RedirectUris != null &&
+                x.RedirectUris.SequenceEqual(new[] { "https://redirect.url" }) &&
+                x.Attributes != null &&
+                x.Attributes["login_theme"] == "test"
+            );
+
+        keycloakRealm.IdentityProviders.Should().Contain(x => x.Alias == "Test Identity Provider")
+            .Which.Should().Match<IdentityProviderModel>(x =>
+                x.DisplayName == "Test Identity Provider Display Name" &&
+                x.Config != null &&
+                x.Config.TokenUrl == "https://token.test" &&
+                x.Config.ClientSecret == "foobarsecret"
             );
 
         keycloakRealm.Groups.Should().ContainSingle()

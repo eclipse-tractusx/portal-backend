@@ -136,7 +136,7 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static Client CreateUpdateClient(Client? client, ClientModel update) => new() // secret is not updated as it cannot be read via the keycloak api
+    private static Client CreateUpdateClient(Client? client, ClientModel update) => new()
     {
         Id = client?.Id,
         ClientId = update.ClientId,
@@ -144,6 +144,7 @@ public class ClientsUpdater : IClientsUpdater
         Name = update.Name,
         Description = update.Description,
         BaseUrl = client?.BaseUrl ?? update.BaseUrl, // only set the base url if no url is already set
+        AdminUrl = client?.AdminUrl ?? update.AdminUrl,
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
         AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
@@ -174,15 +175,17 @@ public class ClientsUpdater : IClientsUpdater
                 Configure = update.Access.Configure,
                 Manage = update.Access.Manage
             },
-        AuthorizationServicesEnabled = update.AuthorizationServicesEnabled
+        AuthorizationServicesEnabled = update.AuthorizationServicesEnabled,
+        Secret = client?.Secret ?? update.Secret
     };
 
-    private static bool CompareClient(Client client, ClientModel update) => // secret is not compared as it cannot be read via the keycloak api
+    private static bool CompareClient(Client client, ClientModel update) =>
         client.ClientId == update.ClientId &&
         client.RootUrl == update.RootUrl &&
         client.Name == update.Name &&
         client.Description == update.Description &&
         client.BaseUrl == update.BaseUrl &&
+        client.AdminUrl == update.AdminUrl &&
         client.SurrogateAuthRequired == update.SurrogateAuthRequired &&
         client.Enabled == update.Enabled &&
         client.AlwaysDisplayInConsole == update.AlwaysDisplayInConsole &&
@@ -206,7 +209,8 @@ public class ClientsUpdater : IClientsUpdater
         client.DefaultClientScopes.NullOrContentEqual(update.DefaultClientScopes) &&
         client.OptionalClientScopes.NullOrContentEqual(update.OptionalClientScopes) &&
         CompareClientAccess(client.Access, update.Access) &&
-        client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled;
+        client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled &&
+        client.Secret == update.Secret;
 
     private static bool CompareClientAccess(ClientAccess? access, ClientAccessModel? updateAccess) =>
         access == null && updateAccess == null ||
