@@ -35,21 +35,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 
 public static class WebAppHelper
 {
-    public static void BuildAndRunWebApplication<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
+    public static Task BuildAndRunWebApplicationAsync<TProgram>(string[] args, string path, string version, Action<WebApplicationBuilder> configureBuilder) =>
         WebApplicationBuildRunner
-            .BuildAndRunWebApplication<TProgram>(args, path, version, ".Portal",
+            .BuildAndRunWebApplicationAsync<TProgram>(args, path, version, ".Portal",
                 builder =>
                 {
                     configureBuilder.Invoke(builder);
                     builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
                     builder.Services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
-                    builder.Services.AddAuthorization(options =>
-                    {
-                        options.AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidIdentity)));
-                        options.AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany)));
-                        options.AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.CompanyUser)));
-                        options.AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ServiceAccount)));
-                    });
+                    builder.Services.AddAuthorizationBuilder()
+                        .AddPolicy(PolicyTypes.ValidIdentity, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidIdentity)))
+                        .AddPolicy(PolicyTypes.ValidCompany, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ValidCompany)))
+                        .AddPolicy(PolicyTypes.CompanyUser, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.CompanyUser)))
+                        .AddPolicy(PolicyTypes.ServiceAccount, policy => policy.Requirements.Add(new MandatoryIdentityClaimRequirement(PolicyTypeId.ServiceAccount)));
                     builder.Services.AddClaimsIdentityService();
                     builder.Services.AddPublicInfos();
                 },

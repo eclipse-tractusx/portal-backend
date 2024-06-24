@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
 public static class IfAnyExtension
@@ -94,7 +96,7 @@ public static class IfAnyExtension
         return false;
     }
 
-    public static bool IfAny<T, R>(this IEnumerable<T> source, Func<IEnumerable<T>, R> process, out R? returnValue) where R : class?
+    public static bool IfAny<T, R>(this IEnumerable<T> source, Func<IEnumerable<T>, R> process, [MaybeNullWhen(false)] out R returnValue)
     {
         var enumerator = source.GetEnumerator();
 
@@ -104,7 +106,7 @@ public static class IfAnyExtension
             return true;
         }
 
-        returnValue = null;
+        returnValue = default;
         return false;
     }
 }

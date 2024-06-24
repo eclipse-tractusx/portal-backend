@@ -25,8 +25,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebAppHelper
-    .BuildAndRunWebApplication<Program>(args, "notification", VERSION, builder =>
+await WebAppHelper
+    .BuildAndRunWebApplicationAsync<Program>(args, "notification", VERSION, builder =>
     {
         builder.Services
             .AddPublicInfos();
@@ -37,4 +37,4 @@ WebAppHelper
         builder.Services
             .AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
             .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
-    });
+    }).ConfigureAwait(ConfigureAwaitOptions.None);

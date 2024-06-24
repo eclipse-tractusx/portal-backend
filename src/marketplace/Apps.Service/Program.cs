@@ -32,8 +32,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebAppHelper
-    .BuildAndRunWebApplication<Program>(args, "apps", VERSION, builder =>
+await WebAppHelper
+    .BuildAndRunWebApplicationAsync<Program>(args, "apps", VERSION, builder =>
     {
         builder.Services
             .AddPublicInfos();
@@ -58,4 +58,4 @@ WebAppHelper
             .AddProvisioningDBAccess(builder.Configuration);
 
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
-    });
+    }).ConfigureAwait(ConfigureAwaitOptions.None);

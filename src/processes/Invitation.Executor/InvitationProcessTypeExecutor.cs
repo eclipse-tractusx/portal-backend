@@ -48,6 +48,15 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
         ProcessStepTypeId.INVITATION_CREATE_USER);
 
+    private static readonly IEnumerable<ProcessStepTypeId> LockableProcessSteps = ImmutableArray.Create(
+        ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT,
+        ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM,
+        ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT,
+        ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP,
+        ProcessStepTypeId.INVITATION_CREATE_USER);
+
     private readonly IPortalRepositories _portalRepositories;
     private readonly IInvitationProcessService _invitationProcessService;
     private Guid _companyInvitationId;
@@ -80,7 +89,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
-    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(false);
+    public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(LockableProcessSteps.Contains(processStepTypeId));
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.INVITATION;
 

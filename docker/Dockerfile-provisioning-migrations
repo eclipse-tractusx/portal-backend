@@ -17,10 +17,8 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine-amd64 AS publish
-WORKDIR /
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+ARG TARGETARCH
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/provisioning /src/provisioning
 COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
@@ -31,7 +29,7 @@ COPY /src/framework/Framework.Logging /src/framework/Framework.Logging
 WORKDIR /src/provisioning/Provisioning.Migrations
 RUN dotnet publish "Provisioning.Migrations.csproj" -c Release -o /migrations/publish
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
 ENV COMPlus_EnableDiagnostics=0
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .

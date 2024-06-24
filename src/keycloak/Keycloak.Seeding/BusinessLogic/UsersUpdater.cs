@@ -131,7 +131,7 @@ public class UsersUpdater : IUsersUpdater
             delete => deleteRoles(delete),
             out var deleteRolesTask))
         {
-            await deleteRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await deleteRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (seedRoles.IfAny(
@@ -143,12 +143,12 @@ public class UsersUpdater : IUsersUpdater
                     add => addRoles(allRoles.IntersectBy(add, x => x.Name)),
                     out var addRolesTask))
                 {
-                    await addRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+                    await addRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             },
             out var updateRolesTask))
         {
-            await updateRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await updateRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

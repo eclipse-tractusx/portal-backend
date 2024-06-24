@@ -746,8 +746,13 @@ public class IdentityProviderBusinessLogic : IIdentityProviderBusinessLogic
         IEnumerable<(Guid IdentityProviderId, string Alias)> existingIdps,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var (companyUserId, profile, identityProviderLinks) in userProfileLinkDatas.WithCancellation(cancellationToken))
+        await foreach (var userProfileLinkData in userProfileLinkDatas.WithCancellation(cancellationToken))
         {
+            if (userProfileLinkData == default)
+            {
+                throw new UnexpectedConditionException("userProfileLinkData should never be default here");
+            }
+            var (companyUserId, profile, identityProviderLinks) = userProfileLinkData;
             Exception? error = null;
             var success = false;
             try

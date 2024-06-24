@@ -274,7 +274,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                             return idpAliasData;
                         },
                         out var idpAliasDataTask)
-                ? await idpAliasDataTask!.ConfigureAwait(ConfigureAwaitOptions.None)
+                ? await idpAliasDataTask.ConfigureAwait(ConfigureAwaitOptions.None)
                 : default(IDictionary<Guid, string>?);
 
         var idpIds = idpAliase?.Keys ?? Enumerable.Empty<Guid>();
