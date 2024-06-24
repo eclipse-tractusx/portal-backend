@@ -20,18 +20,14 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Document = Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditCertificateManagement20240416))]
 public class CompanyCertificate : IAuditableV1, IBaseEntity
 {
-    private CompanyCertificate() { }
-
-    public CompanyCertificate(Guid id, DateTimeOffset validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId) : this()
+    public CompanyCertificate(Guid id, DateTimeOffset? validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId)
     {
         Id = id;
         ValidFrom = validFrom;
@@ -39,12 +35,13 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
         CompanyCertificateStatusId = companyCertificateStatusId;
         CompanyId = companyId;
         DocumentId = documentId;
+        CompaniesCertificateAssignedSites = new HashSet<CompaniesCertificateAssignedSite>();
     }
 
     public Guid Id { get; private set; }
     public DateTimeOffset? ValidFrom { get; set; }
     public DateTimeOffset? ValidTill { get; set; }
-    public CompanyCertificateTypeId CompanyCertificateTypeId { get; private set; }
+    public CompanyCertificateTypeId CompanyCertificateTypeId { get; set; }
     public CompanyCertificateStatusId CompanyCertificateStatusId { get; set; }
     public Guid CompanyId { get; private set; }
     public Guid DocumentId { get; private set; }

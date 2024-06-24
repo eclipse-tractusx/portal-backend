@@ -314,7 +314,6 @@ public class CompanyDataBusinessLogic(
             companyCertificateRepository.CreateCompanyCertificateAssignedSites(companyCertificate.Id, sites);
         }
 
-
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
