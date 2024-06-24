@@ -17,17 +17,18 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine-amd64 AS publish
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+ARG TARGETARCH
 WORKDIR /
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/ src/
 WORKDIR /src/administration/Administration.Service
 RUN dotnet publish "Administration.Service.csproj" -c Release -o /app/publish
 
-FROM base AS final
-ENV COMPlus_EnableDiagnostics=0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+ENV \
+    COMPlus_EnableDiagnostics=0 \
+    ASPNETCORE_URLS=http://+:8080
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS http://+:8080

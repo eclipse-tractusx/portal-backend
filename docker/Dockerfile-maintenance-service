@@ -17,10 +17,8 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine-amd64 AS publish
-WORKDIR /
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+ARG TARGETARCH
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY src/maintenance/Maintenance.App/ src/maintenance/Maintenance.App/
 COPY src/portalbackend/PortalBackend.DBAccess/ src/portalbackend/PortalBackend.DBAccess/
@@ -37,7 +35,7 @@ RUN dotnet restore "src/maintenance/Maintenance.App/Maintenance.App.csproj"
 WORKDIR /src/maintenance/Maintenance.App
 RUN dotnet publish "Maintenance.App.csproj" -c Release -o /app/publish
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
 ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
