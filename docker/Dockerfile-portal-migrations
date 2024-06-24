@@ -33,9 +33,7 @@ WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet publish "PortalBackend.Migrations.csproj" -c Release -o /migrations/publish
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
-ENV \
-    COMPlus_EnableDiagnostics=0 \
-    ASPNETCORE_URLS=http://+:8080
+ENV COMPlus_EnableDiagnostics=0
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .
 RUN chown -R 1000:3000 /migrations
