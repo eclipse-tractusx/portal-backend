@@ -17,10 +17,8 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine-amd64 AS publish
-WORKDIR /
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+ARG TARGETARCH
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/portalbackend /src/portalbackend
 COPY /src/framework/Framework.DBAccess /src/framework/Framework.DBAccess
@@ -34,8 +32,10 @@ COPY /src/processes/Processes.ProcessIdentity/ /src/processes/Processes.ProcessI
 WORKDIR /src/portalbackend/PortalBackend.Migrations
 RUN dotnet publish "PortalBackend.Migrations.csproj" -c Release -o /migrations/publish
 
-FROM base AS final
-ENV COMPlus_EnableDiagnostics=0
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
+ENV \
+    COMPlus_EnableDiagnostics=0 \
+    ASPNETCORE_URLS=http://+:8080
 WORKDIR /migrations
 COPY --from=publish /migrations/publish .
 RUN chown -R 1000:3000 /migrations
