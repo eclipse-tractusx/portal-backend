@@ -136,4 +136,20 @@ public class ProcessStepRepository : IProcessStepRepository
                 x.DimUserCreationData!.ServiceAccountId)
             )
             .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DELETE_DIM_TECHNICAL_USER)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
+                x.ProcessTypeId,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.DimUserCreationData!.ServiceAccountId)
+            )
+            .SingleOrDefaultAsync();
 }

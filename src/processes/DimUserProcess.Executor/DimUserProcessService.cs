@@ -26,11 +26,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
 
-public class DimUserCreationProcessService(
+public class DimUserProcessService(
     IDimService dimService,
-    IPortalRepositories portalRepositories) : IDimUserCreationProcessService
+    IPortalRepositories portalRepositories) : IDimUserProcessService
 {
-    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken)
+    public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDeleteDimUser(Guid processId, Guid dimServiceAccountId, bool createUser, CancellationToken cancellationToken)
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
         var (isValid, bpn, name) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
@@ -52,7 +52,15 @@ public class DimUserCreationProcessService(
         }
 
         var dimName = string.Concat(name.Where(c => !char.IsWhiteSpace(c))); // DIM doesn't accept whitespace chars in name
-        await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, dimName), cancellationToken).ConfigureAwait(false);
-        return (Enumerable.Repeat(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null);
+        if (createUser)
+        {
+            await dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId, dimName), cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await dimService.DeleteTechnicalUser(bpn, new TechnicalUserData(processId, dimName), cancellationToken).ConfigureAwait(false);
+        }
+
+        return (Enumerable.Repeat(createUser ? ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE : ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER, 1), ProcessStepStatusId.DONE, true, null);
     }
 }

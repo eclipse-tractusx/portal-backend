@@ -17,17 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-public enum ProcessTypeId
-{
-    APPLICATION_CHECKLIST = 1,
-    OFFER_SUBSCRIPTION = 3,
-    PARTNER_REGISTRATION = 4,
-    MAILING = 5,
-    INVITATION = 6,
-    DIM_TECHNICAL_USER = 7,
-    USER_PROVISIONING = 8,
-    IDENTITYPROVIDER_PROVISIONING = 9,
-    DELETE_DIM_TECHNICAL_USER = 10
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
+
+public class DimUserCreationProcessTypeExecutor(
+    IPortalRepositories portalRepositories,
+    IDimUserProcessService dimUserProcessService)
+    : DimUserBaseProcessTypeExecutor(portalRepositories, dimUserProcessService, ProcessTypeId.DIM_TECHNICAL_USER), IProcessTypeExecutor;

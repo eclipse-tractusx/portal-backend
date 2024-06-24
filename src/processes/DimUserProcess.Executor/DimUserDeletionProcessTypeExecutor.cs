@@ -17,21 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
 
-public static class DimUserCreationProcessCollectionExtensions
-{
-    public static IServiceCollection AddDimUserCreationProcessExecutor(this IServiceCollection services,
-        IConfiguration config) =>
-        services
-            .AddIdpManagement(config)
-            .AddTransient<IDimUserCreationProcessService, DimUserCreationProcessService>()
-            .AddTransient<IProcessTypeExecutor, DimUserCreationProcessTypeExecutor>()
-            .AddDimService(config.GetSection("Dim"));
-}
+public class DimUserDeletionProcessTypeExecutor(
+    IPortalRepositories portalRepositories,
+    IDimUserProcessService dimUserProcessService)
+    : DimUserBaseProcessTypeExecutor(portalRepositories, dimUserProcessService, ProcessTypeId.DELETE_DIM_TECHNICAL_USER), IProcessTypeExecutor;

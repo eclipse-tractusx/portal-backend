@@ -99,12 +99,12 @@ public class ServiceAccountBusinessLogic(
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
         var companyId = _identityData.CompanyId;
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (result == default)
+        if (result == null)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
 
-        if (result.statusId == ConnectorStatusId.ACTIVE || result.statusId == ConnectorStatusId.PENDING)
+        if (result.StatusId is ConnectorStatusId.ACTIVE or ConnectorStatusId.PENDING)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT);
         }
@@ -120,9 +120,16 @@ public class ServiceAccountBusinessLogic(
         });
 
         // serviceAccount
-        if (!string.IsNullOrWhiteSpace(result.ClientClientId))
+        if (!string.IsNullOrWhiteSpace(result.ClientClientId) && !result.IsDimServiceAccount)
         {
             await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+
+        if (result.IsDimServiceAccount)
+        {
+            var processStepRepository = portalRepositories.GetInstance<ProcessStepRepository>();
+            var process = processStepRepository.CreateProcess(ProcessTypeId.DELETE_DIM_TECHNICAL_USER);
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER, ProcessStepStatusId.TODO, process.Id);
         }
 
         portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
@@ -384,5 +391,21 @@ public class ServiceAccountBusinessLogic(
         var (secret, initializationVector) = CryptoHelper.Encrypt(callbackData.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         serviceAccountRepository.CreateDimCompanyServiceAccount(serviceAccountId, callbackData.AuthenticationServiceUrl, secret, initializationVector, _settings.EncryptionConfigIndex);
+    }
+
+    public async Task HandleServiceAccountDeletionCallback(Guid processId)
+    {
+        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountDeletionCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {processId}");
+
+        if (processData.ServiceAccountId is null)
+        {
+            throw new ConflictException($"ServiceAccountId must be set for process {processId}");
+        }
+
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }
