@@ -29,6 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 public class SdFactorySettings : KeyVaultAuthSettings
 {
     /// <summary>
+    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
+    /// </summary>
+    public bool ClearinghouseConnectDisabled { get; set; }
+
+    /// <summary>
     /// SD Factory endpoint for registering connectors.
     /// </summary>
     [Required]

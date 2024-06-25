@@ -61,6 +61,8 @@ public class ConnectorsBusinessLogicTests
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly IOptions<ConnectorsSettings> _options;
+    private readonly IIdentityService _identityService;
 
     public ConnectorsBusinessLogicTests()
     {
@@ -75,10 +77,10 @@ public class ConnectorsBusinessLogicTests
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        var identityService = A.Fake<IIdentityService>();
+        _identityService = A.Fake<IIdentityService>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
-        var options = A.Fake<IOptions<ConnectorsSettings>>();
+        _options = A.Fake<IOptions<ConnectorsSettings>>();
         var settings = new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -92,13 +94,12 @@ public class ConnectorsBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         SetupRepositoryMethods();
 
-        A.CallTo(() => options.Value).Returns(settings);
-        A.CallTo(() => identityService.IdentityData).Returns(_identity);
-        var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
+        A.CallTo(() => _options.Value).Returns(settings);
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         SetupIdentity();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, identityService, logger);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, _options, _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
     }
 
     #region GetAllCompanyConnectorDatas
@@ -133,19 +134,34 @@ public class ConnectorsBusinessLogicTests
 
     #region Create Connector
 
-    [Fact]
-    public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
@@ -248,36 +264,66 @@ public class ConnectorsBusinessLogicTests
 
     #region CreateManagedConnectorAsync
 
-    [Fact]
-    public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
-    [Fact]
-    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
 
         SetupTechnicalIdentity();
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
