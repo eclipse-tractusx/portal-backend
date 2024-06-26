@@ -140,16 +140,16 @@ public class ClientsUpdater : IClientsUpdater
     {
         Id = client?.Id,
         ClientId = update.ClientId,
-        RootUrl = client?.RootUrl ?? update.RootUrl, // only set the root url if no url is already set
+        RootUrl = update.RootUrl,
         Name = update.Name,
         Description = update.Description,
-        BaseUrl = client?.BaseUrl ?? update.BaseUrl, // only set the base url if no url is already set
-        AdminUrl = client?.AdminUrl ?? update.AdminUrl,
+        BaseUrl = update.BaseUrl,
+        AdminUrl = update.AdminUrl,
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
         AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
         ClientAuthenticatorType = update.ClientAuthenticatorType,
-        RedirectUris = client == null || client.RedirectUris.IsNullOrEmpty() ? update.RedirectUris : client.RedirectUris, // only set the redirect uris if there aren't any set
+        RedirectUris = update.RedirectUris,
         WebOrigins = update.WebOrigins,
         NotBefore = update.NotBefore,
         BearerOnly = update.BearerOnly,
@@ -176,7 +176,7 @@ public class ClientsUpdater : IClientsUpdater
                 Manage = update.Access.Manage
             },
         AuthorizationServicesEnabled = update.AuthorizationServicesEnabled,
-        Secret = client?.Secret ?? update.Secret
+        Secret = update.Secret
     };
 
     private static bool CompareClient(Client client, ClientModel update) =>
