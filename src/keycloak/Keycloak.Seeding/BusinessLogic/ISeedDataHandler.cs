@@ -32,7 +32,7 @@ public interface ISeedDataHandler
 
     IEnumerable<ClientModel> Clients { get; }
 
-    IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles { get; }
+    IEnumerable<(string ClientId, IEnumerable<RoleModel> RoleModels)> ClientRoles { get; }
 
     IEnumerable<RoleModel> RealmRoles { get; }
 
@@ -48,7 +48,7 @@ public interface ISeedDataHandler
 
     IReadOnlyDictionary<string, string> ClientsDictionary { get; }
 
-    IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>> ClientScopeMappings { get; }
+    IEnumerable<(string ClientId, IEnumerable<ClientScopeMappingModel> ClientScopeMappingModels)> ClientScopeMappings { get; }
 
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
 
