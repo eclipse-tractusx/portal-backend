@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -127,29 +126,17 @@ public class UsersUpdater : IUsersUpdater
         var userRoles = await getUserRoles().ConfigureAwait(ConfigureAwaitOptions.None);
         var seedRoles = getSeedRoles();
 
-        if (userRoles.ExceptBy(seedRoles, x => x.Name).IfAny(
-            delete => deleteRoles(delete),
-            out var deleteRolesTask))
-        {
-            await deleteRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        await userRoles.ExceptBy(seedRoles, x => x.Name).IfAnyAwait(
+            delete => deleteRoles(delete)).ConfigureAwait(false);
 
-        if (seedRoles.IfAny(
+        await seedRoles.IfAnyAwait(
             async seed =>
             {
                 var allRoles = await getAllRoles().ConfigureAwait(ConfigureAwaitOptions.None);
                 seed.Except(allRoles.Select(x => x.Name)).IfAny(nonexisting => throw new ConflictException($"roles {string.Join(",", nonexisting)} does not exist"));
-                if (seed.Except(userRoles.Select(x => x.Name)).IfAny(
-                    add => addRoles(allRoles.IntersectBy(add, x => x.Name)),
-                    out var addRolesTask))
-                {
-                    await addRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-                }
-            },
-            out var updateRolesTask))
-        {
-            await updateRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+                await seed.Except(userRoles.Select(x => x.Name)).IfAnyAwait(
+                    add => addRoles(allRoles.IntersectBy(add, x => x.Name))).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     private static User CreateUpdateUser(User? user, UserModel update, IEnumerable<string> excludedUserAttributes) => new()
@@ -167,7 +154,7 @@ public class UsersUpdater : IUsersUpdater
         DisableableCredentialTypes = update.DisableableCredentialTypes,
         RequiredActions = update.RequiredActions,
         NotBefore = update.NotBefore,
-        Attributes = UpdateAttributes(user?.Attributes, update.Attributes?.ToDictionary(x => x.Key, x => x.Value), excludedUserAttributes),
+        Attributes = UpdateAttributes(user?.Attributes, update.Attributes?.FilterNotNullValues(), excludedUserAttributes)?.ToDictionary(),
         Groups = update.Groups,
         ServiceAccountClientId = update.ServiceAccountClientId
     };
@@ -185,7 +172,7 @@ public class UsersUpdater : IUsersUpdater
         user.DisableableCredentialTypes.NullOrContentEqual(update.DisableableCredentialTypes) &&
         user.RequiredActions.NullOrContentEqual(update.RequiredActions) &&
         user.NotBefore == update.NotBefore &&
-        user.Attributes.NullOrContentEqual(update.Attributes) &&
+        user.Attributes.NullOrContentEqual(update.Attributes?.FilterNotNullValues()) &&
         user.Groups.NullOrContentEqual(update.Groups) &&
         user.ServiceAccountClientId == update.ServiceAccountClientId;
 
@@ -262,17 +249,16 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static IDictionary<string, IEnumerable<string>>? UpdateAttributes(IDictionary<string, IEnumerable<string>>? existingAttributes, IDictionary<string, IEnumerable<string>>? updatedDictionary, IEnumerable<string> excludedUserAttributes)
+    private static IEnumerable<KeyValuePair<string, IEnumerable<string>>>? UpdateAttributes(IEnumerable<KeyValuePair<string, IEnumerable<string>>>? existingAttributes, IEnumerable<KeyValuePair<string, IEnumerable<string>>>? updatedDictionary, IEnumerable<string> excludedUserAttributes)
     {
         if (existingAttributes is null)
             return updatedDictionary;
 
-        var attributesToKeep = existingAttributes.Where(x => excludedUserAttributes.Contains(x.Key));
+        var attributesToKeep = existingAttributes.IntersectBy(excludedUserAttributes, x => x.Key);
         return updatedDictionary is null
-            ? attributesToKeep.ToDictionary(x => x.Key, x => x.Value)
+            ? attributesToKeep
             : updatedDictionary
-                .Where(x => !excludedUserAttributes.Contains(x.Key))
-                .Concat(attributesToKeep)
-                .ToDictionary(x => x.Key, x => x.Value);
+                .ExceptBy(excludedUserAttributes, x => x.Key)
+                .Concat(attributesToKeep);
     }
 }

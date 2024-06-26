@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +43,7 @@ public static class ProtocolMappersUpdater
         mapper.Config != null && update.Config != null &&
         CompareProtocolMapperConfig(mapper.Config, update.Config));
 
-    private static Config CreateProtocolMapperConfig(IReadOnlyDictionary<string, string> update) =>
+    private static Config CreateProtocolMapperConfig(IReadOnlyDictionary<string, string?> update) =>
         new Config
         {
             Single = update.GetValueOrDefault("single"),
@@ -67,7 +66,7 @@ public static class ProtocolMappersUpdater
             UserSessionNote = update.GetValueOrDefault("user.session.note"),
         };
 
-    private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string> update) =>
+    private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string?> update) =>
         config.Single == update.GetValueOrDefault("single") &&
             config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
             config.AttributeName == update.GetValueOrDefault("attribute.name") &&

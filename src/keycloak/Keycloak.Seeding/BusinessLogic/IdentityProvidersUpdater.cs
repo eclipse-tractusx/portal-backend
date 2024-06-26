@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -245,12 +244,12 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
     private static IdentityProviderMapper UpdateIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
     {
         mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
-        mapper.Config = updateMapper.Config?.ToDictionary(x => x.Key, x => x.Value);
+        mapper.Config = updateMapper.Config?.FilterNotNullValues()?.ToDictionary();
         return mapper;
     }
 
     private static bool CompareIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
         mapper.IdentityProviderAlias == updateMapper.IdentityProviderAlias &&
         mapper._IdentityProviderMapper == updateMapper.IdentityProviderMapper &&
-        mapper.Config.NullOrContentEqual(updateMapper.Config);
+        mapper.Config.NullOrContentEqual(updateMapper.Config?.FilterNotNullValues());
 }

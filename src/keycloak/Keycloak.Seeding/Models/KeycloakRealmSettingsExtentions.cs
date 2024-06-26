@@ -146,25 +146,25 @@ public static class KeycloakRealmSettingsExtentions
             ClientPolicies = keycloakRealmSettings.ClientPolicies?.ToModel()
         };
 
-    private static KeyValuePair<string, string> ToModel(AttributeSettings attributeSettings) =>
+    private static KeyValuePair<string, string?> ToModel(AttributeSettings attributeSettings) =>
         KeyValuePair.Create(
             attributeSettings.Name ?? throw new ConfigurationException(),
-            attributeSettings.Value ?? throw new ConfigurationException());
+            attributeSettings.Value);
 
-    private static KeyValuePair<string, IEnumerable<string>> ToModel(MultiValueAttributeSettings multiValueAttributeSettings) =>
+    private static KeyValuePair<string, IEnumerable<string>?> ToModel(MultiValueAttributeSettings multiValueAttributeSettings) =>
         KeyValuePair.Create(
             multiValueAttributeSettings.Name ?? throw new ConfigurationException("Attribute name must not be null"),
-            multiValueAttributeSettings.Values ?? throw new ConfigurationException("Attribute values must not be null"));
+            multiValueAttributeSettings.Values);
 
-    private static KeyValuePair<string, IEnumerable<string>> ToModel(CompositeClientRolesSettings compositeClientRolesSettings) =>
+    private static KeyValuePair<string, IEnumerable<string>?> ToModel(CompositeClientRolesSettings compositeClientRolesSettings) =>
         KeyValuePair.Create(
             compositeClientRolesSettings.ClientId ?? throw new ConfigurationException("CompositeClientRoles ClientId name must not be null"),
-            compositeClientRolesSettings.Roles ?? throw new ConfigurationException("CompositeClientRoles roles must not be null"));
+            compositeClientRolesSettings.Roles);
 
-    private static KeyValuePair<string, IEnumerable<RoleModel>> ToModel(ClientRoleSettings clientRoleSettings) =>
+    private static KeyValuePair<string, IEnumerable<RoleModel>?> ToModel(ClientRoleSettings clientRoleSettings) =>
         KeyValuePair.Create(
             clientRoleSettings.ClientId ?? throw new ConfigurationException("clientRoles ClientId name must not be null"),
-            (clientRoleSettings.Roles ?? throw new ConfigurationException("clientRoles roles must not be null")).Select(x => x.ToModel()));
+            clientRoleSettings.Roles?.Select(x => x.ToModel()));
 
     private static CompositeRolesModel ToModel(this CompositeRolesSettings compositeRolesSettings) =>
         new(compositeRolesSettings.Realm,
@@ -184,10 +184,10 @@ public static class KeycloakRealmSettingsExtentions
         new(rolesSettings.Realm?.Select(x => x.ToModel()),
             rolesSettings.Client?.Select(ToModel)?.ToImmutableDictionary());
 
-    private static KeyValuePair<string, IEnumerable<string>> ToModel(UserClientRolesSettings userClientRolesSettings) =>
+    private static KeyValuePair<string, IEnumerable<string>?> ToModel(UserClientRolesSettings userClientRolesSettings) =>
         KeyValuePair.Create(
             userClientRolesSettings.ClientId ?? throw new ConfigurationException("userClientRoles ClientId name must not be null"),
-            userClientRolesSettings.Roles ?? throw new ConfigurationException("userClientRoles roles must not be null"));
+            userClientRolesSettings.Roles);
 
     private static GroupModel ToModel(GroupSettings groupSettings) =>
         new(groupSettings.Id,
@@ -231,25 +231,25 @@ public static class KeycloakRealmSettingsExtentions
     private static ClientScopeMappingModel ToModel(ClientScopeMappingSettings clientScopeMappingSettings) =>
         new(clientScopeMappingSettings.Client,
             clientScopeMappingSettings.Roles);
-    private static KeyValuePair<string, IEnumerable<ClientScopeMappingModel>> ToModel(ClientScopeMappingSettingsEntry clientScopeMappingSettingsEntry) =>
+    private static KeyValuePair<string, IEnumerable<ClientScopeMappingModel>?> ToModel(ClientScopeMappingSettingsEntry clientScopeMappingSettingsEntry) =>
         KeyValuePair.Create(
             clientScopeMappingSettingsEntry.ClientId ?? throw new ConfigurationException("clientScopeMappingsEntry ClientId name must not be null"),
-            clientScopeMappingSettingsEntry.ClientScopeMappings?.Select(ToModel) ?? throw new ConfigurationException("clientScopeMappingsEntry ClientScopeMappings name must not be null"));
+            clientScopeMappingSettingsEntry.ClientScopeMappings?.Select(ToModel));
 
-    private static KeyValuePair<string, string> ToModel(ClientAttributeSettings clientAttributeSettings) =>
+    private static KeyValuePair<string, string?> ToModel(ClientAttributeSettings clientAttributeSettings) =>
         KeyValuePair.Create(
             clientAttributeSettings.Name ?? throw new ConfigurationException("clientAttributes Name must not be null"),
-            clientAttributeSettings.Value ?? throw new ConfigurationException("clientAttributes Value must not be null"));
+            clientAttributeSettings.Value);
 
-    private static KeyValuePair<string, string> ToModel(AuthenticationFlowBindingOverrideSettings authenticationFlowBindingOverrideSettings) =>
+    private static KeyValuePair<string, string?> ToModel(AuthenticationFlowBindingOverrideSettings authenticationFlowBindingOverrideSettings) =>
         KeyValuePair.Create(
             authenticationFlowBindingOverrideSettings.Name ?? throw new ConfigurationException("authenticationFlowBindingOverrides Name must not be null"),
-            authenticationFlowBindingOverrideSettings.Value ?? throw new ConfigurationException("authenticationFlowBindingOverrides Value must not be null"));
+            authenticationFlowBindingOverrideSettings.Value);
 
-    private static KeyValuePair<string, string> ToModel(ProtocolMapperConfigSettings protocolMapperConfigSettings) =>
+    private static KeyValuePair<string, string?> ToModel(ProtocolMapperConfigSettings protocolMapperConfigSettings) =>
         KeyValuePair.Create(
             protocolMapperConfigSettings.Name ?? throw new ConfigurationException("protocolMapperConfigs Name must not be null"),
-            protocolMapperConfigSettings.Value ?? throw new ConfigurationException("protocolMapperConfigs Value must not be null"));
+            protocolMapperConfigSettings.Value);
 
     private static ProtocolMapperModel ToModel(ProtocolMapperSettings protocolMapperSettings) =>
         new(protocolMapperSettings.Id,
@@ -383,10 +383,10 @@ public static class KeycloakRealmSettingsExtentions
             identityProviderSettings.PostBrokerLoginFlowAlias,
             identityProviderSettings.Config?.ToModel());
 
-    private static KeyValuePair<string, string> ToModel(IdentityProviderMapperConfigSettings identityProviderMapperConfigSettings) =>
+    private static KeyValuePair<string, string?> ToModel(IdentityProviderMapperConfigSettings identityProviderMapperConfigSettings) =>
         KeyValuePair.Create(
             identityProviderMapperConfigSettings.Name ?? throw new ConfigurationException("identityProviderConfigs Name must not be null"),
-            identityProviderMapperConfigSettings.Value ?? throw new ConfigurationException("identityProviderConfigs Value must not be null"));
+            identityProviderMapperConfigSettings.Value);
 
     private static IdentityProviderMapperModel ToModel(IdentityProviderMapperSettings identityProviderMapperSettings) =>
         new(identityProviderMapperSettings.Id,
@@ -395,10 +395,10 @@ public static class KeycloakRealmSettingsExtentions
             identityProviderMapperSettings.IdentityProviderMapper,
             identityProviderMapperSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
 
-    private static KeyValuePair<string, IEnumerable<string>> ToModel(ComponentConfigSettings componentConfigSettings) =>
+    private static KeyValuePair<string, IEnumerable<string>?> ToModel(ComponentConfigSettings componentConfigSettings) =>
         KeyValuePair.Create(
             componentConfigSettings.Name ?? throw new ConfigurationException(),
-            componentConfigSettings.Values ?? throw new ConfigurationException());
+            componentConfigSettings.Values);
 
     private static ComponentModel ToModel(ComponentSettings componentSettings) =>
         new(componentSettings.Id,
@@ -408,10 +408,10 @@ public static class KeycloakRealmSettingsExtentions
             componentSettings.SubComponents,
             componentSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
 
-    private static KeyValuePair<string, IEnumerable<ComponentModel>> ToModel(ComponentSettingsEntry componentSettingsEntry) =>
+    private static KeyValuePair<string, IEnumerable<ComponentModel>?> ToModel(ComponentSettingsEntry componentSettingsEntry) =>
         KeyValuePair.Create(
             componentSettingsEntry.Name ?? throw new ConfigurationException(),
-            componentSettingsEntry.ComponentSettings?.Select(ToModel) ?? throw new ConfigurationException());
+            componentSettingsEntry.ComponentSettings?.Select(ToModel));
 
     private static AuthenticationExecutionModel ToModel(AuthenticationExecutionSettings authenticationExecutionSettings) =>
         new(authenticationExecutionSettings.Authenticator,
@@ -432,10 +432,10 @@ public static class KeycloakRealmSettingsExtentions
             authenticationFlowSettings.BuiltIn,
             authenticationFlowSettings.AuthenticationExecutions?.Select(ToModel));
 
-    private static KeyValuePair<string, string> ToModel(AuthenticatorConfigConfigSettings authenticatorConfigConfigSettings) =>
+    private static KeyValuePair<string, string?> ToModel(AuthenticatorConfigConfigSettings authenticatorConfigConfigSettings) =>
         KeyValuePair.Create(
             authenticatorConfigConfigSettings.Name ?? throw new ConfigurationException(),
-            authenticatorConfigConfigSettings.Value ?? throw new ConfigurationException());
+            authenticatorConfigConfigSettings.Value);
 
     private static AuthenticatorConfigModel ToModel(AuthenticatorConfigSettings authenticatorConfigSettings) =>
         new(authenticatorConfigSettings.Id,

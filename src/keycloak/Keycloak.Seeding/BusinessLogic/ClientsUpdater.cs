@@ -161,8 +161,8 @@ public class ClientsUpdater : IClientsUpdater
         PublicClient = update.PublicClient,
         FrontChannelLogout = update.FrontchannelLogout,
         Protocol = update.Protocol,
-        Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value),
-        AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.ToDictionary(x => x.Key, x => x.Value),
+        Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
+        AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()?.ToDictionary(),
         FullScopeAllowed = update.FullScopeAllowed,
         NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
         DefaultClientScopes = update.DefaultClientScopes,
@@ -202,8 +202,8 @@ public class ClientsUpdater : IClientsUpdater
         client.PublicClient == update.PublicClient &&
         client.FrontChannelLogout == update.FrontchannelLogout &&
         client.Protocol == update.Protocol &&
-        client.Attributes.NullOrContentEqual(update.Attributes) &&
-        client.AuthenticationFlowBindingOverrides.NullOrContentEqual(update.AuthenticationFlowBindingOverrides) &&
+        client.Attributes.NullOrContentEqual(update.Attributes?.FilterNotNullValues()) &&
+        client.AuthenticationFlowBindingOverrides.NullOrContentEqual(update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()) &&
         client.FullScopeAllowed == update.FullScopeAllowed &&
         client.NodeReregistrationTimeout == update.NodeReRegistrationTimeout &&
         client.DefaultClientScopes.NullOrContentEqual(update.DefaultClientScopes) &&
@@ -228,7 +228,7 @@ public class ClientsUpdater : IClientsUpdater
         mapper.Config != null && update.Config != null &&
         CompareClientProtocolMapperConfig(mapper.Config, update.Config));
 
-    private static bool CompareClientProtocolMapperConfig(ClientConfig config, IReadOnlyDictionary<string, string> update) =>
+    private static bool CompareClientProtocolMapperConfig(ClientConfig config, IReadOnlyDictionary<string, string?> update) =>
         config.UserInfoTokenClaim == update.GetValueOrDefault("userinfo.token.claim") &&
         config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
         config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&

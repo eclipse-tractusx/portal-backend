@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -105,7 +104,7 @@ public class KeycloakRealm
     public IEnumerable<string>? WebAuthnPolicyPasswordlessAcceptableAaguids { get; set; }
     public IEnumerable<UserModel>? Users { get; set; }
     public IEnumerable<ScopeMappingModel>? ScopeMappings { get; set; }
-    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>>? ClientScopeMappings { get; set; }
+    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>?>? ClientScopeMappings { get; set; }
     public IEnumerable<ClientModel>? Clients { get; set; }
     public IEnumerable<ClientScopeModel>? ClientScopes { get; set; }
     public IEnumerable<string>? DefaultDefaultClientScopes { get; set; }
@@ -123,7 +122,7 @@ public class KeycloakRealm
     public bool? AdminEventsDetailsEnabled { get; set; }
     public IEnumerable<IdentityProviderModel>? IdentityProviders { get; set; }
     public IEnumerable<IdentityProviderMapperModel>? IdentityProviderMappers { get; set; }
-    public IReadOnlyDictionary<string, IEnumerable<ComponentModel>>? Components { get; set; }
+    public IReadOnlyDictionary<string, IEnumerable<ComponentModel>?>? Components { get; set; }
     public bool? InternationalizationEnabled { get; set; }
     public IEnumerable<string>? SupportedLocales { get; set; }
     public string? DefaultLocale { get; set; }
@@ -136,7 +135,7 @@ public class KeycloakRealm
     public string? ResetCredentialsFlow { get; set; }
     public string? ClientAuthenticationFlow { get; set; }
     public string? DockerAuthenticationFlow { get; set; }
-    public IReadOnlyDictionary<string, string>? Attributes { get; set; }
+    public IReadOnlyDictionary<string, string?>? Attributes { get; set; }
     public string? KeycloakVersion { get; set; }
     public bool? UserManagedAccessAllowed { get; set; }
     public ClientProfilesModel? ClientProfiles { get; set; }
@@ -145,12 +144,12 @@ public class KeycloakRealm
 
 public record RolesModel(
     IEnumerable<RoleModel>? Realm,
-    IReadOnlyDictionary<string, IEnumerable<RoleModel>>? Client
+    IReadOnlyDictionary<string, IEnumerable<RoleModel>?>? Client
 );
 
 public record CompositeRolesModel(
     IEnumerable<string>? Realm,
-    IReadOnlyDictionary<string, IEnumerable<string>>? Client
+    IReadOnlyDictionary<string, IEnumerable<string>?>? Client
 );
 
 public record RoleModel(
@@ -160,7 +159,7 @@ public record RoleModel(
     bool? Composite,
     bool? ClientRole,
     string? ContainerId,
-    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
+    IReadOnlyDictionary<string, IEnumerable<string>?>? Attributes,
     CompositeRolesModel? Composites
 );
 
@@ -174,13 +173,13 @@ public record UserModel(
     string? FirstName,
     string? LastName,
     string? Email,
-    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
+    IReadOnlyDictionary<string, IEnumerable<string>?>? Attributes,
     IEnumerable<object>? Credentials,
     IEnumerable<string>? DisableableCredentialTypes,
     IEnumerable<string>? RequiredActions,
     IEnumerable<FederatedIdentityModel>? FederatedIdentities,
     IEnumerable<string>? RealmRoles,
-    IReadOnlyDictionary<string, IEnumerable<string>>? ClientRoles,
+    IReadOnlyDictionary<string, IEnumerable<string>?>? ClientRoles,
     int? NotBefore,
     IEnumerable<string>? Groups,
     string? ServiceAccountClientId
@@ -196,9 +195,9 @@ public record GroupModel(
     string? Id,
     string? Name,
     string? Path,
-    IReadOnlyDictionary<string, IEnumerable<string>>? Attributes,
+    IReadOnlyDictionary<string, IEnumerable<string>?>? Attributes,
     IEnumerable<string>? RealmRoles,
-    IReadOnlyDictionary<string, IEnumerable<string>>? ClientRoles,
+    IReadOnlyDictionary<string, IEnumerable<string>?>? ClientRoles,
     IEnumerable<string>? SubGroups
 );
 
@@ -234,8 +233,8 @@ public record ClientModel(
     bool? PublicClient,
     bool? FrontchannelLogout,
     string? Protocol,
-    IReadOnlyDictionary<string, string>? Attributes,
-    IReadOnlyDictionary<string, string>? AuthenticationFlowBindingOverrides,
+    IReadOnlyDictionary<string, string?>? Attributes,
+    IReadOnlyDictionary<string, string?>? AuthenticationFlowBindingOverrides,
     bool? FullScopeAllowed,
     int? NodeReRegistrationTimeout,
     IEnumerable<string>? DefaultClientScopes,
@@ -260,14 +259,14 @@ public record ProtocolMapperModel(
     string? Protocol,
     string? ProtocolMapper,
     bool? ConsentRequired,
-    IReadOnlyDictionary<string, string>? Config
+    IReadOnlyDictionary<string, string?>? Config
 );
 
 public record ClientScopeModel(
     string? Id,
     string? Name,
     string? Protocol,
-    IReadOnlyDictionary<string, string>? Attributes,
+    IReadOnlyDictionary<string, string?>? Attributes,
     IEnumerable<ProtocolMapperModel>? ProtocolMappers,
     string? Description
 );
@@ -359,7 +358,7 @@ public record IdentityProviderMapperModel(
     string? Name,
     string? IdentityProviderAlias,
     string? IdentityProviderMapper,
-    IReadOnlyDictionary<string, string>? Config
+    IReadOnlyDictionary<string, string?>? Config
 );
 
 public record ComponentModel(
@@ -368,7 +367,7 @@ public record ComponentModel(
     string? ProviderId,
     string? SubType,
     object? SubComponents,
-    IReadOnlyDictionary<string, IEnumerable<string>>? Config
+    IReadOnlyDictionary<string, IEnumerable<string>?>? Config
 );
 
 public record AuthenticationFlowModel(
@@ -395,7 +394,7 @@ public record AuthenticationExecutionModel(
 public record AuthenticatorConfigModel(
     string? Id,
     string? Alias,
-    IReadOnlyDictionary<string, string>? Config
+    IReadOnlyDictionary<string, string?>? Config
 );
 
 public record RequiredActionModel(
