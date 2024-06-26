@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -75,10 +76,9 @@ public class SeedDataHandler : ISeedDataHandler
         get => _jsonRealm?.Clients ?? Enumerable.Empty<ClientModel>();
     }
 
-    public IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles
+    public IEnumerable<(string ClientId, IEnumerable<RoleModel> RoleModels)> ClientRoles
     {
-        get => _jsonRealm?.Roles?.Client ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>()
-            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
+        get => _jsonRealm?.Roles?.Client?.FilterNotNullValues().Select(x => (x.Key, x.Value)) ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>();
     }
 
     public IEnumerable<RoleModel> RealmRoles
@@ -117,10 +117,9 @@ public class SeedDataHandler : ISeedDataHandler
         get => _idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set");
     }
 
-    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>> ClientScopeMappings
+    public IEnumerable<(string ClientId, IEnumerable<ClientScopeMappingModel> ClientScopeMappingModels)> ClientScopeMappings
     {
-        get => _jsonRealm?.ClientScopeMappings ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>()
-            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
+        get => _jsonRealm?.ClientScopeMappings?.FilterNotNullValues().Select(x => (x.Key, x.Value)) ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>();
     }
 
     public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)
