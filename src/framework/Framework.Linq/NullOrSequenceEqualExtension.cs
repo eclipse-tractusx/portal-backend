@@ -23,12 +23,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 
 public static class NullOrSequenceEqualExtensions
 {
-    public static bool NullOrContentEqual<T>(this IEnumerable<T>? items, IEnumerable<T>? others, IEqualityComparer<T>? comparer = null) where T : IComparable =>
+    public static bool NullOrContentEqual<T>(this IEnumerable<T>? items, IEnumerable<T>? others, IEqualityComparer<T>? comparer = null) where T : IComparable? =>
         items == null && others == null ||
         items != null && others != null &&
-        items.OrderBy(x => x).SequenceEqual(others.OrderBy(x => x), comparer);
+        items.Order().SequenceEqual(others.Order(), comparer);
 
-    public static bool NullOrContentEqual<K, V>(this IEnumerable<KeyValuePair<K, V>>? items, IEnumerable<KeyValuePair<K, V>>? others, IEqualityComparer<KeyValuePair<K, V>>? comparer = null) where K : IComparable where V : IComparable =>
+    public static bool NullOrContentEqual<K, V>(this IEnumerable<KeyValuePair<K, V>>? items, IEnumerable<KeyValuePair<K, V>>? others, IEqualityComparer<KeyValuePair<K, V>>? comparer = null) where K : IComparable where V : IComparable? =>
         items == null && others == null ||
         items != null && others != null &&
         items.OrderBy(x => x.Key).SequenceEqual(others.OrderBy(x => x.Key), comparer);
@@ -37,6 +37,11 @@ public static class NullOrSequenceEqualExtensions
         items == null && others == null ||
         items != null && others != null &&
         items.OrderBy(x => x.Key).SequenceEqual(others.OrderBy(x => x.Key), comparer ?? new EnumerableValueKeyValuePairEqualityComparer<K, V>());
+
+    public static bool NullOrNullableContentEqual<K, V>(this IEnumerable<KeyValuePair<K, IEnumerable<V>?>>? items, IEnumerable<KeyValuePair<K, IEnumerable<V>?>>? others, IEqualityComparer<KeyValuePair<K, IEnumerable<V>?>>? comparer = null) where V : IComparable =>
+        items == null && others == null ||
+        items != null && others != null &&
+        items.OrderBy(x => x.Key).SequenceEqual(others.OrderBy(x => x.Key), comparer ?? new NullableEnumerableValueKeyValuePairEqualityComparer<K, V>());
 }
 
 public class KeyValuePairEqualityComparer<K, V> : IEqualityComparer<KeyValuePair<K, V>> where K : IComparable where V : IComparable
@@ -50,7 +55,16 @@ public class EnumerableValueKeyValuePairEqualityComparer<K, V> : IEqualityCompar
 {
     public bool Equals(KeyValuePair<K, IEnumerable<V>> source, KeyValuePair<K, IEnumerable<V>> other) =>
         Equals(source.Key, other.Key) &&
-        source.Value.NullOrContentEqual(other.Value);
+        source.Value.Order().SequenceEqual(other.Value.Order());
 
     public int GetHashCode([DisallowNull] KeyValuePair<K, IEnumerable<V>> obj) => throw new NotImplementedException();
+}
+
+public class NullableEnumerableValueKeyValuePairEqualityComparer<K, V> : IEqualityComparer<KeyValuePair<K, IEnumerable<V>?>> where V : IComparable
+{
+    public bool Equals(KeyValuePair<K, IEnumerable<V>?> source, KeyValuePair<K, IEnumerable<V>?> other) =>
+        Equals(source.Key, other.Key) &&
+        source.Value.NullOrContentEqual(other.Value);
+
+    public int GetHashCode([DisallowNull] KeyValuePair<K, IEnumerable<V>?> obj) => throw new NotImplementedException();
 }
