@@ -34,32 +34,31 @@ public static class FlurlErrorHandler
 
             if (isDevelopment)
             {
-                LogDevelopmentError(logger, call);
+                LogDebug(logger, call);
             }
-            else
-            {
-                logger.LogError(call.Exception, "{Message}", message);
-            }
-
             if (call.HttpResponseMessage != null)
             {
                 throw call.HttpResponseMessage.StatusCode switch
                 {
                     HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
                     HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
-                    HttpStatusCode.BadRequest => new ArgumentException(message, call.Exception),
+                    HttpStatusCode.BadRequest => new KeycloakArgumentException(message, call.Exception),
                     _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
                 };
             }
+            throw new ServiceException(message, call.Exception);
         });
     }
 
-    private static void LogDevelopmentError(ILogger logger, FlurlCall call)
+    private static void LogDebug(ILogger logger, FlurlCall call)
     {
-        var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
-        var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
-        var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
-        var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
-        logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
+            var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
+            var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
+            var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
+            logger.LogDebug(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
+        }
     }
 }
