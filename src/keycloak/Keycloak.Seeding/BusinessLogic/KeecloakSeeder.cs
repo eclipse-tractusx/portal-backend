@@ -60,7 +60,7 @@ public class KeycloakSeeder : IKeycloakSeeder
             await _rolesUpdater.UpdateClientRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await _rolesUpdater.UpdateCompositeRoles(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await _identityProvidersUpdater.UpdateIdentityProviders(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _usersUpdater.UpdateUsers(_settings.InstanceName, _settings.ExcludedUserAttributes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _usersUpdater.UpdateUsers(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await _clientScopesUpdater.UpdateClientScopes(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await _clientScopeMapperUpdater.UpdateClientScopeMapper(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await _authenticationFlowsUpdater.UpdateAuthenticationFlows(_settings.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

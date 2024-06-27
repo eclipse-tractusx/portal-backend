@@ -39,7 +39,7 @@ public class UsersUpdater : IUsersUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateUsers(string keycloakInstanceName, IEnumerable<string>? excludedUserAttributes, CancellationToken cancellationToken)
+    public async Task UpdateUsers(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
@@ -54,7 +54,6 @@ public class UsersUpdater : IUsersUpdater
                 keycloak,
                 realm,
                 seedUser,
-                excludedUserAttributes ?? Enumerable.Empty<string>(),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await UpdateClientAndRealmRoles(
@@ -74,7 +73,7 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static async Task<string> CreateOrUpdateUserReturningId(KeycloakClient keycloak, string realm, UserModel seedUser, IEnumerable<string> excludedUserAttributes, CancellationToken cancellationToken)
+    private static async Task<string> CreateOrUpdateUserReturningId(KeycloakClient keycloak, string realm, UserModel seedUser, CancellationToken cancellationToken)
     {
         var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
 
@@ -82,7 +81,7 @@ public class UsersUpdater : IUsersUpdater
         {
             return await keycloak.CreateAndRetrieveUserIdAsync(
                 realm,
-                CreateUpdateUser(null, seedUser, Enumerable.Empty<string>()),
+                CreateUpdateUser(null, seedUser),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
         }
         else
@@ -94,7 +93,7 @@ public class UsersUpdater : IUsersUpdater
                 await keycloak.UpdateUserAsync(
                     realm,
                     user.Id,
-                    CreateUpdateUser(user, seedUser, excludedUserAttributes),
+                    CreateUpdateUser(user, seedUser),
                     cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
             return user.Id;
@@ -139,7 +138,7 @@ public class UsersUpdater : IUsersUpdater
             }).ConfigureAwait(false);
     }
 
-    private static User CreateUpdateUser(User? user, UserModel update, IEnumerable<string> excludedUserAttributes) => new()
+    private static User CreateUpdateUser(User? user, UserModel update) => new()
     {
         // Access, ClientConsents, Credentials, FederatedIdentities, FederationLink, Origin, Self are not in scope
         Id = user?.Id,
@@ -154,7 +153,7 @@ public class UsersUpdater : IUsersUpdater
         DisableableCredentialTypes = update.DisableableCredentialTypes,
         RequiredActions = update.RequiredActions,
         NotBefore = update.NotBefore,
-        Attributes = UpdateAttributes(user?.Attributes, update.Attributes?.FilterNotNullValues(), excludedUserAttributes)?.ToDictionary(),
+        Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
         Groups = update.Groups,
         ServiceAccountClientId = update.ServiceAccountClientId
     };
@@ -247,18 +246,5 @@ public class UsersUpdater : IUsersUpdater
                 },
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-    }
-
-    private static IEnumerable<KeyValuePair<string, IEnumerable<string>>>? UpdateAttributes(IEnumerable<KeyValuePair<string, IEnumerable<string>>>? existingAttributes, IEnumerable<KeyValuePair<string, IEnumerable<string>>>? updatedDictionary, IEnumerable<string> excludedUserAttributes)
-    {
-        if (existingAttributes is null)
-            return updatedDictionary;
-
-        var attributesToKeep = existingAttributes.IntersectBy(excludedUserAttributes, x => x.Key);
-        return updatedDictionary is null
-            ? attributesToKeep
-            : updatedDictionary
-                .ExceptBy(excludedUserAttributes, x => x.Key)
-                .Concat(attributesToKeep);
     }
 }
