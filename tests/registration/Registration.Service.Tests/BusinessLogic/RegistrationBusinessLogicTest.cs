@@ -3591,28 +3591,10 @@ public class RegistrationBusinessLogicTest
             .MustHaveHappenedOnceExactly();
 
         // CreateDeclineApplicationEmailProcesses
-
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("email1", "EmailRegistrationDeclineTemplate", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.OrderBy(y => y.Key).SequenceEqual(new KeyValuePair<string, string>[]
-                {
-                    KeyValuePair.Create("companyName", "TestCompany"),
-                    KeyValuePair.Create("userName", "email1")
-                }))))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("email2", "EmailRegistrationDeclineTemplate", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.OrderBy(y => y.Key).SequenceEqual(new KeyValuePair<string, string>[]
-                {
-                    KeyValuePair.Create("companyName", "TestCompany"),
-                    KeyValuePair.Create("userName", "First Last")
-                }))))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess("email3", "EmailRegistrationDeclineTemplate", A<IReadOnlyDictionary<string, string>>.That.Matches(x => x.OrderBy(y => y.Key).SequenceEqual(new KeyValuePair<string, string>[]
-                {
-                    KeyValuePair.Create("companyName", "TestCompany"),
-                    KeyValuePair.Create("userName", "Other")
-                }))))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
 
         // final save
-
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
