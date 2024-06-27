@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -70,9 +71,12 @@ public class KeycloakRealmSettings
     public int? MaxDeltaTimeSeconds { get; set; }
     public int? FailureFactor { get; set; }
     public RolesSettings? Roles { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<GroupSettings>? Groups { get; set; }
     public RoleSettings? DefaultRole { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? DefaultGroups { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? RequiredCredentials { get; set; }
     public string? OtpPolicyType { get; set; }
     public string? OtpPolicyAlgorithm { get; set; }
@@ -80,9 +84,11 @@ public class KeycloakRealmSettings
     public int? OtpPolicyDigits { get; set; }
     public int? OtpPolicyLookAheadWindow { get; set; }
     public int? OtpPolicyPeriod { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? OtpSupportedApplications { get; set; }
     public string? PasswordPolicy { get; set; }
     public string? WebAuthnPolicyRpEntityName { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyRpId { get; set; }
     public string? WebAuthnPolicyAttestationConveyancePreference { get; set; }
@@ -91,8 +97,10 @@ public class KeycloakRealmSettings
     public string? WebAuthnPolicyUserVerificationRequirement { get; set; }
     public int? WebAuthnPolicyCreateTimeout { get; set; }
     public bool? WebAuthnPolicyAvoidSameAuthenticatorRegister { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? WebAuthnPolicyAcceptableAaguids { get; set; }
     public string? WebAuthnPolicyPasswordlessRpEntityName { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? WebAuthnPolicyPasswordlessSignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyPasswordlessRpId { get; set; }
     public string? WebAuthnPolicyPasswordlessAttestationConveyancePreference { get; set; }
@@ -101,13 +109,21 @@ public class KeycloakRealmSettings
     public string? WebAuthnPolicyPasswordlessUserVerificationRequirement { get; set; }
     public int? WebAuthnPolicyPasswordlessCreateTimeout { get; set; }
     public bool? WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? WebAuthnPolicyPasswordlessAcceptableAaguids { get; set; }
+    [DistinctValues("x => x.Username")]
     public IEnumerable<UserSettings>? Users { get; set; }
+    [DistinctValues("x => x.ClientScope")]
     public IEnumerable<ScopeMappingSettings>? ScopeMappings { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<ClientScopeMappingSettingsEntry>? ClientScopeMappings { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<ClientSettings>? Clients { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ClientScopeSettings>? ClientScopes { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? DefaultDefaultClientScopes { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? DefaultOptionalClientScopes { get; set; }
     public BrowserSecurityHeadersSettings? BrowserSecurityHeaders { get; set; }
     public SmtpServerSettings? SmtpServer { get; set; }
@@ -116,18 +132,27 @@ public class KeycloakRealmSettings
     public string? AdminTheme { get; set; }
     public string? EmailTheme { get; set; }
     public bool? EventsEnabled { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? EventsListeners { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? EnabledEventTypes { get; set; }
     public bool? AdminEventsEnabled { get; set; }
     public bool? AdminEventsDetailsEnabled { get; set; }
+    [DistinctValues("x => x.Alias")]
     public IEnumerable<IdentityProviderSettings>? IdentityProviders { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<IdentityProviderMapperSettings>? IdentityProviderMappers { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ComponentSettingsEntry>? Components { get; set; }
     public bool? InternationalizationEnabled { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? SupportedLocales { get; set; }
     public string? DefaultLocale { get; set; }
+    [DistinctValues("x => x.Alias")]
     public IEnumerable<AuthenticationFlowSettings>? AuthenticationFlows { get; set; }
+    [DistinctValues("x => x.Alias")]
     public IEnumerable<AuthenticatorConfigSettings>? AuthenticatorConfig { get; set; }
+    [DistinctValues("x => x.Alias")]
     public IEnumerable<RequiredActionSettings>? RequiredActions { get; set; }
     public string? BrowserFlow { get; set; }
     public string? RegistrationFlow { get; set; }
@@ -135,6 +160,7 @@ public class KeycloakRealmSettings
     public string? ResetCredentialsFlow { get; set; }
     public string? ClientAuthenticationFlow { get; set; }
     public string? DockerAuthenticationFlow { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<AttributeSettings>? Attributes { get; set; }
     public string? KeycloakVersion { get; set; }
     public bool? UserManagedAccessAllowed { get; set; }
@@ -151,30 +177,36 @@ public class AttributeSettings
 public class MultiValueAttributeSettings
 {
     public string? Name { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Values { get; set; }
 }
 
 public class RolesSettings
 {
+    [DistinctValues("x => x.Name")]
     public IEnumerable<RoleSettings>? Realm { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<ClientRoleSettings>? Client { get; set; }
 };
 
 public class ClientRoleSettings
 {
     public string? ClientId { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<RoleSettings>? Roles { get; set; }
 }
 
 public class CompositeRolesSettings
 {
     public IEnumerable<string>? Realm { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<CompositeClientRolesSettings>? Client { get; set; }
 };
 
 public class CompositeClientRolesSettings
 {
     public string? ClientId { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Roles { get; set; }
 }
 
@@ -186,6 +218,7 @@ public class RoleSettings
     public bool? Composite { get; set; }
     public bool? ClientRole { get; set; }
     public string? ContainerId { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<MultiValueAttributeSettings>? Attributes { get; set; }
     public CompositeRolesSettings? Composites { get; set; }
 }
@@ -201,14 +234,21 @@ public class UserSettings
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Email { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<MultiValueAttributeSettings>? Attributes { get; set; }
     public IEnumerable<object>? Credentials { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? DisableableCredentialTypes { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? RequiredActions { get; set; }
+    [DistinctValues("x => x.IdentityProvider")]
     public IEnumerable<FederatedIdentitySettings>? FederatedIdentities { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? RealmRoles { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserClientRolesSettings>? ClientRoles { get; set; }
     public int? NotBefore { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Groups { get; set; }
     public string? ServiceAccountClientId { get; set; }
 }
@@ -216,6 +256,7 @@ public class UserSettings
 public class UserClientRolesSettings
 {
     public string? ClientId { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Roles { get; set; }
 }
 
@@ -231,27 +272,34 @@ public class GroupSettings
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Path { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<MultiValueAttributeSettings>? Attributes { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? RealmRoles { get; set; }
+    [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserClientRolesSettings>? ClientRoles { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? SubGroups { get; set; }
 }
 
 public class ScopeMappingSettings
 {
     public string? ClientScope { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Roles { get; set; }
 }
 
 public class ClientScopeMappingSettings
 {
     public string? Client { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Roles { get; set; }
 }
 
 public class ClientScopeMappingSettingsEntry
 {
     public string? ClientId { get; set; }
+    [DistinctValues("x => x.Client")]
     public IEnumerable<ClientScopeMappingSettings>? ClientScopeMappings { get; set; }
 }
 
@@ -266,7 +314,9 @@ public class ClientSettings
     public bool? Enabled { get; set; }
     public bool? AlwaysDisplayInConsole { get; set; }
     public string? ClientAuthenticatorType { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? RedirectUris { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? WebOrigins { get; set; }
     public int? NotBefore { get; set; }
     public bool? BearerOnly { get; set; }
@@ -278,12 +328,17 @@ public class ClientSettings
     public bool? PublicClient { get; set; }
     public bool? FrontchannelLogout { get; set; }
     public string? Protocol { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ClientAttributeSettings>? Attributes { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<AuthenticationFlowBindingOverrideSettings>? AuthenticationFlowBindingOverrides { get; set; }
     public bool? FullScopeAllowed { get; set; }
     public int? NodeReRegistrationTimeout { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? DefaultClientScopes { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? OptionalClientScopes { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ProtocolMapperSettings>? ProtocolMappers { get; set; }
     public ClientAccessSettings? Access { get; set; }
     public string? Secret { get; set; }
@@ -318,6 +373,7 @@ public class ProtocolMapperSettings
     public string? Protocol { get; set; }
     public string? ProtocolMapper { get; set; }
     public bool? ConsentRequired { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ProtocolMapperConfigSettings>? Config { get; set; }
 }
 
@@ -332,7 +388,9 @@ public class ClientScopeSettings
     public string? Id { get; set; }
     public string? Name { get; set; }
     public string? Protocol { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ClientAttributeSettings>? Attributes { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ProtocolMapperSettings>? ProtocolMappers { get; set; }
     public string? Description { get; set; }
 }
@@ -429,6 +487,7 @@ public class IdentityProviderMapperSettings
     public string? Name { get; set; }
     public string? IdentityProviderAlias { get; set; }
     public string? IdentityProviderMapper { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<IdentityProviderMapperConfigSettings>? Config { get; set; }
 }
 
@@ -445,18 +504,21 @@ public class ComponentSettings
     public string? ProviderId { get; set; }
     public string? SubType { get; set; }
     public object? SubComponents { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ComponentConfigSettings>? Config { get; set; }
 }
 
 public class ComponentSettingsEntry
 {
     public string? Name { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<ComponentSettings>? ComponentSettings { get; set; }
 }
 
 public class ComponentConfigSettings
 {
     public string? Name { get; set; }
+    [DistinctValues]
     public IEnumerable<string>? Values { get; set; }
 }
 
@@ -468,6 +530,7 @@ public class AuthenticationFlowSettings
     public string? ProviderId { get; set; }
     public bool? TopLevel { get; set; }
     public bool? BuiltIn { get; set; }
+    [DistinctValues("x => x.Authenticator")]
     public IEnumerable<AuthenticationExecutionSettings>? AuthenticationExecutions { get; set; }
 }
 
@@ -487,6 +550,7 @@ public class AuthenticatorConfigSettings
 {
     public string? Id { get; set; }
     public string? Alias { get; set; }
+    [DistinctValues("x => x.Name")]
     public IEnumerable<AuthenticatorConfigConfigSettings>? Config { get; set; }
 }
 

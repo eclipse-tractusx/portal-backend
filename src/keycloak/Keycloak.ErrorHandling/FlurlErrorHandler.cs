@@ -42,7 +42,7 @@ public static class FlurlErrorHandler
                 {
                     HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
                     HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
-                    HttpStatusCode.BadRequest => new KeycloakArgumentException(message, call.Exception),
+                    HttpStatusCode.BadRequest => new KeycloakNoSuccessException(message, call.Exception),
                     _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
                 };
             }
