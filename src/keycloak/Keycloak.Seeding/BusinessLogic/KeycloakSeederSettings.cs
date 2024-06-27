@@ -34,8 +34,7 @@ public class KeycloakSeederSettings
     [Required]
     public string InstanceName { get; set; } = null!;
 
-    public IEnumerable<string>? ExcludedUserAttributes { get; set; }
-
+    [DistinctValues("x => x.Realm")]
     public IEnumerable<KeycloakRealmSettings>? Realms { get; set; }
 }
 
