@@ -174,7 +174,7 @@ public record UserModel(
     string? LastName,
     string? Email,
     IReadOnlyDictionary<string, IEnumerable<string>?>? Attributes,
-    IEnumerable<object>? Credentials,
+    IEnumerable<CredentialsModel>? Credentials,
     IEnumerable<string>? DisableableCredentialTypes,
     IEnumerable<string>? RequiredActions,
     IEnumerable<FederatedIdentityModel>? FederatedIdentities,
@@ -183,6 +183,23 @@ public record UserModel(
     int? NotBefore,
     IEnumerable<string>? Groups,
     string? ServiceAccountClientId
+);
+
+public record CredentialsModel(
+    string? Algorithm,
+    IReadOnlyDictionary<string, string>? Config,
+    int? Counter,
+    long? CreatedDate,
+    string? Device,
+    int? Digits,
+    int? HashIterations,
+    string? HashSaltedValue,
+    int? Period,
+    string? Salt,
+    bool? Temporary,
+    string? Type,
+    string? Value,
+    string? UserLabel
 );
 
 public record FederatedIdentityModel(
