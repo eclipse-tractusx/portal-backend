@@ -111,7 +111,8 @@ public class ServiceAccountRepository : IServiceAccountRepository
                 sa.OfferSubscription!.OfferSubscriptionStatusId,
                 sa.DimCompanyServiceAccount != null,
                 sa.Identity!.Company!.BusinessPartnerNumber,
-                sa.Name))
+                sa.Name,
+                sa.DimUserCreationData!.ProcessId))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>

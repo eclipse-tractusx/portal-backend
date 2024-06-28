@@ -32,7 +32,6 @@ public static class DimUserProcessCollectionExtensions
         services
             .AddIdpManagement(config)
             .AddTransient<IDimUserProcessService, DimUserProcessService>()
-            .AddTransient<IProcessTypeExecutor, DimUserCreationProcessTypeExecutor>()
-            .AddTransient<IProcessTypeExecutor, DimUserDeletionProcessTypeExecutor>()
+            .AddTransient<IProcessTypeExecutor, DimUserProcessTypeExecutor>()
             .AddDimService(config.GetSection("Dim"));
 }

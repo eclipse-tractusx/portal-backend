@@ -10,5 +10,6 @@ public record OwnServiceAccountData(
     OfferSubscriptionStatusId? OfferStatusId,
     bool IsDimServiceAccount,
     string? Bpn,
-    string ServiceAccountName
+    string ServiceAccountName,
+    Guid? ProcessId
 );

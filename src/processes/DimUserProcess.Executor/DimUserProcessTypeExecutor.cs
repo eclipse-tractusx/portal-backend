@@ -27,14 +27,12 @@ using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
 
-public class DimUserBaseProcessTypeExecutor(
+public class DimUserProcessTypeExecutor(
     IPortalRepositories portalRepositories,
-    IDimUserProcessService dimUserProcessService,
-    ProcessTypeId processTypeId)
+    IDimUserProcessService dimUserProcessService) : IProcessTypeExecutor
 {
-    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps = processTypeId == ProcessTypeId.DIM_TECHNICAL_USER ?
-        [ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER] :
-        [ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER];
+    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps =
+        [ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER];
 
     private static readonly IEnumerable<int> RecoverableStatusCodes =
     [
@@ -46,16 +44,14 @@ public class DimUserBaseProcessTypeExecutor(
     private Guid _dimServiceAccountId;
     private Guid _processId;
 
-    public ProcessTypeId GetProcessTypeId() => processTypeId;
+    public ProcessTypeId GetProcessTypeId() => ProcessTypeId.DIM_TECHNICAL_USER;
 
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) =>
         _executableProcessSteps.Contains(processStepTypeId);
 
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _executableProcessSteps;
 
-#pragma warning disable IDE0060
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
-#pragma warning restore IDE0060
     {
         _dimServiceAccountId = Guid.Empty;
 
@@ -72,15 +68,9 @@ public class DimUserBaseProcessTypeExecutor(
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
-#pragma warning disable CA1822
-#pragma warning disable IDE0060
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => ValueTask.FromResult(false);
-#pragma warning restore CA1822
-#pragma warning restore IDE0060
 
-#pragma warning disable IDE0060
     public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
-#pragma warning restore IDE0060
     {
         if (_dimServiceAccountId == Guid.Empty)
             throw new UnexpectedConditionException("dimServiceAccountId should never be empty here");

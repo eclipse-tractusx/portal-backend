@@ -759,7 +759,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null)
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns(new OwnServiceAccountData(_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.PENDING, false, null, "test-sa"));
+            .Returns(new OwnServiceAccountData(_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.PENDING, false, null, "test-sa", null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
             .Returns<OwnServiceAccountData?>(null);
 
@@ -791,7 +791,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupDeleteOwnCompanyServiceAccountForInvalidConnectorStatus()
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns(new OwnServiceAccountData(_userRoleIds, null, null, ConnectorStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING, false, null, "test-sa"));
+            .Returns(new OwnServiceAccountData(_userRoleIds, null, null, ConnectorStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING, false, null, "test-sa", null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
             .Returns<OwnServiceAccountData?>(null);
 
@@ -802,7 +802,7 @@ public class ServiceAccountBusinessLogicTests
     private void SetupDeleteOwnCompanyServiceAccountForValidOfferSubscription()
     {
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns(new OwnServiceAccountData(_userRoleIds, null, null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.ACTIVE, false, null, "test-sa"));
+            .Returns(new OwnServiceAccountData(_userRoleIds, null, null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.ACTIVE, false, null, "test-sa", null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
             .Returns<OwnServiceAccountData?>(null);
 

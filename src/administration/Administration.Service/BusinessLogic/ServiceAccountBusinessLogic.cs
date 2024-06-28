@@ -127,9 +127,13 @@ public class ServiceAccountBusinessLogic(
 
         if (result.IsDimServiceAccount)
         {
+            if (result.ProcessId == null)
+            {
+                throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
+            }
+
             var processStepRepository = portalRepositories.GetInstance<ProcessStepRepository>();
-            var process = processStepRepository.CreateProcess(ProcessTypeId.DELETE_DIM_TECHNICAL_USER);
-            processStepRepository.CreateProcessStep(ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER, ProcessStepStatusId.TODO, process.Id);
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER, ProcessStepStatusId.TODO, result.ProcessId.Value);
         }
 
         portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
@@ -398,7 +402,7 @@ public class ServiceAccountBusinessLogic(
         var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountDeletionCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {processId}");
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER, portalRepositories, () => $"externalId {processId}");
 
         if (processData.ServiceAccountId is null)
         {

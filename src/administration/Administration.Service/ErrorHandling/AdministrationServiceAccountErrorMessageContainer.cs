@@ -36,7 +36,8 @@ public class AdministrationServiceAccountErrorMessageContainer : IErrorMessageCo
                 { AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, "undefined clientId for serviceAccount {serviceAccountId}"},
                 { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, "serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}"},
                 { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT, "serviceAccount {serviceAccountId} is already INACTIVE"},
-                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, "clientClientId of serviceAccount {serviceAccountId} should not be null"}
+                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, "clientClientId of serviceAccount {serviceAccountId} should not be null"},
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, "Service Account {serviceAccountId} is not linked to a process" }
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationServiceAccountErrors); }
@@ -56,5 +57,6 @@ public enum AdministrationServiceAccountErrors
     SERVICE_UNDEFINED_CLIENTID_CONFLICT,
     SERVICE_ID_PATH_NOT_MATCH_ARGUMENT,
     SERVICE_INACTIVE_CONFLICT,
-    SERVICE_CLIENTID_NOT_NULL_CONFLICT
+    SERVICE_CLIENTID_NOT_NULL_CONFLICT,
+    SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS
 }
