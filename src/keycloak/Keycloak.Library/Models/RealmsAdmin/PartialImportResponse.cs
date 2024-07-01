@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,16 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
-public static class NullableExtensions
+public class PartialImportResponse
 {
-    public static bool IsNullOrEmpty<T>(this IEnumerable<T>? collection) =>
-        collection == null || !collection.Any();
+    public int? Overwritten { get; set; }
+    public int? Added { get; set; }
+    public int? Skipped { get; set; }
+    public IEnumerable<PartialImportResult>? Results { get; set; }
+}
 
-    public static IEnumerable<KeyValuePair<TKey, TValue>> FilterNotNullValues<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue?>> source) =>
-        source.Where(x => x.Value != null).Cast<KeyValuePair<TKey, TValue>>();
-
-    public static IEnumerable<T> FilterNotNull<T>(this IEnumerable<T?> source) =>
-        source.Where(x => x != null).Cast<T>();
+public class PartialImportResult
+{
+    public string? Action { get; set; }
+    public string? ResourceType { get; set; }
+    public string? ResourceName { get; set; }
+    public string? Id { get; set; }
 }

@@ -109,4 +109,17 @@ public static class IfAnyExtension
         returnValue = default;
         return false;
     }
+
+    public static async ValueTask<bool> IfAnyAwait<T>(this IEnumerable<T> source, Func<IEnumerable<T>, Task> process)
+    {
+        var enumerator = source.GetEnumerator();
+
+        if (enumerator.MoveNext())
+        {
+            await process(new IfAnyEnumerable<T>(source, enumerator)).ConfigureAwait(ConfigureAwaitOptions.None);
+            return true;
+        }
+
+        return false;
+    }
 }

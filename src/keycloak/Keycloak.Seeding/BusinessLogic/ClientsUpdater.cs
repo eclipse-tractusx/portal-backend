@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Runtime.CompilerServices;
 
@@ -136,19 +137,20 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static Client CreateUpdateClient(Client? client, ClientModel update) => new() // secret is not updated as it cannot be read via the keycloak api
+    private static Client CreateUpdateClient(Client? client, ClientModel update) => new()
     {
         Id = client?.Id,
         ClientId = update.ClientId,
-        RootUrl = client?.RootUrl ?? update.RootUrl, // only set the root url if no url is already set
+        RootUrl = update.RootUrl,
         Name = update.Name,
         Description = update.Description,
-        BaseUrl = client?.BaseUrl ?? update.BaseUrl, // only set the base url if no url is already set
+        BaseUrl = update.BaseUrl,
+        AdminUrl = update.AdminUrl,
         SurrogateAuthRequired = update.SurrogateAuthRequired,
         Enabled = update.Enabled,
         AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
         ClientAuthenticatorType = update.ClientAuthenticatorType,
-        RedirectUris = client == null || client.RedirectUris.IsNullOrEmpty() ? update.RedirectUris : client.RedirectUris, // only set the redirect uris if there aren't any set
+        RedirectUris = update.RedirectUris,
         WebOrigins = update.WebOrigins,
         NotBefore = update.NotBefore,
         BearerOnly = update.BearerOnly,
@@ -160,8 +162,8 @@ public class ClientsUpdater : IClientsUpdater
         PublicClient = update.PublicClient,
         FrontChannelLogout = update.FrontchannelLogout,
         Protocol = update.Protocol,
-        Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value),
-        AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.ToDictionary(x => x.Key, x => x.Value),
+        Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
+        AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()?.ToDictionary(),
         FullScopeAllowed = update.FullScopeAllowed,
         NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
         DefaultClientScopes = update.DefaultClientScopes,
@@ -174,15 +176,17 @@ public class ClientsUpdater : IClientsUpdater
                 Configure = update.Access.Configure,
                 Manage = update.Access.Manage
             },
-        AuthorizationServicesEnabled = update.AuthorizationServicesEnabled
+        AuthorizationServicesEnabled = update.AuthorizationServicesEnabled,
+        Secret = update.Secret
     };
 
-    private static bool CompareClient(Client client, ClientModel update) => // secret is not compared as it cannot be read via the keycloak api
+    private static bool CompareClient(Client client, ClientModel update) =>
         client.ClientId == update.ClientId &&
         client.RootUrl == update.RootUrl &&
         client.Name == update.Name &&
         client.Description == update.Description &&
         client.BaseUrl == update.BaseUrl &&
+        client.AdminUrl == update.AdminUrl &&
         client.SurrogateAuthRequired == update.SurrogateAuthRequired &&
         client.Enabled == update.Enabled &&
         client.AlwaysDisplayInConsole == update.AlwaysDisplayInConsole &&
@@ -199,14 +203,15 @@ public class ClientsUpdater : IClientsUpdater
         client.PublicClient == update.PublicClient &&
         client.FrontChannelLogout == update.FrontchannelLogout &&
         client.Protocol == update.Protocol &&
-        client.Attributes.NullOrContentEqual(update.Attributes) &&
-        client.AuthenticationFlowBindingOverrides.NullOrContentEqual(update.AuthenticationFlowBindingOverrides) &&
+        client.Attributes.NullOrContentEqual(update.Attributes?.FilterNotNullValues()) &&
+        client.AuthenticationFlowBindingOverrides.NullOrContentEqual(update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()) &&
         client.FullScopeAllowed == update.FullScopeAllowed &&
         client.NodeReregistrationTimeout == update.NodeReRegistrationTimeout &&
         client.DefaultClientScopes.NullOrContentEqual(update.DefaultClientScopes) &&
         client.OptionalClientScopes.NullOrContentEqual(update.OptionalClientScopes) &&
         CompareClientAccess(client.Access, update.Access) &&
-        client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled;
+        client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled &&
+        client.Secret == update.Secret;
 
     private static bool CompareClientAccess(ClientAccess? access, ClientAccessModel? updateAccess) =>
         access == null && updateAccess == null ||
@@ -224,14 +229,26 @@ public class ClientsUpdater : IClientsUpdater
         mapper.Config != null && update.Config != null &&
         CompareClientProtocolMapperConfig(mapper.Config, update.Config));
 
-    private static bool CompareClientProtocolMapperConfig(ClientConfig config, IReadOnlyDictionary<string, string> update) =>
+    private static bool CompareClientProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string?> update) =>
+        config.Single == update.GetValueOrDefault("single") &&
+        config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
+        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
         config.UserInfoTokenClaim == update.GetValueOrDefault("userinfo.token.claim") &&
         config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
         config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&
         config.AccessTokenClaim == update.GetValueOrDefault("access.token.claim") &&
+        config.IntrospectionTokenClaim == update.GetValueOrDefault("introspection.token.claim") &&
+        config.LightweightClaim == update.GetValueOrDefault("lightweight.claim") &&
         config.ClaimName == update.GetValueOrDefault("claim.name") &&
         config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
-        config.FriendlyName == update.GetValueOrDefault("friendly.name") &&
-        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
+        config.UserAttributeFormatted == update.GetValueOrDefault("user.attribute.formatted") &&
+        config.UserAttributeCountry == update.GetValueOrDefault("user.attribute.country") &&
+        config.UserAttributePostalCode == update.GetValueOrDefault("user.attribute.postal_code") &&
+        config.UserAttributeStreet == update.GetValueOrDefault("user.attribute.street") &&
+        config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
+        config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
+        config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
+        config.IncludedCustomAudience == update.GetValueOrDefault("included.custom.audience") &&
+        config.Multivalued == update.GetValueOrDefault("multivalued") &&
         config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }
