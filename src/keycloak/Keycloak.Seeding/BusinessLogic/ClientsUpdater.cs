@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Runtime.CompilerServices;
 
@@ -228,14 +229,26 @@ public class ClientsUpdater : IClientsUpdater
         mapper.Config != null && update.Config != null &&
         CompareClientProtocolMapperConfig(mapper.Config, update.Config));
 
-    private static bool CompareClientProtocolMapperConfig(ClientConfig config, IReadOnlyDictionary<string, string?> update) =>
+    private static bool CompareClientProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string?> update) =>
+        config.Single == update.GetValueOrDefault("single") &&
+        config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
+        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
         config.UserInfoTokenClaim == update.GetValueOrDefault("userinfo.token.claim") &&
         config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
         config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&
         config.AccessTokenClaim == update.GetValueOrDefault("access.token.claim") &&
+        config.IntrospectionTokenClaim == update.GetValueOrDefault("introspection.token.claim") &&
+        config.LightweightClaim == update.GetValueOrDefault("lightweight.claim") &&
         config.ClaimName == update.GetValueOrDefault("claim.name") &&
         config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
-        config.FriendlyName == update.GetValueOrDefault("friendly.name") &&
-        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
+        config.UserAttributeFormatted == update.GetValueOrDefault("user.attribute.formatted") &&
+        config.UserAttributeCountry == update.GetValueOrDefault("user.attribute.country") &&
+        config.UserAttributePostalCode == update.GetValueOrDefault("user.attribute.postal_code") &&
+        config.UserAttributeStreet == update.GetValueOrDefault("user.attribute.street") &&
+        config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
+        config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
+        config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
+        config.IncludedCustomAudience == update.GetValueOrDefault("included.custom.audience") &&
+        config.Multivalued == update.GetValueOrDefault("multivalued") &&
         config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }

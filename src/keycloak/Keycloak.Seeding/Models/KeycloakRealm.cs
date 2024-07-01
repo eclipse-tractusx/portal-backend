@@ -182,12 +182,32 @@ public record UserModel(
     IReadOnlyDictionary<string, IEnumerable<string>?>? ClientRoles,
     int? NotBefore,
     IEnumerable<string>? Groups,
-    string? ServiceAccountClientId
+    string? ServiceAccountClientId,
+    UserAccessModel? Access,
+    IEnumerable<UserConsentModel>? ClientConsents,
+    string? FederationLink,
+    string? Origin,
+    string? Self
+);
+
+public record UserAccessModel(
+    bool? ManageGroupMembership,
+    bool? View,
+    bool? MapRoles,
+    bool? Impersonate,
+    bool? Manage
+);
+
+public record UserConsentModel(
+    string? ClientId,
+    IEnumerable<string>? GrantedClientScopes,
+    long? CreatedDate,
+    long? LastUpdatedDate
 );
 
 public record CredentialsModel(
     string? Algorithm,
-    IReadOnlyDictionary<string, string>? Config,
+    IReadOnlyDictionary<string, string?>? Config,
     int? Counter,
     long? CreatedDate,
     string? Device,
@@ -198,8 +218,7 @@ public record CredentialsModel(
     string? Salt,
     bool? Temporary,
     string? Type,
-    string? Value,
-    string? UserLabel
+    string? Value
 );
 
 public record FederatedIdentityModel(
