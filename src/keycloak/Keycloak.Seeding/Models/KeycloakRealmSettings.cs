@@ -259,6 +259,11 @@ public class UserSettings
     [DistinctValues]
     public IEnumerable<string>? Groups { get; set; }
     public string? ServiceAccountClientId { get; set; }
+    public UserAccessSettings? Access { get; set; }
+    public IEnumerable<ClientConsentSettings>? ClientConsents { get; set; }
+    public string? FederationLink { get; set; }
+    public string? Origin { get; set; }
+    public string? Self { get; set; }
 }
 
 public class CredentialsSettings
@@ -277,7 +282,6 @@ public class CredentialsSettings
     public bool? Temporary { get; set; }
     public string? Type { get; set; }
     public string? Value { get; set; }
-    public string? UserLabel { get; set; }
 }
 
 public class CredentialsConfigSettings
@@ -303,6 +307,24 @@ public class FederatedIdentitySettings
     public string? UserId { get; set; }
     [Required]
     public string? UserName { get; set; }
+}
+
+public class UserAccessSettings
+{
+    public bool? ManageGroupMembership { get; set; }
+    public bool? View { get; set; }
+    public bool? MapRoles { get; set; }
+    public bool? Impersonate { get; set; }
+    public bool? Manage { get; set; }
+}
+
+public class ClientConsentSettings
+{
+    [Required]
+    public string? ClientId { get; set; }
+    public IEnumerable<string>? GrantedClientScopes { get; set; }
+    public long? CreatedDate { get; set; }
+    public long? LastUpdatedDate { get; set; }
 }
 
 public class GroupSettings

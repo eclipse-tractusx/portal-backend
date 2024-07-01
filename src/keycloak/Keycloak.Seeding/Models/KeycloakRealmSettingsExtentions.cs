@@ -198,10 +198,43 @@ public static class KeycloakRealmSettingsExtentions
             groupSettings.ClientRoles?.Select(ToModel)?.ToImmutableDictionary(),
             groupSettings.SubGroups);
 
+    public static KeyValuePair<string, string?> ToModel(CredentialsConfigSettings credentialsConfigSettings) =>
+        KeyValuePair.Create(
+            credentialsConfigSettings.Name ?? throw new ConfigurationException("credentialsConfig name must not be null"),
+            credentialsConfigSettings.Value);
+
+    private static CredentialsModel ToModel(CredentialsSettings credentialsSettings) =>
+        new(credentialsSettings.Algorithm,
+            credentialsSettings.Config?.Select(ToModel)?.ToImmutableDictionary(),
+            credentialsSettings.Counter,
+            credentialsSettings.CreatedDate,
+            credentialsSettings.Device,
+            credentialsSettings.Digits,
+            credentialsSettings.HashIterations,
+            credentialsSettings.HashSaltedValue,
+            credentialsSettings.Period,
+            credentialsSettings.Salt,
+            credentialsSettings.Temporary,
+            credentialsSettings.Type,
+            credentialsSettings.Value);
+
     private static FederatedIdentityModel ToModel(FederatedIdentitySettings federatedIdentitySettings) =>
         new(federatedIdentitySettings.IdentityProvider,
             federatedIdentitySettings.UserId,
             federatedIdentitySettings.UserName);
+
+    private static UserAccessModel ToModel(this UserAccessSettings userAccessSettings) =>
+        new(userAccessSettings.ManageGroupMembership,
+            userAccessSettings.View,
+            userAccessSettings.MapRoles,
+            userAccessSettings.Impersonate,
+            userAccessSettings.Manage);
+
+    private static UserConsentModel ToModel(ClientConsentSettings clientConsentSettings) =>
+        new(clientConsentSettings.ClientId,
+            clientConsentSettings.GrantedClientScopes,
+            clientConsentSettings.CreatedDate,
+            clientConsentSettings.LastUpdatedDate);
 
     private static UserModel ToModel(UserSettings userSettings) =>
         new(userSettings.Id,
@@ -214,7 +247,7 @@ public static class KeycloakRealmSettingsExtentions
             userSettings.LastName,
             userSettings.Email,
             userSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
-            userSettings.Credentials,
+            userSettings.Credentials?.Select(ToModel),
             userSettings.DisableableCredentialTypes,
             userSettings.RequiredActions,
             userSettings.FederatedIdentities?.Select(ToModel),
@@ -222,7 +255,12 @@ public static class KeycloakRealmSettingsExtentions
             userSettings.ClientRoles?.Select(ToModel)?.ToImmutableDictionary(),
             userSettings.NotBefore,
             userSettings.Groups,
-            userSettings.ServiceAccountClientId);
+            userSettings.ServiceAccountClientId,
+            userSettings.Access?.ToModel(),
+            userSettings.ClientConsents?.Select(ToModel),
+            userSettings.FederationLink,
+            userSettings.Origin,
+            userSettings.Self);
 
     private static ScopeMappingModel ToModel(ScopeMappingSettings scopeMappingSettings) =>
         new(scopeMappingSettings.ClientScope,
