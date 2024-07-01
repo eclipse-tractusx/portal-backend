@@ -331,12 +331,13 @@ public partial class KeycloakClient
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task RealmPartialImportAsync(string realm, PartialImport rep) =>
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
+    public async Task<PartialImportResponse> RealmPartialImportAsync(string realm, PartialImport rep, CancellationToken cancellationToken = default) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/partialImport")
-            .PostJsonAsync(rep)
+            .PostJsonAsync(rep, cancellationToken)
+            .ReceiveJson<PartialImportResponse>()
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<GlobalRequestResult> PushRealmRevocationPolicyAsync(string realm)
