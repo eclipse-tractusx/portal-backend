@@ -204,7 +204,7 @@ public static class KeycloakRealmExtensions
             right.LastName ?? left.LastName,
             right.Email ?? left.Email,
             Merge(left.Attributes, right.Attributes, x => x.Key, (left, right) => right)?.ToDictionary(),
-            right.Credentials ?? left.Credentials, // TODO: this is defined as IEnumerable<object>?
+            right.Credentials ?? left.Credentials,
             right.DisableableCredentialTypes ?? left.DisableableCredentialTypes,
             right.RequiredActions ?? left.RequiredActions,
             Merge(left.FederatedIdentities, right.FederatedIdentities, x => x.IdentityProvider, MergeFederatedIdentity),
@@ -212,7 +212,12 @@ public static class KeycloakRealmExtensions
             Merge(left.ClientRoles, right.ClientRoles, x => x.Key, (left, right) => right)?.ToDictionary(),
             right.NotBefore ?? left.NotBefore,
             right.Groups ?? left.Groups,
-            right.ServiceAccountClientId ?? left.ServiceAccountClientId);
+            right.ServiceAccountClientId ?? left.ServiceAccountClientId,
+            right.Access ?? left.Access,
+            right.ClientConsents ?? left.ClientConsents,
+            right.FederationLink ?? left.FederationLink,
+            right.Origin ?? left.Origin,
+            right.Self ?? left.Self);
 
     private static FederatedIdentityModel MergeFederatedIdentity(FederatedIdentityModel left, FederatedIdentityModel right) =>
         new(right.IdentityProvider ?? left.IdentityProvider,
