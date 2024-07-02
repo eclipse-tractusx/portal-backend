@@ -51,4 +51,12 @@ public interface IDimService
     /// <param name="technicalUserData">Data for the technical user creation</param>
     /// <param name="cancellationToken">The CancellationToken</param>
     Task CreateTechnicalUser(string bpn, TechnicalUserData technicalUserData, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Delete a technical user for the wallet of the company with the given bpn
+    /// </summary>
+    /// <param name="bpn">Bpn of the company the technical user should be created for</param>
+    /// <param name="technicalUserData">Data for the technical user creation</param>
+    /// <param name="cancellationToken">The CancellationToken</param>
+    Task DeleteTechnicalUser(string bpn, TechnicalUserData technicalUserData, CancellationToken cancellationToken);
 }

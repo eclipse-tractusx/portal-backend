@@ -38,4 +38,5 @@ public interface IProcessStepRepository
     IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId);
     public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
 }

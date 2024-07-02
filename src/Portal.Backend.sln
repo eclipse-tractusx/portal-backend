@@ -270,9 +270,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BpnDidResolver.Library", "e
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BpnDidResolver.Library.Tests", "..\tests\externalsystems\BpnDidResolver.Library.Tests\BpnDidResolver.Library.Tests.csproj", "{C8E23437-963C-4277-8A65-FDE330C20AAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DimUserCreationProcess.Executor", "processes\DimUserCreationProcess.Executor\DimUserCreationProcess.Executor.csproj", "{AD692510-23BA-4021-A44D-DE480A771C23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DimUserProcess.Executor", "processes\DimUserProcess.Executor\DimUserProcess.Executor.csproj", "{AD692510-23BA-4021-A44D-DE480A771C23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DimUserCreationProcess.Executor.Tests", "..\tests\processes\DimUserCreationProcess.Executor.Tests\DimUserCreationProcess.Executor.Tests.csproj", "{143433B2-2792-4C5F-A3C2-E5C91D68E30D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DimUserProcess.Executor.Tests", "..\tests\processes\DimUserProcess.Executor.Tests\DimUserProcess.Executor.Tests.csproj", "{143433B2-2792-4C5F-A3C2-E5C91D68E30D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityProviderProvisioning.Executor", "processes\IdentityProviderProvisioning.Executor\IdentityProviderProvisioning.Executor.csproj", "{9636BEC8-6929-4852-8DC8-8B41609630A3}"
 EndProject

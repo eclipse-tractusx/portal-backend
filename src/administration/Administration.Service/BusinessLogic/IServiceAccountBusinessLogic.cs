@@ -36,4 +36,5 @@ public interface IServiceAccountBusinessLogic
     Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive, IEnumerable<UserStatusId>? userStatusIds);
     IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName);
     Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData);
+    Task HandleServiceAccountDeletionCallback(Guid processId);
 }

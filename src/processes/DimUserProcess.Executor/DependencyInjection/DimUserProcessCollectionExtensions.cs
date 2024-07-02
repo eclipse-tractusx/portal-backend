@@ -25,13 +25,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
 
-public static class DimUserCreationProcessCollectionExtensions
+public static class DimUserProcessCollectionExtensions
 {
-    public static IServiceCollection AddDimUserCreationProcessExecutor(this IServiceCollection services,
+    public static IServiceCollection AddDimUserProcessExecutor(this IServiceCollection services,
         IConfiguration config) =>
         services
             .AddIdpManagement(config)
-            .AddTransient<IDimUserCreationProcessService, DimUserCreationProcessService>()
-            .AddTransient<IProcessTypeExecutor, DimUserCreationProcessTypeExecutor>()
+            .AddTransient<IDimUserProcessService, DimUserProcessService>()
+            .AddTransient<IProcessTypeExecutor, DimUserProcessTypeExecutor>()
             .AddDimService(config.GetSection("Dim"));
 }

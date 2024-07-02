@@ -21,7 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
 
-public interface IDimUserCreationProcessService
+public interface IDimUserProcessService
 {
-    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDeleteDimUser(Guid processId, Guid dimServiceAccountId, bool createUser, CancellationToken cancellationToken);
 }
