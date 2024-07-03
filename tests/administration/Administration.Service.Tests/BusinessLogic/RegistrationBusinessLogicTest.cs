@@ -530,6 +530,22 @@ public class RegistrationBusinessLogicTest
     }
 
     [Fact]
+    public async Task DeclineRegistrationVerification_WithNoComment_ThrowsConflictException()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(applicationId))
+            .Returns<(Guid, string, Guid?, IEnumerable<(Guid, string, IdentityProviderTypeId, IEnumerable<Guid>)>, IEnumerable<Guid>)>(default);
+        Task Act() => _logic.DeclineRegistrationVerification(applicationId, "", CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("No comment set.");
+    }
+
+    [Fact]
     public async Task DeclineRegistrationVerification_WithMultipleIdps_CallsExpected()
     {
         // Arrange
