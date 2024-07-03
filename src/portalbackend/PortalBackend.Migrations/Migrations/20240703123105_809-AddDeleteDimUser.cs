@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 #nullable disable
 
@@ -31,6 +32,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "lock_expiry_date",
+                schema: "portal",
+                table: "company_service_accounts",
+                type: "timestamp with time zone",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "version",
+                schema: "portal",
+                table: "company_service_accounts",
+                type: "uuid",
+                nullable: false,
+                defaultValue: Guid.NewGuid());
+
             migrationBuilder.InsertData(
                 schema: "portal",
                 table: "process_step_types",
@@ -63,6 +79,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 802);
+
+            migrationBuilder.DropColumn(
+                name: "lock_expiry_date",
+                schema: "portal",
+                table: "company_service_accounts");
+
+            migrationBuilder.DropColumn(
+                name: "version",
+                schema: "portal",
+                table: "company_service_accounts");
         }
     }
 }

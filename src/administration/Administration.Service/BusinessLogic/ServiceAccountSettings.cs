@@ -40,6 +40,8 @@ public class ServiceAccountSettings
     [Required]
     [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    public int LockExpirySeconds { get; set; }
 }
 
 public static class ServiceAccountSettingsExtensions

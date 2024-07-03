@@ -18,17 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountWithRoleDataClientId(
-    Guid ServiceAccountId,
+    CompanyServiceAccount ServiceAccount,
     UserStatusId UserStatusId,
-    string Name,
-    string Description,
-    CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    CompanyServiceAccountKindId CompanyServiceAccountKindId,
-    Guid? OfferSubscriptionId,
-    string? ClientClientId,
     IEnumerable<UserRoleData> UserRoleDatas);

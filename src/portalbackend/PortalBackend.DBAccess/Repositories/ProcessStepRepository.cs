@@ -137,11 +137,11 @@ public class ProcessStepRepository : IProcessStepRepository
             )
             .SingleOrDefaultAsync();
 
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, CompanyServiceAccount? ServiceAccount)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
             .AsNoTracking()
             .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
-            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, CompanyServiceAccount?>(
                 x.ProcessTypeId,
                 new VerifyProcessData(
                     x,
@@ -149,7 +149,7 @@ public class ProcessStepRepository : IProcessStepRepository
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
-                x.DimUserCreationData!.ServiceAccountId)
+                x.DimUserCreationData!.ServiceAccount)
             )
             .SingleOrDefaultAsync();
 }

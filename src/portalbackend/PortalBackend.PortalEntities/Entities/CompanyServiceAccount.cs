@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
@@ -24,15 +25,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount : IBaseEntity
+public class CompanyServiceAccount : IBaseEntity, ILockableEntity
 {
-    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId)
+    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId, Guid version)
     {
         Id = id;
         Name = name;
         Description = description;
         CompanyServiceAccountTypeId = companyServiceAccountTypeId;
         CompanyServiceAccountKindId = companyServiceAccountKindId;
+        Version = version;
         AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
 
@@ -50,6 +52,11 @@ public class CompanyServiceAccount : IBaseEntity
     public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
     public CompanyServiceAccountKindId CompanyServiceAccountKindId { get; set; }
     public Guid? OfferSubscriptionId { get; set; }
+
+    [ConcurrencyCheck]
+    public Guid Version { get; set; }
+
+    public DateTimeOffset? LockExpiryDate { get; set; }
 
     // Navigation properties
     public virtual Identity? Identity { get; set; }

@@ -93,8 +93,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
-        result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
+        result!.ServiceAccount.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
+        result.ServiceAccount.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
     }
 
     [Fact]

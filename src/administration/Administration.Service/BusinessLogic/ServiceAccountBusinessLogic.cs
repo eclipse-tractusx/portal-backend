@@ -21,9 +21,12 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -43,11 +46,13 @@ public class ServiceAccountBusinessLogic(
     IPortalRepositories portalRepositories,
     IOptions<ServiceAccountSettings> options,
     IServiceAccountCreation serviceAccountCreation,
-    IIdentityService identityService)
+    IIdentityService identityService,
+    IDateTimeProvider dateTimeProvider)
     : IServiceAccountBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly ServiceAccountSettings _settings = options.Value;
+    private readonly TimeSpan lockExpiryTime = new(options.Value.LockExpirySeconds * 10000000L);
 
     private const string CompanyId = "companyId";
 
@@ -114,15 +119,23 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT);
         }
 
-        portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
+        if (!result.ServiceAccount.TryLock(dateTimeProvider.OffsetNow.Add(lockExpiryTime)))
         {
-            i.UserStatusId = UserStatusId.INACTIVE;
-        });
+            throw UnexpectedConditionException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_LOCKED, [new("serviceAccountId", serviceAccountId.ToString())]);
+        }
+
+        // save the lock of the service account here to make sure no process overwrites it
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        portalRepositories.Clear();
 
         // serviceAccount
         if (!string.IsNullOrWhiteSpace(result.ClientClientId) && !result.IsDimServiceAccount)
         {
             await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
+            {
+                i.UserStatusId = UserStatusId.INACTIVE;
+            });
         }
 
         if (result.IsDimServiceAccount)
@@ -151,6 +164,7 @@ public class ServiceAccountBusinessLogic(
                 });
         }
 
+        result.ServiceAccount.ReleaseLock();
         return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -170,10 +184,10 @@ public class ServiceAccountBusinessLogic(
         if (result.DimServiceAccountData != null)
         {
             iamClientAuthMethod = IamClientAuthMethod.SECRET;
-            secret = Decrypt(
+            var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
+            secret = cryptoHelper.Decrypt(
                 result.DimServiceAccountData.ClientSecret,
-                result.DimServiceAccountData.InitializationVector,
-                result.DimServiceAccountData.EncryptionMode);
+                result.DimServiceAccountData.InitializationVector);
         }
         else if (result.ClientClientId != null)
         {
@@ -203,23 +217,6 @@ public class ServiceAccountBusinessLogic(
             result.CompanyLastEditorData!.Name,
             result.CompanyLastEditorData.CompanyName,
             result.SubscriptionId);
-    }
-
-    private string Decrypt(byte[]? clientSecret, byte[]? initializationVector, int? encryptionMode)
-    {
-        if (clientSecret == null)
-        {
-            throw new ConflictException("ClientSecret must not be null");
-        }
-
-        if (encryptionMode == null)
-        {
-            throw new ConflictException("EncryptionMode must not be null");
-        }
-
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == encryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {encryptionMode} is not configured");
-
-        return CryptoHelper.Decrypt(clientSecret, initializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
     }
 
     public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId)
@@ -275,16 +272,25 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
         }
 
-        if (result.ClientClientId == null)
+        if (result.ServiceAccount.ClientClientId == null)
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString())]);
         }
 
+        if (!result.ServiceAccount.TryLock(dateTimeProvider.OffsetNow.Add(lockExpiryTime)))
+        {
+            throw UnexpectedConditionException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_LOCKED, [new("serviceAccountId", serviceAccountId.ToString())]);
+        }
+
+        // save the lock of the service account here to make sure no process overwrites it
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        portalRepositories.Clear();
+
         ClientAuthData? authData;
-        if (result.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
+        if (result.ServiceAccount.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
         {
             var internalClientId = await provisioningManager.UpdateCentralClientAsync(
-                result.ClientClientId,
+                result.ServiceAccount.ClientClientId,
                 new ClientConfigData(
                     serviceAccountDetails.Name,
                     serviceAccountDetails.Description,
@@ -301,8 +307,8 @@ public class ServiceAccountBusinessLogic(
             serviceAccountId,
             sa =>
             {
-                sa.Name = result.Name;
-                sa.Description = result.Description;
+                sa.Name = result.ServiceAccount.Name;
+                sa.Description = result.ServiceAccount.Description;
             },
             sa =>
             {
@@ -310,19 +316,20 @@ public class ServiceAccountBusinessLogic(
                 sa.Description = serviceAccountDetails.Description;
             });
 
+        result.ServiceAccount.ReleaseLock();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new ServiceAccountDetails(
-            result.ServiceAccountId,
-            result.ClientClientId,
+            result.ServiceAccount.Id,
+            result.ServiceAccount.ClientClientId,
             serviceAccountDetails.Name,
             serviceAccountDetails.Description,
             result.UserStatusId,
             authData?.IamClientAuthMethod,
             result.UserRoleDatas,
-            result.CompanyServiceAccountTypeId,
+            result.ServiceAccount.CompanyServiceAccountTypeId,
             authData?.Secret,
-            result.OfferSubscriptionId);
+            result.ServiceAccount.OfferSubscriptionId);
     }
 
     public Task<Pagination.Response<CompanyServiceAccountData>> GetOwnCompanyServiceAccountsDataAsync(int page, int size, string? clientId, bool? isOwner, bool filterForInactive, IEnumerable<UserStatusId>? userStatusIds)
@@ -387,27 +394,45 @@ public class ServiceAccountBusinessLogic(
         portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId,
             i => { i.UserStatusId = UserStatusId.PENDING; },
             i => { i.UserStatusId = UserStatusId.ACTIVE; });
+
         serviceAccountRepository.AttachAndModifyCompanyServiceAccount(serviceAccountId,
             sa => { sa.ClientClientId = null; },
             sa => { sa.ClientClientId = callbackData.ClientId; });
 
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
-        var (secret, initializationVector) = CryptoHelper.Encrypt(callbackData.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
+        var (secret, initializationVector) = cryptoHelper.Encrypt(callbackData.ClientSecret);
 
         serviceAccountRepository.CreateDimCompanyServiceAccount(serviceAccountId, callbackData.AuthenticationServiceUrl, secret, initializationVector, _settings.EncryptionConfigIndex);
     }
 
     public async Task HandleServiceAccountDeletionCallback(Guid processId)
     {
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountDeletionCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+        var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
+            .GetProcessDataForServiceAccountDeletionCallback(processId,
+                [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER, portalRepositories, () => $"externalId {processId}");
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER,
+            portalRepositories, () => $"externalId {processId}");
 
-        if (processData.ServiceAccountId is null)
+        if (processData.ServiceAccount is null)
         {
             throw new ConflictException($"ServiceAccountId must be set for process {processId}");
         }
+
+        if (!processData.ServiceAccount.TryLock(dateTimeProvider.OffsetNow.Add(lockExpiryTime)))
+        {
+            throw UnexpectedConditionException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_LOCKED, [new("serviceAccountId", processData.ServiceAccount.Id.ToString())]);
+        }
+
+        // save the lock of the service account here to make sure no process overwrites it
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        portalRepositories.Clear();
+
+        portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(processData.ServiceAccount.Id, null, i =>
+        {
+            i.UserStatusId = UserStatusId.INACTIVE;
+        });
 
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);

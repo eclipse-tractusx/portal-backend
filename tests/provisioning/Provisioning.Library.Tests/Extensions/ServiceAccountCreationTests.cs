@@ -387,7 +387,8 @@ public class ServiceAccountCreationTests
                     name,
                     description,
                     companyServiceAccountTypeId,
-                    companyServiceAccountKindId)
+                    companyServiceAccountKindId,
+                    Guid.NewGuid())
                 {
                     ClientClientId = clientClientId
                 };
