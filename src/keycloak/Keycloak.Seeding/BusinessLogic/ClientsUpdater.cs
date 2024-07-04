@@ -67,25 +67,39 @@ public class ClientsUpdater : IClientsUpdater
             if (client.Id == null)
                 throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
 
-            if (!CompareClient(client, update))
-            {
-                var updateClient = CreateUpdateClient(client, update);
-                await keycloak.UpdateClientAsync(
-                    realm,
-                    client.Id,
-                    updateClient,
-                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
-
-            await UpdateClientProtocollMappers(keycloak, realm, client.Id, client, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await UpdateClient(
+                keycloak,
+                realm,
+                client.Id,
+                client,
+                update,
+                cancellationToken
+            ).ConfigureAwait(ConfigureAwaitOptions.None);
 
             yield return (update.ClientId, client.Id);
         }
     }
 
+    private static async Task UpdateClient(KeycloakClient keycloak, string realm, string idOfClient, Client client, ClientModel seedClient, CancellationToken cancellationToken)
+    {
+        if (!CompareClient(client, seedClient))
+        {
+            var updateClient = CreateUpdateClient(client, seedClient);
+            await keycloak.UpdateClientAsync(
+                realm,
+                idOfClient,
+                updateClient,
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+
+        await UpdateClientProtocollMappers(keycloak, realm, idOfClient, client, seedClient, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateDefaultClientScopes(keycloak, realm, idOfClient, client, seedClient, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateOptionalClientScopes(keycloak, realm, idOfClient, client, seedClient, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
     private static async Task UpdateClientProtocollMappers(KeycloakClient keycloak, string realm, string clientId, Client client, ClientModel update, CancellationToken cancellationToken)
     {
-        var clientProtocolMappers = client.ProtocolMappers ?? Enumerable.Empty<ClientProtocolMapper>();
+        var clientProtocolMappers = client.ProtocolMappers ?? Enumerable.Empty<ProtocolMapper>();
         var updateProtocolMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
 
         await DeleteObsoleteClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -93,7 +107,7 @@ public class ClientsUpdater : IClientsUpdater
         await UpdateExistingClientProtocolMappers(keycloak, realm, clientId, clientProtocolMappers, updateProtocolMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task DeleteObsoleteClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ClientProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
+    private static async Task DeleteObsoleteClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
     {
         foreach (var mapper in clientProtocolMappers.ExceptBy(updateProtocolMappers.Select(x => x.Name), x => x.Name))
         {
@@ -105,7 +119,7 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static async Task CreateMissingClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ClientProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
+    private static async Task CreateMissingClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
     {
         foreach (var update in updateProtocolMappers.ExceptBy(clientProtocolMappers.Select(x => x.Name), x => x.Name))
         {
@@ -117,7 +131,7 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
-    private static async Task UpdateExistingClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ClientProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
+    private static async Task UpdateExistingClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, IEnumerable<ProtocolMapper> clientProtocolMappers, IEnumerable<ProtocolMapperModel> updateProtocolMappers, CancellationToken cancellationToken)
     {
         foreach (var (mapper, update) in clientProtocolMappers
             .Join(
@@ -126,7 +140,7 @@ public class ClientsUpdater : IClientsUpdater
                 x => x.Name,
                 (mapper, update) => (Mapper: mapper, Update: update))
             .Where(
-                x => !CompareClientProtocolMapper(x.Mapper, x.Update)))
+                x => !ProtocolMappersUpdater.CompareProtocolMapper(x.Mapper, x.Update)))
         {
             await keycloak.UpdateClientProtocolMapperAsync(
                 realm,
@@ -137,8 +151,59 @@ public class ClientsUpdater : IClientsUpdater
         }
     }
 
+    private static async Task UpdateOptionalClientScopes(KeycloakClient keycloak, string realm, string clientId, Client client, ClientModel update, CancellationToken cancellationToken)
+    {
+        var optionalScopes = client.OptionalClientScopes ?? Enumerable.Empty<string>();
+        var updateScopes = update.OptionalClientScopes ?? Enumerable.Empty<string>();
+
+        await DeleteObsoleteOptionalClientScopes(keycloak, realm, clientId, optionalScopes, updateScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingOptionalClientScopes(keycloak, realm, clientId, optionalScopes, updateScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private static async Task DeleteObsoleteOptionalClientScopes(KeycloakClient keycloak, string realm, string clientId, IEnumerable<string> optionalScopes, IEnumerable<string> updateScopes, CancellationToken cancellationToken)
+    {
+        foreach (var scope in optionalScopes.Except(updateScopes))
+        {
+            await keycloak.DeleteOptionalClientScopeAsync(realm, clientId, scope, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task CreateMissingOptionalClientScopes(KeycloakClient keycloak, string realm, string clientId, IEnumerable<string> optionalScopes, IEnumerable<string> updateScopes, CancellationToken cancellationToken)
+    {
+        foreach (var scope in updateScopes.Except(optionalScopes))
+        {
+            await keycloak.UpdateOptionalClientScopeAsync(realm, clientId, scope, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task UpdateDefaultClientScopes(KeycloakClient keycloak, string realm, string clientId, Client client, ClientModel update, CancellationToken cancellationToken)
+    {
+        var defaultScopes = client.DefaultClientScopes ?? Enumerable.Empty<string>();
+        var updateScopes = update.DefaultClientScopes ?? Enumerable.Empty<string>();
+
+        await DeleteObsoleteDefaultClientScopes(keycloak, realm, clientId, defaultScopes, updateScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingDefaultClientScopes(keycloak, realm, clientId, defaultScopes, updateScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private static async Task DeleteObsoleteDefaultClientScopes(KeycloakClient keycloak, string realm, string clientId, IEnumerable<string> optionalScopes, IEnumerable<string> updateScopes, CancellationToken cancellationToken)
+    {
+        foreach (var scope in optionalScopes.Except(updateScopes))
+        {
+            await keycloak.DeleteDefaultClientScopeAsync(realm, clientId, scope, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task CreateMissingDefaultClientScopes(KeycloakClient keycloak, string realm, string clientId, IEnumerable<string> optionalScopes, IEnumerable<string> updateScopes, CancellationToken cancellationToken)
+    {
+        foreach (var scope in updateScopes.Except(optionalScopes))
+        {
+            await keycloak.UpdateDefaultClientScopeAsync(realm, clientId, scope, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
     private static Client CreateUpdateClient(Client? client, ClientModel update) => new()
     {
+        // DefaultClientScopes and OptionalClientScopes are not in scope
         Id = client?.Id,
         ClientId = update.ClientId,
         RootUrl = update.RootUrl,
@@ -207,8 +272,6 @@ public class ClientsUpdater : IClientsUpdater
         client.AuthenticationFlowBindingOverrides.NullOrContentEqual(update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()) &&
         client.FullScopeAllowed == update.FullScopeAllowed &&
         client.NodeReregistrationTimeout == update.NodeReRegistrationTimeout &&
-        client.DefaultClientScopes.NullOrContentEqual(update.DefaultClientScopes) &&
-        client.OptionalClientScopes.NullOrContentEqual(update.OptionalClientScopes) &&
         CompareClientAccess(client.Access, update.Access) &&
         client.AuthorizationServicesEnabled == update.AuthorizationServicesEnabled &&
         client.Secret == update.Secret;
@@ -219,36 +282,4 @@ public class ClientsUpdater : IClientsUpdater
         access.Configure == updateAccess.Configure &&
         access.Manage == updateAccess.Manage &&
         access.View == updateAccess.View;
-
-    private static bool CompareClientProtocolMapper(ClientProtocolMapper mapper, ProtocolMapperModel update) =>
-        mapper.Name == update.Name &&
-        mapper.Protocol == update.Protocol &&
-        mapper.ProtocolMapper == update.ProtocolMapper &&
-        mapper.ConsentRequired == update.ConsentRequired &&
-        (mapper.Config == null && update.Config == null ||
-        mapper.Config != null && update.Config != null &&
-        CompareClientProtocolMapperConfig(mapper.Config, update.Config));
-
-    private static bool CompareClientProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string?> update) =>
-        config.Single == update.GetValueOrDefault("single") &&
-        config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
-        config.AttributeName == update.GetValueOrDefault("attribute.name") &&
-        config.UserInfoTokenClaim == update.GetValueOrDefault("userinfo.token.claim") &&
-        config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
-        config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&
-        config.AccessTokenClaim == update.GetValueOrDefault("access.token.claim") &&
-        config.IntrospectionTokenClaim == update.GetValueOrDefault("introspection.token.claim") &&
-        config.LightweightClaim == update.GetValueOrDefault("lightweight.claim") &&
-        config.ClaimName == update.GetValueOrDefault("claim.name") &&
-        config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
-        config.UserAttributeFormatted == update.GetValueOrDefault("user.attribute.formatted") &&
-        config.UserAttributeCountry == update.GetValueOrDefault("user.attribute.country") &&
-        config.UserAttributePostalCode == update.GetValueOrDefault("user.attribute.postal_code") &&
-        config.UserAttributeStreet == update.GetValueOrDefault("user.attribute.street") &&
-        config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
-        config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
-        config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
-        config.IncludedCustomAudience == update.GetValueOrDefault("included.custom.audience") &&
-        config.Multivalued == update.GetValueOrDefault("multivalued") &&
-        config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }
