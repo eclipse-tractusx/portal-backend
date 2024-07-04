@@ -463,6 +463,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     public async Task DeclineRegistrationVerification(Guid applicationId, string comment, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ConflictException("No comment set.");
+        }
+
         var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
@@ -546,11 +551,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private void PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
     {
-        if (string.IsNullOrWhiteSpace(comment))
-        {
-            throw new ConflictException("No comment set.");
-        }
-
         foreach (var user in emailData)
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
