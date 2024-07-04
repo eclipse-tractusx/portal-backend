@@ -42,7 +42,7 @@ public class CompanyDataBusinessLogic(
     IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
     IOptions<CompanyDataSettings> options) : ICompanyDataBusinessLogic
 {
-    private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex BpnsRegex = new(ValidationExpressions.Bpns, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex EcmRegex = new(ValidationExpressions.ExternalCertificateNumber, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IIdentityData _identityData = identityService.IdentityData;
@@ -246,27 +246,27 @@ public class CompanyDataBusinessLogic(
     {
         if (data.ExternalCertificateNumber != null && !EcmRegex.IsMatch(data.ExternalCertificateNumber))
         {
-            throw new ControllerArgumentException("ExternalCertificateNumber must be alphanumeric and length should not be greater than 36", nameof(data.ExternalCertificateNumber));
+            throw new ControllerArgumentException("ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
         }
 
-        if (data.Sites != null && data.Sites.Any() && data.Sites!.Any(bpn => !BpnRegex.IsMatch(bpn)))
+        if (data.Sites != null && data.Sites.Any() && data.Sites!.Any(bpn => !BpnsRegex.IsMatch(bpn)))
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNL", nameof(data.Sites));
+            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNS");
         }
 
         if (data.ValidFrom?.ToUniversalTime() > DateTimeOffset.Now.ToUniversalTime())
         {
-            throw new ControllerArgumentException("ValidFrom date should not be greater than current date", nameof(data.ValidFrom));
+            throw new ControllerArgumentException("ValidFrom date should not be greater than current date");
         }
 
         if (data.ValidTill?.ToUniversalTime() < DateTimeOffset.Now.ToUniversalTime())
         {
-            throw new ControllerArgumentException("ValidTill date should be greater than current date", nameof(data.ValidTill));
+            throw new ControllerArgumentException("ValidTill date should be greater than current date");
         }
 
         if (data.Issuer != null && !Company.IsMatch(data.Issuer!))
         {
-            throw new ControllerArgumentException("Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(data.Issuer));
+            throw new ControllerArgumentException("Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
         }
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();

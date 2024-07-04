@@ -726,7 +726,7 @@ public class CompanyDataBusinessLogicTests
         var validTill = DateTime.UtcNow.AddDays(2);
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
         var externalCertificateNumber = "2345678";
-        var sites = new[] { "BPNL00000003CRHK" };
+        var sites = new[] { "BPNS00000003CRHK" };
         var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, validFrom, validTill, "Accenture");
         var documentId = Guid.NewGuid();
         var documents = new List<Document>();
@@ -785,6 +785,111 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"{CompanyCertificateTypeId.IATF} is not assigned to a certificate");
     }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerArgumentExceptionForExternalCertificateNumber()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "E4567@";
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, null, DateTime.UtcNow, DateTime.UtcNow.AddDays(2), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerBPNS()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNL00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, DateTime.UtcNow, DateTime.UtcNow.AddDays(2), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"BPN must contain exactly 16 characters and must be prefixed with BPNS");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForValidFromDate()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, DateTime.UtcNow.AddDays(2), DateTime.UtcNow.AddDays(2), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ValidFrom date should not be greater than current date");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForValidTillDate()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, DateTime.UtcNow, DateTime.UtcNow, null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ValidTill date should be greater than current date");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForIssuer()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, DateTime.UtcNow, DateTime.UtcNow.AddDays(2), "+ACC");
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+    }
+
     #endregion
 
     #region GetCompanyCertificateWithBpnNumber
