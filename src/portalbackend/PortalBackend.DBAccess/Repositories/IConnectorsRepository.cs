@@ -105,4 +105,5 @@ public interface IConnectorsRepository
     ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId);
 
     void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions);
+    Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument();
 }

@@ -19,6 +19,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -411,4 +412,16 @@ public class CompanyRepository(PortalDbContext context)
     public void RemoveProviderCompanyDetails(Guid providerCompanyDetailId) =>
         context.ProviderCompanyDetails
             .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default));
+
+    public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() => (skip, take) => Pagination.CreateSourceQueryAsync(
+        skip,
+        take,
+        context.Companies.AsNoTracking()
+            .Where(x => x.CompanyStatusId == CompanyStatusId.ACTIVE && x.SelfDescriptionDocumentId == null)
+            .GroupBy(c => c.AddressId),
+        c => c.OrderByDescending(company => company.Name),
+        c => new CompanyMissingSdDocumentData(
+            c.Id,
+            c.Name)
+    ).SingleOrDefaultAsync();
 }

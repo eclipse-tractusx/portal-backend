@@ -205,4 +205,18 @@ public class ConnectorsRepository : IConnectorsRepository
     /// <inheritdoc />
     public void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions) =>
         _context.ConnectorAssignedOfferSubscriptions.RemoveRange(assignedOfferSubscriptions.Select(x => new ConnectorAssignedOfferSubscription(connectorId, x)));
+
+    public Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument() => (skip, take) => Pagination.CreateSourceQueryAsync(
+        skip,
+        take,
+        _context.Connectors.AsNoTracking()
+            .Where(x => x.StatusId == ConnectorStatusId.ACTIVE && x.SelfDescriptionDocumentId == null)
+            .GroupBy(c => c.ProviderId),
+        connector => connector.OrderByDescending(c => c.Name),
+        con => new ConnectorMissingSdDocumentData(
+            con.Id,
+            con.Name,
+            con.HostId ?? con.ProviderId,
+            con.HostId != null ? con.Host!.Name : con.Provider!.Name)
+    ).SingleOrDefaultAsync();
 }

@@ -39,19 +39,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "companydata")]
 [Produces("application/json")]
 [Consumes("application/json")]
-public class CompanyDataController : ControllerBase
+public class CompanyDataController(ICompanyDataBusinessLogic logic) : ControllerBase
 {
-    private readonly ICompanyDataBusinessLogic _logic;
-
-    /// <summary>
-    /// Creates a new instance of <see cref="CompanyDataController"/>
-    /// </summary>
-    /// <param name="logic">The company data business logic</param>
-    public CompanyDataController(ICompanyDataBusinessLogic logic)
-    {
-        _logic = logic;
-    }
-
     /// <summary>
     /// Gets the company with its address
     /// </summary>
@@ -66,7 +55,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(CompanyAddressDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<CompanyAddressDetailData> GetOwnCompanyDetailsAsync() =>
-        _logic.GetCompanyDetailsAsync();
+        logic.GetCompanyDetailsAsync();
 
     /// <summary>
     /// Gets the CompanyAssigned UseCase details
@@ -80,7 +69,7 @@ public class CompanyDataController : ControllerBase
     [Route("preferredUseCases")]
     [ProducesResponseType(typeof(CompanyAssignedUseCaseData), StatusCodes.Status200OK)]
     public IAsyncEnumerable<CompanyAssignedUseCaseData> GetCompanyAssigendUseCaseDetailsAsync() =>
-       _logic.GetCompanyAssigendUseCaseDetailsAsync();
+       logic.GetCompanyAssigendUseCaseDetailsAsync();
 
     /// <summary>
     /// Create the CompanyAssigned UseCase details
@@ -97,7 +86,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<StatusCodeResult> CreateCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data) =>
-        await _logic.CreateCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None)
+        await logic.CreateCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None)
             ? StatusCode((int)HttpStatusCode.Created)
             : NoContent();
 
@@ -118,7 +107,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> RemoveCompanyAssignedUseCaseDetailsAsync([FromBody] UseCaseIdDetails data)
     {
-        await _logic.RemoveCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.RemoveCompanyAssignedUseCaseDetailsAsync(data.useCaseId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -140,7 +129,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync([FromQuery] string? languageShortName = null) =>
-        _logic.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName);
+        logic.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName);
 
     /// <summary>
     /// Post the companyrole and Consent Details
@@ -167,7 +156,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> CreateCompanyRoleAndConsentAgreementDetailsAsync([FromBody] IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails)
     {
-        await _logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
+        await logic.CreateCompanyRoleAndConsentAgreementDetailsAsync(companyRoleConsentDetails);
         return NoContent();
     }
 
@@ -192,7 +181,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public Task<Guid> CreateUseCaseParticipation([FromForm] UseCaseParticipationCreationData data, CancellationToken cancellationToken) =>
-        this.WithBearerToken(token => _logic.CreateUseCaseParticipation(data, token, cancellationToken));
+        this.WithBearerToken(token => logic.CreateUseCaseParticipation(data, token, cancellationToken));
 
     /// <summary>
     /// Creates the Company Certificate request
@@ -215,7 +204,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<NoContentResult> CreateCompanyCertificate([FromForm] CompanyCertificateCreationData data, CancellationToken cancellationToken)
     {
-        await _logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.CreateCompanyCertificate(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -234,7 +223,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber) =>
-           _logic.GetCompanyCertificatesByBpn(businessPartnerNumber);
+           logic.GetCompanyCertificatesByBpn(businessPartnerNumber);
 
     /// <summary>
     /// Retrieves all company certificates with respect userId.
@@ -255,7 +244,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<CompanyCertificateData>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CertificateSorting? sorting = null, [FromQuery] CompanyCertificateStatusId? certificateStatus = null, [FromQuery] CompanyCertificateTypeId? certificateType = null) =>
-        _logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
+        logic.GetAllCompanyCertificatesAsync(page, size, sorting, certificateStatus, certificateType);
 
     /// <summary>
     /// Retrieves a specific company certificate document for the given documentid and companyuserid.
@@ -276,7 +265,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetCompanyCertificateSpecificDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentByCompanyIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (fileName, content, mediaType) = await logic.GetCompanyCertificateDocumentByCompanyIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, mediaType, fileName);
     }
 
@@ -301,7 +290,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult> GetCompanyCertificateDocumentContentFileAsync([FromRoute] Guid documentId)
     {
-        var (fileName, content, mediaType) = await _logic.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (fileName, content, mediaType) = await logic.GetCompanyCertificateDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         return File(content, mediaType, fileName);
     }
 
@@ -322,7 +311,7 @@ public class CompanyDataController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<int> DeleteCompanyCertificate([FromRoute] Guid documentId) =>
-        _logic.DeleteCompanyCertificateAsync(documentId);
+        logic.DeleteCompanyCertificateAsync(documentId);
 
     /// <summary>
     /// Rejects the given credential
@@ -336,5 +325,24 @@ public class CompanyDataController : ControllerBase
     [Route("decentralidentity/urls")]
     [ProducesResponseType(typeof(DimUrlsResponse), StatusCodes.Status200OK)]
     public Task<DimUrlsResponse> GetDimServiceUrls() =>
-        _logic.GetDimServiceUrls();
+        logic.GetDimServiceUrls();
+
+    /// <summary>
+    /// Retrieves all active companies with missing sd document.
+    /// </summary>
+    /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
+    /// <param name="size" example="15">Optional query parameter defining the number of companies listed per page.</param>
+    /// <returns>Paginated result of companies view models.</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/companyData/missing-sd-document <br />
+    /// Example: GET: /api/administration/companyData/missing-sd-document?page=0&amp;size=15
+    /// </remarks>
+    /// <response code="200">Returns a list of all active companies with missing sd document.</response>
+    [HttpGet]
+    [Route("missing-sd-document")]
+    [Authorize(Roles = "view_company_data")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Pagination.Response<CompanyMissingSdDocumentData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        logic.GetCompaniesWithMissingSdDocument(page, size);
 }

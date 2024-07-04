@@ -359,6 +359,13 @@ public class CompanyDataBusinessLogic(
         );
     }
 
+    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) => 
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            portalRepositories.GetInstance<ICompanyRepository>().GetCompaniesWithMissingSdDocument());
+
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
