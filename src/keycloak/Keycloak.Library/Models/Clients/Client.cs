@@ -24,7 +24,7 @@
  ********************************************************************************/
 
 using Newtonsoft.Json;
-
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Client
@@ -82,7 +82,7 @@ public class Client
     [JsonProperty("nodeReRegistrationTimeout")]
     public int? NodeReregistrationTimeout { get; set; }
     [JsonProperty("protocolMappers")]
-    public IEnumerable<ClientProtocolMapper>? ProtocolMappers { get; set; }
+    public IEnumerable<ProtocolMapper>? ProtocolMappers { get; set; }
     [JsonProperty("defaultClientScopes")]
     public IEnumerable<string>? DefaultClientScopes { get; set; }
     [JsonProperty("optionalClientScopes")]
