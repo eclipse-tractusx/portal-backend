@@ -54,7 +54,7 @@ public class UsersUpdater : IUsersUpdater
 
             if (user == null)
             {
-                var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser)).ConfigureAwait(ConfigureAwaitOptions.None);
+                var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
                 {
                     throw new ConflictException($"PartialImport failed to add user: {result}");

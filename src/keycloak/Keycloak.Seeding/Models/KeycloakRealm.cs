@@ -298,6 +298,51 @@ public record ProtocolMapperModel(
     IReadOnlyDictionary<string, string?>? Config
 );
 
+public record ProtocolMapperConfigModel(
+    [property: JsonPropertyName("single")]
+    string? Single,
+    [property: JsonPropertyName("attribute.nameformat")]
+    string? AttributeNameFormat,
+    [property: JsonPropertyName("attribute.name")]
+    string? AttributeName,
+    [property: JsonPropertyName("userinfo.token.claim")]
+    string? UserInfoTokenClaim,
+    [property: JsonPropertyName("user.attribute")]
+    string? UserAttribute,
+    [property: JsonPropertyName("id.token.claim")]
+    string? IdTokenClaim,
+    [property: JsonPropertyName("access.token.claim")]
+    string? AccessTokenClaim,
+    [property: JsonPropertyName("introspection.token.claim")]
+    string? IntrospectionTokenClaim,
+    [property: JsonPropertyName("lightweight.claim")]
+    string? LightweightClaim,
+    [property: JsonPropertyName("claim.name")]
+    string? ClaimName,
+    [property: JsonPropertyName("jsonType.label")]
+    string? JsonTypelabel,
+    [property: JsonPropertyName("user.attribute.formatted")]
+    string? UserAttributeFormatted,
+    [property: JsonPropertyName("user.attribute.country")]
+    string? UserAttributeCountry,
+    [property: JsonPropertyName("user.attribute.postal_code")]
+    string? UserAttributePostalCode,
+    [property: JsonPropertyName("user.attribute.street")]
+    string? UserAttributeStreet,
+    [property: JsonPropertyName("user.attribute.region")]
+    string? UserAttributeRegion,
+    [property: JsonPropertyName("user.attribute.locality")]
+    string? UserAttributeLocality,
+    [property: JsonPropertyName("included.client.audience")]
+    string? IncludedClientAudience,
+    [property: JsonPropertyName("included.custom.audience")]
+    string? IncludedCustomAudience,
+    [property: JsonPropertyName("multivalued")]
+    string? Multivalued,
+    [property: JsonPropertyName("user.session.note")]
+    string? UserSessionNote
+);
+
 public record ClientScopeModel(
     string? Id,
     string? Name,
