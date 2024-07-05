@@ -28,14 +28,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 public class KeycloakSeederSettings
 {
     [Required]
-    [DistinctValues]
-    public IEnumerable<string> DataPathes { get; set; } = null!;
-
-    [Required]
-    public string InstanceName { get; set; } = null!;
-
     [DistinctValues("x => x.Realm")]
-    public IEnumerable<KeycloakRealmSettings>? Realms { get; set; }
+    public IEnumerable<KeycloakRealmSettings> Realms { get; set; } = null!;
 }
 
 public static class KeycloakSeederSettingsExtensions
