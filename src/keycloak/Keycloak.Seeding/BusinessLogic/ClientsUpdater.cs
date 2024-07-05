@@ -80,7 +80,7 @@ public class ClientsUpdater : IClientsUpdater
         var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportClient(update), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
         {
-            throw new ConflictException($"PartialImport failed to add user: {result}");
+            throw new ConflictException($"PartialImport failed to add client id: {update.Id}, clientId: {update.ClientId}");
         }
         var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.ClientId == update.ClientId);
         return client?.Id ?? throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
