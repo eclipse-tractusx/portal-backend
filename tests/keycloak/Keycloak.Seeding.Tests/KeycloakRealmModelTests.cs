@@ -35,6 +35,8 @@ public class KeycloakRealmModelTests
                 new()
                 {
                     Realm = "TestRealm",
+                    InstanceName = "foo",
+                    DataPathes = [ "TestSeeds/test-realm.json" ],
                     Clients = [
                         new()
                         {
@@ -66,10 +68,10 @@ public class KeycloakRealmModelTests
                 }
             ]
         };
-        var sut = new SeedDataHandler(Options.Create(settings));
+        var sut = new SeedDataHandler();
 
         // Act
-        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None);
+        await sut.Import(settings.Realms.First(), CancellationToken.None);
 
         var keycloakRealm = sut.KeycloakRealm;
         var clients = sut.Clients;
