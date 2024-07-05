@@ -25,9 +25,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 public class KeycloakRealmSettings
 {
-    public string? Id { get; set; }
     [Required]
-    public string? Realm { get; set; }
+    public string Realm { get; set; } = null!;
+    [Required]
+    public string InstanceName { get; set; } = null!;
+    [Required]
+    [DistinctValues]
+    public IEnumerable<string> DataPathes { get; set; } = null!;
+    public string? Id { get; set; }
     public string? DisplayName { get; set; }
     public string? DisplayNameHtml { get; set; }
     public int? NotBefore { get; set; }
