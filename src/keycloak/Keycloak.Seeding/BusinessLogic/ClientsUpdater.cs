@@ -19,11 +19,11 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Runtime.CompilerServices;
 
@@ -53,31 +53,37 @@ public class ClientsUpdater : IClientsUpdater
         {
             if (update.ClientId == null)
                 throw new ConflictException($"clientId must not be null {update.Id}");
+
             var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.ClientId == update.ClientId);
             if (client == null)
             {
-                var id = await keycloak.CreateClientAndRetrieveClientIdAsync(realm, CreateUpdateClient(null, update), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                if (id == null)
-                    throw new KeycloakNoSuccessException($"creation of client {update.ClientId} did not return the expected result");
-
-                // load newly created client as keycloak may create default protocolmappers on client-creation
-                client = await keycloak.GetClientAsync(realm, id).ConfigureAwait(ConfigureAwaitOptions.None);
+                yield return (update.ClientId, await CreateClient(keycloak, realm, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
             }
+            else
+            {
+                await UpdateClient(
+                    keycloak,
+                    realm,
+                    client.Id ?? throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}"),
+                    client,
+                    update,
+                    cancellationToken
+                ).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            if (client.Id == null)
-                throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
-
-            await UpdateClient(
-                keycloak,
-                realm,
-                client.Id,
-                client,
-                update,
-                cancellationToken
-            ).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            yield return (update.ClientId, client.Id);
+                yield return (update.ClientId, client.Id);
+            }
         }
+    }
+
+    private static async Task<string> CreateClient(KeycloakClient keycloak, string realm, ClientModel update, CancellationToken cancellationToken)
+    {
+        var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportClient(update), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
+        {
+            throw new ConflictException($"PartialImport failed to add user: {result}");
+        }
+        var client = (await keycloak.GetClientsAsync(realm, clientId: update.ClientId, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.ClientId == update.ClientId);
+        return client?.Id ?? throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}");
     }
 
     private static async Task UpdateClient(KeycloakClient keycloak, string realm, string idOfClient, Client client, ClientModel seedClient, CancellationToken cancellationToken)
@@ -231,8 +237,6 @@ public class ClientsUpdater : IClientsUpdater
         AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()?.ToDictionary(),
         FullScopeAllowed = update.FullScopeAllowed,
         NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
-        DefaultClientScopes = update.DefaultClientScopes,
-        OptionalClientScopes = update.OptionalClientScopes,
         Access = update.Access == null
             ? null
             : new ClientAccess
@@ -282,4 +286,54 @@ public class ClientsUpdater : IClientsUpdater
         access.Configure == updateAccess.Configure &&
         access.Manage == updateAccess.Manage &&
         access.View == updateAccess.View;
+
+    private static PartialImport CreatePartialImportClient(ClientModel update) =>
+        new()
+        {
+            IfResourceExists = "FAIL",
+            Clients = [
+                new()
+                {
+                    Id = update.Id,
+                    ClientId = update.ClientId,
+                    RootUrl = update.RootUrl,
+                    Name = update.Name,
+                    Description = update.Description,
+                    BaseUrl = update.BaseUrl,
+                    AdminUrl = update.AdminUrl,
+                    SurrogateAuthRequired = update.SurrogateAuthRequired,
+                    Enabled = update.Enabled,
+                    AlwaysDisplayInConsole = update.AlwaysDisplayInConsole,
+                    ClientAuthenticatorType = update.ClientAuthenticatorType,
+                    RedirectUris = update.RedirectUris,
+                    WebOrigins = update.WebOrigins,
+                    NotBefore = update.NotBefore,
+                    BearerOnly = update.BearerOnly,
+                    ConsentRequired = update.ConsentRequired,
+                    StandardFlowEnabled = update.StandardFlowEnabled,
+                    ImplicitFlowEnabled = update.ImplicitFlowEnabled,
+                    DirectAccessGrantsEnabled = update.DirectAccessGrantsEnabled,
+                    ServiceAccountsEnabled = update.ServiceAccountsEnabled,
+                    PublicClient = update.PublicClient,
+                    FrontChannelLogout = update.FrontchannelLogout,
+                    Protocol = update.Protocol,
+                    Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
+                    AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()?.ToDictionary(),
+                    FullScopeAllowed = update.FullScopeAllowed,
+                    NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
+                    DefaultClientScopes = update.DefaultClientScopes,
+                    OptionalClientScopes = update.OptionalClientScopes,
+                    Access = update.Access == null
+                        ? null
+                        : new ClientAccess
+                        {
+                            View = update.Access.View,
+                            Configure = update.Access.Configure,
+                            Manage = update.Access.Manage
+                        },
+                    AuthorizationServicesEnabled = update.AuthorizationServicesEnabled,
+                    Secret = update.Secret
+                }
+            ]
+        };
 }
