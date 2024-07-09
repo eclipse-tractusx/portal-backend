@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,7 +28,6 @@ using Serilog;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building keycloak-seeder");
-var isDevelopment = false;
 try
 {
     var host = Host
@@ -62,13 +60,12 @@ try
                 {
                     FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
                 }
-                isDevelopment = true;
             }
         })
         .UseSerilog()
         .Build();
 
-    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>());
 
     Log.Information("Building keycloak-seeder completed");
 

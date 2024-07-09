@@ -41,6 +41,7 @@ public static class KeycloakSeederSettingsExtensions
     {
         services.AddOptions<KeycloakSeederSettings>()
             .Bind(section)
+            .ValidateDataAnnotations()
             .ValidateDistinctValues(section)
             .ValidateOnStart();
         return services;

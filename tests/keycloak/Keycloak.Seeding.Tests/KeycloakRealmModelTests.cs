@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -36,7 +35,7 @@ public class KeycloakRealmModelTests
                 {
                     Realm = "TestRealm",
                     InstanceName = "foo",
-                    DataPathes = [ "TestSeeds/test-realm.json" ],
+                    DataPathes = ["TestSeeds/test-realm.json"],
                     Clients = [
                         new()
                         {
@@ -149,8 +148,7 @@ public class KeycloakRealmModelTests
                 x.Roles.Client.SequenceEqual(clientRoles.Select(x => KeyValuePair.Create<string, IEnumerable<RoleModel>?>(x.ClientId, x.RoleModels))) &&
                 x.Roles.Realm != null &&
                 x.Roles.Realm.SequenceEqual(realmRoles) &&
-                x.Groups != null &&
-                // roles and groups are being asserted separately
+                x.Groups != null && // roles and groups are being asserted separately
                 x.DefaultRole != null &&
                 x.DefaultRole.Id == "fd20bacb-f39f-499c-8fc3-c3d14e0770d9" &&
                 x.DefaultRole.Name == "default-roles-testrealm" &&
@@ -200,11 +198,9 @@ public class KeycloakRealmModelTests
                 x.Users != null &&
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
-                x.Clients != null &&
-                // clients are being asserted separately
+                x.Clients != null && // clients are being asserted separately
                 x.ClientScopes != null &&
-                x.ClientScopes.SequenceEqual(clientScopes) &&
-                // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
+                x.ClientScopes.SequenceEqual(clientScopes) && // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
                 x.DefaultDefaultClientScopes != null &&
                 x.DefaultDefaultClientScopes.SequenceEqual(new[] { "role_list", "profile", "email", "roles", "web-origins" }) &&
                 x.DefaultOptionalClientScopes != null &&
@@ -244,17 +240,15 @@ public class KeycloakRealmModelTests
                 !x.AdminEventsEnabled.Value &&
                 x.AdminEventsDetailsEnabled.HasValue &&
                 !x.AdminEventsDetailsEnabled.Value &&
-                x.IdentityProviders != null &&
+                x.IdentityProviders != null && // identityProviders, identityProviderMappers, components are being asserted separately
                 x.IdentityProviderMappers != null &&
                 x.IdentityProviderMappers.SequenceEqual(identityProviderMappers) &&
-                // identityProviders, identityProviderMappers, components are being asserted separately
                 x.InternationalizationEnabled.HasValue &&
                 x.InternationalizationEnabled.Value &&
                 x.SupportedLocales != null &&
                 x.SupportedLocales.SequenceEqual(new[] { "de", "no", "ru", "sv", "pt-BR", "lt", "en", "it", "fr", "hu", "zh-CN", "es", "cs", "ja", "sk", "pl", "da", "ca", "nl", "tr" }) &&
                 x.DefaultLocale == "en" &&
-                // authenticationFlows, authenticatorConfigs, requiredActions are being asserted separately
-                x.BrowserFlow == "browser" &&
+                x.BrowserFlow == "browser" && // authenticationFlows, authenticatorConfigs, requiredActions are being asserted separately
                 x.RegistrationFlow == "registration" &&
                 x.DirectGrantFlow == "direct grant" &&
                 x.ResetCredentialsFlow == "reset credentials" &&
