@@ -50,7 +50,7 @@ public class ClientsUpdater : IClientsUpdater
     private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        var getClientScopeId = (string scope) => clientScopes.SingleOrDefault(x => x.Name == scope)?.Id ?? throw new ConflictException($"id of clientScope {scope} is undefined");
+        string GetClientScopeId(string scope) => clientScopes.SingleOrDefault(x => x.Name == scope)?.Id ?? throw new ConflictException($"id of clientScope {scope} is undefined");
 
         foreach (var update in _seedData.Clients)
         {
@@ -62,15 +62,42 @@ public class ClientsUpdater : IClientsUpdater
             {
                 client = await CreateClient(keycloak, realm, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
-            await UpdateClient(
+            else
+            {
+                await UpdateClient(
+                    keycloak,
+                    realm,
+                    client.Id ?? throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}"),
+                    client,
+                    update,
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+                await UpdateClientProtocolMappers(
+                    keycloak,
+                    realm,
+                    client.Id,
+                    client,
+                    update,
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            }
+
+            await UpdateDefaultClientScopes(
                 keycloak,
                 realm,
                 client.Id ?? throw new ConflictException($"client.Id must not be null: clientId {update.ClientId}"),
                 client,
                 update,
-                getClientScopeId,
-                cancellationToken
-            ).ConfigureAwait(ConfigureAwaitOptions.None);
+                GetClientScopeId,
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+            await UpdateOptionalClientScopes(
+                keycloak,
+                realm,
+                client.Id,
+                client,
+                update,
+                GetClientScopeId,
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             yield return (update.ClientId, client.Id);
         }
@@ -87,7 +114,7 @@ public class ClientsUpdater : IClientsUpdater
         return client ?? throw new ConflictException($"failed to read newly created client {update.ClientId}");
     }
 
-    private static async Task UpdateClient(KeycloakClient keycloak, string realm, string idOfClient, Client client, ClientModel seedClient, Func<string, string> getClientScopeId, CancellationToken cancellationToken)
+    private static async Task UpdateClient(KeycloakClient keycloak, string realm, string idOfClient, Client client, ClientModel seedClient, CancellationToken cancellationToken)
     {
         if (!CompareClient(client, seedClient))
         {
@@ -98,13 +125,9 @@ public class ClientsUpdater : IClientsUpdater
                 updateClient,
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-
-        await UpdateClientProtocollMappers(keycloak, realm, idOfClient, client, seedClient, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await UpdateDefaultClientScopes(keycloak, realm, idOfClient, client, seedClient, getClientScopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await UpdateOptionalClientScopes(keycloak, realm, idOfClient, client, seedClient, getClientScopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateClientProtocollMappers(KeycloakClient keycloak, string realm, string clientId, Client client, ClientModel update, CancellationToken cancellationToken)
+    private static async Task UpdateClientProtocolMappers(KeycloakClient keycloak, string realm, string clientId, Client client, ClientModel update, CancellationToken cancellationToken)
     {
         var clientProtocolMappers = client.ProtocolMappers ?? Enumerable.Empty<ProtocolMapper>();
         var updateProtocolMappers = update.ProtocolMappers ?? Enumerable.Empty<ProtocolMapperModel>();
@@ -280,6 +303,7 @@ public class ClientsUpdater : IClientsUpdater
                     AuthenticationFlowBindingOverrides = update.AuthenticationFlowBindingOverrides?.FilterNotNullValues()?.ToDictionary(),
                     FullScopeAllowed = update.FullScopeAllowed,
                     NodeReregistrationTimeout = update.NodeReRegistrationTimeout,
+                    ProtocolMappers = update.ProtocolMappers?.Select(x => ProtocolMappersUpdater.CreateProtocolMapper(x.Id, x)),
                     DefaultClientScopes = update.DefaultClientScopes,
                     OptionalClientScopes = update.OptionalClientScopes,
                     Access = update.Access == null

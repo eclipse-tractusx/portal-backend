@@ -21,6 +21,8 @@ using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
@@ -38,6 +40,11 @@ public static class FlurlErrorHandler
             }
             if (call.HttpResponseMessage != null)
             {
+                var errorContent = JsonSerializer.Deserialize<KeycloakErrorResponse>(call.HttpResponseMessage.Content.ReadAsStream())?.ErrorMessage;
+                if (!string.IsNullOrWhiteSpace(errorContent))
+                {
+                    message = errorContent;
+                }
                 throw call.HttpResponseMessage.StatusCode switch
                 {
                     HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
@@ -60,5 +67,11 @@ public static class FlurlErrorHandler
             var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
             logger.LogDebug(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
         }
+    }
+
+    public class KeycloakErrorResponse
+    {
+        [JsonPropertyName("errorMessage")]
+        public string? ErrorMessage { get; set; }
     }
 }
