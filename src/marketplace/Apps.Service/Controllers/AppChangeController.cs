@@ -268,7 +268,7 @@ public class AppChangeController : ControllerBase
     /// <response code="400">The language does not exist.</response>
     /// <response code="404">The app was not found.</response>
     [HttpGet]
-    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]
