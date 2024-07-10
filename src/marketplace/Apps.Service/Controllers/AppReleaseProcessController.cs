@@ -505,7 +505,7 @@ public class AppReleaseProcessController : ControllerBase
     /// <response code="404">The app was not found.</response>
     /// <response code="403">The app is not the provider of the company</response>
     [HttpGet]
-    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Roles = "add_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]
