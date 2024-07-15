@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -28,19 +29,14 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
-public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
+public class SdFactoryBusinessLogic(
+    ISdFactoryService sdFactoryService,
+    IPortalRepositories portalRepositories,
+    IApplicationChecklistService checklistService,
+    IOptions<SdFactorySettings> options)
+    : ISdFactoryBusinessLogic
 {
-    private readonly ISdFactoryService _sdFactoryService;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IApplicationChecklistService _checklistService;
-
-    public SdFactoryBusinessLogic(ISdFactoryService sdFactoryService, IPortalRepositories portalRepositories,
-        IApplicationChecklistService checklistService)
-    {
-        _sdFactoryService = sdFactoryService;
-        _portalRepositories = portalRepositories;
-        _checklistService = checklistService;
-    }
+    private readonly SdFactorySettings _settings = options.Value;
 
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
@@ -48,11 +44,23 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         string selfDescriptionDocumentUrl,
         string businessPartnerNumber,
         CancellationToken cancellationToken) =>
-        _sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
+        sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
+        if (_settings.ClearinghouseConnectDisabled)
+        {
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+                new[] { ProcessStepTypeId.ACTIVATE_APPLICATION },
+                null,
+                true,
+                null
+            );
+        }
+
         await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -70,7 +78,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         Guid applicationId,
         CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var result = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(applicationId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
@@ -86,7 +94,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                 $"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
-        await _sdFactoryService
+        await sdFactoryService
             .RegisterSelfDescriptionAsync(applicationId, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
@@ -94,7 +102,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
     {
         var confirm = ValidateData(data);
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
@@ -106,11 +114,11 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         if (confirm)
         {
             var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
+            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>
@@ -133,7 +141,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         {
             documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
+        portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
             if (documentId != null)
             {
@@ -175,7 +183,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         var documentContent = ms.ToArray();
         var hash = SHA512.HashData(documentContent);
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
+        var document = portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",
             documentContent,
             hash,

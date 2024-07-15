@@ -2,6 +2,37 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.1.0-RC1
+
+### Change
+- App Services [#827](https://github.com/eclipse-tractusx/portal-backend/pull/827)
+  - updated endpoint authorization rule setting of `GET /api/apps/AppChange/{appId}/roles` => new permission validation to `edit_apps`
+  - updated endpoint authorization rule setting of `GET /api/apps/AppReleaseProcess/{appId}/roles` => new permission validation to `add_apps`
+- Process Worker
+  - moved email validation in decline application process api from child method to parent method [#822](https://github.com/eclipse-tractusx/portal-backend/pull/822)
+  - removed mail process creation of the decline registration mail if the user self-triggered the decline [#806](https://github.com/eclipse-tractusx/portal-backend/pull/806)
+ 
+### Feature
+- Registration Process (Administration Service)
+  - added configuration toggle to deactivate the GX compliance service interface dependency incl. SD factory connectivity to enable registration and connector creation without external dependency [#793](https://github.com/eclipse-tractusx/portal-backend/pull/793)
+ 
+### Technical Support
+- changed from emulation to cross-compile for building multi-platform images [#803](https://github.com/eclipse-tractusx/portal-backend/pull/803)
+- improved dockerfiles by removing unnecessary base stage and aligning environment variables [#803](https://github.com/eclipse-tractusx/portal-backend/pull/803)
+- running the app from top-level program has been changed from synchronous to asynchronous execution [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+- changed querying db-sequences from synchronous to asynchronous execution [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+- added exception-handling to the crypto helper to properly map the system exceptions that are thrown by the Aes-classes to configuration respective conflict exceptions [#790](https://github.com/eclipse-tractusx/portal-backend/pull/790)
+- updated GitHub actions [#785](https://github.com/eclipse-tractusx/portal-backend/pull/785)/[#777](https://github.com/eclipse-tractusx/portal-backend/pull/777)
+- **Clean-up unused Code** [#783](https://github.com/eclipse-tractusx/portal-backend/pull/783)
+  - removed all company credential (SSI) related endpoints
+  - removed all company credential (SSI) related database tables
+ 
+### Bugfixes
+- fixed nullability-issue in IdentityProviderBusinessLogic [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+- fixed ambiguity in IfAny nullable return type declaration [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+- added locking for the `invite process` process worker [#788](https://github.com/eclipse-tractusx/portal-backend/pull/788)
+- fixed support of null setting of the attribute `url` for offer provider autosetup url configuration endpoint `PUT /api/administration/SubscriptionConfiguration/owncompany` [#783](https://github.com/eclipse-tractusx/portal-backend/pull/783)
+
 ## 2.0.0
 
 ### Change
@@ -138,7 +169,7 @@ The following are known issues identified in the current release:
 * **Validation Limitations:**
   * Pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
 * **Validation of File Upload Limitation:**
-  * It is recommended to make make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+  * It is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
 * **In Memory Storage Limitation**:
   * Sensitive information (such as passwords) is read in an unencrypted manner in memory.
 
