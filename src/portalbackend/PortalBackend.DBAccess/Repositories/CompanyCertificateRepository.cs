@@ -46,9 +46,9 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 x.Id == certificateTypeId);
 
     /// <inheritdoc />
-    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null)
+    public CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null)
     {
-        var companyCertificate = new CompanyCertificate(Guid.NewGuid(), DateTimeOffset.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
+        var companyCertificate = new CompanyCertificate(Guid.NewGuid(), companyCertificateTypeId, companyCertificateStatusId, companyId, docId);
         setOptionalFields?.Invoke(companyCertificate);
         return _context.CompanyCertificates.Add(companyCertificate).Entity;
     }
@@ -71,7 +71,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
             ccb.ValidFrom,
             ccb.ValidTill,
             ccb.ExternalCertificateNumber,
-            ccb.CompaniesCertificateAssignedSites.Select(x => x.Sites),
+            ccb.CompanyCertificateAssignedSites.Select(x => x.Site),
             ccb.Issuer,
             ccb.Validator))
         .ToAsyncEnumerable();
@@ -102,7 +102,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
                 companyCertificate.ValidFrom,
                 companyCertificate.ValidTill,
                 companyCertificate.ExternalCertificateNumber,
-                companyCertificate.CompaniesCertificateAssignedSites.Select(x => x.Sites),
+                companyCertificate.CompanyCertificateAssignedSites.Select(x => x.Site),
                 companyCertificate.Issuer,
                 companyCertificate.Validator
                 ))
@@ -128,7 +128,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
 
     public void AttachAndModifyCompanyCertificateDetails(Guid id, Action<CompanyCertificate>? initialize, Action<CompanyCertificate> updateFields)
     {
-        var entity = new CompanyCertificate(id, default, default, default, Guid.Empty, Guid.Empty);
+        var entity = new CompanyCertificate(id, default, default, Guid.Empty, Guid.Empty);
         initialize?.Invoke(entity);
         _context.Attach(entity);
         updateFields.Invoke(entity);
@@ -151,5 +151,5 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
     .SingleOrDefaultAsync();
 
     public void CreateCompanyCertificateAssignedSites(Guid companyCertificateId, IEnumerable<string> sites) =>
-        _context.AddRange(sites.Select(companyCertificateAssignedSite => new CompaniesCertificateAssignedSite(companyCertificateId, companyCertificateAssignedSite)));
+        _context.AddRange(sites.Select(companyCertificateAssignedSite => new CompanyCertificateAssignedSite(companyCertificateId, companyCertificateAssignedSite)));
 }

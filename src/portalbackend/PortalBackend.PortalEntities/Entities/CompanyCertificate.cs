@@ -27,15 +27,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entit
 [AuditEntityV1(typeof(AuditCertificateManagement20240416))]
 public class CompanyCertificate : IAuditableV1, IBaseEntity
 {
-    public CompanyCertificate(Guid id, DateTimeOffset? validFrom, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId)
+    private CompanyCertificate()
+    {
+        CompanyCertificateAssignedSites = new HashSet<CompanyCertificateAssignedSite>();
+    }
+
+    public CompanyCertificate(Guid id, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid companyId, Guid documentId) : this()
     {
         Id = id;
-        ValidFrom = validFrom;
         CompanyCertificateTypeId = companyCertificateTypeId;
         CompanyCertificateStatusId = companyCertificateStatusId;
         CompanyId = companyId;
         DocumentId = documentId;
-        CompaniesCertificateAssignedSites = new HashSet<CompaniesCertificateAssignedSite>();
     }
 
     public Guid Id { get; private set; }
@@ -61,5 +64,5 @@ public class CompanyCertificate : IAuditableV1, IBaseEntity
     public virtual Document? Document { get; private set; }
     public virtual CompanyCertificateType? CompanyCertificateType { get; private set; }
     public virtual CompanyCertificateStatus? CompanyCertificateStatus { get; private set; }
-    public virtual ICollection<CompaniesCertificateAssignedSite> CompaniesCertificateAssignedSites { get; private set; }
+    public virtual ICollection<CompanyCertificateAssignedSite> CompanyCertificateAssignedSites { get; private set; }
 }

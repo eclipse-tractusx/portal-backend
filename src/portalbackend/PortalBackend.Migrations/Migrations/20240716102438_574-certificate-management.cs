@@ -21,12 +21,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class newattributecompanycertificate : Migration
+    public partial class _574certificatemanagement : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,6 +32,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"() CASCADE;");
 
             migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"() CASCADE;");
+
+            migrationBuilder.AlterColumn<DateTimeOffset>(
+                name: "valid_from",
+                schema: "portal",
+                table: "company_certificates",
+                type: "timestamp with time zone",
+                nullable: true,
+                oldClrType: typeof(DateTimeOffset),
+                oldType: "timestamp with time zone");
 
             migrationBuilder.AddColumn<string>(
                 name: "external_certificate_number",
@@ -92,18 +99,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 nullable: true);
 
             migrationBuilder.CreateTable(
-                name: "companies_certificate_assigned_sites",
+                name: "company_certificate_assigned_sites",
                 schema: "portal",
                 columns: table => new
                 {
                     company_certificate_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    sites = table.Column<string>(type: "text", nullable: false)
+                    site = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_companies_certificate_assigned_sites", x => new { x.company_certificate_id, x.sites });
+                    table.PrimaryKey("pk_company_certificate_assigned_sites", x => new { x.company_certificate_id, x.site });
                     table.ForeignKey(
-                        name: "fk_companies_certificate_assigned_sites_company_certificates_c",
+                        name: "fk_company_certificate_assigned_sites_company_certificates_com",
                         column: x => x.company_certificate_id,
                         principalSchema: "portal",
                         principalTable: "company_certificates",
@@ -124,7 +131,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             migrationBuilder.Sql("DROP FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"() CASCADE;");
 
             migrationBuilder.DropTable(
-                name: "companies_certificate_assigned_sites",
+                name: "company_certificate_assigned_sites",
                 schema: "portal");
 
             migrationBuilder.DropColumn(
@@ -166,6 +173,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 name: "validator",
                 schema: "portal",
                 table: "audit_certificate_management20240416");
+
+            migrationBuilder.AlterColumn<DateTimeOffset>(
+                name: "valid_from",
+                schema: "portal",
+                table: "company_certificates",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                oldClrType: typeof(DateTimeOffset),
+                oldType: "timestamp with time zone",
+                oldNullable: true);
 
             migrationBuilder.Sql("CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE AFTER INSERT\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"();");
 

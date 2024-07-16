@@ -17,22 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-
-public class CompaniesCertificateAssignedSite
+public class CompanyCertificateAssignedSite
 {
-    public CompaniesCertificateAssignedSite(Guid companyCertificateId, string sites)
+    public CompanyCertificateAssignedSite(Guid companyCertificateId, string site)
     {
         CompanyCertificateId = companyCertificateId;
-        Sites = sites;
+        Site = site;
     }
 
-    public Guid CompanyCertificateId { get; set; }
+    public Guid CompanyCertificateId { get; private set; }
 
-    public string Sites { get; set; }
+    public string Site { get; private set; }
 
     // Navigation properties
-    public virtual CompanyCertificate? CompanyCertificate { get; set; }
+    public virtual CompanyCertificate? CompanyCertificate { get; private set; }
 }

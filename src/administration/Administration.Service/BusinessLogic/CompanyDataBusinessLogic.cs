@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
@@ -249,17 +250,19 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException("ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
         }
 
-        if (data.Sites != null && data.Sites.Any() && data.Sites!.Any(bpn => !BpnsRegex.IsMatch(bpn)))
+        if (data.Sites != null && data.Sites.Any(bpn => !BpnsRegex.IsMatch(bpn)))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNS");
         }
 
-        if (data.ValidFrom?.ToUniversalTime() > DateTimeOffset.Now.ToUniversalTime())
+        var now = dateTimeProvider.OffsetNow;
+
+        if (data.ValidFrom > now)
         {
             throw new ControllerArgumentException("ValidFrom date should not be greater than current date");
         }
 
-        if (data.ValidTill?.ToUniversalTime() < DateTimeOffset.Now.ToUniversalTime())
+        if (data.ValidTill < now)
         {
             throw new ControllerArgumentException("ValidTill date should be greater than current date");
         }
@@ -300,19 +303,16 @@ public class CompanyDataBusinessLogic(
                 x.DocumentStatusId = DocumentStatusId.LOCKED;
             });
 
-        var companyCertificate = companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, doc.Id,
+        var companyCertificate = companyCertificateRepository.CreateCompanyCertificate(_identityData.CompanyId, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, doc.Id,
             x =>
             {
                 x.ExternalCertificateNumber = externalCertificateNumber;
                 x.Issuer = issuer;
-                x.ValidTill = validTill?.ToUniversalTime();
-                x.ValidFrom = validFrom?.ToUniversalTime();
+                x.ValidFrom = validFrom;
+                x.ValidTill = validTill;
             });
 
-        if (sites != null && sites.Any())
-        {
-            companyCertificateRepository.CreateCompanyCertificateAssignedSites(companyCertificate.Id, sites);
-        }
+        sites?.IfAny(x => companyCertificateRepository.CreateCompanyCertificateAssignedSites(companyCertificate.Id, x));
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

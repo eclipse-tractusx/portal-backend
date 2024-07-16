@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240610071441_new-attribute-company-certificate")]
-    partial class newattributecompanycertificate
+    [Migration("20240716102438_574-certificate-management")]
+    partial class _574certificatemanagement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -476,144 +476,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasName("pk_audit_company_assigned_role2023316");
 
                     b.ToTable("audit_company_assigned_role2023316", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanySsiDetail20230621", b =>
-                {
-                    b.Property<Guid>("AuditV1Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
-
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<int>("CompanySsiDetailStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_ssi_detail_status_id");
-
-                    b.Property<Guid>("CreatorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("creator_user_id");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
-                    b.Property<DateTimeOffset?>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry_date");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<Guid?>("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("verified_credential_external_type_use_case_detail_id");
-
-                    b.Property<int>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.HasKey("AuditV1Id")
-                        .HasName("pk_audit_company_ssi_detail20230621");
-
-                    b.ToTable("audit_company_ssi_detail20230621", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanySsiDetail20231115", b =>
-                {
-                    b.Property<Guid>("AuditV1Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1id");
-
-                    b.Property<DateTimeOffset>("AuditV1DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_v1date_last_changed");
-
-                    b.Property<Guid?>("AuditV1LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_v1last_editor_id");
-
-                    b.Property<int>("AuditV1OperationId")
-                        .HasColumnType("integer")
-                        .HasColumnName("audit_v1operation_id");
-
-                    b.Property<Guid?>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<int?>("CompanySsiDetailStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_ssi_detail_status_id");
-
-                    b.Property<Guid?>("CreatorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("creator_user_id");
-
-                    b.Property<DateTimeOffset?>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<Guid?>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
-                    b.Property<DateTimeOffset?>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry_date");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<Guid?>("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("verified_credential_external_type_use_case_detail_id");
-
-                    b.Property<int?>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.HasKey("AuditV1Id")
-                        .HasName("pk_audit_company_ssi_detail20231115");
-
-                    b.ToTable("audit_company_ssi_detail20231115", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities.AuditCompanyUser20221005", b =>
@@ -2219,288 +2081,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("audit_user_role20231115", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompaniesCertificateAssignedSite", b =>
-                {
-                    b.Property<Guid>("CompanyCertificateId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_certificate_id");
-
-                    b.Property<string>("Sites")
-                        .HasColumnType("text")
-                        .HasColumnName("sites");
-
-                    b.HasKey("CompanyCertificateId", "Sites")
-                        .HasName("pk_companies_certificate_assigned_sites");
-
-                    b.ToTable("companies_certificate_assigned_sites", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<int>("CompanyCertificateStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_certificate_status_id");
-
-                    b.Property<int>("CompanyCertificateTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_certificate_type_id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
-                    b.Property<string>("ExternalCertificateNumber")
-                        .HasColumnType("text")
-                        .HasColumnName("external_certificate_number");
-
-                    b.Property<string>("Issuer")
-                        .HasColumnType("text")
-                        .HasColumnName("issuer");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<string>("TrustLevel")
-                        .HasColumnType("text")
-                        .HasColumnName("trust_level");
-
-                    b.Property<DateTimeOffset>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("valid_from");
-
-                    b.Property<DateTimeOffset?>("ValidTill")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("valid_till");
-
-                    b.Property<string>("Validator")
-                        .HasColumnType("text")
-                        .HasColumnName("validator");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_certificates");
-
-                    b.HasIndex("CompanyCertificateStatusId")
-                        .HasDatabaseName("ix_company_certificates_company_certificate_status_id");
-
-                    b.HasIndex("CompanyCertificateTypeId")
-                        .HasDatabaseName("ix_company_certificates_company_certificate_type_id");
-
-                    b.HasIndex("CompanyId")
-                        .HasDatabaseName("ix_company_certificates_company_id");
-
-                    b.HasIndex("DocumentId")
-                        .HasDatabaseName("ix_company_certificates_document_id");
-
-                    b.ToTable("company_certificates", "portal", t =>
-                        {
-                            t.HasTrigger("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE");
-
-                            t.HasTrigger("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE");
-                        });
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"external_certificate_number\", \"issuer\", \"trust_level\", \"validator\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"external_certificate_number\", \r\n  NEW.\"issuer\", \r\n  NEW.\"trust_level\", \r\n  NEW.\"validator\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE AFTER INSERT\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"external_certificate_number\", \"issuer\", \"trust_level\", \"validator\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"external_certificate_number\", \r\n  NEW.\"issuer\", \r\n  NEW.\"trust_level\", \r\n  NEW.\"validator\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE AFTER UPDATE\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"();");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_certificate_statuses");
-
-                    b.ToTable("company_certificate_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "ACTIVE"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "INACTIVE"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_certificate_types");
-
-                    b.ToTable("company_certificate_types", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "AEO_CTPAT_Security_Declaration"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "ISO_9001"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "IATF_16949"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "ISO_14001_EMAS_or_national_certification"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "ISO_45001_OHSAS_18001_or_national_certification"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "ISO_IEC_27001"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Label = "ISO_50001_or_national_certification"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Label = "ISO_IEC_17025"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Label = "ISO_15504_SPICE"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Label = "B_BBEE_Certificate_of_South_Africa"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Label = "IATF"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Label = "TISAX"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", b =>
-                {
-                    b.Property<int>("CompanyCertificateTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_certificate_type_id");
-
-                    b.Property<int>("CompanyCertificateTypeStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_certificate_type_status_id");
-
-                    b.HasKey("CompanyCertificateTypeId")
-                        .HasName("pk_company_certificate_type_assigned_statuses");
-
-                    b.HasIndex("CompanyCertificateTypeStatusId")
-                        .HasDatabaseName("ix_company_certificate_type_assigned_statuses_company_certific");
-
-                    b.ToTable("company_certificate_type_assigned_statuses", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
-                {
-                    b.Property<int>("CompanyCertificateTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_certificate_type_id");
-
-                    b.Property<string>("LanguageShortName")
-                        .HasMaxLength(2)
-                        .HasColumnType("character(2)")
-                        .HasColumnName("language_short_name");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.HasKey("CompanyCertificateTypeId", "LanguageShortName")
-                        .HasName("pk_company_certificate_type_descriptions");
-
-                    b.HasIndex("LanguageShortName")
-                        .HasDatabaseName("ix_company_certificate_type_descriptions_language_short_name");
-
-                    b.ToTable("company_certificate_type_descriptions", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_certificate_type_statuses");
-
-                    b.ToTable("company_certificate_type_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "ACTIVE"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "INACTIVE"
-                        });
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3506,6 +3086,288 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("company_assigned_use_cases", "portal");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("CompanyCertificateStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_status_id");
+
+                    b.Property<int>("CompanyCertificateTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTimeOffset?>("DateLastChanged")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_last_changed");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("document_id");
+
+                    b.Property<string>("ExternalCertificateNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("external_certificate_number");
+
+                    b.Property<string>("Issuer")
+                        .HasColumnType("text")
+                        .HasColumnName("issuer");
+
+                    b.Property<Guid?>("LastEditorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_editor_id");
+
+                    b.Property<string>("TrustLevel")
+                        .HasColumnType("text")
+                        .HasColumnName("trust_level");
+
+                    b.Property<DateTimeOffset?>("ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_from");
+
+                    b.Property<DateTimeOffset?>("ValidTill")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("valid_till");
+
+                    b.Property<string>("Validator")
+                        .HasColumnType("text")
+                        .HasColumnName("validator");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_certificates");
+
+                    b.HasIndex("CompanyCertificateStatusId")
+                        .HasDatabaseName("ix_company_certificates_company_certificate_status_id");
+
+                    b.HasIndex("CompanyCertificateTypeId")
+                        .HasDatabaseName("ix_company_certificates_company_certificate_type_id");
+
+                    b.HasIndex("CompanyId")
+                        .HasDatabaseName("ix_company_certificates_company_id");
+
+                    b.HasIndex("DocumentId")
+                        .HasDatabaseName("ix_company_certificates_document_id");
+
+                    b.ToTable("company_certificates", "portal", t =>
+                        {
+                            t.HasTrigger("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE");
+
+                            t.HasTrigger("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE");
+                        });
+
+                    b
+                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"external_certificate_number\", \"issuer\", \"trust_level\", \"validator\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"external_certificate_number\", \r\n  NEW.\"issuer\", \r\n  NEW.\"trust_level\", \r\n  NEW.\"validator\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE AFTER INSERT\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYCERTIFICATE\"();")
+                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_certificate_management20240416\" (\"id\", \"valid_from\", \"valid_till\", \"company_certificate_type_id\", \"company_certificate_status_id\", \"company_id\", \"document_id\", \"external_certificate_number\", \"issuer\", \"trust_level\", \"validator\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"valid_from\", \r\n  NEW.\"valid_till\", \r\n  NEW.\"company_certificate_type_id\", \r\n  NEW.\"company_certificate_status_id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"external_certificate_number\", \r\n  NEW.\"issuer\", \r\n  NEW.\"trust_level\", \r\n  NEW.\"validator\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE AFTER UPDATE\r\nON \"portal\".\"company_certificates\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYCERTIFICATE\"();");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateAssignedSite", b =>
+                {
+                    b.Property<Guid>("CompanyCertificateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("company_certificate_id");
+
+                    b.Property<string>("Site")
+                        .HasColumnType("text")
+                        .HasColumnName("site");
+
+                    b.HasKey("CompanyCertificateId", "Site")
+                        .HasName("pk_company_certificate_assigned_sites");
+
+                    b.ToTable("company_certificate_assigned_sites", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_certificate_statuses");
+
+                    b.ToTable("company_certificate_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "INACTIVE"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_certificate_types");
+
+                    b.ToTable("company_certificate_types", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "AEO_CTPAT_Security_Declaration"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "ISO_9001"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "IATF_16949"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Label = "ISO_14001_EMAS_or_national_certification"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "ISO_45001_OHSAS_18001_or_national_certification"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Label = "ISO_IEC_27001"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Label = "ISO_50001_or_national_certification"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Label = "ISO_IEC_17025"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Label = "ISO_15504_SPICE"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "B_BBEE_Certificate_of_South_Africa"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Label = "IATF"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Label = "TISAX"
+                        });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeAssignedStatus", b =>
+                {
+                    b.Property<int>("CompanyCertificateTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_id");
+
+                    b.Property<int>("CompanyCertificateTypeStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_status_id");
+
+                    b.HasKey("CompanyCertificateTypeId")
+                        .HasName("pk_company_certificate_type_assigned_statuses");
+
+                    b.HasIndex("CompanyCertificateTypeStatusId")
+                        .HasDatabaseName("ix_company_certificate_type_assigned_statuses_company_certific");
+
+                    b.ToTable("company_certificate_type_assigned_statuses", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeDescription", b =>
+                {
+                    b.Property<int>("CompanyCertificateTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("company_certificate_type_id");
+
+                    b.Property<string>("LanguageShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("language_short_name");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.HasKey("CompanyCertificateTypeId", "LanguageShortName")
+                        .HasName("pk_company_certificate_type_descriptions");
+
+                    b.HasIndex("LanguageShortName")
+                        .HasDatabaseName("ix_company_certificate_type_descriptions_language_short_name");
+
+                    b.ToTable("company_certificate_type_descriptions", "portal");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("label");
+
+                    b.HasKey("Id")
+                        .HasName("pk_company_certificate_type_statuses");
+
+                    b.ToTable("company_certificate_type_statuses", "portal");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Label = "ACTIVE"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Label = "INACTIVE"
+                        });
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentifier", b =>
                 {
                     b.Property<Guid>("CompanyId")
@@ -3843,125 +3705,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 2,
                             Label = "OWN"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("company_id");
-
-                    b.Property<int>("CompanySsiDetailStatusId")
-                        .HasColumnType("integer")
-                        .HasColumnName("company_ssi_detail_status_id");
-
-                    b.Property<Guid>("CreatorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("creator_user_id");
-
-                    b.Property<DateTimeOffset>("DateCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_created");
-
-                    b.Property<DateTimeOffset?>("DateLastChanged")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date_last_changed");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("document_id");
-
-                    b.Property<DateTimeOffset?>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry_date");
-
-                    b.Property<Guid?>("LastEditorId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("last_editor_id");
-
-                    b.Property<Guid?>("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("verified_credential_external_type_use_case_detail_id");
-
-                    b.Property<int>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_ssi_details");
-
-                    b.HasIndex("CompanyId")
-                        .HasDatabaseName("ix_company_ssi_details_company_id");
-
-                    b.HasIndex("CompanySsiDetailStatusId")
-                        .HasDatabaseName("ix_company_ssi_details_company_ssi_detail_status_id");
-
-                    b.HasIndex("CreatorUserId")
-                        .HasDatabaseName("ix_company_ssi_details_creator_user_id");
-
-                    b.HasIndex("DocumentId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_company_ssi_details_document_id");
-
-                    b.HasIndex("LastEditorId")
-                        .HasDatabaseName("ix_company_ssi_details_last_editor_id");
-
-                    b.HasIndex("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasDatabaseName("ix_company_ssi_details_verified_credential_external_type_use_c");
-
-                    b.HasIndex("VerifiedCredentialTypeId")
-                        .HasDatabaseName("ix_company_ssi_details_verified_credential_type_id");
-
-                    b.ToTable("company_ssi_details", "portal", t =>
-                        {
-                            t.HasTrigger("LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL");
-
-                            t.HasTrigger("LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL");
-                        });
-
-                    b
-                        .HasAnnotation("LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20231115\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_use_case_detail_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  1, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL AFTER INSERT\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_INSERT_COMPANYSSIDETAIL\"();")
-                        .HasAnnotation("LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL", "CREATE FUNCTION \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$\r\nBEGIN\r\n  INSERT INTO \"portal\".\"audit_company_ssi_detail20231115\" (\"id\", \"company_id\", \"verified_credential_type_id\", \"company_ssi_detail_status_id\", \"document_id\", \"date_created\", \"creator_user_id\", \"expiry_date\", \"verified_credential_external_type_use_case_detail_id\", \"date_last_changed\", \"last_editor_id\", \"audit_v1id\", \"audit_v1operation_id\", \"audit_v1date_last_changed\", \"audit_v1last_editor_id\") SELECT NEW.\"id\", \r\n  NEW.\"company_id\", \r\n  NEW.\"verified_credential_type_id\", \r\n  NEW.\"company_ssi_detail_status_id\", \r\n  NEW.\"document_id\", \r\n  NEW.\"date_created\", \r\n  NEW.\"creator_user_id\", \r\n  NEW.\"expiry_date\", \r\n  NEW.\"verified_credential_external_type_use_case_detail_id\", \r\n  NEW.\"date_last_changed\", \r\n  NEW.\"last_editor_id\", \r\n  gen_random_uuid(), \r\n  2, \r\n  CURRENT_TIMESTAMP, \r\n  NEW.\"last_editor_id\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL AFTER UPDATE\r\nON \"portal\".\"company_ssi_details\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"portal\".\"LC_TRIGGER_AFTER_UPDATE_COMPANYSSIDETAIL\"();");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_company_ssi_detail_statuses");
-
-                    b.ToTable("company_ssi_detail_statuses", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "PENDING"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "ACTIVE"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "INACTIVE"
                         });
                 });
 
@@ -7417,242 +7160,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable("user_role_descriptions", "portal");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_verified_credential_external_types");
-
-                    b.ToTable("verified_credential_external_types", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "TRACEABILITY_CREDENTIAL"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "PCF_CREDENTIAL"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "BEHAVIOR_TWIN_CREDENTIAL"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "VEHICLE_DISMANTLE"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "SUSTAINABILITY_CREDENTIAL"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "Quality_Credential"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("Expiry")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry");
-
-                    b.Property<string>("Template")
-                        .HasColumnType("text")
-                        .HasColumnName("template");
-
-                    b.Property<DateTimeOffset>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("valid_from");
-
-                    b.Property<int>("VerifiedCredentialExternalTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_external_type_id");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("version");
-
-                    b.HasKey("Id")
-                        .HasName("pk_verified_credential_external_type_use_case_detail_versions");
-
-                    b.HasIndex("VerifiedCredentialExternalTypeId", "Version")
-                        .IsUnique()
-                        .HasDatabaseName("ix_verified_credential_external_type_use_case_detail_versions_");
-
-                    b.ToTable("verified_credential_external_type_use_case_detail_versions", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_verified_credential_types");
-
-                    b.ToTable("verified_credential_types", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "TRACEABILITY_FRAMEWORK"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "PCF_FRAMEWORK"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Label = "BEHAVIOR_TWIN_FRAMEWORK"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Label = "DISMANTLER_CERTIFICATE"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Label = "SUSTAINABILITY_FRAMEWORK"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Label = "FRAMEWORK_AGREEMENT_QUALITY"
-                        });
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedExternalType", b =>
-                {
-                    b.Property<int>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.Property<int>("VerifiedCredentialExternalTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_external_type_id");
-
-                    b.HasKey("VerifiedCredentialTypeId", "VerifiedCredentialExternalTypeId")
-                        .HasName("pk_verified_credential_type_assigned_external_types");
-
-                    b.HasIndex("VerifiedCredentialExternalTypeId")
-                        .HasDatabaseName("ix_verified_credential_type_assigned_external_types_verified_c");
-
-                    b.HasIndex("VerifiedCredentialTypeId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_verified_credential_type_assigned_external_types_verified_c1");
-
-                    b.ToTable("verified_credential_type_assigned_external_types", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedKind", b =>
-                {
-                    b.Property<int>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.Property<int>("VerifiedCredentialTypeKindId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_kind_id");
-
-                    b.HasKey("VerifiedCredentialTypeId", "VerifiedCredentialTypeKindId")
-                        .HasName("pk_verified_credential_type_assigned_kinds");
-
-                    b.HasIndex("VerifiedCredentialTypeId")
-                        .HasDatabaseName("ix_verified_credential_type_assigned_kinds_verified_credential");
-
-                    b.HasIndex("VerifiedCredentialTypeKindId")
-                        .HasDatabaseName("ix_verified_credential_type_assigned_kinds_verified_credential1");
-
-                    b.ToTable("verified_credential_type_assigned_kinds", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedUseCase", b =>
-                {
-                    b.Property<int>("VerifiedCredentialTypeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_credential_type_id");
-
-                    b.Property<Guid>("UseCaseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("use_case_id");
-
-                    b.HasKey("VerifiedCredentialTypeId", "UseCaseId")
-                        .HasName("pk_verified_credential_type_assigned_use_cases");
-
-                    b.HasIndex("UseCaseId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_verified_credential_type_assigned_use_cases_use_case_id");
-
-                    b.HasIndex("VerifiedCredentialTypeId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_verified_credential_type_assigned_use_cases_verified_creden");
-
-                    b.ToTable("verified_credential_type_assigned_use_cases", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeKind", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("label");
-
-                    b.HasKey("Id")
-                        .HasName("pk_verified_credential_type_kinds");
-
-                    b.ToTable("verified_credential_type_kinds", "portal");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Label = "USE_CASE"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Label = "CERTIFICATE"
-                        });
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.AgreementView", b =>
                 {
                     b.Property<string>("AgreementCompanyRole")
@@ -7831,95 +7338,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.ToTable((string)null);
 
                     b.ToView("offer_subscription_view", "portal");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompaniesCertificateAssignedSite", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", "CompanyCertificate")
-                        .WithMany("CompaniesCertificateAssignedSites")
-                        .HasForeignKey("CompanyCertificateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_companies_certificate_assigned_sites_company_certificates_c");
-
-                    b.Navigation("CompanyCertificate");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", "CompanyCertificateStatus")
-                        .WithMany("CompanyCertificates")
-                        .HasForeignKey("CompanyCertificateStatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificates_company_certificate_statuses_company_c");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithMany("CompanyCertificates")
-                        .HasForeignKey("CompanyCertificateTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificates_company_certificate_types_company_cert");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
-                        .WithMany("CompanyCertificates")
-                        .HasForeignKey("CompanyId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificates_companies_company_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithMany("CompanyCertificates")
-                        .HasForeignKey("DocumentId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificates_documents_document_id");
-
-                    b.Navigation("Company");
-
-                    b.Navigation("CompanyCertificateStatus");
-
-                    b.Navigation("CompanyCertificateType");
-
-                    b.Navigation("Document");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithOne("CompanyCertificateTypeAssignedStatus")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeAssignedStatus", "CompanyCertificateTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", "CompanyCertificateTypeStatus")
-                        .WithMany("CompanyCertificateTypeAssignedStatuses")
-                        .HasForeignKey("CompanyCertificateTypeStatusId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific1");
-
-                    b.Navigation("CompanyCertificateType");
-
-                    b.Navigation("CompanyCertificateTypeStatus");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeDescription", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", "CompanyCertificateType")
-                        .WithMany("CompanyCertificateTypeDescriptions")
-                        .HasForeignKey("CompanyCertificateTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificate_type_descriptions_company_certificate_t");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
-                        .WithMany("CompanyCertificateTypeDescriptions")
-                        .HasForeignKey("LanguageShortName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_company_certificate_type_descriptions_languages_language_sh");
-
-                    b.Navigation("CompanyCertificateType");
-
-                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -8295,6 +7713,95 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UseCase");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificate", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateStatus", "CompanyCertificateStatus")
+                        .WithMany("CompanyCertificates")
+                        .HasForeignKey("CompanyCertificateStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificates_company_certificate_statuses_company_c");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateType", "CompanyCertificateType")
+                        .WithMany("CompanyCertificates")
+                        .HasForeignKey("CompanyCertificateTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificates_company_certificate_types_company_cert");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
+                        .WithMany("CompanyCertificates")
+                        .HasForeignKey("CompanyId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificates_companies_company_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
+                        .WithMany("CompanyCertificates")
+                        .HasForeignKey("DocumentId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificates_documents_document_id");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("CompanyCertificateStatus");
+
+                    b.Navigation("CompanyCertificateType");
+
+                    b.Navigation("Document");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateAssignedSite", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificate", "CompanyCertificate")
+                        .WithMany("CompanyCertificateAssignedSites")
+                        .HasForeignKey("CompanyCertificateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_assigned_sites_company_certificates_com");
+
+                    b.Navigation("CompanyCertificate");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeAssignedStatus", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateType", "CompanyCertificateType")
+                        .WithOne("CompanyCertificateTypeAssignedStatus")
+                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeAssignedStatus", "CompanyCertificateTypeId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeStatus", "CompanyCertificateTypeStatus")
+                        .WithMany("CompanyCertificateTypeAssignedStatuses")
+                        .HasForeignKey("CompanyCertificateTypeStatusId")
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_assigned_statuses_company_certific1");
+
+                    b.Navigation("CompanyCertificateType");
+
+                    b.Navigation("CompanyCertificateTypeStatus");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeDescription", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateType", "CompanyCertificateType")
+                        .WithMany("CompanyCertificateTypeDescriptions")
+                        .HasForeignKey("CompanyCertificateTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_descriptions_company_certificate_t");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
+                        .WithMany("CompanyCertificateTypeDescriptions")
+                        .HasForeignKey("LanguageShortName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_company_certificate_type_descriptions_languages_language_sh");
+
+                    b.Navigation("CompanyCertificateType");
+
+                    b.Navigation("Language");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyIdentifier", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
@@ -8442,63 +7949,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Identity");
 
                     b.Navigation("OfferSubscription");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetail", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "Company")
-                        .WithMany("CompanySsiDetails")
-                        .HasForeignKey("CompanyId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_companies_company_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", "CompanySsiDetailStatus")
-                        .WithMany("CompanySsiDetails")
-                        .HasForeignKey("CompanySsiDetailStatusId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_company_ssi_detail_statuses_company_ssi");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "CreatorUser")
-                        .WithMany("CompanySsiDetails")
-                        .HasForeignKey("CreatorUserId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_company_users_creator_user_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "Document")
-                        .WithOne("CompanySsiDetail")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetail", "DocumentId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_documents_document_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Identity", "LastEditor")
-                        .WithMany()
-                        .HasForeignKey("LastEditorId")
-                        .HasConstraintName("fk_company_ssi_details_identities_last_editor_id");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", "VerifiedCredentialExternalTypeUseCaseDetailVersion")
-                        .WithMany("CompanySsiDetails")
-                        .HasForeignKey("VerifiedCredentialExternalTypeUseCaseDetailId")
-                        .HasConstraintName("fk_company_ssi_details_verified_credential_external_type_use_c");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
-                        .WithMany("CompanySsiDetails")
-                        .HasForeignKey("VerifiedCredentialTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_company_ssi_details_verified_credential_types_verified_cred");
-
-                    b.Navigation("Company");
-
-                    b.Navigation("CompanySsiDetailStatus");
-
-                    b.Navigation("CreatorUser");
-
-                    b.Navigation("Document");
-
-                    b.Navigation("LastEditor");
-
-                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetailVersion");
-
-                    b.Navigation("VerifiedCredentialType");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
@@ -9573,76 +9023,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", "VerifiedCredentialExternalType")
-                        .WithMany("VerifiedCredentialExternalTypeUseCaseDetailVersions")
-                        .HasForeignKey("VerifiedCredentialExternalTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_external_type_use_case_detail_versions_");
-
-                    b.Navigation("VerifiedCredentialExternalType");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedExternalType", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", "VerifiedCredentialExternalType")
-                        .WithMany("VerifiedCredentialTypeAssignedExternalTypes")
-                        .HasForeignKey("VerifiedCredentialExternalTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_external_types_verified_c");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
-                        .WithOne("VerifiedCredentialTypeAssignedExternalType")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedExternalType", "VerifiedCredentialTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_external_types_verified_c1");
-
-                    b.Navigation("VerifiedCredentialExternalType");
-
-                    b.Navigation("VerifiedCredentialType");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedKind", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
-                        .WithOne("VerifiedCredentialTypeAssignedKind")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedKind", "VerifiedCredentialTypeId")
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_kinds_verified_credential");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeKind", "VerifiedCredentialTypeKind")
-                        .WithMany("VerifiedCredentialTypeAssignedKinds")
-                        .HasForeignKey("VerifiedCredentialTypeKindId")
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_kinds_verified_credential1");
-
-                    b.Navigation("VerifiedCredentialType");
-
-                    b.Navigation("VerifiedCredentialTypeKind");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedUseCase", b =>
-                {
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UseCase", "UseCase")
-                        .WithOne("VerifiedCredentialAssignedUseCase")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedUseCase", "UseCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_use_cases_use_cases_use_c");
-
-                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", "VerifiedCredentialType")
-                        .WithOne("VerifiedCredentialTypeAssignedUseCase")
-                        .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeAssignedUseCase", "VerifiedCredentialTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_verified_credential_type_assigned_use_cases_verified_creden");
-
-                    b.Navigation("UseCase");
-
-                    b.Navigation("VerifiedCredentialType");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views.CompaniesLinkedServiceAccount", b =>
                 {
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyServiceAccount", "CompanyServiceAccount")
@@ -9653,30 +9033,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasConstraintName("fk_company_linked_service_accounts_company_service_accounts_co");
 
                     b.Navigation("CompanyServiceAccount");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificate", b =>
-                {
-                    b.Navigation("CompaniesCertificateAssignedSites");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateStatus", b =>
-                {
-                    b.Navigation("CompanyCertificates");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateType", b =>
-                {
-                    b.Navigation("CompanyCertificateTypeAssignedStatus");
-
-                    b.Navigation("CompanyCertificateTypeDescriptions");
-
-                    b.Navigation("CompanyCertificates");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.CompanyCertificateTypeStatus", b =>
-                {
-                    b.Navigation("CompanyCertificateTypeAssignedStatuses");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Address", b =>
@@ -9741,8 +9097,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("CompanyIdentifiers");
 
-                    b.Navigation("CompanySsiDetails");
-
                     b.Navigation("CompanyWalletData");
 
                     b.Navigation("Consents");
@@ -9791,6 +9145,30 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyApplications");
                 });
 
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificate", b =>
+                {
+                    b.Navigation("CompanyCertificateAssignedSites");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateStatus", b =>
+                {
+                    b.Navigation("CompanyCertificates");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateType", b =>
+                {
+                    b.Navigation("CompanyCertificateTypeAssignedStatus");
+
+                    b.Navigation("CompanyCertificateTypeDescriptions");
+
+                    b.Navigation("CompanyCertificates");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyCertificateTypeStatus", b =>
+                {
+                    b.Navigation("CompanyCertificateTypeAssignedStatuses");
+                });
+
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyRole", b =>
                 {
                     b.Navigation("AgreementAssignedCompanyRoles");
@@ -9827,11 +9205,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyServiceAccounts");
                 });
 
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanySsiDetailStatus", b =>
-                {
-                    b.Navigation("CompanySsiDetails");
-                });
-
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyStatus", b =>
                 {
                     b.Navigation("Companies");
@@ -9839,8 +9212,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", b =>
                 {
-                    b.Navigation("CompanySsiDetails");
-
                     b.Navigation("CompanyUserAssignedBusinessPartners");
 
                     b.Navigation("CompanyUserAssignedIdentityProviders");
@@ -9905,8 +9276,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Companies");
 
                     b.Navigation("CompanyCertificates");
-
-                    b.Navigation("CompanySsiDetail");
 
                     b.Navigation("Connector");
 
@@ -10141,8 +9510,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyAssignedUseCase");
 
                     b.Navigation("UseCaseDescriptions");
-
-                    b.Navigation("VerifiedCredentialAssignedUseCase");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.UserRole", b =>
@@ -10159,34 +9526,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("CompanyRoleAssignedRoleCollection");
 
                     b.Navigation("UserRoleCollectionDescriptions");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalType", b =>
-                {
-                    b.Navigation("VerifiedCredentialExternalTypeUseCaseDetailVersions");
-
-                    b.Navigation("VerifiedCredentialTypeAssignedExternalTypes");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialExternalTypeUseCaseDetailVersion", b =>
-                {
-                    b.Navigation("CompanySsiDetails");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialType", b =>
-                {
-                    b.Navigation("CompanySsiDetails");
-
-                    b.Navigation("VerifiedCredentialTypeAssignedExternalType");
-
-                    b.Navigation("VerifiedCredentialTypeAssignedKind");
-
-                    b.Navigation("VerifiedCredentialTypeAssignedUseCase");
-                });
-
-            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.VerifiedCredentialTypeKind", b =>
-                {
-                    b.Navigation("VerifiedCredentialTypeAssignedKinds");
                 });
 #pragma warning restore 612, 618
         }
