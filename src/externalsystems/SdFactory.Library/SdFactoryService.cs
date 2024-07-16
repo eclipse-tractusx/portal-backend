@@ -54,12 +54,12 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
     }
 
     /// <inheritdoc />
-    public async Task RegisterSelfDescriptionAsync(Guid applicationId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task RegisterSelfDescriptionAsync(Guid externalId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         var requestModel = new SdFactoryRequestModel(
-            applicationId.ToString(),
+            externalId.ToString(),
             uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),
             countryCode,
             countryCode,

@@ -219,4 +219,13 @@ public class ConnectorsRepository : IConnectorsRepository
             con.HostId ?? con.ProviderId,
             con.HostId != null ? con.Host!.Name : con.Provider!.Name)
     ).SingleOrDefaultAsync();
+
+    public Task<bool> HasAnyConnectorsWithMissingSelfDescription() =>
+        _context.Connectors.AnyAsync(c => c.SelfDescriptionDocumentId == null);
+
+    public IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetConnectorsWithMissingSelfDescription() =>
+        _context.Connectors
+            .Where(c => c.SelfDescriptionDocumentId == null)
+            .Select(c => new ValueTuple<Guid, string?, Guid?>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId))
+            .ToAsyncEnumerable();
 }

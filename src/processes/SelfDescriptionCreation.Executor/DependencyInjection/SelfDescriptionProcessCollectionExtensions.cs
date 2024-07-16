@@ -17,17 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-public enum ProcessTypeId
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
+
+public static class SelfDescriptionProcessCollectionExtensions
 {
-    APPLICATION_CHECKLIST = 1,
-    OFFER_SUBSCRIPTION = 3,
-    PARTNER_REGISTRATION = 4,
-    MAILING = 5,
-    INVITATION = 6,
-    DIM_TECHNICAL_USER = 7,
-    USER_PROVISIONING = 8,
-    IDENTITYPROVIDER_PROVISIONING = 9,
-    SELF_DESCRIPTION_CREATION = 10
+    public static IServiceCollection AddSelfDescriptionCreationProcessExecutor(this IServiceCollection services) =>
+        services
+            .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();
 }

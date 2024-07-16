@@ -424,4 +424,32 @@ public class CompanyRepository(PortalDbContext context)
             c.Id,
             c.Name)
     ).SingleOrDefaultAsync();
+
+    public Task<bool> HasAnyCompaniesWithMissingSelfDescription() =>
+        context.Companies.AnyAsync(c =>
+            c.SelfDescriptionDocumentId == null &&
+            c.CompanyApplications.Any(ca =>
+                ca.ApplicationChecklistEntries.Any(a =>
+                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)));
+
+    public IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompaniesWithMissingSelfDescription() =>
+        context.Companies.Where(c =>
+            c.SelfDescriptionDocumentId == null &&
+            c.CompanyApplications.Any(ca =>
+                ca.ApplicationChecklistEntries.Any(a =>
+                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+            .Select(c => new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+                c.Id,
+                c.CompanyIdentifiers.Select(ci => new ValueTuple<UniqueIdentifierId, string>(ci.UniqueIdentifierId, ci.Value)),
+                c.BusinessPartnerNumber,
+                c.Address!.Country!.Alpha2Code
+            ))
+            .ToAsyncEnumerable();
+
+    public Task<bool> IsExistingCompany(Guid companyId) =>
+        context.Companies.AnyAsync(c => c.Id == companyId);
 }

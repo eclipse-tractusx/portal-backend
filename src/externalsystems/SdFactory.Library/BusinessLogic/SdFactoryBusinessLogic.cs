@@ -133,7 +133,7 @@ public class SdFactoryBusinessLogic(
     }
 
     /// <inheritdoc />
-    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
+    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         var confirm = ValidateData(data);
         Guid? documentId = null;
@@ -141,6 +141,7 @@ public class SdFactoryBusinessLogic(
         {
             documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
+
         portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
         {
             if (documentId != null)
@@ -156,6 +157,16 @@ public class SdFactoryBusinessLogic(
 
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });
+    }
+
+    public async Task ProcessFinishSelfDescriptionLpForCompany(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        if (data.Status == SelfDescriptionStatus.Confirm)
+        {
+            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.ExternalId, null,
+                c => { c.SelfDescriptionDocumentId = documentId; });
+        }
     }
 
     private static bool ValidateData(SelfDescriptionResponseData data)

@@ -367,7 +367,7 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
         }
 
-        await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -429,7 +429,7 @@ public class ConnectorsBusinessLogic(
         portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetConnectorOfferSubscriptionData(connectorIdSet, _identityData.CompanyId);
 
-    public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size) => 
+    public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
             size,

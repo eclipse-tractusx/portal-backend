@@ -359,7 +359,7 @@ public class CompanyDataBusinessLogic(
         );
     }
 
-    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) => 
+    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
             size,

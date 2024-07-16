@@ -525,7 +525,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
