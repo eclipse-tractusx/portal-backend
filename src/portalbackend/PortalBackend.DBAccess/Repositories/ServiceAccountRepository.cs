@@ -71,7 +71,6 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
 
     public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId) =>
         portalDbContext.CompanyServiceAccounts
-            .AsNoTracking()
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE
@@ -89,7 +88,6 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
 
     public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
         portalDbContext.CompanyServiceAccounts
-            .AsNoTracking()
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
                 serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&

@@ -139,7 +139,6 @@ public class ProcessStepRepository : IProcessStepRepository
 
     public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, CompanyServiceAccount? ServiceAccount)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
-            .AsNoTracking()
             .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, CompanyServiceAccount?>(
                 x.ProcessTypeId,

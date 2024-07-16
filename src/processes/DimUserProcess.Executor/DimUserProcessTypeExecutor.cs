@@ -31,14 +31,17 @@ public class DimUserProcessTypeExecutor(
     IPortalRepositories portalRepositories,
     IDimUserProcessService dimUserProcessService) : IProcessTypeExecutor
 {
-    private readonly IEnumerable<ProcessStepTypeId> _executableProcessSteps =
-        [ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER];
-
     private static readonly IEnumerable<int> RecoverableStatusCodes =
     [
         (int)HttpStatusCode.BadGateway,
         (int)HttpStatusCode.ServiceUnavailable,
         (int)HttpStatusCode.GatewayTimeout
+    ];
+
+    private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps =
+    [
+        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER,
+        ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER
     ];
 
     private Guid _dimServiceAccountId;
@@ -47,9 +50,9 @@ public class DimUserProcessTypeExecutor(
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.DIM_TECHNICAL_USER;
 
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) =>
-        _executableProcessSteps.Contains(processStepTypeId);
+        ExecutableProcessSteps.Contains(processStepTypeId);
 
-    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => _executableProcessSteps;
+    public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => ExecutableProcessSteps;
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
@@ -96,20 +99,30 @@ public class DimUserProcessTypeExecutor(
         }
         catch (Exception ex) when (ex is not SystemException)
         {
-            (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex);
+            (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex, processStepTypeId);
             modified = true;
         }
 
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
-    private (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex) =>
+    private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId) =>
         ex switch
         {
             ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
             FlurlHttpException { StatusCode: not null } flurlHttpException when
                 RecoverableStatusCodes.Contains(flurlHttpException.StatusCode.Value) => (ProcessStepStatusId.TODO,
                     ex.Message, null),
-            _ => (ProcessStepStatusId.FAILED, ex.Message, Enumerable.Repeat(GetProcessTypeId() == ProcessTypeId.DIM_TECHNICAL_USER ? ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER : ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER, 1))
+            _ => (
+                    ProcessStepStatusId.FAILED,
+                    ex.Message,
+                    processStepTypeId switch
+                    {
+                        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER => [ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER],
+                        ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER => [ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER],
+                        _ => throw new UnexpectedConditionException(
+                            $"Execution for {processStepTypeId} is currently not supported.")
+                    }
+                )
         };
 }
