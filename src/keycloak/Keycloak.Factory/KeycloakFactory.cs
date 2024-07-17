@@ -32,6 +32,7 @@ public class KeycloakFactory : IKeycloakFactory
 
     private static readonly JsonSerializerSettings SerializerSettings = new()
     {
+        NullValueHandling = NullValueHandling.Ignore,
         ContractResolver = new DefaultContractResolver
         {
             NamingStrategy = new CamelCaseNamingStrategy
