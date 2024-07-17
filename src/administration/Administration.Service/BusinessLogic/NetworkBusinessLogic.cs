@@ -56,7 +56,7 @@ public class NetworkBusinessLogic(
     {
         if (!string.IsNullOrEmpty(data.Name) && !Company.IsMatch(data.Name))
         {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressions.CompanyError}", "organisationName");
         }
 
         var ownerCompanyId = _identityData.CompanyId;

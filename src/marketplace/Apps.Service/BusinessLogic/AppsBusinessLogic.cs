@@ -160,7 +160,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {
         if (!string.IsNullOrWhiteSpace(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}");
         }
 
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)

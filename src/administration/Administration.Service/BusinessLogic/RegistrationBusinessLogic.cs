@@ -87,7 +87,7 @@ public sealed class RegistrationBusinessLogic(
         }
         if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
         {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressions.CompanyError}", "organisationName");
         }
 
         return new CompanyWithAddressData(
@@ -126,7 +126,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}", nameof(companyName));
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -201,7 +201,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}", nameof(companyName));
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
