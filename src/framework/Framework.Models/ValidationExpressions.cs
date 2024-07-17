@@ -24,4 +24,5 @@ public static class ValidationExpressions
     public const string Name = @"^.+$";
     public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
     public const string Company = @"^(?!.*\s$)([\wÀ-ÿ£$€¥¢@%*+\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
+    public const string CompanyError = "length must be between 1 and 160 characters and not start or end with a white space";
 }

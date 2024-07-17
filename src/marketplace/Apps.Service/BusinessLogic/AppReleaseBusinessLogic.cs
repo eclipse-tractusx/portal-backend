@@ -191,7 +191,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw new ControllerArgumentException($"Provider: {ValidationExpressions.CompanyError}", nameof(appRequestModel.Provider));
         }
 
         return CreateAppAsync(appRequestModel);
@@ -271,7 +271,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw new ControllerArgumentException($"Provider: {ValidationExpressions.CompanyError}", nameof(appRequestModel.Provider));
         }
 
         if (appRequestModel.SalesManagerId.HasValue)
