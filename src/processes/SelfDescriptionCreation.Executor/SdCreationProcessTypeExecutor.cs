@@ -111,7 +111,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
             }
 
             var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
-            await sdFactoryService.RegisterConnectorAsync(id, businessPartnerNumber, selfDescriptionDocumentUrl, cancellationToken)
+            await sdFactoryService.RegisterConnectorAsync(id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
 
             var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)

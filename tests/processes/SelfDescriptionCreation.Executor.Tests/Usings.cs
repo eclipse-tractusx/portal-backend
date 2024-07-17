@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,15 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System;
-using System.Text.Json.Serialization;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
-
-public record WalletErrorResponse([property: JsonPropertyName("message")] string Message);
-
-public record MembershipErrorResponse([property: JsonPropertyName("title")] string Title);
-
-public record WalletCreationResponse([property: JsonPropertyName("did")] string Did);
-
-public record WalletCreationLogData([property: JsonPropertyName("did")] string Did, [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt);
+global using AutoFixture;
+global using AutoFixture.AutoFakeItEasy;
+global using FakeItEasy;
+global using FluentAssertions;
+global using Xunit;

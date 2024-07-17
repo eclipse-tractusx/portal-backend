@@ -53,4 +53,5 @@ public interface ICompanyDataBusinessLogic
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);
     Task<DimUrlsResponse> GetDimServiceUrls();
     Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size);
+    Task TriggerSelfDescriptionCreation();
 }

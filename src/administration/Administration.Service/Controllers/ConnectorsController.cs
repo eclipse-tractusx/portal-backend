@@ -276,4 +276,24 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<ConnectorMissingSdDocumentData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument([FromQuery] int page = 0, [FromQuery] int size = 15) =>
         _businessLogic.GetConnectorsWithMissingSdDocument(page, size);
+
+    /// <summary>
+    /// Triggers the process to create the missing self description documents
+    /// </summary>
+    /// <returns>NoContent</returns>
+    /// Example: POST: /api/administration/connectors/trigger-self-description
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("trigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerSelfDescriptionProcess()
+    {
+        await _businessLogic.TriggerSelfDescriptionCreation().ConfigureAwait(false);
+        return NoContent();
+    }
 }

@@ -46,6 +46,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
@@ -65,6 +66,7 @@ public class CompanyDataBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
         var issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
         _now = _fixture.Create<DateTimeOffset>();
@@ -80,6 +82,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
 
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -1072,6 +1075,38 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region GetCompaniesWithMissingSdDocument
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument_WithMoreData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocCompanies(15);
+
+        // Act
+        var result = await _sut.GetCompaniesWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument_WithLessData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocCompanies(7);
+
+        // Act
+        var result = await _sut.GetCompaniesWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(7);
+    }
+
+    #endregion
+
     #region DeleteCompanyCertificates
 
     [Fact]
@@ -1204,6 +1239,74 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region TriggerSelfDescriptionCreation
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithMissingSdDocsForConnectorAndCompany_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
+            .Returns(true);
+
+        // Act
+        await _sut.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().NotBeNull()
+            .And.ContainSingle()
+            .Which.ProcessTypeId.Should().Be(ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(1)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithoutMissingSdDocsForCompany_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
+            .Returns(false);
+
+        // Act
+        await _sut.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().BeEmpty();
+        processSteps.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupCreateCompanyCertificate()
@@ -1234,6 +1337,15 @@ public class CompanyDataBusinessLogicTests
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test.pdf", MediaTypeId.PDF, true, true));
         A.CallTo(() => _companyCertificateRepository.GetCompanyCertificateDocumentDataAsync(new Guid("aaf53459-c36b-408e-a805-0b406ce9751d"), DocumentTypeId.COMPANY_CERTIFICATE))
             .ReturnsLazily(() => new ValueTuple<byte[], string, MediaTypeId, bool, bool>(content, "test1.pdf", MediaTypeId.PDF, true, false));
+    }
+
+    private void SetupFakesForGetMissingSdDocCompanies(int count = 5)
+    {
+        var companyMissingSdDocumentData = _fixture.CreateMany<CompanyMissingSdDocumentData>(count);
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<CompanyMissingSdDocumentData>(companyMissingSdDocumentData.Count(), companyMissingSdDocumentData.Skip(skip).Take(take)));
+
+        A.CallTo(() => _companyRepository.GetCompaniesWithMissingSdDocument())!
+            .Returns(paginationResult);
     }
 
     #endregion

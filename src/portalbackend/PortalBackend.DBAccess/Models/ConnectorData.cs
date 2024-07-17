@@ -80,4 +80,4 @@ public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, Offe
 
 public record TechnicalUserData(Guid Id, string Name, string? ClientId, string Description);
 
-public record ConnectorMissingSdDocumentData(Guid Id, string Name, Guid CompanyId, string CompanyName);
+public record ConnectorMissingSdDocumentData(Guid ConnectorId, string Name, Guid CompanyId, string CompanyName);

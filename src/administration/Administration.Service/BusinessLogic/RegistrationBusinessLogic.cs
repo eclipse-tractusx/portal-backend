@@ -167,7 +167,7 @@ public sealed class RegistrationBusinessLogic(
         {
             throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
         }
-        var applications = _portalRepositories.GetInstance<IApplicationRepository>()
+        var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
                 companyName?.Length >= 3 ? companyName : null,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
@@ -339,7 +339,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
+        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
@@ -358,7 +358,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Process Dim called with the following data {Data}", data);
+        logger.LogInformation("Process Dim called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
 
         await dimBusinessLogic.ProcessDimResponse(bpn, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
@@ -435,7 +435,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
+        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
         var isExistingCompany = await portalRepositories.GetInstance<ICompanyRepository>().IsExistingCompany(data.ExternalId);
 
         if (isExistingCompany)
@@ -700,28 +700,5 @@ public sealed class RegistrationBusinessLogic(
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(false);
-    }
-
-    public async Task TriggerSelfDescriptionCreation()
-    {
-        var hasMissingSdDocumentCompanies = await portalRepositories.GetInstance<ICompanyRepository>().HasAnyCompaniesWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
-        var hasMissingSdDocumentConnectors = await portalRepositories.GetInstance<IConnectorsRepository>().HasAnyConnectorsWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
-        if (hasMissingSdDocumentCompanies || hasMissingSdDocumentConnectors)
-        {
-            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
-            var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
-
-            if (hasMissingSdDocumentCompanies)
-            {
-                processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepStatusId.TODO, processId);
-            }
-
-            if (hasMissingSdDocumentConnectors)
-            {
-                processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, ProcessStepStatusId.TODO, processId);
-            }
-
-            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-        }
     }
 }

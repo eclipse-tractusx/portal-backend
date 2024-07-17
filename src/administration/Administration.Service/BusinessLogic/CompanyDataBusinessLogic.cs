@@ -439,4 +439,18 @@ public class CompanyDataBusinessLogic(
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
+
+    public async Task TriggerSelfDescriptionCreation()
+    {
+        var hasMissingSdDocumentCompanies = await portalRepositories.GetInstance<ICompanyRepository>().HasAnyCompaniesWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
+        if (hasMissingSdDocumentCompanies)
+        {
+            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
+
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepStatusId.TODO, processId);
+
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
 }

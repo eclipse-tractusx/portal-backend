@@ -35,7 +35,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class RegistrationControllerTest
 {
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
-    private readonly IIdentityData _identity;
     private readonly IRegistrationBusinessLogic _logic;
     private readonly RegistrationController _controller;
     private readonly IFixture _fixture;
@@ -45,13 +44,13 @@ public class RegistrationControllerTest
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.ConfigureFixture();
 
-        _identity = A.Fake<IIdentityData>();
-        A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
-        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        var identity = A.Fake<IIdentityData>();
+        A.CallTo(() => identity.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identity.CompanyId).Returns(Guid.NewGuid());
         _logic = A.Fake<IRegistrationBusinessLogic>();
         _controller = new RegistrationController(_logic);
-        _controller.AddControllerContextWithClaimAndBearer(AccessToken, _identity);
+        _controller.AddControllerContextWithClaimAndBearer(AccessToken, identity);
     }
 
     [Fact]
