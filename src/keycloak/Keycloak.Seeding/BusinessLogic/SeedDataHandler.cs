@@ -28,10 +28,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public class SeedDataHandler : ISeedDataHandler
 {
-    public SeedDataHandler()
-    {
-    }
-
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
