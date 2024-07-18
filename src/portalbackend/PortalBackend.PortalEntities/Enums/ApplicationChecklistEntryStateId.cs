@@ -25,5 +25,6 @@ public enum ApplicationChecklistEntryStatusId
     TO_DO = 1,
     IN_PROGRESS = 2,
     DONE = 3,
-    FAILED = 4
+    FAILED = 4,
+    SKIPPED = 5
 }

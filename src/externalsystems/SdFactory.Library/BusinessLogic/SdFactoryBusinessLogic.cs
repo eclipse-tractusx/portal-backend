@@ -53,11 +53,15 @@ public class SdFactoryBusinessLogic(
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.SKIPPED,
-                entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
+                entry =>
+                {
+                    entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.SKIPPED;
+                    entry.Comment = "Self description was skipped due to clearinghouse trigger is disabled";
+                },
                 new[] { ProcessStepTypeId.ACTIVATE_APPLICATION },
                 null,
                 true,
-                null
+                "Self description was skipped due to clearinghouse trigger is disabled"
             );
         }
 

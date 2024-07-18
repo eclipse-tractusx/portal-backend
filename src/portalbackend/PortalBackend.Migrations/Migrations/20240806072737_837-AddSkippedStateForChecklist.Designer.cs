@@ -22,6 +22,7 @@ using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -31,9 +32,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    partial class PortalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240806072737_837-AddSkippedStateForChecklist")]
+    partial class _837AddSkippedStateForChecklist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6758,26 +6761,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 706,
                             Label = "DELETE_IDENTITY_PROVIDER"
-                        },
-                        new
-                        {
-                            Id = 800,
-                            Label = "SELF_DESCRIPTION_CONNECTOR_CREATION"
-                        },
-                        new
-                        {
-                            Id = 801,
-                            Label = "SELF_DESCRIPTION_COMPANY_CREATION"
-                        },
-                        new
-                        {
-                            Id = 802,
-                            Label = "RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION"
-                        },
-                        new
-                        {
-                            Id = 803,
-                            Label = "RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION"
                         });
                 });
 
@@ -6838,11 +6821,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 9,
                             Label = "IDENTITYPROVIDER_PROVISIONING"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Label = "SELF_DESCRIPTION_CREATION"
                         });
                 });
 

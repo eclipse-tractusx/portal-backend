@@ -71,11 +71,13 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId.TODO, null, null, null, false, null));
         }
+
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
-        if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE))
+        if (!(prerequisiteEntries.All(entry => entry.Value == ApplicationChecklistEntryStatusId.DONE) || prerequisiteEntries.All(entry => entry is { Key: ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, Value: ApplicationChecklistEntryStatusId.SKIPPED } || (entry.Key != ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && entry.Value == ApplicationChecklistEntryStatusId.DONE))))
         {
             throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
         }
+
         return HandleApplicationActivationInternal(context, cancellationToken);
     }
 
@@ -87,8 +89,8 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
-        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse, applicationTypeId, networkRegistrationProcessId) = result;
 
+        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse, applicationTypeId, networkRegistrationProcessId) = result;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");

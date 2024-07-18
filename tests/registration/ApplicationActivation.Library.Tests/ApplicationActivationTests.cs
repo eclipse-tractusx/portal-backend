@@ -275,8 +275,10 @@ public class ApplicationActivationTests
         result.Modified.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task HandleApplicationActivation_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
+    [Theory]
+    [InlineData(ApplicationChecklistEntryStatusId.DONE)]
+    [InlineData(ApplicationChecklistEntryStatusId.SKIPPED)]
+    public async Task HandleApplicationActivation_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications(ApplicationChecklistEntryStatusId sdFactoryStatusId)
     {
         //Arrange
         var roles = new[] { "Company Admin" };
@@ -318,7 +320,7 @@ public class ApplicationActivationTests
                 {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
                 {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, sdFactoryStatusId},
                 {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
             }.ToImmutableDictionary(),
             Enumerable.Empty<ProcessStepTypeId>());
