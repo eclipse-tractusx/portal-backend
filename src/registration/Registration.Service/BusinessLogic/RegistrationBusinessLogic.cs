@@ -548,14 +548,17 @@ public class RegistrationBusinessLogic(
 
         if (GetAndValidateUpdateApplicationStatus(applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration) != CompanyApplicationStatusId.SUBMITTED)
         {
-            throw new UnexpectedConditionException("updateStatus should allways be SUBMITTED here");
+            throw new UnexpectedConditionException("updateStatus should always be SUBMITTED here");
         }
 
-        portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocuments(
-            applicationUserData.DocumentDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
-                x.DocumentId,
-                doc => doc.DocumentStatusId = x.StatusId,
-                doc => doc.DocumentStatusId = DocumentStatusId.LOCKED)));
+        if (applicationUserData.DocumentDatas != null && applicationUserData.DocumentDatas.Any())
+        {
+            portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocuments(
+               applicationUserData.DocumentDatas.Select(x => new ValueTuple<Guid, Action<Document>?, Action<Document>>(
+                   x.DocumentId,
+                   doc => doc.DocumentStatusId = x.StatusId,
+                   doc => doc.DocumentStatusId = DocumentStatusId.LOCKED)));
+        }
 
         var entries = await checklistService.CreateInitialChecklistAsync(applicationId);
 
@@ -642,7 +645,7 @@ public class RegistrationBusinessLogic(
         {
             throw new ConflictException($"Agreement and Consent must not be empty");
         }
-        if (!applicationUserData.DocumentDatas.Any())
+        if (!_settings.IsSubmitDocumentValidationOptional && !applicationUserData.DocumentDatas.Any())
         {
             throw new ConflictException($"At least one Document type Id must be [{string.Join(", ", docTypeIds)}]");
         }

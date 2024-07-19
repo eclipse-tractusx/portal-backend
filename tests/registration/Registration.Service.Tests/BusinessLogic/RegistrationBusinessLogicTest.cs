@@ -2011,7 +2011,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns<CompanyApplicationUserEmailData?>(null);
@@ -2030,135 +2031,7 @@ public class RegistrationBusinessLogicTest
     [Fact]
     public async Task SubmitRegistrationAsync_WithDocumentId_Success()
     {
-        // Arrange
-        var applicationId = _fixture.Create<Guid>();
-        var now = DateTimeOffset.Now;
-        var documents = new DocumentStatusData[] {
-            new(Guid.NewGuid(),DocumentStatusId.PENDING),
-            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
-        };
-        var checklist = _fixture.CreateMany<ApplicationChecklistEntryTypeId>(3).Select(x => (x, ApplicationChecklistEntryStatusId.TO_DO)).ToImmutableArray();
-        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
-        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
-        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
-        var agreementConsents = new[]
-        {
-            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
-        };
-        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
-        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
-            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
-
-        var modifiedDocuments = new List<(Document Initial, Document Modified)>();
-
-        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>._))
-            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentKeyActions) =>
-            {
-                foreach (var x in documentKeyActions)
-                {
-                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
-                    x.Initialize?.Invoke(initial);
-                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
-                    x.Modify(modified);
-                    modifiedDocuments.Add((initial, modified));
-                }
-            });
-
-        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
-            .Returns(checklist);
-
-        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
-            .Returns(stepTypeIds);
-
-        var utcNow = DateTimeOffset.UtcNow;
-
-        Process? process = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
-            .ReturnsLazily((ProcessTypeId processTypeId) =>
-            {
-                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
-                return process;
-            });
-
-        CompanyApplication? application = null;
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                application = new CompanyApplication(applicationId, Guid.Empty, default, default, default);
-                setOptionalParameters(application);
-            });
-
-        IEnumerable<ProcessStep>? processSteps = null;
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
-            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
-            {
-                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
-                return processSteps;
-            });
-        var settings = new RegistrationSettings
-        {
-            SubmitDocumentTypeIds = [
-                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
-        };
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
-
-        // Act
-        await sut.SubmitRegistrationAsync(applicationId);
-
-        // Assert
-        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
-            .MustHaveHappenedOnceExactly();
-
-        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>.That.Matches(x => x.Count() == 2)))
-            .MustHaveHappenedOnceExactly();
-
-        modifiedDocuments.Should().HaveCount(2).And.Satisfy(
-            x => x.Initial.Id == documents[0].DocumentId && x.Initial.DocumentStatusId == documents[0].StatusId && x.Modified.Id == documents[0].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED,
-            x => x.Initial.Id == documents[1].DocumentId && x.Initial.DocumentStatusId == documents[1].StatusId && x.Modified.Id == documents[1].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED
-        );
-
-        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
-            .MustHaveHappenedOnceExactly();
-
-        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
-            .MustHaveHappenedOnceExactly();
-
-        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
-            .MustHaveHappenedOnceExactly();
-
-        process.Should().NotBeNull();
-        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
-
-        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .MustHaveHappenedOnceExactly();
-
-        application.Should().NotBeNull();
-        application!.ChecklistProcessId.Should().Be(process!.Id);
-        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        application.DateLastChanged.Should().Be(now);
-
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
-            .MustHaveHappenedOnceExactly();
-
-        processSteps.Should().NotBeNull()
-            .And.HaveCount(stepTypeIds.Length)
-            .And.AllSatisfy(x =>
-                {
-                    x.ProcessId.Should().Be(process.Id);
-                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
-                })
-            .And.Satisfy(
-                x => x.ProcessStepTypeId == stepTypeIds[0],
-                x => x.ProcessStepTypeId == stepTypeIds[1],
-                x => x.ProcessStepTypeId == stepTypeIds[2]
-            );
-
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        await SubmitRegistrationAsync_SuccessHelper(false);
     }
 
     [Theory]
@@ -2191,7 +2064,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
@@ -2237,7 +2111,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(statusId, true, _fixture.Create<string>(), documents, companyData, agreementConsents));
@@ -2275,7 +2150,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, false, null, null!, companyData, agreementConsents));
@@ -2313,7 +2189,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
@@ -2556,7 +2433,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         var application = _fixture.Build<CompanyApplication>()
             .With(x => x.Id, applicationId)
@@ -2606,7 +2484,8 @@ public class RegistrationBusinessLogicTest
         {
             SubmitDocumentTypeIds = [
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
-            ]
+            ],
+            IsSubmitDocumentValidationOptional = false
         };
         var application = _fixture.Build<CompanyApplication>()
             .With(x => x.Id, applicationId)
@@ -2633,6 +2512,296 @@ public class RegistrationBusinessLogicTest
             .MustNotHaveHappened();
         result.Should().BeTrue();
         application.DateLastChanged.Should().Be(now);
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithMandatorySubmitDocument_ThrowsConflictException()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var identityData = A.Fake<IIdentityData>();
+        A.CallTo(() => identityData.IdentityId).Returns(userId);
+        A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identityData.CompanyId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identityService.IdentityData).Returns(identityData);
+        var applicationId = _fixture.Create<Guid>();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
+        var settings = new RegistrationSettings
+        {
+            SubmitDocumentTypeIds = [
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            ],
+            IsSubmitDocumentValidationOptional = false,
+        };
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+
+        // Act
+        Task Act() => sut.SubmitRegistrationAsync(applicationId);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"At least one Document type Id must be [{string.Join(", ", settings.SubmitDocumentTypeIds)}]");
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithOptionalValidationEnableAndNoSubmitDocumentId_Success()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var now = DateTimeOffset.Now;
+
+        var checklist = _fixture.CreateMany<ApplicationChecklistEntryTypeId>(3).Select(x => (x, ApplicationChecklistEntryStatusId.TO_DO)).ToImmutableArray();
+        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", [], companyData, agreementConsents));
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .Returns(checklist);
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .Returns(stepTypeIds);
+
+        var utcNow = DateTimeOffset.UtcNow;
+
+        Process? process = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
+            {
+                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+                return process;
+            });
+
+        CompanyApplication? application = null;
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
+            {
+                application = new CompanyApplication(applicationId, Guid.Empty, default, default, default);
+                setOptionalParameters(application);
+            });
+
+        IEnumerable<ProcessStep>? processSteps = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+            {
+                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
+                return processSteps;
+            });
+        var settings = new RegistrationSettings
+        {
+            SubmitDocumentTypeIds = [
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            ],
+            IsSubmitDocumentValidationOptional = true
+        };
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
+
+        // Act
+        await sut.SubmitRegistrationAsync(applicationId);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(
+           A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>.Ignored
+       )).MustNotHaveHappened();
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
+            .MustHaveHappenedOnceExactly();
+
+        process.Should().NotBeNull();
+        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .MustHaveHappenedOnceExactly();
+
+        application.Should().NotBeNull();
+        application!.ChecklistProcessId.Should().Be(process!.Id);
+        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
+        application.DateLastChanged.Should().Be(now);
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .MustHaveHappenedOnceExactly();
+
+        processSteps.Should().NotBeNull()
+            .And.HaveCount(stepTypeIds.Length)
+            .And.AllSatisfy(x =>
+                {
+                    x.ProcessId.Should().Be(process.Id);
+                    x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+                })
+            .And.Satisfy(
+                x => x.ProcessStepTypeId == stepTypeIds[0],
+                x => x.ProcessStepTypeId == stepTypeIds[1],
+                x => x.ProcessStepTypeId == stepTypeIds[2]
+            );
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SubmitRegistrationAsync_WithOptionalValidationEnableAndWithSubmitDocumentId_Success()
+    {
+        await SubmitRegistrationAsync_SuccessHelper(true);
+    }
+
+    private async Task SubmitRegistrationAsync_SuccessHelper(bool isSubmitDocumentValidationOptional)
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+        var now = DateTimeOffset.Now;
+        var documents = new DocumentStatusData[] {
+            new(Guid.NewGuid(),DocumentStatusId.PENDING),
+            new(Guid.NewGuid(),DocumentStatusId.INACTIVE)
+        };
+        var checklist = _fixture.CreateMany<ApplicationChecklistEntryTypeId>(3).Select(x => (x, ApplicationChecklistEntryStatusId.TO_DO)).ToImmutableArray();
+        var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToImmutableArray();
+        var uniqueIds = _fixture.CreateMany<UniqueIdentifierId>(3).ToImmutableArray();
+        var companyRoleIds = _fixture.CreateMany<CompanyRoleId>(3).ToImmutableArray();
+        var agreementConsents = new[]
+        {
+            (Guid.NewGuid(), ConsentStatusId.ACTIVE),
+        };
+        var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
+            .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, "test@mail.de", documents, companyData, agreementConsents));
+
+        var modifiedDocuments = new List<(Document Initial, Document Modified)>();
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>._))
+            .Invokes((IEnumerable<(Guid DocumentId, Action<Document>? Initialize, Action<Document> Modify)> documentKeyActions) =>
+            {
+                foreach (var x in documentKeyActions)
+                {
+                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Initialize?.Invoke(initial);
+                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    x.Modify(modified);
+                    modifiedDocuments.Add((initial, modified));
+                }
+            });
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .Returns(checklist);
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .Returns(stepTypeIds);
+
+        var utcNow = DateTimeOffset.UtcNow;
+
+        Process? process = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
+            {
+                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+                return process;
+            });
+
+        CompanyApplication? application = null;
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .Invokes((Guid applicationId, Action<CompanyApplication> setOptionalParameters) =>
+            {
+                application = new CompanyApplication(applicationId, Guid.Empty, default, default, default);
+                setOptionalParameters(application);
+            });
+
+        IEnumerable<ProcessStep>? processSteps = null;
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+            {
+                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
+                return processSteps;
+            });
+        var settings = new RegistrationSettings
+        {
+            SubmitDocumentTypeIds = [
+                DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
+            ],
+            IsSubmitDocumentValidationOptional = isSubmitDocumentValidationOptional
+        };
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
+
+        // Act
+        await sut.SubmitRegistrationAsync(applicationId);
+
+        // Assert
+        A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _documentRepository.AttachAndModifyDocuments(A<IEnumerable<(Guid DocumentId, Action<Document>?, Action<Document>)>>.That.Matches(x => x.Count() == 2)))
+            .MustHaveHappenedOnceExactly();
+
+        modifiedDocuments.Should().HaveCount(2).And.Satisfy(
+            x => x.Initial.Id == documents[0].DocumentId && x.Initial.DocumentStatusId == documents[0].StatusId && x.Modified.Id == documents[0].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED,
+            x => x.Initial.Id == documents[1].DocumentId && x.Initial.DocumentStatusId == documents[1].StatusId && x.Modified.Id == documents[1].DocumentId && x.Modified.DocumentStatusId == DocumentStatusId.LOCKED
+        );
+
+        A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>.That.IsSameSequenceAs(checklist)))
+            .MustHaveHappenedOnceExactly();
+
+        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
+            .MustHaveHappenedOnceExactly();
+
+        process.Should().NotBeNull();
+        process!.ProcessTypeId.Should().Be(ProcessTypeId.APPLICATION_CHECKLIST);
+
+        A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
+            .MustHaveHappenedOnceExactly();
+
+        application.Should().NotBeNull();
+        application!.ChecklistProcessId.Should().Be(process!.Id);
+        application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
+        application.DateLastChanged.Should().Be(now);
+
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .MustHaveHappenedOnceExactly();
+
+        processSteps.Should().NotBeNull()
+            .And.HaveCount(stepTypeIds.Length)
+            .And.AllSatisfy(x =>
+            {
+                x.ProcessId.Should().Be(process.Id);
+                x.ProcessStepStatusId.Should().Be(ProcessStepStatusId.TODO);
+            })
+            .And.Satisfy(
+                x => x.ProcessStepTypeId == stepTypeIds[0],
+                x => x.ProcessStepTypeId == stepTypeIds[1],
+                x => x.ProcessStepTypeId == stepTypeIds[2]
+            );
+
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     #endregion
