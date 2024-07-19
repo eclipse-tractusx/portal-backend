@@ -695,7 +695,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns<(Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?)>(default);
+            .Returns<(Guid, string, string?, IEnumerable<IdentityProviderForTheme>, CompanyApplicationTypeId, Guid?)>(default);
 
         //Act
         async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
@@ -945,13 +945,13 @@ public class ApplicationActivationTests
         };
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.INTERNAL, null));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { new IdentityProviderForTheme(IdpAlias, IdentityProviderTypeId.SHARED) }, CompanyApplicationTypeId.INTERNAL, null));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, ProcessId));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { new IdentityProviderForTheme(IdpAlias, IdentityProviderTypeId.SHARED) }, CompanyApplicationTypeId.EXTERNAL, ProcessId));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternalWithoutProcess)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, null));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { new IdentityProviderForTheme(IdpAlias, IdentityProviderTypeId.SHARED) }, CompanyApplicationTypeId.EXTERNAL, null));
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>(), CompanyApplicationTypeId.INTERNAL, null));
+            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<IdentityProviderForTheme>(), CompanyApplicationTypeId.INTERNAL, null));
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
             .Returns((company.Id, company.Name, company.BusinessPartnerNumber));
