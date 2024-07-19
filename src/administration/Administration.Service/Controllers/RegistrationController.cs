@@ -560,4 +560,25 @@ public class RegistrationController : ControllerBase
         await _logic.RetriggerDeleteCentralUser(processId).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Get OSP Company Application Detail by Company Name or Status
+    /// </summary>
+    /// <param name="page">page index start from 0</param>
+    /// <param name="size">size to get number of records</param>
+    /// <param name="companyApplicationStatusFilter">Search by company applicationstatus</param>
+    /// <param name="companyName">search by company name</param>
+    /// <returns>OSp Company Application Details</returns>
+    /// <remarks>
+    /// Example: GET: api/administration/registration/network/companies?companyName=Car&amp;page=0&amp;size=4&amp;companyApplicationStatus=Closed <br />
+    /// Example: GET: api/administration/registration/network/companies?page=0&amp;size=4
+    /// </remarks>
+    /// <response code="200">Result as a OSP Company Application Details</response>
+    [HttpGet]
+    [Authorize(Roles = "view_submitted_applications")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [Route("network/companies")]
+    [ProducesResponseType(typeof(Pagination.Response<CompanyDetailsOspOnboarding>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null) =>
+        _logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName);
 }

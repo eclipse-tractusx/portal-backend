@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -81,6 +82,7 @@ public class RegistrationBusinessLogicTest
     private readonly IProvisioningManager _provisioningManager;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IOptions<RegistrationSettings> _options;
+    private readonly IIdentityData _identityData;
 
     public RegistrationBusinessLogicTest()
     {
@@ -100,6 +102,8 @@ public class RegistrationBusinessLogicTest
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
         A.CallTo(() => _options.Value).Returns(settings);
+        var identityService = A.Fake<IIdentityService>();
+        _identityData = A.Fake<IIdentityData>();
 
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
@@ -115,9 +119,14 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
 
+        A.CallTo(() => _identityData.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => _identityData.CompanyId).Returns(Guid.NewGuid());
+        A.CallTo(() => identityService.IdentityData).Returns(_identityData);
+
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, identityService, logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -349,7 +358,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, null!, null!);
 
         // Act
         await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
@@ -426,7 +435,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 
