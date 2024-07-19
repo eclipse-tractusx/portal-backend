@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -92,9 +93,9 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, _validCompanyId);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.ServiceAccount.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
-        result.ServiceAccount.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
+        result.Should().NotBeNull().And.Match<CompanyServiceAccountWithRoleDataClientId>(
+            x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+                 x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
     }
 
     [Fact]
@@ -488,6 +489,38 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.Entries().Should().ContainSingle()
             .Which.Entity.Should().BeOfType<DimUserCreationData>()
             .Which.ProcessId.Should().Be(processId);
+    }
+
+    #endregion
+
+    #region AttachAndModifyServiceAccount
+
+    [Fact]
+    public async Task AttachAndModifyServiceAccount_ReturnsExpected()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var version = Guid.NewGuid();
+
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.AttachAndModifyCompanyServiceAccount(id, version,
+            x =>
+            {
+                x.Description = "test";
+                x.ClientClientId = "foo";
+            },
+            x => x.ClientClientId = "bar");
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Entity.Should().BeOfType<CompanyServiceAccount>()
+            .Which.Should().Match<CompanyServiceAccount>(
+                x => x.Id == id && x.Version != version && x.Description == "test" && x.ClientClientId == "bar"
+            );
     }
 
     #endregion

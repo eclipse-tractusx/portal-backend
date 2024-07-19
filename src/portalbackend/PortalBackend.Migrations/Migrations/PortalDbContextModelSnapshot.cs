@@ -36,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
             modelBuilder
                 .HasDefaultSchema("portal")
                 .UseCollation("en_US.utf8")
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -3616,10 +3616,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<DateTimeOffset?>("LockExpiryDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lock_expiry_date");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -6502,16 +6498,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
-                            Id = 114,
-                            Label = "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
-                        },
-                        new
-                        {
-                            Id = 115,
-                            Label = "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
-                        },
-                        new
-                        {
                             Id = 200,
                             Label = "SYNCHRONIZE_USER"
                         },
@@ -6687,6 +6673,31 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         },
                         new
                         {
+                            Id = 502,
+                            Label = "AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 503,
+                            Label = "RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 504,
+                            Label = "DELETE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 505,
+                            Label = "AWAIT_DELETE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
+                            Id = 506,
+                            Label = "RETRIGGER_DELETE_DIM_TECHNICAL_USER"
+                        },
+                        new
+                        {
                             Id = 600,
                             Label = "DELETE_CENTRAL_USER"
                         },
@@ -6734,21 +6745,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 706,
                             Label = "DELETE_IDENTITY_PROVIDER"
-                        },
-                        new
-                        {
-                            Id = 800,
-                            Label = "DELETE_DIM_TECHNICAL_USER"
-                        },
-                        new
-                        {
-                            Id = 801,
-                            Label = "AWAIT_DELETE_DIM_TECHNICAL_USER"
-                        },
-                        new
-                        {
-                            Id = 802,
-                            Label = "RETRIGGER_DELETE_DIM_TECHNICAL_USER"
                         });
                 });
 

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountWithRoleDataClientId(
-    CompanyServiceAccount ServiceAccount,
+    Guid ServiceAccountVersion,
+    string Name,
+    string Description,
+    string? ClientClientId,
+    CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    CompanyServiceAccountKindId CompanyServiceAccountKindId,
+    Guid? OfferSubscriptionId,
     UserStatusId UserStatusId,
     IEnumerable<UserRoleData> UserRoleDatas);

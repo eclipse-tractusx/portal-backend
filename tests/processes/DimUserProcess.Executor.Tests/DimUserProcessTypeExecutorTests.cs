@@ -197,14 +197,14 @@ public class DimUserProcessTypeExecutorTests
 
         // Arrange execute
         var error = _fixture.Create<TestException>();
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(processId, dimServiceAccountId, true, A<CancellationToken>._))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(processId, dimServiceAccountId, A<CancellationToken>._))
             .Throws(error);
 
         // Act execute
         var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(processId, dimServiceAccountId, true, CancellationToken.None))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
@@ -234,14 +234,14 @@ public class DimUserProcessTypeExecutorTests
 
         // Arrange execute
         var error = new ServiceException(_fixture.Create<string>(), true);
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(processId, dimServiceAccountId, true, A<CancellationToken>._))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(processId, dimServiceAccountId, A<CancellationToken>._))
             .Throws(error);
 
         // Act execute
         var executionResult = await _executor.ExecuteProcessStep(ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert execute
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(processId, dimServiceAccountId, true, A<CancellationToken>._))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(processId, dimServiceAccountId, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
         executionResult.Modified.Should().BeTrue();
@@ -270,7 +270,7 @@ public class DimUserProcessTypeExecutorTests
 
         // Arrange execute
         var error = new SystemException(_fixture.Create<string>());
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(processId, dimServiceAccountId, true, CancellationToken.None))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None))
             .Throws(error);
 
         // Act execute
@@ -350,10 +350,10 @@ public class DimUserProcessTypeExecutorTests
 
     private void SetupFakes()
     {
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(A<Guid>._, _dimServiceAccountId, true, A<CancellationToken>._))
+        A.CallTo(() => _dimUserProcessService.CreateDimUser(A<Guid>._, _dimServiceAccountId, A<CancellationToken>._))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null));
 
-        A.CallTo(() => _dimUserProcessService.CreateDeleteDimUser(A<Guid>._, _dimServiceAccountId, false, A<CancellationToken>._))
+        A.CallTo(() => _dimUserProcessService.DeleteDimUser(A<Guid>._, _dimServiceAccountId, A<CancellationToken>._))
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER, 1), ProcessStepStatusId.DONE, true, null));
     }
 

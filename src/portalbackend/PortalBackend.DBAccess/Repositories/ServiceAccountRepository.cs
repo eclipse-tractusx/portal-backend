@@ -40,11 +40,11 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
     {
         var entity = new CompanyServiceAccount(
             identityId,
+            Guid.NewGuid(),
             name,
             description,
             companyServiceAccountTypeId,
-            companyServiceAccountKindId,
-            Guid.NewGuid())
+            companyServiceAccountKindId)
         {
             ClientClientId = clientClientId
         };
@@ -54,19 +54,21 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
 
     public void AttachAndModifyCompanyServiceAccount(
         Guid id,
+        Guid version,
         Action<CompanyServiceAccount>? initialize,
         Action<CompanyServiceAccount> modify)
     {
         var companyServiceAccount = new CompanyServiceAccount(
             id,
+            version,
             null!,
             null!,
-            default,
             default,
             default);
         initialize?.Invoke(companyServiceAccount);
         portalDbContext.Attach(companyServiceAccount);
         modify(companyServiceAccount);
+        companyServiceAccount.UpdateVersion();
     }
 
     public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId) =>
@@ -76,7 +78,13 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 && serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE
                 && serviceAccount.Identity.CompanyId == userCompanyId)
             .Select(serviceAccount => new CompanyServiceAccountWithRoleDataClientId(
-                    serviceAccount,
+                    serviceAccount.Version,
+                    serviceAccount.Name,
+                    serviceAccount.Description,
+                    serviceAccount.ClientClientId,
+                    serviceAccount.CompanyServiceAccountTypeId,
+                    serviceAccount.CompanyServiceAccountKindId,
+                    serviceAccount.OfferSubscriptionId,
                     serviceAccount.Identity!.UserStatusId,
                     serviceAccount.Identity!.IdentityAssignedRoles
                         .Select(assignedRole => assignedRole.UserRole)
@@ -94,7 +102,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(sa => new OwnServiceAccountData(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
-                sa,
+                sa.Id,
+                sa.Version,
                 sa.Connector!.Id,
                 sa.ClientClientId,
                 sa.Connector!.StatusId,

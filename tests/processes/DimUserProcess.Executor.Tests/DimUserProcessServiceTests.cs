@@ -55,7 +55,7 @@ public class DimUserProcessServiceTests
     #region CreateDeleteDimUser
 
     [Fact]
-    public async Task CreateDeleteDimUser_WithValidCreate_ReturnsExpected()
+    public async Task CreateDimUser_ReturnsExpected()
     {
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
@@ -65,7 +65,7 @@ public class DimUserProcessServiceTests
             .Returns((true, Bpn, "dim-sa-test Foo Bar"));
 
         // Act
-        var result = await _sut.CreateDeleteDimUser(processId, dimServiceAccountId, true, CancellationToken.None);
+        var result = await _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
@@ -80,7 +80,7 @@ public class DimUserProcessServiceTests
     }
 
     [Fact]
-    public async Task CreateDeleteDimUser_WithValidDelete_ReturnsExpected()
+    public async Task DeleteDimUser_ReturnsExpected()
     {
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
@@ -90,7 +90,7 @@ public class DimUserProcessServiceTests
             .Returns((true, Bpn, "dim-sa-test Foo Bar"));
 
         // Act
-        var result = await _sut.CreateDeleteDimUser(processId, dimServiceAccountId, false, CancellationToken.None);
+        var result = await _sut.DeleteDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
@@ -114,7 +114,10 @@ public class DimUserProcessServiceTests
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
             .Returns(default((bool, string?, string)));
-        Task Act() => _sut.CreateDeleteDimUser(processId, dimServiceAccountId, createUser, CancellationToken.None);
+
+        Task Act() => createUser
+            ? _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None)
+            : _sut.DeleteDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -137,7 +140,10 @@ public class DimUserProcessServiceTests
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
             .Returns((true, null, "foo"));
-        Task Act() => _sut.CreateDeleteDimUser(processId, dimServiceAccountId, createUser, CancellationToken.None);
+
+        Task Act() => createUser
+            ? _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None)
+            : _sut.DeleteDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -160,7 +166,10 @@ public class DimUserProcessServiceTests
         var processId = Guid.NewGuid();
         A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
             .Returns((true, Bpn, "   "));
-        Task Act() => _sut.CreateDeleteDimUser(processId, dimServiceAccountId, createUser, CancellationToken.None);
+
+        Task Act() => createUser
+            ? _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None)
+            : _sut.DeleteDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);

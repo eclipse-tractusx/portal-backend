@@ -23,5 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.E
 
 public interface IDimUserProcessService
 {
-    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDeleteDimUser(Guid processId, Guid dimServiceAccountId, bool createUser, CancellationToken cancellationToken);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken);
+    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> DeleteDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken);
 }

@@ -88,10 +88,10 @@ public class DimUserProcessTypeExecutor(
             (nextStepTypeIds, stepStatusId, modified, processMessage) = processStepTypeId switch
             {
                 ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER => await dimUserProcessService
-                    .CreateDeleteDimUser(_processId, _dimServiceAccountId, true, cancellationToken)
+                    .CreateDimUser(_processId, _dimServiceAccountId, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER => await dimUserProcessService
-                    .CreateDeleteDimUser(_processId, _dimServiceAccountId, false, cancellationToken)
+                    .DeleteDimUser(_processId, _dimServiceAccountId, cancellationToken)
                     .ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => throw new UnexpectedConditionException(
                     $"Execution for {processStepTypeId} is currently not supported.")

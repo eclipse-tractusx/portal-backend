@@ -25,9 +25,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount : IBaseEntity, ILockableEntity
+public class CompanyServiceAccount : IBaseEntity, IVersionedEntity
 {
-    public CompanyServiceAccount(Guid id, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId, Guid version)
+    public CompanyServiceAccount(Guid id, Guid version, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId)
     {
         Id = id;
         Name = name;
@@ -55,8 +55,6 @@ public class CompanyServiceAccount : IBaseEntity, ILockableEntity
 
     [ConcurrencyCheck]
     public Guid Version { get; set; }
-
-    public DateTimeOffset? LockExpiryDate { get; set; }
 
     // Navigation properties
     public virtual Identity? Identity { get; set; }
