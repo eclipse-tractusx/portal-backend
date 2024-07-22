@@ -191,7 +191,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
         {
-            throw new ControllerArgumentException($"Provider: {ValidationExpressions.CompanyError}", nameof(appRequestModel.Provider));
+            throw new ControllerArgumentException($"Provider: {ValidationExpressionErrorMessages.CompanyError}", nameof(appRequestModel.Provider));
         }
 
         return CreateAppAsync(appRequestModel);
@@ -271,7 +271,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
         {
-            throw new ControllerArgumentException($"Provider: {ValidationExpressions.CompanyError}", nameof(appRequestModel.Provider));
+            throw new ControllerArgumentException($"Provider: {ValidationExpressionErrorMessages.CompanyError}", nameof(appRequestModel.Provider));
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

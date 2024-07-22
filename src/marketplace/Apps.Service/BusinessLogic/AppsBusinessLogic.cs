@@ -160,7 +160,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {
         if (!string.IsNullOrWhiteSpace(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}");
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}");
         }
 
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)

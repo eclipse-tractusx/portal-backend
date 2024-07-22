@@ -56,7 +56,7 @@ public class NetworkBusinessLogic(
     {
         if (!string.IsNullOrEmpty(data.Name) && !Company.IsMatch(data.Name))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressions.CompanyError}", "organisationName");
+            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }
 
         var ownerCompanyId = _identityData.CompanyId;

@@ -57,7 +57,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !Company.IsMatch(invitationData.OrganisationName))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressions.CompanyError}", "organisationName");
+            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }
 
         return ExecuteInvitationInternalAsync(invitationData);
