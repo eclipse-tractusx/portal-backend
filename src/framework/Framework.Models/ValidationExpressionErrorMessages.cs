@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,9 +19,8 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
-public static class ValidationExpressions
+// This class contains error messages for validation expressions
+public static class ValidationExpressionErrorMessages
 {
-    public const string Name = @"^.+$";
-    public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-    public const string Company = @"^(?!.*\s$)([\wÀ-ÿ£$€¥¢@%*+\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
+    public const string CompanyError = "length must be between 1 and 160 characters and not start or end with a white space";
 }

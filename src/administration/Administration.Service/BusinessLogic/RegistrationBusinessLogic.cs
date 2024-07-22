@@ -107,7 +107,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
         if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressions.CompanyError}", "organisationName");
+            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }
 
         return new CompanyWithAddressData(
@@ -146,7 +146,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}", nameof(companyName));
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
         }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -185,7 +185,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressions.CompanyError}", nameof(companyName));
+            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
         }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
