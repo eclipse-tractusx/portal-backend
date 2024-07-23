@@ -103,17 +103,18 @@ public class DimBusinessLogic : IDimBusinessLogic
 
     public async Task ProcessDimResponse(string bpn, DimWalletData data, CancellationToken cancellationToken)
     {
-        var (exists, companyId, companyApplicationStatusIds) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdByBpn(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!exists)
+        var companies = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdByBpn(bpn).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (!companies.Any())
         {
             throw new NotFoundException($"No company found for bpn {bpn}");
         }
 
-        if (companyApplicationStatusIds.Count() != 1)
+        if (companies.Count(x => x.SubmittedCompanyApplicationId.Count() == 1) != 1)
         {
             throw new ConflictException($"There must be exactly one company application in state {CompanyApplicationStatusId.SUBMITTED}");
         }
 
+        var (companyId, companyApplicationStatusIds) = companies.SingleOrDefault(x => x.SubmittedCompanyApplicationId.Count() == 1);
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 companyApplicationStatusIds.Single(),
