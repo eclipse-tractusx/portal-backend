@@ -175,7 +175,7 @@ public interface ICompanyRepository
     Task<bool> CheckBpnExists(string bpn);
     void CreateWalletData(Guid companyId, string did, JsonDocument didDocument, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, string authenticationServiceUrl);
     Task<(bool Exists, JsonDocument DidDocument)> GetDidDocumentById(string bpn);
-    IAsyncEnumerable<(Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
+    IAsyncEnumerable<(Guid CompanyId, IEnumerable<Guid> SubmittedApplicationIds)> GetCompanySubmittedApplicationIdsByBpn(string bpn);
     Task<(string? Bpn, string? Did, string? WalletUrl)> GetDimServiceUrls(Guid companyId);
     Task<(string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetWalletData(Guid identityId);
     void RemoveProviderCompanyDetails(Guid providerCompanyDetailId);

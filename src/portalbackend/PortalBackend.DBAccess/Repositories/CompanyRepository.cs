@@ -367,7 +367,7 @@ public class CompanyRepository(PortalDbContext context)
             .Select(x => new ValueTuple<bool, JsonDocument>(true, x.DidDocument))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn) =>
+    public IAsyncEnumerable<(Guid CompanyId, IEnumerable<Guid> SubmittedApplicationIds)> GetCompanySubmittedApplicationIdsByBpn(string bpn) =>
         context.Companies
             .Where(x => x.BusinessPartnerNumber == bpn)
             .Select(x => new ValueTuple<Guid, IEnumerable<Guid>>(
