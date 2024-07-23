@@ -712,7 +712,7 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
-            foreach (var serviceAccountClientId in offerDetails.ServiceAccountClientIds)
+            foreach (var serviceAccountClientId in offerDetails.InternalServiceAccountClientIds)
             {
                 await _provisioningManager.EnableClient(serviceAccountClientId).ConfigureAwait(ConfigureAwaitOptions.None);
             }
