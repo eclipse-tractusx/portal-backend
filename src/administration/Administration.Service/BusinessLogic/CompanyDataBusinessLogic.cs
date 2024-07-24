@@ -267,9 +267,9 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException("ValidTill date should be greater than current date");
         }
 
-        if (data.Issuer != null && !Company.IsMatch(data.Issuer!))
+        if (!string.IsNullOrEmpty(data.Issuer) && !ValidationExpressionsValidator.IsValidCompanyName(data.Issuer))
         {
-            throw new ControllerArgumentException("Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+            throw new ControllerArgumentException($"Issuer: {ValidationExpressionErrorMessages.CompanyError}", nameof(data.Issuer));
         }
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();
