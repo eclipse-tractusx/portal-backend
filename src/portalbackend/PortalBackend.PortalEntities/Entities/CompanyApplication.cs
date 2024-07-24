@@ -50,10 +50,10 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public DateTimeOffset? DateLastChanged { get; set; }
 
     public CompanyApplicationStatusId ApplicationStatusId { get; set; }
-    public Guid CompanyId { get; private set; }
+    public Guid CompanyId { get; set; }
     public Guid? ChecklistProcessId { get; set; }
 
-    public CompanyApplicationTypeId CompanyApplicationTypeId { get; private set; }
+    public CompanyApplicationTypeId CompanyApplicationTypeId { get; set; }
 
     public Guid? OnboardingServiceProviderId { get; set; }
 

@@ -121,7 +121,7 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _identityData.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _identityData.CompanyId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identityData.CompanyId).Returns(CompanyId);
         A.CallTo(() => identityService.IdentityData).Returns(_identityData);
 
         var logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
@@ -181,6 +181,59 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
+    }
+
+    #endregion
+
+    #region GetOSPCompanyApplicationDetailsAsync
+
+    [Fact]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusFilter.InReview, CompanyApplicationStatusFilter.Closed };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 5);
+        // Assert
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+        result.Content.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithInReviewRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusFilter.InReview };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview);
+        // Assert
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+        result.Content.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithClosedRequest_GetsExpectedEntries()
+    {
+        // Arrange
+        var companyAppStatus = new[] { CompanyApplicationStatusFilter.Closed };
+        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+            .Returns(companyApplicationData.AsQueryable());
+
+        // Act
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed);
+
+        // Assert
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+        result.Content.Should().HaveCount(3);
     }
 
     #endregion
@@ -358,7 +411,8 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, null!, null!);
+        var identityService = A.Fake<IIdentityService>();
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, identityService, null!);
 
         // Act
         await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
@@ -435,7 +489,8 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!, null!);
+        var identityService = A.Fake<IIdentityService>();
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, identityService, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 

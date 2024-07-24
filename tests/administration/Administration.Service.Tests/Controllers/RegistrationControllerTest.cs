@@ -72,6 +72,23 @@ public class RegistrationControllerTest
     }
 
     [Fact]
+    public async Task GetOspCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
+    {
+        //Arrange
+        var paginationResponse = new Pagination.Response<CompanyDetailsOspOnboarding>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyDetailsOspOnboarding>(5));
+        A.CallTo(() => _logic.GetOspCompanyDetailsAsync(0, 15, null, null))
+                  .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetOspCompanyDetailsAsync(0, 15, null, null);
+
+        //Assert
+        A.CallTo(() => _logic.GetOspCompanyDetailsAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
     public async Task GetCompanyWithAddressAsync_ReturnsExpectedResult()
     {
         //Arrange
