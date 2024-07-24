@@ -70,7 +70,6 @@ public class OfferServiceTests
     private readonly ITechnicalUserProfileRepository _technicalUserProfileRepository;
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly IIdentityService _identityService;
-    private readonly ILogger<OfferService> _logger;
 
     public OfferServiceTests()
     {
@@ -100,13 +99,12 @@ public class OfferServiceTests
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
-        _logger = A.Fake<ILogger<OfferService>>();
         A.CallTo(() => _identity.IdentityId).Returns(_companyUserId);
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => _identity.CompanyId).Returns(_companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
-        _sut = new OfferService(_portalRepositories, _notificationService, _mailingProcessCreation, _identityService, _offerSetupService, _logger);
+        _sut = new OfferService(_portalRepositories, _notificationService, _mailingProcessCreation, _identityService, _offerSetupService);
 
         SetupRepositories();
         _createNotificationsEnumerator = SetupServices();
@@ -766,7 +764,7 @@ public class OfferServiceTests
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
-        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService, _logger);
+        var sut = new OfferService(_portalRepositories, null!, null!, _identityService, _offerSetupService);
 
         // Act
         async Task Act() => await sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS });

@@ -19,7 +19,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -28,7 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
-namespace Offer.Library.Web.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.Tests;
 
 public class OfferDocumentServiceTests
 {
@@ -73,8 +72,8 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? [new UploadDocumentConfig(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF])]
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF]) };
         var documentId = _fixture.Create<Guid>();
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         var documents = new List<Document>();
@@ -92,10 +91,10 @@ public class OfferDocumentServiceTests
                 var offerAssignedDocument = new OfferAssignedDocument(offerId, docId);
                 offerAssignedDocuments.Add(offerAssignedDocument);
             });
-        var existingOffer = _fixture.Create<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>();
+        var existingOffer = _fixture.Create<Offer>();
         existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._))
-            .Invokes((Guid _, Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer> setOptionalParameters, Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>? initializeParemeters) =>
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {
                 initializeParemeters?.Invoke(existingOffer);
                 setOptionalParameters(existingOffer);
@@ -104,7 +103,7 @@ public class OfferDocumentServiceTests
         await _sut.UploadDocumentAsync(_validAppId, documentTypeId, file, offerTypeId, uploadDocumentTypeIdSettings, offerStatusId, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>>._, A<Action<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(_validAppId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         documents.Should().HaveCount(1);
         offerAssignedDocuments.Should().HaveCount(1);
@@ -118,8 +117,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? [new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF])]
+            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF]) };
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, _identity.CompanyId, OfferStatusId.CREATED, offerTypeId))
             .Returns<(bool, bool, bool)>(default);
@@ -139,8 +138,8 @@ public class OfferDocumentServiceTests
     {
         // Arrange
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -159,8 +158,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "", "application/pdf");
 
         // Act
@@ -179,8 +178,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "image/svg+xml");
 
         // Act
@@ -199,8 +198,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "TestFile.txt", "foo/bar");
 
         // Act
@@ -219,8 +218,8 @@ public class OfferDocumentServiceTests
         // Arrange
         var id = _fixture.Create<Guid>();
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
 
         // Act
@@ -242,8 +241,8 @@ public class OfferDocumentServiceTests
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.CompanyId).Returns(companyId);
         var uploadDocumentTypeIdSettings = offerTypeId == OfferTypeId.APP
-            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, new[] { MediaTypeId.PDF }) }
-            : new UploadDocumentConfig[] { new(DocumentTypeId.ADDITIONAL_DETAILS, new[] { MediaTypeId.PDF }) };
+            ? new UploadDocumentConfig[] { new(DocumentTypeId.APP_CONTRACT, [MediaTypeId.PDF]) }
+            : [new(DocumentTypeId.ADDITIONAL_DETAILS, [MediaTypeId.PDF])];
         var file = FormFileHelper.GetFormFile("this is just a test", "superFile.pdf", "application/pdf");
         A.CallTo(() => _offerRepository.GetProviderCompanyUserIdForOfferUntrackedAsync(id, companyId, offerStatusId, offerTypeId))
             .Returns((true, false, true));
