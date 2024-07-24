@@ -291,13 +291,15 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(15);
+        result!.Count.Should().Be(17);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
                 y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
                 y.UserStatusId == UserStatusId.ACTIVE))
             .And.BeInAscendingOrder(x => x.Name)
             .And.Satisfy(
+                x => x.ServiceAccountId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"),
+                x => x.ServiceAccountId == new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
@@ -305,9 +307,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => x.ServiceAccountId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
                 x => x.ServiceAccountId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
                 x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"),
-                x => x.ServiceAccountId == new Guid("33480038-9acf-40e2-9127-c9c7a9cbed99"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201023"));
+                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"));
     }
 
     [Fact]

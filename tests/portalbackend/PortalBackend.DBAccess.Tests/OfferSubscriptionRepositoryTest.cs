@@ -490,6 +490,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.OfferName.Should().Be("Trace-X");
         result.InstanceData.Should().Be((true, "https://test.com"));
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
+        result.InternalServiceAccountClientIds.Should().ContainSingle().Which.Should().Be("sa-os-internal");
     }
 
     [Fact]

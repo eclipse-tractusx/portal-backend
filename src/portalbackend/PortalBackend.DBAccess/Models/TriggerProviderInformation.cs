@@ -49,5 +49,5 @@ public record SubscriptionActivationData(
     Guid? SalesManagerId,
     Guid? ProviderCompanyId,
     string? ClientClientId,
-    IEnumerable<string> ServiceAccountClientIds
+    IEnumerable<string> InternalServiceAccountClientIds
 );
