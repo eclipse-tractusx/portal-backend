@@ -17,22 +17,28 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Offers.Library.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 
 public static class ProcessStepExtensions
 {
-    public static ProcessStepTypeId? GetProcessStepTypeId(this IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, Guid offerId, ILogger logger)
+    public static ProcessStepTypeId? GetProcessStepTypeId(this IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, Guid offerId)
     {
-        if (processSteps.Count(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO) > 1)
+        try
         {
-            logger.Log(LogLevel.Error, "Offers: {OfferIds} contain more than one process step in todo", string.Join(",", offerId));
-        }
+            var processStep = processSteps.Where(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO)
+                                          .DistinctBy(p => p.ProcessStepTypeId)
+                                          .SingleOrDefault();
 
-        return processSteps.Any(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO)
-            ? processSteps.Single(p => p.ProcessStepStatusId == ProcessStepStatusId.TODO).ProcessStepTypeId
-            : null;
+            return processStep == default
+                ? null
+                : processStep.ProcessStepTypeId;
+        }
+        catch (InvalidOperationException)
+        {
+            throw new ConflictException($"Offers: {offerId} contains more than one process step in todo");
+        }
     }
 }
