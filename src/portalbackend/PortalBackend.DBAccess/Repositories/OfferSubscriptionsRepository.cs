@@ -396,7 +396,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Offer.OfferTypeId == OfferTypeId.APP && (x.Offer.AppInstanceSetup == null || !x.Offer.AppInstanceSetup!.IsSingleInstance) ?
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId :
                     null,
-                x.CompanyServiceAccounts.Where(sa => sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL && sa.ClientClientId != null).Select(sa => sa.ClientClientId!)
+                x.CompanyServiceAccounts.Where(sa => sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL && sa.ClientClientId != null).Select(sa => sa.ClientClientId!),
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl != null
             ))
             .SingleOrDefaultAsync();
 
@@ -451,11 +452,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, CompanyServiceAccountKindId CompanyServiceAccountKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId>(
-                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?>(sa.Id, sa.ClientClientId)),
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, CompanyServiceAccountKindId)>, string?, string?, OfferSubscriptionStatusId>(
+                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?, CompanyServiceAccountKindId>(sa.Id, sa.ClientClientId, sa.CompanyServiceAccountKindId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
                     x.OfferSubscriptionStatusId

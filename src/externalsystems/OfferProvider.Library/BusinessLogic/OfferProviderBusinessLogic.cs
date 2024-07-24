@@ -82,10 +82,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         }
 
         return (
-            new[] {
+            [
                 data.IsSingleInstance ?
                     ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
-                    ProcessStepTypeId.START_AUTOSETUP },
+                    ProcessStepTypeId.START_AUTOSETUP
+            ],
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,
             null);
@@ -100,6 +101,15 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new NotFoundException($"OfferSubscription {offerSubscriptionId} does not exist");
         }
 
+        if (string.IsNullOrWhiteSpace(data.CallbackUrl))
+        {
+            return (
+                null,
+                ProcessStepStatusId.SKIPPED,
+                true,
+                null);
+        }
+
         if (data.Status != OfferSubscriptionStatusId.ACTIVE)
         {
             throw new ConflictException("offer subscription should be active");
@@ -110,11 +120,6 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new ConflictException("Client should be set");
         }
 
-        if (string.IsNullOrWhiteSpace(data.CallbackUrl))
-        {
-            throw new ConflictException("Callback Url should be set here");
-        }
-
         if (data.ServiceAccounts.Count() > 1)
         {
             throw new ConflictException("There should be not more than one service account for the offer subscription");
@@ -123,16 +128,22 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         CallbackTechnicalUserInfoData? technicalUserInfoData = null;
         if (data.ServiceAccounts.Count() == 1)
         {
-            var serviceAccount = data.ServiceAccounts.FirstOrDefault();
+            var serviceAccount = data.ServiceAccounts.First();
             if (serviceAccount.TechnicalClientId == null)
             {
                 throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
             }
-            var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(serviceAccount.TechnicalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
-            var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+            async Task<string?> GetServiceAccountSecret(string technicalClientId)
+            {
+                var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(technicalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+                var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+                return authData.Secret;
+            }
             technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,
-                authData.Secret,
+                serviceAccount.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL
+                    ? await GetServiceAccountSecret(serviceAccount.TechnicalClientId).ConfigureAwait(ConfigureAwaitOptions.None)
+                    : null,
                 serviceAccount.TechnicalClientId);
         }
 
@@ -141,7 +152,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             new CallbackClientInfoData(data.ClientId)
         );
         await _offerProviderService
-            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl!, cancellationToken)
+            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (
