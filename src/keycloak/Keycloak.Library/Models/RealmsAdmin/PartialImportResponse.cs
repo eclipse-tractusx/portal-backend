@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,9 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
-public interface IClientsUpdater
+public class PartialImportResponse
 {
-    Task UpdateClients(string keycloakInstanceName, CancellationToken cancellationToken);
+    public int? Overwritten { get; set; }
+    public int? Added { get; set; }
+    public int? Skipped { get; set; }
+    public IEnumerable<PartialImportResult>? Results { get; set; }
+}
+
+public class PartialImportResult
+{
+    public string? Action { get; set; }
+    public string? ResourceType { get; set; }
+    public string? ResourceName { get; set; }
+    public string? Id { get; set; }
 }

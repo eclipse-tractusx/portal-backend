@@ -44,7 +44,6 @@ using Serilog;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building worker");
-var isDevelopment = false;
 try
 {
     var host = Host
@@ -82,13 +81,12 @@ try
                 {
                     FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
                 }
-                isDevelopment = true;
             }
         })
         .AddLogging()
         .Build();
     Log.Information("Building worker completed");
-    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>());
 
     using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>

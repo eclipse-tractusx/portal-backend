@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -136,6 +135,7 @@ public class RolesUpdater : IRolesUpdater
                 role => role.Composites?.Client?.Any() ?? false,
                 role => role.ClientRole ?? false,
                 roleModel => roleModel.Composites?.Client?
+                        .FilterNotNullValues()
                         .Select(x => (
                             Id: _seedData.GetIdOfClient(x.Key),
                             Names: x.Value))
@@ -208,7 +208,7 @@ public class RolesUpdater : IRolesUpdater
     private static bool CompareRole(Role role, RoleModel update) =>
         role.Name == update.Name &&
         role.Description == update.Description &&
-        role.Attributes.NullOrContentEqual(update.Attributes);
+        role.Attributes.NullOrContentEqual(update.Attributes?.FilterNotNullValues());
 
     private static Role CreateRole(RoleModel update) =>
         new Role
@@ -217,7 +217,7 @@ public class RolesUpdater : IRolesUpdater
             Description = update.Description,
             Composite = update.Composite,
             ClientRole = update.ClientRole,
-            Attributes = update.Attributes?.ToDictionary(x => x.Key, x => x.Value)
+            Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary()
         };
 
     private static Role CreateUpdateRole(string id, string containerId, RoleModel update)

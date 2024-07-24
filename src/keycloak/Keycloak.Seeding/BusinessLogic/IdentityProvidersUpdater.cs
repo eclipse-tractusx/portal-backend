@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -154,15 +153,15 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 DisableUserInfo = update.Config.DisableUserInfo,
                 ValidateSignature = update.Config.ValidateSignature,
                 ClientId = update.Config.ClientId,
-                TokenUrl = provider.Config?.TokenUrl ?? update.Config.TokenUrl,
-                AuthorizationUrl = provider.Config?.AuthorizationUrl ?? update.Config.AuthorizationUrl,
+                TokenUrl = update.Config.TokenUrl,
+                AuthorizationUrl = update.Config.AuthorizationUrl,
                 ClientAuthMethod = update.Config.ClientAuthMethod,
-                JwksUrl = provider.Config?.JwksUrl ?? update.Config.JwksUrl,
-                LogoutUrl = provider.Config?.LogoutUrl ?? update.Config.LogoutUrl,
+                JwksUrl = update.Config.JwksUrl,
+                LogoutUrl = update.Config.LogoutUrl,
                 ClientAssertionSigningAlg = update.Config.ClientAssertionSigningAlg,
                 SyncMode = update.Config.SyncMode,
                 UseJwksUrl = update.Config.UseJwksUrl,
-                UserInfoUrl = provider.Config?.UserInfoUrl ?? update.Config.UserInfoUrl,
+                UserInfoUrl = update.Config.UserInfoUrl,
                 Issuer = update.Config.Issuer,
                 // for Saml:
                 NameIDPolicyFormat = update.Config.NameIDPolicyFormat,
@@ -182,7 +181,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 ForceAuthn = update.Config.ForceAuthn,
                 SignSpMetadata = update.Config.SignSpMetadata,
                 LoginHint = update.Config.LoginHint,
-                SingleSignOnServiceUrl = provider.Config?.SingleSignOnServiceUrl ?? update.Config.SingleSignOnServiceUrl,
+                SingleSignOnServiceUrl = update.Config.SingleSignOnServiceUrl,
                 AllowedClockSkew = update.Config.AllowedClockSkew,
                 AttributeConsumingServiceIndex = update.Config.AttributeConsumingServiceIndex
             };
@@ -245,12 +244,12 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
     private static IdentityProviderMapper UpdateIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
     {
         mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
-        mapper.Config = updateMapper.Config?.ToDictionary(x => x.Key, x => x.Value);
+        mapper.Config = updateMapper.Config?.FilterNotNullValues()?.ToDictionary();
         return mapper;
     }
 
     private static bool CompareIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper) =>
         mapper.IdentityProviderAlias == updateMapper.IdentityProviderAlias &&
         mapper._IdentityProviderMapper == updateMapper.IdentityProviderMapper &&
-        mapper.Config.NullOrContentEqual(updateMapper.Config);
+        mapper.Config.NullOrContentEqual(updateMapper.Config?.FilterNotNullValues());
 }

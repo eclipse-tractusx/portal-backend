@@ -165,15 +165,15 @@ public class ClientScopesUpdater : IClientScopesUpdater
         scope.Attributes != null && update.Attributes != null &&
         CompareClientScopeAttributes(scope.Attributes, update.Attributes));
 
-    private static Attributes CreateClientScopeAttributes(IReadOnlyDictionary<string, string> update) =>
-        new Attributes
+    private static Attributes CreateClientScopeAttributes(IReadOnlyDictionary<string, string?> update) =>
+        new()
         {
             ConsentScreenText = update.GetValueOrDefault("consent.screen.text"),
             DisplayOnConsentScreen = update.GetValueOrDefault("display.on.consent.screen"),
             IncludeInTokenScope = update.GetValueOrDefault("include.in.token.scope")
         };
 
-    private static bool CompareClientScopeAttributes(Attributes attributes, IReadOnlyDictionary<string, string> update) =>
+    private static bool CompareClientScopeAttributes(Attributes attributes, IReadOnlyDictionary<string, string?> update) =>
         attributes.ConsentScreenText == update.GetValueOrDefault("consent.screen.text") &&
         attributes.DisplayOnConsentScreen == update.GetValueOrDefault("display.on.consent.screen") &&
         attributes.IncludeInTokenScope == update.GetValueOrDefault("include.in.token.scope");

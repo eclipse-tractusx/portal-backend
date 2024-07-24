@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,9 +19,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
@@ -40,7 +39,7 @@ public class UsersUpdater : IUsersUpdater
         _seedData = seedDataHandler;
     }
 
-    public async Task UpdateUsers(string keycloakInstanceName, IEnumerable<string>? excludedUserAttributes, CancellationToken cancellationToken)
+    public async Task UpdateUsers(string keycloakInstanceName, CancellationToken cancellationToken)
     {
         var realm = _seedData.Realm;
         var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
@@ -51,55 +50,57 @@ public class UsersUpdater : IUsersUpdater
             if (seedUser.Username == null)
                 throw new ConflictException($"username must not be null {seedUser.Id}");
 
-            var userId = await CreateOrUpdateUserReturningId(
-                keycloak,
-                realm,
-                seedUser,
-                excludedUserAttributes ?? Enumerable.Empty<string>(),
-                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
 
-            await UpdateClientAndRealmRoles(
-                keycloak,
-                realm,
-                userId,
-                seedUser,
-                clientsDictionary,
-                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-            await UpdateFederatedIdentities(
-                keycloak,
-                realm,
-                userId,
-                seedUser.FederatedIdentities ?? Enumerable.Empty<FederatedIdentityModel>(),
-                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (user == null)
+            {
+                var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
+                {
+                    throw new ConflictException($"PartialImport failed to add user id: {seedUser.Id}, userName: {seedUser.Username}");
+                }
+            }
+            else
+            {
+                await UpdateUser(
+                    keycloak,
+                    realm,
+                    user,
+                    seedUser,
+                    clientsDictionary,
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            }
         }
     }
 
-    private static async Task<string> CreateOrUpdateUserReturningId(KeycloakClient keycloak, string realm, UserModel seedUser, IEnumerable<string> excludedUserAttributes, CancellationToken cancellationToken)
+    private static async Task UpdateUser(KeycloakClient keycloak, string realm, User user, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, CancellationToken cancellationToken)
     {
-        var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
+        if (user.Id == null)
+            throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
 
-        if (user == null)
+        if (!CompareUser(user, seedUser))
         {
-            return await keycloak.CreateAndRetrieveUserIdAsync(
+            await keycloak.UpdateUserAsync(
                 realm,
-                CreateUpdateUser(null, seedUser, Enumerable.Empty<string>()),
-                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new KeycloakNoSuccessException($"failed to retrieve id of newly created user {seedUser.Username}");
+                user.Id,
+                CreateUpdateUser(user, seedUser),
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        else
-        {
-            if (user.Id == null)
-                throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
-            if (!CompareUser(user, seedUser))
-            {
-                await keycloak.UpdateUserAsync(
-                    realm,
-                    user.Id,
-                    CreateUpdateUser(user, seedUser, excludedUserAttributes),
-                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
-            return user.Id;
-        }
+
+        await UpdateClientAndRealmRoles(
+            keycloak,
+            realm,
+            user.Id,
+            seedUser,
+            clientsDictionary,
+            cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await UpdateFederatedIdentities(
+            keycloak,
+            realm,
+            user.Id,
+            seedUser.FederatedIdentities ?? Enumerable.Empty<FederatedIdentityModel>(),
+            cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task UpdateClientAndRealmRoles(KeycloakClient keycloak, string realm, string userId, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, CancellationToken cancellationToken)
@@ -127,53 +128,45 @@ public class UsersUpdater : IUsersUpdater
         var userRoles = await getUserRoles().ConfigureAwait(ConfigureAwaitOptions.None);
         var seedRoles = getSeedRoles();
 
-        if (userRoles.ExceptBy(seedRoles, x => x.Name).IfAny(
-            delete => deleteRoles(delete),
-            out var deleteRolesTask))
-        {
-            await deleteRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        await userRoles.ExceptBy(seedRoles, x => x.Name).IfAnyAwait(
+            delete => deleteRoles(delete)).ConfigureAwait(false);
 
-        if (seedRoles.IfAny(
+        await seedRoles.IfAnyAwait(
             async seed =>
             {
                 var allRoles = await getAllRoles().ConfigureAwait(ConfigureAwaitOptions.None);
                 seed.Except(allRoles.Select(x => x.Name)).IfAny(nonexisting => throw new ConflictException($"roles {string.Join(",", nonexisting)} does not exist"));
-                if (seed.Except(userRoles.Select(x => x.Name)).IfAny(
-                    add => addRoles(allRoles.IntersectBy(add, x => x.Name)),
-                    out var addRolesTask))
-                {
-                    await addRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-                }
-            },
-            out var updateRolesTask))
-        {
-            await updateRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+                await seed.Except(userRoles.Select(x => x.Name)).IfAnyAwait(
+                    add => addRoles(allRoles.IntersectBy(add, x => x.Name))).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
-    private static User CreateUpdateUser(User? user, UserModel update, IEnumerable<string> excludedUserAttributes) => new()
+    private static User CreateUpdateUser(User? user, UserModel update) => new()
     {
-        // Access, ClientConsents, Credentials, FederatedIdentities, FederationLink, Origin, Self are not in scope
+        // Roles, ClientConsents, Credentials, FederatedIdentities are not in scope
         Id = user?.Id,
         CreatedTimestamp = update.CreatedTimestamp,
         UserName = update.Username,
         Enabled = update.Enabled,
         Totp = update.Totp,
         EmailVerified = update.EmailVerified,
-        FirstName = user?.FirstName ?? update.FirstName,
-        LastName = user?.LastName ?? update.LastName,
-        Email = user?.Email ?? update.Email,
+        FirstName = update.FirstName,
+        LastName = update.LastName,
+        Email = update.Email,
         DisableableCredentialTypes = update.DisableableCredentialTypes,
         RequiredActions = update.RequiredActions,
         NotBefore = update.NotBefore,
-        Attributes = UpdateAttributes(user?.Attributes, update.Attributes?.ToDictionary(x => x.Key, x => x.Value), excludedUserAttributes),
+        Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
         Groups = update.Groups,
-        ServiceAccountClientId = update.ServiceAccountClientId
+        ServiceAccountClientId = update.ServiceAccountClientId,
+        Access = CreateUpdateUserAccess(update.Access),
+        FederationLink = update.FederationLink,
+        Origin = update.Origin,
+        Self = update.Self
     };
 
     private static bool CompareUser(User user, UserModel update) =>
-        // Access, ClientConsents, Credentials, FederatedIdentities, FederationLink, Origin, Self are not in scope
+        // Roles, ClientConsents, Credentials, FederatedIdentities, are not in scope
         user.CreatedTimestamp == update.CreatedTimestamp &&
         user.UserName == update.Username &&
         user.Enabled == update.Enabled &&
@@ -185,9 +178,32 @@ public class UsersUpdater : IUsersUpdater
         user.DisableableCredentialTypes.NullOrContentEqual(update.DisableableCredentialTypes) &&
         user.RequiredActions.NullOrContentEqual(update.RequiredActions) &&
         user.NotBefore == update.NotBefore &&
-        user.Attributes.NullOrContentEqual(update.Attributes) &&
+        user.Attributes.NullOrContentEqual(update.Attributes?.FilterNotNullValues()) &&
         user.Groups.NullOrContentEqual(update.Groups) &&
-        user.ServiceAccountClientId == update.ServiceAccountClientId;
+        user.ServiceAccountClientId == update.ServiceAccountClientId &&
+        CompareUserAccess(user.Access, update.Access) &&
+        user.FederationLink == update.FederationLink &&
+        user.Origin == update.Origin &&
+        user.Self == update.Self;
+
+    private static UserAccess? CreateUpdateUserAccess(UserAccessModel? update) =>
+        update == null ? null : new()
+        {
+            ManageGroupMembership = update.ManageGroupMembership,
+            View = update.View,
+            MapRoles = update.MapRoles,
+            Impersonate = update.Impersonate,
+            Manage = update.Manage
+        };
+
+    private static bool CompareUserAccess(UserAccess? userAccess, UserAccessModel? update) =>
+        userAccess == null && update == null ||
+        userAccess != null && update != null &&
+        userAccess.ManageGroupMembership == update.ManageGroupMembership &&
+        userAccess.View == update.View &&
+        userAccess.MapRoles == update.MapRoles &&
+        userAccess.Impersonate == update.Impersonate &&
+        userAccess.Manage == update.Manage;
 
     private static bool CompareFederatedIdentity(FederatedIdentity identity, FederatedIdentityModel update) =>
         identity.IdentityProvider == update.IdentityProvider &&
@@ -262,17 +278,62 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static IDictionary<string, IEnumerable<string>>? UpdateAttributes(IDictionary<string, IEnumerable<string>>? existingAttributes, IDictionary<string, IEnumerable<string>>? updatedDictionary, IEnumerable<string> excludedUserAttributes)
-    {
-        if (existingAttributes is null)
-            return updatedDictionary;
+    private static Credentials CreateUpdateCredentials(CredentialsModel update) =>
+        new()
+        {
+            Algorithm = update.Algorithm,
+            Config = update.Config?.FilterNotNullValues()?.ToDictionary(),
+            Counter = update.Counter,
+            CreatedDate = update.CreatedDate,
+            Device = update.Device,
+            Digits = update.Digits,
+            HashIterations = update.HashIterations,
+            Period = update.Period,
+            Salt = update.Salt,
+            Temporary = update.Temporary,
+            Type = update.Type,
+            Value = update.Value,
+        };
 
-        var attributesToKeep = existingAttributes.Where(x => excludedUserAttributes.Contains(x.Key));
-        return updatedDictionary is null
-            ? attributesToKeep.ToDictionary(x => x.Key, x => x.Value)
-            : updatedDictionary
-                .Where(x => !excludedUserAttributes.Contains(x.Key))
-                .Concat(attributesToKeep)
-                .ToDictionary(x => x.Key, x => x.Value);
-    }
+    private static FederatedIdentity CreateUpdateFederatedIdentity(FederatedIdentityModel update) =>
+        new()
+        {
+            IdentityProvider = update.IdentityProvider,
+            UserId = update.UserId,
+            UserName = update.UserName
+        };
+
+    private static PartialImport CreatePartialImportUser(UserModel update) =>
+        new()
+        {
+            IfResourceExists = "FAIL",
+            Users = [
+                new()
+                {
+                    // ClientConsents are not in scope
+                    Id = update.Id,
+                    CreatedTimestamp = update.CreatedTimestamp,
+                    UserName = update.Username,
+                    Enabled = update.Enabled,
+                    Totp = update.Totp,
+                    EmailVerified = update.EmailVerified,
+                    FirstName = update.FirstName,
+                    LastName = update.LastName,
+                    Email = update.Email,
+                    DisableableCredentialTypes = update.DisableableCredentialTypes,
+                    RequiredActions = update.RequiredActions,
+                    NotBefore = update.NotBefore,
+                    Access = CreateUpdateUserAccess(update.Access),
+                    Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
+                    ClientRoles = update.ClientRoles?.FilterNotNullValues()?.ToDictionary(),
+                    Credentials = update.Credentials?.Select(CreateUpdateCredentials),
+                    FederatedIdentities = update.FederatedIdentities?.Select(CreateUpdateFederatedIdentity),
+                    FederationLink = update.FederationLink,
+                    Groups = update.Groups,
+                    Origin = update.Origin,
+                    RealmRoles = update.RealmRoles,
+                    Self = update.Self,
+                    ServiceAccountClientId = update.ServiceAccountClientId
+                }]
+        };
 }

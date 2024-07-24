@@ -63,7 +63,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
         public async Task UpdateAuthenticationFlows(CancellationToken cancellationToken)
         {
-            var flows = (await _keycloak.GetAuthenticationFlowsAsync(_realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
+            var flows = await _keycloak.GetAuthenticationFlowsAsync(_realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             var seedFlows = _seedData.TopLevelCustomAuthenticationFlows;
             var topLevelCustomFlows = flows.Where(flow => !(flow.BuiltIn ?? false) && (flow.TopLevel ?? false));
 
@@ -275,7 +275,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                         new AuthenticatorConfig
                         {
                             Alias = update.AuthenticatorConfig,
-                            Config = _seedData.GetAuthenticatorConfig(update.AuthenticatorConfig).Config?.ToDictionary(x => x.Key, x => x.Value)
+                            Config = _seedData.GetAuthenticatorConfig(update.AuthenticatorConfig).Config?.FilterNotNullValues()?.ToDictionary()
                         },
                         cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
@@ -292,7 +292,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     if (config == null)
                         throw new UnexpectedConditionException("authenticatorConfig is null");
                     config.Alias = update.AuthenticatorConfig;
-                    config.Config = updateConfig.Config?.ToDictionary(x => x.Key, x => x.Value);
+                    config.Config = updateConfig.Config?.FilterNotNullValues()?.ToDictionary();
                     await _keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig, config, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
             }
@@ -324,7 +324,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
 
         private static bool CompareAuthenticatorConfig(AuthenticatorConfig config, AuthenticatorConfigModel update) =>
             config.Alias == update.Alias &&
-            config.Config.NullOrContentEqual(update.Config);
+            config.Config.NullOrContentEqual(update.Config?.FilterNotNullValues());
 
         private Task<IEnumerable<AuthenticationFlowExecution>> GetExecutions(string alias, CancellationToken cancellationToken) =>
             _keycloak.GetAuthenticationFlowExecutionsAsync(_realm, alias, cancellationToken);
