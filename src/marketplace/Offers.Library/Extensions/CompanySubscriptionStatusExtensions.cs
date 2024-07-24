@@ -17,14 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Offers.Library.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 
 public static class CompanySubscriptionStatusExtensions
 {
-    public static CompanySubscriptionStatus GetCompanySubscriptionStatus(this CompanySubscriptionStatusData data, Guid offerId, ILogger logger) =>
+    public static CompanySubscriptionStatus GetCompanySubscriptionStatus(this CompanySubscriptionStatusData data, Guid offerId) =>
         new(
             data.CompanyId,
             data.CompanyName,
@@ -34,5 +33,5 @@ public static class CompanySubscriptionStatusExtensions
             data.BpnNumber,
             data.Email,
             data.TechnicalUser,
-            data.ProcessSteps.GetProcessStepTypeId(offerId, logger));
+            data.ProcessSteps.GetProcessStepTypeId(offerId));
 }

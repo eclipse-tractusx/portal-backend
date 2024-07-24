@@ -18,9 +18,9 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -45,7 +45,6 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     private readonly IOfferSetupService _offerSetupService;
     private readonly ServiceSettings _settings;
     private readonly IIdentityData _identityData;
-    private readonly ILogger<ServiceBusinessLogic> _logger;
 
     /// <summary>
     /// Constructor.
@@ -56,22 +55,19 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <param name="offerSetupService">Offer Setup Service</param>
     /// <param name="identityService">Access the identity of the user</param>
     /// <param name="settings">Access to the settings</param>
-    /// <param name="logger">Access to the logger</param>
     public ServiceBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferService offerService,
         IOfferSubscriptionService offerSubscriptionService,
         IOfferSetupService offerSetupService,
         IIdentityService identityService,
-        IOptions<ServiceSettings> settings,
-        ILogger<ServiceBusinessLogic> logger)
+        IOptions<ServiceSettings> settings)
     {
         _portalRepositories = portalRepositories;
         _offerService = offerService;
         _offerSubscriptionService = offerSubscriptionService;
         _offerSetupService = offerSetupService;
         _identityData = identityService.IdentityData;
-        _logger = logger;
         _settings = settings.Value;
     }
 
@@ -156,7 +152,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
                         new OfferCompanySubscriptionStatusResponse(
                             item.OfferId,
                             item.ServiceName,
-                            item.CompanySubscriptionStatuses.Select(x => x.GetCompanySubscriptionStatus(item.OfferId, _logger)),
+                            item.CompanySubscriptionStatuses.Select(x => x.GetCompanySubscriptionStatus(item.OfferId)),
                             item.Image == Guid.Empty ? null : item.Image)));
         }
         return await Pagination.CreateResponseAsync(page, size, _settings.ApplicationsMaxPageSize, GetCompanyProvidedAppSubscriptionStatusData).ConfigureAwait(ConfigureAwaitOptions.None);
