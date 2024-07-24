@@ -367,16 +367,15 @@ public class CompanyRepository(PortalDbContext context)
             .Select(x => new ValueTuple<bool, JsonDocument>(true, x.DidDocument))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn) =>
+    public IAsyncEnumerable<(Guid CompanyId, IEnumerable<Guid> SubmittedApplicationIds)> GetCompanySubmittedApplicationIdsByBpn(string bpn) =>
         context.Companies
             .Where(x => x.BusinessPartnerNumber == bpn)
-            .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(
-                true,
+            .Select(x => new ValueTuple<Guid, IEnumerable<Guid>>(
                 x.Id,
                 x.CompanyApplications
                     .Where(ca => ca.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
                     .Select(ca => ca.Id)))
-            .SingleOrDefaultAsync();
+            .ToAsyncEnumerable();
 
     public Task<(string? Bpn, string? Did, string? WalletUrl)> GetDimServiceUrls(Guid companyId) =>
         context.Companies.Where(x => x.Id == companyId)
