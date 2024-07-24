@@ -191,7 +191,6 @@ public class RegistrationBusinessLogicTest
     public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
     {
         // Arrange
-        var companyAppStatus = new[] { CompanyApplicationStatusFilter.InReview, CompanyApplicationStatusFilter.Closed };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
             .Returns(companyApplicationData.AsQueryable());
@@ -207,7 +206,6 @@ public class RegistrationBusinessLogicTest
     public async Task GetOspCompanyApplicationDetailsAsync_WithInReviewRequest_GetsExpectedEntries()
     {
         // Arrange
-        var companyAppStatus = new[] { CompanyApplicationStatusFilter.InReview };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
             .Returns(companyApplicationData.AsQueryable());
@@ -223,7 +221,6 @@ public class RegistrationBusinessLogicTest
     public async Task GetOspCompanyApplicationDetailsAsync_WithClosedRequest_GetsExpectedEntries()
     {
         // Arrange
-        var companyAppStatus = new[] { CompanyApplicationStatusFilter.Closed };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
             .Returns(companyApplicationData.AsQueryable());
