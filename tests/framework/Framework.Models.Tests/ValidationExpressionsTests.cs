@@ -24,8 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests;
 
 public class ValidationExpressionsTests
 {
-    private static readonly Regex regex = new Regex(ValidationExpressions.Company);
-
     [Theory]
     [InlineData("ValidCompanyName123", true)] // Valid company name
     [InlineData("Company Name", true)] // Valid with space

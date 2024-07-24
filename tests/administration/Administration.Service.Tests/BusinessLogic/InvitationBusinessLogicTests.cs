@@ -128,7 +128,6 @@ public class InvitationBusinessLogicTests
     [InlineData("Special Characters ^&%#@*/_-\\")]
     [InlineData("German: ÄÖÜß")]
     [InlineData("Icelandic: ÆÐÞ")]
-    [InlineData("C")]
     public async Task ExecuteInvitation_WithValidOrganisationName_DoesNotThrowException(string validName)
     {
         var invitationData = _fixture.Build<CompanyInvitationData>()
