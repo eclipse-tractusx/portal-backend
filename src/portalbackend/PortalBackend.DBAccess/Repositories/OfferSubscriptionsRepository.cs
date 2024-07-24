@@ -244,7 +244,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                             .Select(ps => new ValueTuple<ProcessStepTypeId, ProcessStepStatusId>(
                                 ps.ProcessStepTypeId,
                                 ps.ProcessStepStatusId))
-                            .Distinct())
+                            .Distinct(),
+                        x.Subscription.ConnectorAssignedOfferSubscriptions.Select(c => new SubscriptionAssignedConnectorData(c.ConnectorId, c.Connector!.Name, c.Connector.ConnectorUrl)),
+                        x.Company.CompanyWalletData == null ? null : new ExternalServiceData(x.Company.CompanyWalletData!.Did, x.Company.BusinessPartnerNumber, x.Company.CompanyWalletData.AuthenticationServiceUrl))
                     : null))
             .SingleOrDefaultAsync();
 
