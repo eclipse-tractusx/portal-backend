@@ -45,7 +45,6 @@ public class CompanyDataBusinessLogic(
 {
     private static readonly Regex BpnsRegex = new(ValidationExpressions.Bpns, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex EcmRegex = new(ValidationExpressions.ExternalCertificateNumber, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly CompanyDataSettings _settings = options.Value;
 
