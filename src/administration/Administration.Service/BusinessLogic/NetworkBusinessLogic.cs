@@ -47,14 +47,12 @@ public class NetworkBusinessLogic(
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex ExternalId = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly PartnerRegistrationSettings _settings = options.Value;
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
-        if (!string.IsNullOrEmpty(data.Name) && !Company.IsMatch(data.Name))
+        if (!ValidationExpressionsValidator.IsValidCompanyName(data.Name))
         {
             throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }

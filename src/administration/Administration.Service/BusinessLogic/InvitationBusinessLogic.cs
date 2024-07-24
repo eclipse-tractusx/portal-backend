@@ -24,13 +24,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class InvitationBusinessLogic : IInvitationBusinessLogic
 {
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
@@ -55,7 +53,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
         }
 
-        if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !Company.IsMatch(invitationData.OrganisationName))
+        if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !ValidationExpressionsValidator.IsValidCompanyName(invitationData.OrganisationName))
         {
             throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }

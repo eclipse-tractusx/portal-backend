@@ -30,7 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -39,7 +38,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppsBusinessLogic : IAppsBusinessLogic
 {
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly AppsSettings _settings;
@@ -158,7 +156,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedAppSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName = null)
     {
-        if (!string.IsNullOrWhiteSpace(companyName) && !Company.IsMatch(companyName))
+        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
             throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}");
         }

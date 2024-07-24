@@ -85,7 +85,7 @@ public sealed class RegistrationBusinessLogic(
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
-        if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
+        if (!ValidationExpressionsValidator.IsValidCompanyName(companyWithAddress.Name))
         {
             throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
         }
@@ -124,7 +124,7 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
             throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
         }
@@ -199,7 +199,7 @@ public sealed class RegistrationBusinessLogic(
     }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (!ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
             throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
         }
