@@ -225,6 +225,15 @@ public class AppsSettings
     [Required]
     [DistinctValues("x => x.DocumentTypeId")]
     public IEnumerable<UploadDocumentConfig> UploadActiveAppDocumentTypeIds { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; } = null!;
 }
 
 /// <summary>

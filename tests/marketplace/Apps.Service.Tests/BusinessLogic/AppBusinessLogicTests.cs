@@ -507,7 +507,7 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _identityService, _logger);
 
@@ -516,7 +516,7 @@ public class AppBusinessLogicTests
 
         // Assert
         result.Should().Be(data);
-        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .MustHaveHappenedOnceExactly();
     }
 
