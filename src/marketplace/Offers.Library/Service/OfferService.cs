@@ -828,6 +828,7 @@ public class OfferService : IOfferService
     {
         var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync)
             .ConfigureAwait(ConfigureAwaitOptions.None);
+
         return new AppProviderSubscriptionDetailData(
             data.Id,
             data.OfferSubscriptionStatus,
@@ -843,7 +844,7 @@ public class OfferService : IOfferService
             new SubscriptionExternalServiceData(
                 walletData.IssuerDid,
                 data.ExternalServiceData?.ParticipantId,
-                data.ExternalServiceData?.TrustedIssuer == null || data.ExternalServiceData.TrustedIssuer.EndsWith(":holder-iatp") ? data.ExternalServiceData?.TrustedIssuer : $"{data.ExternalServiceData.TrustedIssuer}:holder-iatp",
+                data.ExternalServiceData == null || data.ExternalServiceData.TrustedIssuer.EndsWith(":holder-iatp") ? data.ExternalServiceData?.TrustedIssuer : $"{data.ExternalServiceData.TrustedIssuer}:holder-iatp",
                 walletData.BpnDidResolverUrl,
                 walletData.DecentralIdentityManagementAuthUrl,
                 data.ExternalServiceData?.DecentralIdentityManagementServiceUrl));
