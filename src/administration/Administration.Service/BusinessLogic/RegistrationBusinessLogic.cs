@@ -203,8 +203,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         Application = application,
                         CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
                     .FirstOrDefault(companyUser =>
-                        companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
-                        && companyUser.Firstname != null
+                         companyUser!.Firstname != null
                         && companyUser.Lastname != null
                         && companyUser.Email != null
                     )
