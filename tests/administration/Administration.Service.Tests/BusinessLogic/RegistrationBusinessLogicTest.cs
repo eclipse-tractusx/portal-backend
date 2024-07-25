@@ -137,11 +137,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var companyAppStatus = new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, null, null);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 3 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -154,11 +154,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var companyAppStatus = new[] { CompanyApplicationStatusId.SUBMITTED };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview, null);
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 1 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
@@ -171,11 +171,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var companyAppStatus = new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
         var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.CreateMany<CompanyApplication>(5));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns(companyApplicationData.AsQueryable());
 
         // Act
-        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed);
+        var result = await _logic.GetCompanyApplicationDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed, null);
 
         // Assert
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
@@ -187,50 +187,57 @@ public class RegistrationBusinessLogicTest
 
     #region GetOSPCompanyApplicationDetailsAsync
 
-    [Fact]
-    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(CompanyApplicationStatusFilter.Closed)]
+    [InlineData(CompanyApplicationStatusFilter.InReview)]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter)
     {
         // Arrange
-        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
-            .Returns(companyApplicationData.AsQueryable());
+        var data = _fixture.CreateMany<(Guid Id, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId, DateTimeOffset Created)>(10)
+            .Select(x => new CompanyApplication(x.Id, x.CompanyId, x.CompanyApplicationStatusId, CompanyApplicationTypeId.EXTERNAL, x.Created)
+            {
+                Company = new Company(x.CompanyId, _fixture.Create<string>(), _fixture.Create<CompanyStatusId>(), x.Created)
+                {
+                    Name = _fixture.Create<string>(),
+                    BusinessPartnerNumber = _fixture.Create<string>(),
+                },
+                DateLastChanged = _fixture.Create<DateTimeOffset>()
+            }).ToImmutableList();
+
+        var queryData = new AsyncEnumerableStub<CompanyApplication>(data).AsQueryable();
+
+        A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(A<Guid>._, A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns(queryData);
 
         // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 5);
-        // Assert
-        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
-        result.Content.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task GetOspCompanyApplicationDetailsAsync_WithInReviewRequest_GetsExpectedEntries()
-    {
-        // Arrange
-        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
-            .Returns(companyApplicationData.AsQueryable());
-
-        // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 5, CompanyApplicationStatusFilter.InReview);
-        // Assert
-        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
-        result.Content.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task GetOspCompanyApplicationDetailsAsync_WithClosedRequest_GetsExpectedEntries()
-    {
-        // Arrange
-        var companyApplicationData = new AsyncEnumerableStub<CompanyApplication>(_fixture.Build<CompanyApplication>().With(x => x.CompanyId, CompanyId).With(x => x.CompanyApplicationTypeId, CompanyApplicationTypeId.EXTERNAL).CreateMany(3));
-        A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(A<string?>._, A<IEnumerable<CompanyApplicationStatusId>?>._))
-            .Returns(companyApplicationData.AsQueryable());
-
-        // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 5, CompanyApplicationStatusFilter.Closed);
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, null);
 
         // Assert
         Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
-        result.Content.Should().HaveCount(3);
+
+        switch (statusFilter)
+        {
+            case CompanyApplicationStatusFilter.Closed:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                break;
+            case CompanyApplicationStatusFilter.InReview:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
+                break;
+            default:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                break;
+        }
+
+        result.Meta.NumberOfElements.Should().Be(10);
+
+        var sorted = data.OrderByDescending(application => application.DateCreated).ToImmutableArray();
+
+        result.Content.Should().HaveCount(3).And.Satisfy(
+            x => x.ApplicationId == sorted[0].Id && x.CompanyApplicationStatusId == sorted[0].ApplicationStatusId && x.DateCreated == sorted[0].DateCreated && x.DateLastChanged == sorted[0].DateLastChanged && x.CompanyId == sorted[0].CompanyId && x.CompanyName == sorted[0].Company!.Name && x.BusinessPartnerNumber == sorted[0].Company!.BusinessPartnerNumber,
+            x => x.ApplicationId == sorted[1].Id && x.CompanyApplicationStatusId == sorted[1].ApplicationStatusId && x.DateCreated == sorted[1].DateCreated && x.DateLastChanged == sorted[1].DateLastChanged && x.CompanyId == sorted[1].CompanyId && x.CompanyName == sorted[1].Company!.Name && x.BusinessPartnerNumber == sorted[1].Company!.BusinessPartnerNumber,
+            x => x.ApplicationId == sorted[2].Id && x.CompanyApplicationStatusId == sorted[2].ApplicationStatusId && x.DateCreated == sorted[2].DateCreated && x.DateLastChanged == sorted[2].DateLastChanged && x.CompanyId == sorted[2].CompanyId && x.CompanyName == sorted[2].Company!.Name && x.BusinessPartnerNumber == sorted[2].Company!.BusinessPartnerNumber
+        );
     }
 
     #endregion

@@ -201,7 +201,7 @@ public class RegistrationBusinessLogic(
 
     public async Task<CompanyDetailData> GetCompanyDetailData(Guid applicationId)
     {
-        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, _identityData.CompanyId, null).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} not found");

@@ -32,12 +32,12 @@ public record CompanyDetailsOspOnboarding(
     [property: JsonPropertyName("companyName")] string CompanyName,
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
     [property: JsonPropertyName("identityProvider")] IEnumerable<IdentityProvidersDetails> IdentityProviders,
-    [property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     [property: JsonPropertyName("activeUsers")] int ActiveCompanyUsers
 );
 
 public record IdentityProvidersDetails(
     Guid IdentityProviderId,
     string? Alias
-    );
+);
 

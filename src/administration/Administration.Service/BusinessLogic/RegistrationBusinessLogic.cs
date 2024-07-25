@@ -146,7 +146,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         );
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -185,14 +185,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
             throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
         }
         var applications = _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetCompanyApplicationsFilteredQuery(
+            .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
                 companyName?.Length >= 3 ? companyName : null,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
 
@@ -207,7 +207,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .OrderByDescending(application => application.DateCreated)
                     .Skip(skip)
                     .Take(take)
-                    .Where(x => x.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL && x.CompanyId == _identityData.CompanyId && x.OnboardingServiceProviderId != null)
                     .Select(application => new CompanyDetailsOspOnboarding(
                         application.CompanyId,
                         application.Id,
@@ -215,13 +214,13 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.DateCreated,
                         application.DateLastChanged,
                         application.Company!.Name,
-                        application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
+                        application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
-                        application.Company!.BusinessPartnerNumber,
-                        application.Company.Identities.Select(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED).Count()))
+                        application.Company.BusinessPartnerNumber,
+                        application.Company.Identities.Where(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED).Count()))
                     .AsAsyncEnumerable()));
     }
-    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -611,7 +610,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter)
     {
         switch (companyApplicationStatusFilter)
         {
