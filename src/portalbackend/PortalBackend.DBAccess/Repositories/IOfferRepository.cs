@@ -209,6 +209,16 @@ public interface IOfferRepository
     Task<(bool OfferStatus, bool IsProviderCompanyUser, bool IsRoleIdExist)> GetAppUserRoleUntrackedAsync(Guid offerId, Guid userCompanyId, OfferStatusId offerStatusId, Guid roleId);
 
     /// <summary>
+    /// Verify that user is linked to the appId ,offerstatus is in created state
+    /// </summary>
+    /// <param name="offerId"></param>
+    /// <param name="userCompanyId"></param>
+    /// <param name="offerStatusId"></param>
+    /// <param name="roleIds"></param>
+    /// <returns>The list of AppUserRole IDs, linked with the User's Company's App</returns>
+    Task<(bool OfferStatus, bool IsProviderCompanyUser, IEnumerable<Guid> RoleIds)> GetAppUserRolesAsync(Guid offerId, Guid userCompanyId, OfferStatusId offerStatusId, IEnumerable<Guid> roleIds);
+
+    /// <summary>
     /// Gets all data needed for the app update
     /// </summary>
     /// <param name="appId">Id of the requested app</param>

@@ -86,6 +86,14 @@ public interface IAppReleaseBusinessLogic
     Task DeleteAppRoleAsync(Guid appId, Guid roleId);
 
     /// <summary>
+    /// Bulk Delete User Roles by appId and roleIds
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="roleIds"></param>
+    /// <returns></returns>
+    Task DeleteAppRolesAsync(Guid appId, IEnumerable<Guid> roleIds);
+
+    /// <summary>
     /// Get Sales Manager Data
     /// </summary>
     /// <returns></returns>

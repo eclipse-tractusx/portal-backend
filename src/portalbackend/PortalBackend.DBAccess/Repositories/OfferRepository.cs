@@ -421,6 +421,18 @@ public class OfferRepository : IOfferRepository
             ))
             .SingleOrDefaultAsync();
 
+    /// <inheritdoc/>
+    public Task<(bool OfferStatus, bool IsProviderCompanyUser, IEnumerable<Guid> RoleIds)> GetAppUserRolesAsync(Guid offerId, Guid userCompanyId, OfferStatusId offerStatusId, IEnumerable<Guid> roleIds) =>
+        _context.Offers
+            .Where(offer => offer.Id == offerId)
+            .Select(offer => new ValueTuple<bool, bool, IEnumerable<Guid>>(
+                offer.OfferStatusId == offerStatusId,
+                offer.ProviderCompanyId == userCompanyId,
+                offer.UserRoles
+                    .Where(userRole => roleIds.Contains(userRole.Id))
+                    .Select(userRole => userRole.Id)))
+            .SingleOrDefaultAsync();
+
     /// <inheritdoc />
     public Task<AppUpdateData?> GetAppUpdateData(
         Guid appId,

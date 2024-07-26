@@ -113,9 +113,20 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
 
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+        
+        // When user will try to upload the same role names which are already attched to an APP so, duplicate roles would be ignored.
+        // So, when no role has been modified against the given appId, no need to procced further
+        // No need to Add roles to client
+        // No need to update the Offer entity
+        // When nothing has happened, no need to send notifications 
+        if (!roleData.Any())
+            return roleData;
+
         foreach (var clientId in result.ClientClientIds)
         {
-            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(ConfigureAwaitOptions.None);
+            // Distinct() will eleminate the role with same Role Name values
+            // Elemination of duplicate role names has been done for Database entries as well
+            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role).Distinct()).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
