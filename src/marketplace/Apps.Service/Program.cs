@@ -50,6 +50,7 @@ await WebAppHelper
             .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))

@@ -50,6 +50,7 @@ await WebAppHelper
             .AddServiceBusinessLogic(builder.Configuration)
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
             .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
+            .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .AddOfferDocumentServices();
