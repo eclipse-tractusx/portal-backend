@@ -54,7 +54,7 @@ public class NetworkBusinessLogic(
     {
         if (!ValidationExpressionsValidator.IsValidCompanyName(data.Name))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
 
         var ownerCompanyId = _identityData.CompanyId;

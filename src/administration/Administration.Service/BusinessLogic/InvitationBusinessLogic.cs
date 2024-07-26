@@ -55,7 +55,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !ValidationExpressionsValidator.IsValidCompanyName(invitationData.OrganisationName))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(invitationData.OrganisationName))]);
         }
 
         return ExecuteInvitationInternalAsync(invitationData);

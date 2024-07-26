@@ -17,10 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using System.Collections.Immutable;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 // This class contains error messages for validation expressions
-public static class ValidationExpressionErrorMessages
+public class ValidationExpressionErrorMessageContainer : IErrorMessageContainer
 {
-    public const string CompanyError = "length must be between 1 and 160 characters and not start or end with a white space";
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<ValidationExpressionErrors, string> {
+                { ValidationExpressionErrors.INCORRECT_COMPANY_NAME, "{name}: length must be between 1 and 160 characters and not start or end with a white space" },
+
+            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+
+    public Type Type { get => typeof(ValidationExpressionErrors); }
+    public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
+}
+
+public enum ValidationExpressionErrors
+{
+    INCORRECT_COMPANY_NAME
 }

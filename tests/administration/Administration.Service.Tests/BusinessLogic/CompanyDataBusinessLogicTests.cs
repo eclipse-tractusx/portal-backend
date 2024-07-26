@@ -895,8 +895,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Issuer: {ValidationExpressionErrorMessages.CompanyError} (Parameter 'Issuer')");
-        ex.ParamName.Should().Be("Issuer");
+        ex.Message.Should().Be(ValidationExpressionErrors.INCORRECT_COMPANY_NAME.ToString());
     }
 
     #endregion

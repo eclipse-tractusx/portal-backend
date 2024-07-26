@@ -268,7 +268,7 @@ public class CompanyDataBusinessLogic(
 
         if (!string.IsNullOrEmpty(data.Issuer) && !ValidationExpressionsValidator.IsValidCompanyName(data.Issuer))
         {
-            throw new ControllerArgumentException($"Issuer: {ValidationExpressionErrorMessages.CompanyError}", nameof(data.Issuer));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(data.Issuer))]);
         }
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();

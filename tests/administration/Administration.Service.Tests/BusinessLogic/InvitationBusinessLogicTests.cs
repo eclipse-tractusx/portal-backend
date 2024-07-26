@@ -151,8 +151,7 @@ public class InvitationBusinessLogicTests
         async Task Act() => await _sut.ExecuteInvitation(invitationData);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError} (Parameter 'organisationName')");
-        ex.ParamName.Should().Be("organisationName");
+        ex.Message.Should().Be(ValidationExpressionErrors.INCORRECT_COMPANY_NAME.ToString());
     }
 
     #endregion

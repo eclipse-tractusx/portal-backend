@@ -158,7 +158,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
     {
         if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
 
         async Task<Pagination.Source<OfferCompanySubscriptionStatusResponse>?> GetCompanyProvidedAppSubscriptionStatusData(int skip, int take)

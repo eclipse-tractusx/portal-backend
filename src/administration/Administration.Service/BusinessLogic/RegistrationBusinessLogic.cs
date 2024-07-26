@@ -87,7 +87,7 @@ public sealed class RegistrationBusinessLogic(
         }
         if (!ValidationExpressionsValidator.IsValidCompanyName(companyWithAddress.Name))
         {
-            throw new ControllerArgumentException($"OrganisationName: {ValidationExpressionErrorMessages.CompanyError}", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
 
         return new CompanyWithAddressData(
@@ -126,7 +126,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -201,7 +201,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
-            throw new ControllerArgumentException($"CompanyName: {ValidationExpressionErrorMessages.CompanyError}", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
