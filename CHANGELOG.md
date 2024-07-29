@@ -2,6 +2,32 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.1.0-RC2
+
+### Change
+
+* **Offer Autosetup**
+  * enhanced subscription/provider endpoint with external service data [#867](https://github.com/eclipse-tractusx/portal-backend/pull/867)
+
+### Technical Support
+
+* bumped efcore to 8.0.7 [#857](https://github.com/eclipse-tractusx/portal-backend/pull/857)
+* upgraded  implicit dependencies on System.Text.Json [#875](https://github.com/eclipse-tractusx/portal-backend/pull/875)
+* bumped MimeKit from 4.3.0 to 4.7.1 [#833](https://github.com/eclipse-tractusx/portal-backend/pull/833)
+
+### Bugfixes
+
+* **Offer Autosetup**
+  * removed leading '/' from the activate subscription endpoint [#861](https://github.com/eclipse-tractusx/portal-backend/pull/861)
+  * suppressed activation of external service accounts on activation of offer subscription [#864](https://github.com/eclipse-tractusx/portal-backend/pull/864)
+  * skipped optional autosetup provider callback if it is not configured [#865](https://github.com/eclipse-tractusx/portal-backend/pull/865)
+  * added default clientPrefix to appsettings.json [#870](https://github.com/eclipse-tractusx/portal-backend/pull/870)
+* **Decentral Identity Management (DIM) Integration**
+  * fixed callback logic for dim requests in case of multiple company applications with same bpn (some declined, one in status submitted) [#863](https://github.com/eclipse-tractusx/portal-backend/pull/863)
+* **Registration Process (Administration Service)**
+  * set process step to skipped if ClearinghouseConnectDisabed is true [#874](https://github.com/eclipse-tractusx/portal-backend/pull/874)
+* fixed typos [#883](https://github.com/eclipse-tractusx/portal-backend/pull/883)
+
 ## 2.1.0-RC1
 
 ### Change
