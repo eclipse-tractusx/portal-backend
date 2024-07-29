@@ -69,9 +69,20 @@ public record AppProviderSubscriptionDetailData(
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData,
     string? TenantUrl,
     string AppInstanceId,
-    ProcessStepTypeId? ProcessStepTypeId
+    ProcessStepTypeId? ProcessStepTypeId,
+    SubscriptionExternalServiceData ExternalService
+);
+
+public record SubscriptionExternalServiceData(
+    [property: JsonPropertyName("trusted_issuer")] string TrustedIssuer,
+    [property: JsonPropertyName("participant_id")] string? ParticipantId,
+    [property: JsonPropertyName("iatp_id")] string? IatpId,
+    [property: JsonPropertyName("did_resolver")] string DidResolver,
+    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string DecentralIdentityManagementAuthUrl,
+    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string? DecentralIdentityManagementServiceUrl
 );
 
 /// <summary>
@@ -126,5 +137,13 @@ public record AppProviderSubscriptionDetail(
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
     string? TenantUrl,
     string AppInstanceId,
-    IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps
+    IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps,
+    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData,
+    ExternalServiceData? ExternalServiceData
+);
+
+public record ExternalServiceData(
+    [property: JsonPropertyName("trusted_issuer")] string TrustedIssuer,
+    [property: JsonPropertyName("participant_id")] string? ParticipantId,
+    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string DecentralIdentityManagementServiceUrl
 );

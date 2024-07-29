@@ -821,11 +821,30 @@ public class OfferService : IOfferService
         GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetSubscriptionDetailsForProviderAsync);
 
     /// <inheritdoc />
-    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles)
+    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData)
     {
         var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        return new AppProviderSubscriptionDetailData(data.Id, data.OfferSubscriptionStatus, data.Name, data.Customer, data.Bpn, data.Contact, data.TechnicalUserData, data.TenantUrl, data.AppInstanceId, data.ProcessSteps.GetProcessStepTypeId(data.Id));
+
+        return new AppProviderSubscriptionDetailData(
+            data.Id,
+            data.OfferSubscriptionStatus,
+            data.Name,
+            data.Customer,
+            data.Bpn,
+            data.Contact,
+            data.TechnicalUserData,
+            data.ConnectorData,
+            data.TenantUrl,
+            data.AppInstanceId,
+            data.ProcessSteps.GetProcessStepTypeId(data.Id),
+            new SubscriptionExternalServiceData(
+                walletData.IssuerDid,
+                data.ExternalServiceData?.ParticipantId,
+                data.ExternalServiceData == null || data.ExternalServiceData.TrustedIssuer.EndsWith(":holder-iatp") ? data.ExternalServiceData?.TrustedIssuer : $"{data.ExternalServiceData.TrustedIssuer}:holder-iatp",
+                walletData.BpnDidResolverUrl,
+                walletData.DecentralIdentityManagementAuthUrl,
+                data.ExternalServiceData?.DecentralIdentityManagementServiceUrl));
     }
 
     /// <inheritdoc />

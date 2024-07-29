@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.59" />
-    <PackageReference Include="MimeKit" Version="4.3.0" />
+    <PackageReference Include="MimeKit" Version="4.7.1" />
     <PackageReference Include="ReportPortal.XUnit" Version="2.5.0" />
     <PackageReference Include="RestAssured.Net" Version="4.2.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.1" />

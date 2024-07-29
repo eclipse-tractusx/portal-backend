@@ -2216,11 +2216,12 @@ public class OfferServiceTests
         var offerId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         var companyAdminRoles = _fixture.CreateMany<UserRoleConfig>().ToImmutableArray();
+        var walletData = _fixture.Create<WalletConfigData>();
 
         SetupGetSubscriptionDetailForProvider();
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.APP, companyAdminRoles);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.APP, companyAdminRoles, walletData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
@@ -2241,13 +2242,14 @@ public class OfferServiceTests
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
         };
+        var walletData = _fixture.Create<WalletConfigData>();
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
             .Returns<(bool, bool, AppProviderSubscriptionDetail?)>(default);
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles, walletData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -2268,13 +2270,14 @@ public class OfferServiceTests
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
         };
+        var walletData = _fixture.Create<WalletConfigData>();
         SetupGetSubscriptionDetailForProvider();
 
         A.CallTo(() => _offerSubscriptionsRepository.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
             .Returns((true, false, _fixture.Create<AppProviderSubscriptionDetail>()));
 
         // Act
-        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles);
+        async Task Act() => await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles, walletData);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -2295,6 +2298,7 @@ public class OfferServiceTests
         {
             new UserRoleConfig("ClientTest", new[] {"Test"})
         };
+        var walletData = _fixture.Create<WalletConfigData>();
         SetupGetSubscriptionDetailForProvider();
 
         var data = _fixture.Create<AppProviderSubscriptionDetail>();
@@ -2303,7 +2307,7 @@ public class OfferServiceTests
             .Returns((true, true, data));
 
         // Act
-        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles);
+        var result = await _sut.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, companyAdminRoles, walletData);
 
         // Assert
         result.Id.Should().Be(data.Id);

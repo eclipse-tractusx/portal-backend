@@ -678,7 +678,7 @@ public class OfferSetupService : IOfferSetupService
         if (string.IsNullOrWhiteSpace(offerDetails.RequesterEmail))
         {
             return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-                offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
+                offerDetails.InstanceData.IsSingleInstance || !offerDetails.HasCallbackUrl ? null : [ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK],
                 ProcessStepStatusId.DONE,
                 true,
                 null);
@@ -687,7 +687,7 @@ public class OfferSetupService : IOfferSetupService
         SendMail(basePortalAddress, $"{offerDetails.RequesterFirstname} {offerDetails.RequesterLastname}", offerDetails.RequesterEmail, offerDetails.OfferName, offerDetails.OfferTypeId);
 
         return new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(
-            offerDetails.InstanceData.IsSingleInstance ? null : new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK },
+            offerDetails.InstanceData.IsSingleInstance || !offerDetails.HasCallbackUrl ? null : [ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK],
             ProcessStepStatusId.DONE,
             true,
             null);
@@ -712,7 +712,7 @@ public class OfferSetupService : IOfferSetupService
 
         try
         {
-            foreach (var serviceAccountClientId in offerDetails.ServiceAccountClientIds)
+            foreach (var serviceAccountClientId in offerDetails.InternalServiceAccountClientIds)
             {
                 await _provisioningManager.EnableClient(serviceAccountClientId).ConfigureAwait(ConfigureAwaitOptions.None);
             }

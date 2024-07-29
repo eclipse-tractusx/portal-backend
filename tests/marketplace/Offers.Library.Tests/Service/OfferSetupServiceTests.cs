@@ -1285,7 +1285,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>(), true));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
@@ -1332,9 +1332,11 @@ public class OfferSetupServiceTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("test@email.com")]
-    public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
+    [InlineData(null, true)]
+    [InlineData("test@email.com", true)]
+    [InlineData(null, false)]
+    [InlineData("test@email.com", false)]
+    public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail, bool hasCallbackUrl)
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
@@ -1347,7 +1349,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds, hasCallbackUrl));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
@@ -1368,7 +1370,14 @@ public class OfferSetupServiceTests
         var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
 
-        result.nextStepTypeIds.Should().ContainInOrder([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK]);
+        if (hasCallbackUrl)
+        {
+            result.nextStepTypeIds.Should().ContainInOrder([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK]);
+        }
+        else
+        {
+            result.nextStepTypeIds.Should().BeNull();
+        }
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();

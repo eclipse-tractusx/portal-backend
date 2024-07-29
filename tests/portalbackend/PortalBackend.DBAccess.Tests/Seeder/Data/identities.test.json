@@ -167,5 +167,23 @@
     "user_entity_id": "3d8142f1-860b-48aa-8c2b-1ccb18699f66",
     "identity_type_id": 2,
     "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
+  },
+  {
+    "id": "a946f314-f53e-4c72-9124-40b72bcc59aa",
+    "date_created": "2024-07-22 18:01:33.439000 +00:00",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2,
+    "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
+  },
+  {
+    "id": "4ce1b774-3d00-4e07-9a53-ae1f64193392",
+    "date_created": "2024-07-22 18:01:33.439000 +00:00",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2,
+    "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
   }
 ]

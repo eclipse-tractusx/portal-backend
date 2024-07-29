@@ -143,7 +143,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns<(IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId)>(default);
+            .Returns<(IEnumerable<(Guid, string?, CompanyServiceAccountKindId)>, string?, string?, OfferSubscriptionStatusId)>(default);
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -159,7 +159,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?)>(), string.Empty, null, OfferSubscriptionStatusId.PENDING));
+            .Returns((Enumerable.Empty<(Guid, string?, CompanyServiceAccountKindId)>(), string.Empty, "callback", OfferSubscriptionStatusId.PENDING));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -175,7 +175,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?)>(), null, null, OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?, CompanyServiceAccountKindId)>(), null, "callback", OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -186,19 +186,19 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TriggerProviderCallback_WithCallbackUrlNotSet_Throws()
+    public async Task TriggerProviderCallback_WithCallbackUrlNotSet_Skips()
     {
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
+            .Returns((Enumerable.Empty<(Guid, string?, CompanyServiceAccountKindId)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
 
         // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        var result = await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Assert
-        ex.Message.Should().Be("Callback Url should be set here");
+        result.nextStepTypeIds.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?, CompanyServiceAccountKindId)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
 
         // Act
         var result = await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
@@ -226,10 +226,10 @@ public class OfferProviderBusinessLogicTests
     {
         // Arrange
         var fakeId = Guid.NewGuid();
-        var serviceAccounts = new (Guid, string?)[]
+        var serviceAccounts = new (Guid, string?, CompanyServiceAccountKindId)[]
         {
-            new(Guid.NewGuid(), "sa1"),
-            new(Guid.NewGuid(), "sa2")
+            new(Guid.NewGuid(), "sa1", CompanyServiceAccountKindId.INTERNAL),
+            new(Guid.NewGuid(), "sa2", CompanyServiceAccountKindId.INTERNAL)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
             .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
@@ -243,15 +243,15 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
-    public async Task TriggerProviderCallback_WithValidData_ReturnsExpected()
+    public async Task TriggerProviderCallback_WithValidData_InternalSA_ReturnsExpected()
     {
         // Arrange
         var technicalUserId = Guid.NewGuid();
         var technicalUserClientId = "sa1";
         var technicalUserInternalClientId = Guid.NewGuid().ToString();
-        var serviceAccounts = new (Guid, string?)[]
+        var serviceAccounts = new (Guid, string?, CompanyServiceAccountKindId)[]
         {
-            new(technicalUserId, technicalUserClientId)
+            new(technicalUserId, technicalUserClientId, CompanyServiceAccountKindId.INTERNAL)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
             .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
@@ -268,6 +268,34 @@ public class OfferProviderBusinessLogicTests
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerProviderCallback_WithValidData_ExternalSA_ReturnsExpected()
+    {
+        // Arrange
+        var technicalUserId = Guid.NewGuid();
+        var technicalUserClientId = "sa1";
+        var serviceAccounts = new (Guid, string?, CompanyServiceAccountKindId)[]
+        {
+            new(technicalUserId, technicalUserClientId, CompanyServiceAccountKindId.EXTERNAL)
+        };
+        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
+            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+
+        // Act
+        var result = await _sut.TriggerProviderCallback(_subscriptionId, CancellationToken.None);
+
+        // Assert
+        result.nextStepTypeIds.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+        A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(A<string>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

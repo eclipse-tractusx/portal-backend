@@ -248,8 +248,9 @@ public interface IOfferService
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <param name="offerTypeId">Offer type</param>
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
+    /// <param name="walletData">The information for the external service data</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles);
+    Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData);
 
     /// <summary>
     /// Unsubscribe the Offer subscription by subscriptionId

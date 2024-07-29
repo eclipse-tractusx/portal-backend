@@ -52,7 +52,7 @@ public class SdFactoryBusinessLogic(
         if (_settings.ClearinghouseConnectDisabled)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
-                ProcessStepStatusId.DONE,
+                ProcessStepStatusId.SKIPPED,
                 entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
                 new[] { ProcessStepTypeId.ACTIVATE_APPLICATION },
                 null,
