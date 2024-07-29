@@ -26,6 +26,10 @@ public record CompanyCertificateBpnData(
     CompanyCertificateTypeId CompanyCertificateType,
     CompanyCertificateStatusId CompanyCertificateStatus,
     Guid DocumentId,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset? ValidTill
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTill,
+    string? ExternalCertificateNumber,
+    IEnumerable<string>? Sites,
+    string? Issuer,
+    string? Validator
 );

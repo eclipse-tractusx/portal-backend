@@ -28,7 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -50,6 +49,8 @@ public class CompanyDataBusinessLogicTests
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly DateTimeOffset _now;
     private readonly CompanyDataBusinessLogic _sut;
 
     public CompanyDataBusinessLogicTests()
@@ -66,7 +67,10 @@ public class CompanyDataBusinessLogicTests
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
         var issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
-        var dateTimeProvider = A.Fake<IDateTimeProvider>();
+        _now = _fixture.Create<DateTimeOffset>();
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(_now);
+
         var identityService = A.Fake<IIdentityService>();
         _identity = A.Fake<IIdentityData>();
 
@@ -83,7 +87,7 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => identityService.IdentityData).Returns(_identity);
 
         var options = Options.Create(new CompanyDataSettings { MaxPageSize = 20, CompanyCertificateMediaTypes = new[] { MediaTypeId.PDF }, DecentralIdentityManagementAuthUrl = "https://example.org/test", IssuerDid = "did:web:test", BpnDidResolverUrl = "https://example.org/bdrs" });
-        _sut = new CompanyDataBusinessLogic(_portalRepositories, dateTimeProvider, identityService, issuerComponentBusinessLogic, options);
+        _sut = new CompanyDataBusinessLogic(_portalRepositories, _dateTimeProvider, identityService, issuerComponentBusinessLogic, options);
     }
 
     #region GetOwnCompanyDetails
@@ -707,7 +711,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PNG.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, null, null, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), null);
 
         // Act
         async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
@@ -722,17 +726,20 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         SetupCreateCompanyCertificate();
-        var expiryDate = DateTime.UtcNow;
+        var validFrom = _now.AddMicroseconds(-1);
+        var validTill = _now.AddMicroseconds(1);
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, expiryDate);
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, validFrom, validTill, "Accenture");
         var documentId = Guid.NewGuid();
         var documents = new List<Document>();
         var companyCertificates = new List<CompanyCertificate>();
 
-        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, A<Guid>._, A<Action<CompanyCertificate>>._))
-            .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields) =>
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, A<CompanyCertificateTypeId>._, A<CompanyCertificateStatusId>._, A<Guid>._, A<Action<CompanyCertificate>>._))
+            .Invokes((Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid docId, Action<CompanyCertificate>? setOptionalFields) =>
             {
-                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), DateTime.UtcNow, companyCertificateTypeId, CompanyCertificateStatusId.ACTIVE, companyId, docId);
+                var companyCertificateData = new CompanyCertificate(Guid.NewGuid(), companyCertificateTypeId, companyCertificateStatusId, companyId, docId);
                 setOptionalFields?.Invoke(companyCertificateData);
                 companyCertificates.Add(companyCertificateData);
             });
@@ -755,7 +762,7 @@ public class CompanyDataBusinessLogicTests
         var document = documents.Single();
         document.DocumentTypeId.Should().Be(DocumentTypeId.COMPANY_CERTIFICATE);
         document.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
-        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, document.Id, A<Action<CompanyCertificate>>._))
+        A.CallTo(() => _companyCertificateRepository.CreateCompanyCertificate(_identity.CompanyId, CompanyCertificateTypeId.IATF, CompanyCertificateStatusId.ACTIVE, document.Id, A<Action<CompanyCertificate>>._))
             .MustHaveHappenedOnceExactly();
         companyCertificates.Should().ContainSingle();
         var detail = companyCertificates.Single();
@@ -769,8 +776,9 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         SetupCreateCompanyCertificate();
+
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, DateTime.UtcNow);
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, null, null, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), null);
 
         A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
         .Returns(false);
@@ -782,6 +790,111 @@ public class CompanyDataBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should().Be($"{CompanyCertificateTypeId.IATF} is not assigned to a certificate");
     }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerArgumentExceptionForExternalCertificateNumber()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "E4567@";
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, null, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerBPNS()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNL00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"BPN must contain exactly 16 characters and must be prefixed with BPNS");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForValidFromDate()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(1), _now.AddMicroseconds(2), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ValidFrom date should not be greater than current date");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForValidTillDate()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(-1), _now.AddMicroseconds(-1), null);
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"ValidTill date should be greater than current date");
+    }
+
+    [Fact]
+    public async Task CheckCompanyCertificateType_WithInvalidCall_ThrowsControllerForIssuer()
+    {
+        // Arrange
+        SetupCreateCompanyCertificate();
+        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
+        var externalCertificateNumber = "2345678";
+        var sites = new[] { "BPNS00000003CRHK" };
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), "+ACC");
+
+        A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
+        .Returns(false);
+
+        // Act
+        async Task Act() => await _sut.CreateCompanyCertificate(data, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be($"Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+    }
+
     #endregion
 
     #region GetCompanyCertificateWithBpnNumber

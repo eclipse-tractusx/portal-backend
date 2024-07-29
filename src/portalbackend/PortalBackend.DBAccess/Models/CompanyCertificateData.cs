@@ -25,6 +25,10 @@ public record CompanyCertificateData(
     CompanyCertificateTypeId companyCertificateType,
     CompanyCertificateStatusId companyCertificateStatus,
     Guid documentId,
-    DateTimeOffset validFrom,
-    DateTimeOffset? validTill
+    DateTimeOffset? validFrom,
+    DateTimeOffset? validTill,
+    string? ExternalCertificateNumber,
+    IEnumerable<string>? Sites,
+    string? Issuer,
+    string? Validator
 );

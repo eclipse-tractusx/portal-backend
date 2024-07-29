@@ -108,6 +108,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyCertificateTypeStatus> CompanyCertificateTypeStatuses { get; set; } = default!;
     public virtual DbSet<CompanyCertificateTypeAssignedStatus> CompanyCertificateTypeAssignedStatuses { get; set; } = default!;
     public virtual DbSet<CompanyCertificateTypeDescription> CompanyCertificateTypeDescriptions { get; set; } = default!;
+    public virtual DbSet<CompanyCertificateAssignedSite> CompanyCertificateAssignedSites { get; set; } = default!;
     public virtual DbSet<CompanyAssignedRole> CompanyAssignedRoles { get; set; } = default!;
     public virtual DbSet<CompanyAssignedUseCase> CompanyAssignedUseCases { get; set; } = default!;
     public virtual DbSet<CompanyIdentifier> CompanyIdentifiers { get; set; } = default!;
@@ -624,6 +625,9 @@ public class PortalDbContext : DbContext
                 .HasForeignKey(d => d.DocumentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        modelBuilder.Entity<CompanyCertificateAssignedSite>()
+            .HasKey(e => new { e.CompanyCertificateId, e.Site });
 
         modelBuilder.Entity<CompanyCertificateStatus>()
             .HasData(

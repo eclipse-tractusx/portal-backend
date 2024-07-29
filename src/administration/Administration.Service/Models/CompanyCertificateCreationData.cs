@@ -25,5 +25,9 @@ public record CompanyCertificateCreationData
 (
     CompanyCertificateTypeId CertificateType,
     IFormFile Document,
-    DateTimeOffset? ExpiryDate
+    string? ExternalCertificateNumber,
+    IEnumerable<string>? Sites,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTill,
+    string? Issuer
 );

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public static class ValidationExpressions
+public class CompanyCertificateAssignedSite
 {
-    public const string Name = @"^.+$";
-    public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-    public const string Bpns = @"^(BPNS|bpns)[\w|\d]{12}$";
-    public const string Company = @"^\d*?[A-Za-zÀ-ÿ]\d?([A-Za-z0-9À-ÿ-_+=.,:;!?'\x22&#@()]\s?){2,40}$";
-    public const string ExternalCertificateNumber = @"^[a-zA-Z0-9]{0,36}$";
+    public CompanyCertificateAssignedSite(Guid companyCertificateId, string site)
+    {
+        CompanyCertificateId = companyCertificateId;
+        Site = site;
+    }
+
+    public Guid CompanyCertificateId { get; private set; }
+
+    public string Site { get; private set; }
+
+    // Navigation properties
+    public virtual CompanyCertificate? CompanyCertificate { get; private set; }
 }

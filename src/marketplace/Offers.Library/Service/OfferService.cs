@@ -18,13 +18,13 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Logging;
-using Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -45,7 +45,6 @@ public class OfferService : IOfferService
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IIdentityData _identityData;
     private readonly IOfferSetupService _offerSetupService;
-    private readonly ILogger<OfferService> _logger;
 
     /// <summary>
     /// Constructor.
@@ -60,15 +59,13 @@ public class OfferService : IOfferService
         INotificationService notificationService,
         IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
-        IOfferSetupService offerSetupService,
-        ILogger<OfferService> logger)
+        IOfferSetupService offerSetupService)
     {
         _portalRepositories = portalRepositories;
         _notificationService = notificationService;
         _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _offerSetupService = offerSetupService;
-        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -840,7 +837,7 @@ public class OfferService : IOfferService
             data.ConnectorData,
             data.TenantUrl,
             data.AppInstanceId,
-            data.ProcessSteps.GetProcessStepTypeId(data.Id, _logger),
+            data.ProcessSteps.GetProcessStepTypeId(data.Id),
             new SubscriptionExternalServiceData(
                 walletData.IssuerDid,
                 data.ExternalServiceData?.ParticipantId,
