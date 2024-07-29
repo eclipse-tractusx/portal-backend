@@ -69,7 +69,7 @@ jobs:
           ReportPortal.config.json > temp.json
           mv temp.json ReportPortal.config.json
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+        uses: actions/setup-dotnet@6bd8b7f7774af54e05809fcc5431931b3eb1ddee # v4.0.1
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
       - name: Install dependencies
