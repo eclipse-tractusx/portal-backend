@@ -34,9 +34,9 @@ public record BpdmState(
 );
 
 public record BpdmGeographicCoordinates(
-    double Longitude,
-    double Latitude,
-    double Altitude
+    double? Longitude,
+    double? Latitude,
+    double? Altitude
 );
 
 public record BpdmPutStreet(

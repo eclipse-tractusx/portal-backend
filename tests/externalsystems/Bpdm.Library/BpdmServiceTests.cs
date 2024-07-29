@@ -361,7 +361,7 @@ public class BpdmServiceTests
                         ""geographicCoordinates"": {
                             ""longitude"": 0,
                             ""latitude"": 0,
-                            ""altitude"": 0
+                            ""altitude"": null
                         },
                         ""country"": ""UNDEFINED"",
                         ""administrativeAreaLevel1"": ""string"",
