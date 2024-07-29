@@ -113,7 +113,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
 
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
-        
+
         // When user will try to upload the same role names which are already attched to an APP so, duplicate roles would be ignored.
         // So, when no role has been modified against the given appId, no need to procced further
         // No need to Add roles to client

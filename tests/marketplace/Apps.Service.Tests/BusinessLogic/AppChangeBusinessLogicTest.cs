@@ -154,17 +154,12 @@ public class AppChangeBusinessLogicTest
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
                 var existingRoles = new List<(Guid AppId, string Role)>();
-                if (existingRoles != null && existingRoles.Any())
-                {
-                    userRoles = appRoles.Select(x => (x.AppId, x.Role))
+                userRoles = existingRoles != null && existingRoles.Any()
+                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
                                 .Except(existingRoles)
                                 .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList();
-                }
-                else
-                {
-                    userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-                }
+                                .ToList()
+                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
                 return userRoles;
             });
 
@@ -255,17 +250,12 @@ public class AppChangeBusinessLogicTest
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
                 var existingRoles = new List<(Guid AppId, string Role)>();
-                if (existingRoles != null && existingRoles.Any())
-                {
-                    userRoles = appRoles.Select(x => (x.AppId, x.Role))
+                userRoles = existingRoles != null && existingRoles.Any()
+                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
                                 .Except(existingRoles)
                                 .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList();
-                }
-                else
-                {
-                    userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-                }
+                                .ToList()
+                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
                 return userRoles;
             });
 
@@ -348,17 +338,12 @@ public class AppChangeBusinessLogicTest
             {
                 var existingRoles = new List<(Guid AppId, string Role)>()
                 { (appId, roleId) };
-                if (existingRoles != null && existingRoles.Any())
-                {
-                    userRoles = appRoles.Select(x => (x.AppId, x.Role))
+                userRoles = existingRoles != null && existingRoles.Any()
+                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
                                 .Except(existingRoles)
                                 .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList();
-                }
-                else
-                {
-                    userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-                }
+                                .ToList()
+                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
                 return userRoles;
             });
 

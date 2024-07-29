@@ -42,19 +42,14 @@ public class UserRolesRepository : IUserRolesRepository
                                            .Select(x => new { AppId = x.OfferId, Role = x.UserRoleText })
                                            .ToList();
         List<UserRole>? uniqueRoles;
-        if (appRoles != null && appRoles.Any())
-        {
-            // Selecting the roles, except those that are already part of an APP
+        uniqueRoles = appRoles != null && appRoles.Any()
+        ?   // Selecting the roles, except those that are already part of an APP
             uniqueRoles = appIdRoles.Select(x => new { x.AppId, x.Role })
                         .Except(appRoles)
                         .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                        .ToList();
-        }
-        else
-        {
-            // No roles has been attached to the APP so, all given roles would be inserting into the database
+                        .ToList()
+        :   // No roles has been attached to the APP so, all given roles would be inserting into the database
             uniqueRoles = appIdRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-        }
 
         // When user will try to upload the same roles which are already attched to an APP so, no row will be effected
         if (uniqueRoles.Any())
