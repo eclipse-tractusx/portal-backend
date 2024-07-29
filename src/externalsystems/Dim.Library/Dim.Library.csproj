@@ -36,7 +36,6 @@
 
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" Version="6.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
