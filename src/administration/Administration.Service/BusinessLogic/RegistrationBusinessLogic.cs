@@ -217,7 +217,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
                         application.Company.BusinessPartnerNumber,
-                        application.Company.Identities.Where(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED).Count()))
+                        application.Company.Identities.Count(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)))
                     .AsAsyncEnumerable()));
     }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
