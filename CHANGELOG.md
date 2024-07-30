@@ -55,6 +55,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 The following are known issues identified in the current release:
 
+* **Initial Wallet Setup**
+  * When initially setting up the portal the operator wallet setup needs manual interventions on db level. More on how to handle it can be found in the [documentation](https://github.com/eclipse-tractusx/portal-assets/blob/v2.1.0/docs/developer/Technical%20Documentation/Operator%20Wallet%20Setup/Initial%20Setup.md)
 * **Connector Registration:**
   * The connector registration currently fails if a company has been onboarded without a self description document, e.g. if the clearinghouseConnectDisabled is enabled during the onboarding. [#887](https://github.com/eclipse-tractusx/portal-backend/issues/887)
 * **Missing notifications:**
@@ -62,8 +64,6 @@ The following are known issues identified in the current release:
     * Welcome - Notification to new user
     * App Subscription - Info email to provider
     * Service Release - Info email to requesting user
-* **Autosetup Feature Limitation:**
-  * The autosetup feature lacks support for service providers and app providers to automatically retrieve customer connector configuration details such as `authURL`, `WalletURL`, etc.
 * **Deletion Support Deficiencies:**
   * The deletion of technical users from external providers is currently not supported.
   * Removal of BDRS (BPN-DID Resolver Service) entries is currently not supported.
