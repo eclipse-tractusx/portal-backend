@@ -105,18 +105,15 @@ public class ConnectorsBusinessLogic(
             throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
-        if (result.SelfDescriptionDocumentId is null)
-        {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()) });
-        }
         await ValidateTechnicalUser(technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             result.Bpn,
-            result.SelfDescriptionDocumentId.Value,
+            result.SelfDescriptionDocumentId,
             null,
+            companyId,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -151,11 +148,6 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_STATUS_ACTIVE_OR_PENDING, new ErrorParameter[] { new("offerSubscriptionStatusIdActive", OfferSubscriptionStatusId.ACTIVE.ToString()), new("offerSubscriptionStatusIdPending", OfferSubscriptionStatusId.PENDING.ToString()) });
         }
 
-        if (result.SelfDescriptionDocumentId is null)
-        {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
-        }
-
         if (string.IsNullOrWhiteSpace(result.ProviderBpn))
         {
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
@@ -167,8 +159,9 @@ public class ConnectorsBusinessLogic(
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             result.ProviderBpn,
-            result.SelfDescriptionDocumentId!.Value,
+            result.SelfDescriptionDocumentId,
             subscriptionId,
+            result.CompanyId,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -198,10 +191,16 @@ public class ConnectorsBusinessLogic(
     private async Task<Guid> CreateAndRegisterConnectorAsync(
         ConnectorRequestModel connectorInputModel,
         string businessPartnerNumber,
-        Guid selfDescriptionDocumentId,
+        Guid? selfDescriptionDocumentId,
         Guid? subscriptionId,
+        Guid companyId,
         CancellationToken cancellationToken)
     {
+        if (selfDescriptionDocumentId is null && !_settings.ClearinghouseConnectDisabled)
+        {
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+        }
+
         var (name, connectorUrl, type, location, provider, host, technicalUserId) = connectorInputModel;
 
         var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
