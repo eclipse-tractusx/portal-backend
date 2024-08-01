@@ -549,7 +549,7 @@ public class NetworkBusinessLogicTests
     [Theory]
     [InlineData(Bpn)]
     [InlineData(null)]
-    public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? BusinessPartnerNumberl)
+    public async Task HandlePartnerRegistration_WithValidData_CallsExpected(string? businessPartnerNumber)
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
@@ -563,11 +563,12 @@ public class NetworkBusinessLogicTests
         var processSteps = new List<ProcessStep>();
         var companyApplications = new List<CompanyApplication>();
         var networkRegistrations = new List<NetworkRegistration>();
+        var invitations = new List<Invitation>();
 
         var data = new PartnerRegistrationData(
             Guid.NewGuid().ToString(),
             "Test N2N",
-            BusinessPartnerNumberl,
+            businessPartnerNumber,
             "Munich",
             "Street",
             "DE",
@@ -634,6 +635,11 @@ public class NetworkBusinessLogicTests
                 companyApplications.Add(companyApplication);
                 return companyApplication;
             });
+        A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>._, A<Guid>._))
+            .Invokes((Guid applicationId, Guid companyUserId) =>
+            {
+                invitations.Add(new Invitation(Guid.NewGuid(), applicationId, companyUserId, InvitationStatusId.CREATED, DateTimeOffset.UtcNow));
+            });
         A.CallTo(() => _networkRepository.CreateNetworkRegistration(A<string>._, A<Guid>._, A<Guid>._, A<Guid>._, A<Guid>._))
             .Invokes((string externalId, Guid companyId, Guid pId, Guid ospId, Guid companyApplicationId) =>
             {
@@ -670,8 +676,10 @@ public class NetworkBusinessLogicTests
                 x.ExternalId == data.ExternalId &&
                 x.ProcessId == newProcessId &&
                 x.ApplicationId == newApplicationId);
+        invitations.Should().ContainSingle()
+            .Which.Should().Match<Invitation>(x => x.CompanyApplicationId == newApplicationId);
 
-        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, BusinessPartnerNumberl))
+        A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, "test-alias", A<UserCreationRoleDataIdpInfo>._, newCompanyId, IdpId, businessPartnerNumber))
             .MustHaveHappenedOnceExactly();
         var idpCreationData = new[] { (newCompanyId, IdpId) };
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProviders(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(idpCreationData)))
