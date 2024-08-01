@@ -136,7 +136,7 @@ public class BPNAccessTest
                     ""geographicCoordinates"": {
                         ""longitude"": 0.0,
                         ""latitude"": 0.0,
-                        ""altitude"": 0.0
+                        ""altitude"": null
                     },
                     ""country"": {
                         ""technicalKey"": ""DE"",

@@ -94,5 +94,5 @@ public record BpdmPostalDeliveryPointDto(
 public record BpdmGeographicCoordinatesDto(
     double Longitude,
     double Latitude,
-    double Altitude
+    double? Altitude
 );
