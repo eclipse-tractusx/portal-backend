@@ -249,12 +249,9 @@ public class ApplicationActivationService : IApplicationActivationService
 
     private async Task SetTheme(IEnumerable<IdentityProviderForTheme> iamIdps)
     {
-        foreach (var iamIdp in iamIdps)
+        foreach (var iamIdp in iamIdps.Where(i => i.IdentityProviderType == IdentityProviderTypeId.SHARED))
         {
-            if (iamIdp.IdentityProviderType == IdentityProviderTypeId.SHARED)
-            {
-                await _provisioningManager.UpdateSharedRealmTheme(iamIdp.IamIdpAliases, _settings.LoginTheme).ConfigureAwait(false);
-            }
+            await _provisioningManager.UpdateSharedRealmTheme(iamIdp.IamIdpAliases, _settings.LoginTheme).ConfigureAwait(false);
         }
     }
 
