@@ -37,26 +37,20 @@ using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class NetworkBusinessLogic : INetworkBusinessLogic
+public class NetworkBusinessLogic(
+    IPortalRepositories portalRepositories,
+    IIdentityService identityService,
+    IUserProvisioningService userProvisioningService,
+    INetworkRegistrationProcessHelper processHelper,
+    IOptions<PartnerRegistrationSettings> options)
+    : INetworkBusinessLogic
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex ExternalID = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex ExternalId = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityData _identityData;
-    private readonly IUserProvisioningService _userProvisioningService;
-    private readonly INetworkRegistrationProcessHelper _processHelper;
-    private readonly PartnerRegistrationSettings _settings;
-
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IUserProvisioningService userProvisioningService, INetworkRegistrationProcessHelper processHelper, IOptions<PartnerRegistrationSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _identityData = identityService.IdentityData;
-        _userProvisioningService = userProvisioningService;
-        _processHelper = processHelper;
-        _settings = options.Value;
-    }
+    private readonly IIdentityData _identityData = identityService.IdentityData;
+    private readonly PartnerRegistrationSettings _settings = options.Value;
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
@@ -64,17 +58,18 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         {
             throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
         }
+
         var ownerCompanyId = _identityData.CompanyId;
-        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
-        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var networkRepository = portalRepositories.GetInstance<INetworkRepository>();
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var companyId = CreatePartnerCompany(companyRepository, data);
 
-        var applicationId = _portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
+        var applicationId = portalRepositories.GetInstance<IApplicationRepository>().CreateCompanyApplication(companyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL,
             ca =>
             {
                 ca.OnboardingServiceProviderId = ownerCompanyId;
@@ -101,7 +96,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         async IAsyncEnumerable<(Guid CompanyUserId, Exception? Error)> CreateUsers()
         {
-            var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+            var userRepository = portalRepositories.GetInstance<IUserRepository>();
             await foreach (var (aliasData, creationInfos) in GetUserCreationData(companyId, GetIdpId, GetIdpAlias, data, roleData).ToAsyncEnumerable())
             {
                 foreach (var creationInfo in creationInfos)
@@ -110,9 +105,10 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
                     Exception? error = null;
                     try
                     {
-                        var (_, companyUserId) = await _userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
+                        var (_, companyUserId) = await userProvisioningService.GetOrCreateCompanyUser(userRepository, aliasData.IdpAlias,
                             creationInfo, companyId, aliasData.IdpId, data.BusinessPartnerNumber?.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None);
                         identityId = companyUserId;
+                        portalRepositories.GetInstance<IApplicationRepository>().CreateInvitation(applicationId, companyUserId);
                     }
                     catch (Exception ex)
                     {
@@ -127,7 +123,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var userCreationErrors = await CreateUsers().Where(x => x.Error != null).Select(x => x.Error!).ToListAsync();
         userCreationErrors.IfAny(errors => throw new ServiceException($"Errors occured while saving the users: ${string.Join("", errors.Select(x => x.Message))}", errors.First()));
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
@@ -148,7 +144,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         });
 
         companyRepository.CreateUpdateDeleteIdentifiers(company.Id, Enumerable.Empty<(UniqueIdentifierId, string)>(), data.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
-        _portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
+        portalRepositories.GetInstance<ICompanyRolesRepository>().CreateCompanyAssignedRoles(company.Id, data.CompanyRoles);
 
         return company.Id;
     }
@@ -184,14 +180,14 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             });
 
     public Task RetriggerProcessStep(string externalId, ProcessStepTypeId processStepTypeId) =>
-        _processHelper.TriggerProcessStep(externalId, processStepTypeId);
+        processHelper.TriggerProcessStep(externalId, processStepTypeId);
 
     private async Task<(IEnumerable<UserRoleData> RoleData, IDictionary<Guid, string>? IdentityProviderIdAliase, (Guid IdentityProviderId, string Alias)? SingleIdentityProviderIdAlias, IEnumerable<Guid> AllIdentityProviderIds)> ValidatePartnerRegistrationData(PartnerRegistrationData data, INetworkRepository networkRepository, IIdentityProviderRepository identityProviderRepository, Guid ownerCompanyId)
     {
-        var countryRepository = _portalRepositories.GetInstance<ICountryRepository>();
+        var countryRepository = portalRepositories.GetInstance<ICountryRepository>();
         data.ValidateData();
         await data.ValidateDatabaseData(
-            bpn => _portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
+            bpn => portalRepositories.GetInstance<ICompanyRepository>().CheckBpnExists(bpn),
             alpha2Code => countryRepository.CheckCountryExistsByAlpha2CodeAsync(alpha2Code),
             (countryAlpha2Code, uniqueIdentifierIds) => countryRepository.GetCountryAssignedIdentifiers(countryAlpha2Code, uniqueIdentifierIds),
             true).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -206,7 +202,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             ValidateUsers(user);
         }
 
-        if (!ExternalID.IsMatch(data.ExternalId))
+        if (!ExternalId.IsMatch(data.ExternalId))
         {
             throw new ControllerArgumentException("ExternalId must be between 6 and 36 characters");
         }
@@ -222,7 +218,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         IEnumerable<UserRoleData> roleData;
         try
         {
-            roleData = await _userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
+            roleData = await userProvisioningService.GetRoleDatas(_settings.InitialRoles).ToListAsync().ConfigureAwait(false);
         }
         catch (Exception e)
         {
