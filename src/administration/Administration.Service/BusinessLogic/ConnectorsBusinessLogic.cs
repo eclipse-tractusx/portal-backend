@@ -198,7 +198,7 @@ public class ConnectorsBusinessLogic(
     {
         if (selfDescriptionDocumentId is null && !_settings.ClearinghouseConnectDisabled)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new("companyId", companyId.ToString())]);
         }
 
         var (name, connectorUrl, type, location, provider, host, technicalUserId) = connectorInputModel;
