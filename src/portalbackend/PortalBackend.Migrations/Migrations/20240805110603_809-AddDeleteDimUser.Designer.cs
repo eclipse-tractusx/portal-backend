@@ -29,7 +29,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240802071934_809-AddDeleteDimUser")]
+    [Migration("20240805110603_809-AddDeleteDimUser")]
     partial class _809AddDeleteDimUser
     {
         /// <inheritdoc />
@@ -4973,6 +4973,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "PENDING"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "PENDING_DELETION"
                         });
                 });
 

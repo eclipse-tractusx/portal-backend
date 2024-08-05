@@ -4970,6 +4970,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 4,
                             Label = "PENDING"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Label = "PENDING_DELETION"
                         });
                 });
 

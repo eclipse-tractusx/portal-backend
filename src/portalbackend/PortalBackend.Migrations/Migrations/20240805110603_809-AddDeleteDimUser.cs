@@ -41,6 +41,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             migrationBuilder.InsertData(
                 schema: "portal",
+                table: "identity_user_statuses",
+                columns: new[] { "id", "label" },
+                values: new object[] { 5, "PENDING_DELETION" });
+
+            migrationBuilder.InsertData(
+                schema: "portal",
                 table: "process_step_types",
                 columns: new[] { "id", "label" },
                 values: new object[,]
@@ -66,12 +72,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                 table: "process_step_types",
                 keyColumn: "id",
                 keyValue: 115);
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DeleteData(
+                schema: "portal",
+                table: "identity_user_statuses",
+                keyColumn: "id",
+                keyValue: 5);
+
             migrationBuilder.DropColumn(
                 name: "version",
                 schema: "portal",

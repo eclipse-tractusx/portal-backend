@@ -128,6 +128,10 @@ public class ServiceAccountBusinessLogic(
 
             if (!context.ProcessSteps.Any(step => step.ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER))
             {
+                portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
+                {
+                    i.UserStatusId = UserStatusId.PENDING_DELETION;
+                });
                 context.ScheduleProcessSteps([ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER]);
                 context.FinalizeProcessStep();
             }
@@ -137,7 +141,7 @@ public class ServiceAccountBusinessLogic(
             await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
             portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
             {
-                i.UserStatusId = UserStatusId.INACTIVE;
+                i.UserStatusId = UserStatusId.DELETED;
             });
         }
 
