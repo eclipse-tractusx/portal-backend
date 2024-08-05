@@ -128,13 +128,21 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ))
             .SingleOrDefaultAsync();
 
-    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
+    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         portalDbContext.CompanyApplications.AsNoTracking()
             .Where(application =>
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null) =>
+    public IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        portalDbContext.CompanyApplications.AsNoTracking()
+            .Where(application =>
+                application.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL &&
+                application.OnboardingServiceProviderId == onboardingServiceProviderId &&
+                (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
+                applicationStatusIds.Contains(application.ApplicationStatusId));
+
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId) =>
         portalDbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId &&

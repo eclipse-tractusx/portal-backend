@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
@@ -63,6 +64,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     private readonly IProvisioningManager _provisioningManager;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
+    private readonly IIdentityData _identityData;
 
     public RegistrationBusinessLogic(
         IPortalRepositories portalRepositories,
@@ -74,6 +76,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
         IProvisioningManager provisioningManager,
         IMailingProcessCreation mailingProcessCreation,
+        IIdentityService identityService,
         ILogger<RegistrationBusinessLogic> logger)
     {
         _portalRepositories = portalRepositories;
@@ -86,6 +89,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         _provisioningManager = provisioningManager;
         _mailingProcessCreation = mailingProcessCreation;
         _logger = logger;
+        _identityData = identityService.IdentityData;
     }
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -142,7 +146,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         );
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -181,7 +185,42 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
+    {
+        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        {
+            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+        }
+        var applications = _portalRepositories.GetInstance<IApplicationRepository>()
+            .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
+                companyName?.Length >= 3 ? companyName : null,
+                GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
+                applications.CountAsync(),
+                applications
+                    .AsSplitQuery()
+                    .OrderByDescending(application => application.DateCreated)
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyDetailsOspOnboarding(
+                        application.CompanyId,
+                        application.Id,
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.DateLastChanged,
+                        application.Company!.Name,
+                        application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
+                        application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
+                        application.Company.BusinessPartnerNumber,
+                        application.Company.Identities.Count(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)))
+                    .AsAsyncEnumerable()));
+    }
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -571,7 +610,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
     }
 
-    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter)
     {
         switch (companyApplicationStatusFilter)
         {
