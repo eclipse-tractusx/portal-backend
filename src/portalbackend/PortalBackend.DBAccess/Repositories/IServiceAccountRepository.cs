@@ -34,9 +34,9 @@ public interface IServiceAccountRepository
         CompanyServiceAccountKindId companyServiceAccountKindId,
         Action<CompanyServiceAccount>? setOptionalParameters = null);
 
-    void AttachAndModifyCompanyServiceAccount(Guid id, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify);
+    void AttachAndModifyCompanyServiceAccount(Guid id, Guid version, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify);
     Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId);
-    Task<(IEnumerable<Guid> UserRoleIds, Guid? ConnectorId, string? ClientClientId, ConnectorStatusId? statusId, OfferSubscriptionStatusId? OfferStatusId)> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId);
+    Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId);
     Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId);
     Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
     Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId);

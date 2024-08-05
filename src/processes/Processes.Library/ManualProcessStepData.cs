@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 public record ManualProcessStepData(
-    ProcessStepTypeId ProcessStepTypeId,
+    ProcessStepTypeId? ProcessStepTypeId,
     Process Process,
     IEnumerable<ProcessStep> ProcessSteps,
     IPortalRepositories PortalRepositories

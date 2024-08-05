@@ -19,9 +19,16 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public interface IDimUserCreationProcessService
-{
-    Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken);
-}
+public record OwnServiceAccountData(
+    IEnumerable<Guid> UserRoleIds,
+    Guid ServiceAccountId,
+    Guid ServiceAccountVersion,
+    Guid? ConnectorId,
+    string? ClientClientId,
+    ConnectorStatusId? StatusId,
+    OfferSubscriptionStatusId? OfferStatusId,
+    bool IsDimServiceAccount,
+    Guid? ProcessId
+);

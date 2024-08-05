@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,12 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyServiceAccountWithRoleDataClientId(
-    Guid ServiceAccountId,
-    UserStatusId UserStatusId,
+    Guid ServiceAccountVersion,
     string Name,
     string Description,
+    string? ClientClientId,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     CompanyServiceAccountKindId CompanyServiceAccountKindId,
     Guid? OfferSubscriptionId,
-    string? ClientClientId,
+    UserStatusId UserStatusId,
     IEnumerable<UserRoleData> UserRoleDatas);

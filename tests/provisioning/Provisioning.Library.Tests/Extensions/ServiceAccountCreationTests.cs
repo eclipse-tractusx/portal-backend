@@ -384,6 +384,7 @@ public class ServiceAccountCreationTests
             {
                 var sa = new CompanyServiceAccount(
                     identityId,
+                    Guid.NewGuid(),
                     name,
                     description,
                     companyServiceAccountTypeId,

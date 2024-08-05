@@ -31,7 +31,7 @@ public static class VerifyProcessDataExtensions
 {
     public static ManualProcessStepData CreateManualProcessData(
         this VerifyProcessData? processData,
-        ProcessStepTypeId processStepTypeId,
+        ProcessStepTypeId? processStepTypeId,
         IPortalRepositories portalRepositories,
         Func<string> getProcessEntityName)
     {
@@ -60,9 +60,9 @@ public static class VerifyProcessDataExtensions
             throw new UnexpectedConditionException("processSteps should never have any other status than TODO here");
         }
 
-        if (processData.ProcessSteps.All(step => step.ProcessStepTypeId != processStepTypeId))
+        if (processStepTypeId.HasValue && processData.ProcessSteps.All(step => step.ProcessStepTypeId != processStepTypeId.Value))
         {
-            throw new ConflictException($"{getProcessEntityName()}, process step {processStepTypeId} is not eligible to run");
+            throw new ConflictException($"{getProcessEntityName()}, process step {processStepTypeId.Value} is not eligible to run");
         }
 
         return new(processStepTypeId, processData.Process, processData.ProcessSteps, portalRepositories);
@@ -86,7 +86,7 @@ public static class ManualProcessStepDataExtensions
         context.PortalRepositories.GetInstance<IProcessStepRepository>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
-                    .Where(step => step.ProcessStepTypeId != context.ProcessStepTypeId)
+                    .Where(step => !context.ProcessStepTypeId.HasValue || step.ProcessStepTypeId != context.ProcessStepTypeId.Value)
                     .GroupBy(step => step.ProcessStepTypeId)
                     .IntersectBy(processStepTypeIds, group => group.Key)
                     .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
@@ -95,7 +95,7 @@ public static class ManualProcessStepDataExtensions
         context.PortalRepositories.GetInstance<IProcessStepRepository>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
-                    .Where(step => step.ProcessStepTypeId != context.ProcessStepTypeId)
+                    .Where(step => !context.ProcessStepTypeId.HasValue || step.ProcessStepTypeId != context.ProcessStepTypeId.Value)
                     .GroupBy(step => step.ProcessStepTypeId)
                     .ExceptBy(processStepTypeIds, group => group.Key)
                     .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
@@ -109,8 +109,11 @@ public static class ManualProcessStepDataExtensions
 
     public static void FinalizeProcessStep(this ManualProcessStepData context)
     {
-        context.PortalRepositories.GetInstance<IProcessStepRepository>().AttachAndModifyProcessSteps(
-            ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId == context.ProcessStepTypeId), ProcessStepStatusId.DONE));
+        if (context.ProcessStepTypeId.HasValue)
+        {
+            context.PortalRepositories.GetInstance<IProcessStepRepository>().AttachAndModifyProcessSteps(
+                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId == context.ProcessStepTypeId.Value), ProcessStepStatusId.DONE));
+        }
 
         context.PortalRepositories.Attach(context.Process);
         if (!context.Process.ReleaseLock())
@@ -121,19 +124,26 @@ public static class ManualProcessStepDataExtensions
 
     private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId)
     {
-        var firstStep = steps.FirstOrDefault();
-
-        if (firstStep == null)
-            yield break;
-
-        foreach (var step in steps)
+        using var enumerator = steps.GetEnumerator();
+        if (!enumerator.MoveNext())
         {
+            yield break;
+        }
+
+        var current = enumerator.Current;
+
+        yield return (
+            current.Id,
+            ps => ps.ProcessStepStatusId = current.ProcessStepStatusId,
+            ps => ps.ProcessStepStatusId = processStepStatusId);
+
+        while (enumerator.MoveNext())
+        {
+            current = enumerator.Current;
             yield return (
-                step.Id,
-                null,
-                ps => ps.ProcessStepStatusId = ps.Id == firstStep.Id
-                    ? processStepStatusId
-                    : ProcessStepStatusId.DUPLICATE);
+                current.Id,
+                ps => ps.ProcessStepStatusId = current.ProcessStepStatusId,
+                ps => ps.ProcessStepStatusId = ProcessStepStatusId.DUPLICATE);
         }
     }
 }

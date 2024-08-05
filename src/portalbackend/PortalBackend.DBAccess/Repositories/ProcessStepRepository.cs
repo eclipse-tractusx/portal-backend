@@ -121,17 +121,34 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId, Guid? ServiceAccountVersion)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
             .AsNoTracking()
             .Where(x => x.Id == processId)
-            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?, Guid?>(
                 x.ProcessTypeId,
                 new VerifyProcessData(
                     x,
                     x.ProcessSteps
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.DimUserCreationData!.ServiceAccountId,
+                x.DimUserCreationData.ServiceAccount!.Version)
+            )
+            .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
+                x.ProcessTypeId,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            (processStepTypeIds == null || processStepTypeIds.Contains(step.ProcessStepTypeId)) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
                 x.DimUserCreationData!.ServiceAccountId)
             )

@@ -68,7 +68,7 @@ try
                 .AddMailingProcessExecutor()
                 .AddInvitationProcessExecutor(hostContext.Configuration)
                 .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
-                .AddDimUserCreationProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
                 .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>();
 
@@ -82,6 +82,7 @@ try
                 {
                     FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
                 }
+
                 isDevelopment = true;
             }
         })

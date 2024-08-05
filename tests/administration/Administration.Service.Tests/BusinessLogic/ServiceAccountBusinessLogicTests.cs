@@ -49,6 +49,7 @@ public class ServiceAccountBusinessLogicTests
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
     private static readonly Guid ValidConnectorId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
+    private static readonly Guid ValidServiceAccountVersion = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountWithDimDataId = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
     private static readonly Guid ExternalServiceAccount = Guid.NewGuid();
@@ -66,7 +67,6 @@ public class ServiceAccountBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly IOptions<ServiceAccountSettings> _options;
     private readonly IIdentityService _identityService;
-    private readonly ServiceAccountBusinessLogic _sut;
     private readonly byte[] _encryptionKey;
 
     public ServiceAccountBusinessLogicTests()
@@ -100,8 +100,6 @@ public class ServiceAccountBusinessLogicTests
             EncryptionConfigIndex = 1,
             EncryptionConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(_encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
         });
-
-        _sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
     }
 
     #region CreateOwnCompanyServiceAccountAsync
@@ -184,7 +182,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         var wrongUserRoleId = Guid.NewGuid();
         SetupCreateOwnCompanyServiceAccount();
-        var serviceAccountCreationInfos = new ServiceAccountCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, new[] { UserRoleId1, wrongUserRoleId });
+        var serviceAccountCreationInfos = new ServiceAccountCreationInfo("TheName", "Just a short description", IamClientAuthMethod.SECRET, [UserRoleId1, wrongUserRoleId]);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
@@ -333,6 +331,17 @@ public class ServiceAccountBusinessLogicTests
         var data = new ServiceAccountEditableDetails(ValidServiceAccountId, "new name", "changed description", IamClientAuthMethod.SECRET);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
+        CompanyServiceAccount? initial = null;
+        CompanyServiceAccount? modified = null;
+
+        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(A<Guid>._, A<Guid>._, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
+            .Invokes((Guid id, Guid version, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify) =>
+            {
+                initial = new CompanyServiceAccount(id, version, null!, null!, default, default);
+                initialize?.Invoke(initial);
+                modified = new CompanyServiceAccount(id, version, null!, null!, default, default);
+                modify(modified);
+            });
         // Act
         var result = await sut.UpdateOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId, data);
 
@@ -341,8 +350,12 @@ public class ServiceAccountBusinessLogicTests
         result.Name.Should().Be("new name");
         A.CallTo(() => _provisioningManager.UpdateCentralClientAsync(A<string>._, A<ClientConfigData>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ValidServiceAccountId, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ValidServiceAccountId, ValidServiceAccountVersion, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
             .MustHaveHappenedOnceExactly();
+        initial.Should().NotBeNull().And.Match<CompanyServiceAccount>(
+            x => x.Id == ValidServiceAccountId && x.Version == ValidServiceAccountVersion && x.Name == "test" && x.Description == "test");
+        modified.Should().NotBeNull().And.Match<CompanyServiceAccount>(
+            x => x.Name == "new name" && x.Description == "changed description");
     }
 
     [Fact]
@@ -427,8 +440,10 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         SetupUpdateOwnCompanyServiceAccountDetails();
+
         var external = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
             .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+            .With(x => x.CompanyServiceAccountTypeId, CompanyServiceAccountTypeId.OWN)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.EXTERNAL)
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ExternalServiceAccount, ValidCompanyId))
@@ -446,7 +461,7 @@ public class ServiceAccountBusinessLogicTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.UpdateCentralClientAsync(A<string>._, A<ClientConfigData>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ExternalServiceAccount, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _serviceAccountRepository.AttachAndModifyCompanyServiceAccount(ExternalServiceAccount, external.ServiceAccountVersion, A<Action<CompanyServiceAccount>>._, A<Action<CompanyServiceAccount>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -490,7 +505,7 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange
         var serviceAccountId = Guid.NewGuid();
-        SetupDeleteOwnCompanyServiceAccount(false, false);
+        SetupDeleteOwnCompanyServiceAccount(false, false, false);
 
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
@@ -535,11 +550,13 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    [InlineData(false, false)]
-    public async Task DeleteOwnCompanyServiceAccountAsync_WithoutClient_CallsExpected(bool withClient, bool withServiceAccount)
+    [InlineData(true, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    public async Task DeleteOwnCompanyServiceAccountAsync_WithoutClient_CallsExpected(bool withClient, bool isDimServiceAccount, bool withServiceAccount)
     {
         // Arrange
         var identity = _fixture.Build<Identity>()
@@ -549,16 +566,28 @@ public class ServiceAccountBusinessLogicTests
         var connector = _fixture.Build<Connector>()
             .With(x => x.CompanyServiceAccountId, ValidServiceAccountId)
             .Create();
-        SetupDeleteOwnCompanyServiceAccount(withServiceAccount, withClient, connector, identity);
+        var processId = Guid.NewGuid();
+        SetupDeleteOwnCompanyServiceAccount(withServiceAccount, isDimServiceAccount, withClient, connector, identity, processId);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
         await sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
 
         // Assert
-        if (withClient)
+        if (isDimServiceAccount)
         {
+            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.First().ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER && x.First().ProcessStepStatusId == ProcessStepStatusId.TODO && x.First().ProcessId == processId))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._)).MustNotHaveHappened();
+            A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(A<string>._)).MustNotHaveHappened();
+            identity.UserStatusId.Should().Be(UserStatusId.PENDING_DELETION);
+        }
+        else if (withClient)
+        {
+            A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._)).MustNotHaveHappened();
             A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(ClientId)).MustHaveHappenedOnceExactly();
+            identity.UserStatusId.Should().Be(UserStatusId.DELETED);
         }
 
         if (withServiceAccount)
@@ -567,7 +596,6 @@ public class ServiceAccountBusinessLogicTests
             connector.CompanyServiceAccountId.Should().BeNull();
         }
 
-        identity.UserStatusId.Should().Be(UserStatusId.INACTIVE);
         var validServiceAccountUserRoleIds = _userRoleIds.Select(userRoleId => (ValidServiceAccountId, userRoleId));
         A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(validServiceAccountUserRoleIds))).MustHaveHappenedOnceExactly();
     }
@@ -587,7 +615,7 @@ public class ServiceAccountBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
-        IServiceAccountBusinessLogic sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
         var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
@@ -616,10 +644,12 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, Guid.NewGuid()));
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, Guid.NewGuid(), Guid.NewGuid()));
+
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
 
         // Act
-        await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+        await sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Assert
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
@@ -636,8 +666,11 @@ public class ServiceAccountBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns<(ProcessTypeId, VerifyProcessData, Guid?)>(default);
-        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+            .Returns<(ProcessTypeId, VerifyProcessData, Guid?, Guid?)>(default);
+
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
+
+        async Task Act() => await sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -656,8 +689,11 @@ public class ServiceAccountBusinessLogicTests
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, null));
-        async Task Act() => await _sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
+            .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, null, null));
+
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, _serviceAccountCreation, _identityService);
+
+        async Task Act() => await sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Act
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -716,8 +752,13 @@ public class ServiceAccountBusinessLogicTests
     {
         var authData = new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "topsecret" };
         var data = _fixture.Build<CompanyServiceAccountWithRoleDataClientId>()
+            .With(x => x.ServiceAccountVersion, ValidServiceAccountVersion)
             .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+            .With(x => x.Name, "test")
+            .With(x => x.Description, "test")
+            .With(x => x.CompanyServiceAccountTypeId, CompanyServiceAccountTypeId.OWN)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.INTERNAL)
+            .With(x => x.ClientClientId, "sa-test-1")
             .Create();
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns(data);
@@ -756,12 +797,25 @@ public class ServiceAccountBusinessLogicTests
             .Returns<CompanyServiceAccountDetailedData?>(null);
     }
 
-    private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null)
+    private void SetupDeleteOwnCompanyServiceAccount(bool withServiceAccount, bool isDimServiceAccount, bool withClient, Connector? connector = null, Identity? identity = null, Guid? processId = null)
     {
+        var serviceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test-sa", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns((_userRoleIds, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, statusId: ConnectorStatusId.INACTIVE, OfferStatusId: OfferSubscriptionStatusId.PENDING));
+            .Returns(new OwnServiceAccountData(_userRoleIds, serviceAccount.Id, serviceAccount.Version, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.PENDING, isDimServiceAccount, processId));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
+            .Returns<OwnServiceAccountData?>(null);
+
+        if (isDimServiceAccount)
+        {
+            A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountDeletionCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+                .ReturnsLazily((Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
+                    (
+                        ProcessTypeId.OFFER_SUBSCRIPTION,
+                        new VerifyProcessData(
+                            new Process(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
+                            processStepTypeIds?.Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, processId, _fixture.Create<DateTimeOffset>())) ?? Enumerable.Empty<ProcessStep>()),
+                        Guid.NewGuid()));
+        }
 
         if (identity != null)
         {
@@ -786,14 +840,16 @@ public class ServiceAccountBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     private void SetupDeleteOwnCompanyServiceAccountForInvalidConnectorStatus()
     {
+        var serviceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test-sa", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.ACTIVE, OfferStatusId: OfferSubscriptionStatusId.PENDING));
+            .Returns(new OwnServiceAccountData(_userRoleIds, serviceAccount.Id, serviceAccount.Version, null, null, ConnectorStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING, false, null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
+            .Returns<OwnServiceAccountData?>(null);
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -801,10 +857,11 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupDeleteOwnCompanyServiceAccountForValidOfferSubscription()
     {
+        var serviceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test-sa", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId))
-            .Returns((_userRoleIds, null, null, statusId: ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.ACTIVE));
+            .Returns(new OwnServiceAccountData(_userRoleIds, serviceAccount.Id, serviceAccount.Version, null, null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.ACTIVE, false, null));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._))
-            .Returns<(IEnumerable<Guid>, Guid?, string?, ConnectorStatusId?, OfferSubscriptionStatusId?)>(default);
+            .Returns<OwnServiceAccountData?>(null);
 
         A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);

@@ -25,5 +25,6 @@ public enum UserStatusId
     ACTIVE = 1,
     INACTIVE = 2,
     DELETED = 3,
-    PENDING = 4
+    PENDING = 4,
+    PENDING_DELETION = 5
 }
