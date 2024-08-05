@@ -41,8 +41,7 @@ public class UserRolesRepository : IUserRolesRepository
         var appRoles = _dbContext.UserRoles.Where(w => appIdRoles.Select(a => a.AppId).Contains(w.OfferId))
                                            .Select(x => new { AppId = x.OfferId, Role = x.UserRoleText })
                                            .ToList();
-        List<UserRole>? uniqueRoles;
-        uniqueRoles = appRoles != null && appRoles.Any()
+        List<UserRole>? uniqueRoles = appRoles != null && appRoles.Any()
         ?   // Selecting the roles, except those that are already part of an APP
             uniqueRoles = appIdRoles.Select(x => new { x.AppId, x.Role })
                         .Except(appRoles)
