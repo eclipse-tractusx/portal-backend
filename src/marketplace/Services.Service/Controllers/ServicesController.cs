@@ -295,6 +295,9 @@ public class ServicesController : ControllerBase
     /// Retrieves subscription statuses of services.
     /// </summary>
     /// <remarks>Example: GET: /api/services/subscribed/subscription-status</remarks>
+    /// <param name="page">The page that should be displayed</param>
+    /// <param name="size">The size per page of elements that should be returned</param>
+    /// <param name="statusId">Filter for the offer subscription status. If not set all elements will be returned</param>
     /// <response code="200">Returns list of applicable service subscription statuses.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
@@ -303,8 +306,8 @@ public class ServicesController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
+        _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, statusId);
 
     /// <summary>
     /// Unsubscribes an service from the current user's company's subscriptions.

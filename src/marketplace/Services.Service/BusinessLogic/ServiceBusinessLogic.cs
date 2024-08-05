@@ -219,8 +219,8 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerService.GetSubscriptionDetailsForSubscriberAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, _settings.SalesManagerRoles);
 
     /// <inheritdoc />
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size) =>
-        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, OfferSubscriptionStatusId? statusId) =>
+        _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(page, size, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, statusId);
 
     /// <inheritdoc />
     public Task StartAutoSetupAsync(OfferAutoSetupData data) =>

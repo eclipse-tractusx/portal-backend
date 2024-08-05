@@ -140,8 +140,11 @@ public interface IOfferSubscriptionsRepository
     /// <param name="userCompanyId">Id of users company</param>
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="documentTypeId">Id of the document type</param>
+    /// <param name="statusId"></param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
-    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>>
+        GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId,
+            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId);
 
     /// <summary>
     /// 

@@ -306,14 +306,14 @@ public class ServiceControllerTest
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._))
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferSubscriptionStatusId?>._))
             .Returns(pagination);
 
         //Act
         var result = await _controller.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync();
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 15, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(3).And.ContainInOrder(data);
     }
 

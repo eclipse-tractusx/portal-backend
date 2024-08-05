@@ -308,7 +308,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+    public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>>
+        GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -316,7 +317,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .AsNoTracking()
                     .Where(os =>
                         os.Offer!.OfferTypeId == offerTypeId &&
-                        os.CompanyId == userCompanyId)
+                        os.CompanyId == userCompanyId &&
+                        (statusId == null || os.OfferSubscriptionStatusId == statusId))
                     .GroupBy(os => os.CompanyId),
                 null,
                 os => new OfferSubscriptionStatusData(
