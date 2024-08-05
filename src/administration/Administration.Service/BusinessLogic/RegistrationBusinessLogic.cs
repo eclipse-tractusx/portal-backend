@@ -164,9 +164,9 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
