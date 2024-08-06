@@ -394,7 +394,7 @@ public sealed class RegistrationBusinessLogic(
             throw new ControllerArgumentException($"The processStep {processStepTypeId} is not retriggerable");
         }
 
-        var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId();
+        var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId(_settings.ClearinghouseConnectDisabled);
         if (nextStepData == default)
         {
             throw new UnexpectedConditionException($"While the processStep {processStepTypeId} is configured to be retriggerable there is no next step configured");

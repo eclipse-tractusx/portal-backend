@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20240806072737_837-AddSkippedStateForChecklist")]
+    [Migration("20240806134234_837-AddSkippedStateForChecklist")]
     partial class _837AddSkippedStateForChecklist
     {
         /// <inheritdoc />
@@ -6761,6 +6761,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 706,
                             Label = "DELETE_IDENTITY_PROVIDER"
+                        },
+                        new
+                        {
+                            Id = 800,
+                            Label = "SELF_DESCRIPTION_CONNECTOR_CREATION"
+                        },
+                        new
+                        {
+                            Id = 801,
+                            Label = "SELF_DESCRIPTION_COMPANY_CREATION"
+                        },
+                        new
+                        {
+                            Id = 802,
+                            Label = "RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION"
+                        },
+                        new
+                        {
+                            Id = 803,
+                            Label = "RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION"
                         });
                 });
 
@@ -6821,6 +6841,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 9,
                             Label = "IDENTITYPROVIDER_PROVISIONING"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Label = "SELF_DESCRIPTION_CREATION"
                         });
                 });
 
