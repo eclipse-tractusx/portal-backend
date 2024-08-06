@@ -201,14 +201,17 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     .Select(application => new
                     {
                         Application = application,
-                        CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
-                                .FirstOrDefault(companyUser =>
+                        CompanyUsers = application.Invitations.Select(invitation => invitation.CompanyUser)
+                    })
+                    .Select(x => new
+                    {
+                        x.Application,
+                        CompanyUser = x.CompanyUsers.FirstOrDefault(companyUser =>
                                     companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
                                     && companyUser!.Firstname != null
                                     && companyUser.Lastname != null
                                     && companyUser.Email != null)
-                            ?? application.Invitations.Select(invitation => invitation.CompanyUser)
-                                .FirstOrDefault(companyUser =>
+                            ?? x.CompanyUsers.FirstOrDefault(companyUser =>
                                     companyUser!.Firstname != null
                                     && companyUser.Lastname != null
                                     && companyUser.Email != null)
