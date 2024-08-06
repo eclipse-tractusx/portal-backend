@@ -889,12 +889,12 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc/>
-    public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    public async Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId)
     {
         async Task<Pagination.Source<OfferSubscriptionStatusDetailData>?> GetCompanySubscribedOfferSubscriptionStatusesData(int skip, int take)
         {
             var offerCompanySubscriptionResponse = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-                .GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(_identityData.CompanyId, offerTypeId, documentTypeId)(skip, take).ConfigureAwait(ConfigureAwaitOptions.None);
+                .GetOwnCompanySubscribedOfferSubscriptionStatusAsync(_identityData.CompanyId, offerTypeId, documentTypeId, statusId)(skip, take).ConfigureAwait(ConfigureAwaitOptions.None);
 
             return offerCompanySubscriptionResponse == null
                 ? null

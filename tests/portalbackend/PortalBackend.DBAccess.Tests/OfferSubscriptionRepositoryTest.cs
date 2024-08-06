@@ -846,19 +846,19 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region  GetOwnCompanySubscribedOfferSubscriptionStatuse
+    #region GetOwnCompanySubscribedOfferSubscriptionStatus
 
     [Theory]
     [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE)]
     [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE)]
     [InlineData("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", OfferTypeId.CORE_COMPONENT, DocumentTypeId.SERVICE_LEADIMAGE)]
-    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync_ReturnsExpected(Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusAsync_ReturnsExpected(Guid companyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(companyId, offerTypeId, documentTypeId)(0, 15);
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(companyId, offerTypeId, documentTypeId, null)(0, 15);
 
         // Assert
         switch (offerTypeId)
@@ -903,6 +903,27 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
                 result.Should().BeNull();
                 break;
         }
+    }
+
+    [Fact]
+    public async Task GetOwnCompanySubscribedOfferSubscriptionStatusAsync_WithStatusFilter_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, OfferSubscriptionStatusId.ACTIVE)(0, 15);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.Should().ContainSingle().And.Satisfy(
+            x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
+                x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
+                x.OfferName == "Trace-X" &&
+                x.Provider == "Catena-X" &&
+                x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba") &&
+                x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
+        );
     }
 
     #endregion
