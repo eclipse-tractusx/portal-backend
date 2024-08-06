@@ -31,7 +31,9 @@ public record CompanyApplicationDetails(
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
     [property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist,
     [property: JsonPropertyName("email")] string? Email,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+    [property: JsonPropertyName("type")] CompanyApplicationTypeId CompanyApplicationTypeId
+
 );
 
 public record ApplicationChecklistEntryDetails(

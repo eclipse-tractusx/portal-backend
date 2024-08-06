@@ -181,7 +181,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        application.Company.BusinessPartnerNumber))
+                        application.Company.BusinessPartnerNumber,
+                        application.CompanyApplicationTypeId))
                     .AsAsyncEnumerable()));
     }
 
