@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
-using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor;
 
@@ -33,7 +32,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
     : IProcessTypeExecutor
 {
     private readonly SelfDescriptionProcessSettings _settings = options.Value;
-    private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = ImmutableArray.Create(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+    private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = [ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION];
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.SELF_DESCRIPTION_CREATION;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => ExecutableProcessSteps.Contains(processStepTypeId);
@@ -73,7 +72,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForCompany(CancellationToken cancellationToken)
     {
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
-        var companyInformation = companyRepository.GetCompaniesWithMissingSelfDescription();
+        var companyInformation = companyRepository.GetNextCompaniesWithMissingSelfDescription();
         await using var enumerator = companyInformation.GetAsyncEnumerator(cancellationToken);
 
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
@@ -99,7 +98,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForConnector(CancellationToken cancellationToken)
     {
         var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
-        var connectorInformation = connectorsRepository.GetConnectorsWithMissingSelfDescription();
+        var connectorInformation = connectorsRepository.GetNextConnectorsWithMissingSelfDescription();
         await using var enumerator = connectorInformation.GetAsyncEnumerator(cancellationToken);
 
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))

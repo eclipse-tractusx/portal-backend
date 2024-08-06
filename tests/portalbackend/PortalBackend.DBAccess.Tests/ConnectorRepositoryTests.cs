@@ -585,15 +585,12 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetConnectorsWithMissingSelfDescription().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetNextConnectorsWithMissingSelfDescription().ToListAsync().ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(4).And.Satisfy(
-            x => x.BusinessPartnerNumber == "BPNL00000003AYRE",
-            x => x.BusinessPartnerNumber == "BPNL00000003AYRE",
-            x => x.BusinessPartnerNumber == "BPNL00000003LLHA",
-            x => x.BusinessPartnerNumber == "BPNL00000003CRHK");
+        result.Should().HaveCount(2).And.AllSatisfy(
+            x => x.BusinessPartnerNumber.Should().NotBeNullOrEmpty());
     }
 
     #endregion

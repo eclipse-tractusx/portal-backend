@@ -413,24 +413,25 @@ public class CompanyRepository(PortalDbContext context)
         context.ProviderCompanyDetails
             .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default));
 
-    public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() => (skip, take) => Pagination.CreateSourceQueryAsync(
-        skip,
-        take,
-        context.Companies.AsNoTracking()
-            .Where(c =>
-                c.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                c.SelfDescriptionDocumentId == null &&
-                c.CompanyApplications.Any(ca =>
-                    ca.ApplicationChecklistEntries.Any(a =>
-                        a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
-                        a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
-                        a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
-            .GroupBy(c => c.CompanyStatusId),
-        c => c.OrderByDescending(company => company.Name),
-        c => new CompanyMissingSdDocumentData(
-            c.Id,
-            c.Name)
-    ).SingleOrDefaultAsync();
+    public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            context.Companies.AsNoTracking()
+                .Where(c =>
+                    c.CompanyStatusId == CompanyStatusId.ACTIVE &&
+                    c.SelfDescriptionDocumentId == null &&
+                    c.CompanyApplications.Any(ca =>
+                        ca.ApplicationChecklistEntries.Any(a =>
+                            a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                            a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                            a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+                .GroupBy(c => c.CompanyStatusId),
+            c => c.OrderByDescending(company => company.Name),
+            c => new CompanyMissingSdDocumentData(
+                c.Id,
+                c.Name)
+        ).SingleOrDefaultAsync();
 
     public Task<bool> HasAnyCompaniesWithMissingSelfDescription() =>
         context.Companies.AnyAsync(c =>
@@ -442,7 +443,7 @@ public class CompanyRepository(PortalDbContext context)
                     a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
                     a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)));
 
-    public IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompaniesWithMissingSelfDescription() =>
+    public IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetNextCompaniesWithMissingSelfDescription() =>
         context.Companies.Where(c =>
             c.CompanyStatusId == CompanyStatusId.ACTIVE &&
             c.SelfDescriptionDocumentId == null &&
@@ -457,6 +458,7 @@ public class CompanyRepository(PortalDbContext context)
                 c.BusinessPartnerNumber,
                 c.Address!.Country!.Alpha2Code
             ))
+            .Take(2)
             .ToAsyncEnumerable();
 
     public Task<bool> IsExistingCompany(Guid companyId) =>

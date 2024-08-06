@@ -182,6 +182,6 @@ public interface ICompanyRepository
     void RemoveProviderCompanyDetails(Guid providerCompanyDetailId);
     Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument();
     Task<bool> HasAnyCompaniesWithMissingSelfDescription();
-    IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompaniesWithMissingSelfDescription();
+    IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetNextCompaniesWithMissingSelfDescription();
     Task<bool> IsExistingCompany(Guid companyId);
 }

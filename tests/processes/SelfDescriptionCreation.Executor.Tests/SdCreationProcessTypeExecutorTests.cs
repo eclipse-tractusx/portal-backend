@@ -118,7 +118,7 @@ public class SdCreationProcessTypeExecutorTests
                 company1,
                 company2
             };
-        A.CallTo(() => _companyRepository.GetCompaniesWithMissingSelfDescription())
+        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
             .Returns(companies.ToAsyncEnumerable());
 
         // Act
@@ -159,7 +159,7 @@ public class SdCreationProcessTypeExecutorTests
                 connector1,
                 connector2
             };
-        A.CallTo(() => _connectorsRepository.GetConnectorsWithMissingSelfDescription())
+        A.CallTo(() => _connectorsRepository.GetNextConnectorsWithMissingSelfDescription())
             .Returns(connectors.ToAsyncEnumerable());
 
         // Act
@@ -206,7 +206,7 @@ public class SdCreationProcessTypeExecutorTests
                 company1,
                 company2
             };
-        A.CallTo(() => _companyRepository.GetCompaniesWithMissingSelfDescription())
+        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
             .Returns(companies.ToAsyncEnumerable());
 
         var error = _fixture.Create<TestException>();
@@ -256,7 +256,7 @@ public class SdCreationProcessTypeExecutorTests
                 company1,
                 company2
             };
-        A.CallTo(() => _companyRepository.GetCompaniesWithMissingSelfDescription())
+        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
             .Returns(companies.ToAsyncEnumerable());
 
         var error = new SystemException(_fixture.Create<string>());

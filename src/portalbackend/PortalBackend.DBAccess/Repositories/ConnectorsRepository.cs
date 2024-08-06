@@ -206,26 +206,28 @@ public class ConnectorsRepository : IConnectorsRepository
     public void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions) =>
         _context.ConnectorAssignedOfferSubscriptions.RemoveRange(assignedOfferSubscriptions.Select(x => new ConnectorAssignedOfferSubscription(connectorId, x)));
 
-    public Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument() => (skip, take) => Pagination.CreateSourceQueryAsync(
-        skip,
-        take,
-        _context.Connectors.AsNoTracking()
-            .Where(x => x.StatusId == ConnectorStatusId.ACTIVE && x.SelfDescriptionDocumentId == null)
-            .GroupBy(c => c.StatusId),
-        connector => connector.OrderByDescending(c => c.Name),
-        con => new ConnectorMissingSdDocumentData(
-            con.Id,
-            con.Name,
-            con.HostId ?? con.ProviderId,
-            con.HostId != null ? con.Host!.Name : con.Provider!.Name)
-    ).SingleOrDefaultAsync();
+    public Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument() =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            _context.Connectors.AsNoTracking()
+                .Where(x => x.StatusId == ConnectorStatusId.ACTIVE && x.SelfDescriptionDocumentId == null)
+                .GroupBy(c => c.StatusId),
+            connector => connector.OrderByDescending(c => c.Name),
+            con => new ConnectorMissingSdDocumentData(
+                con.Id,
+                con.Name,
+                con.HostId ?? con.ProviderId,
+                con.HostId != null ? con.Host!.Name : con.Provider!.Name)
+        ).SingleOrDefaultAsync();
 
     public Task<bool> HasAnyConnectorsWithMissingSelfDescription() =>
         _context.Connectors.AnyAsync(c => c.SelfDescriptionDocumentId == null);
 
-    public IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetConnectorsWithMissingSelfDescription() =>
+    public IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetNextConnectorsWithMissingSelfDescription() =>
         _context.Connectors
             .Where(c => c.StatusId == ConnectorStatusId.ACTIVE && c.SelfDescriptionDocumentId == null)
             .Select(c => new ValueTuple<Guid, string?, Guid?>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId))
+            .Take(2)
             .ToAsyncEnumerable();
 }

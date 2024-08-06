@@ -107,5 +107,5 @@ public interface IConnectorsRepository
     void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions);
     Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument();
     Task<bool> HasAnyConnectorsWithMissingSelfDescription();
-    IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetConnectorsWithMissingSelfDescription();
+    IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetNextConnectorsWithMissingSelfDescription();
 }

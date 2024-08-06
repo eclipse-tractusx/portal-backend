@@ -1058,7 +1058,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetCompaniesWithMissingSelfDescription().ToListAsync();
+        var result = await sut.GetNextCompaniesWithMissingSelfDescription().ToListAsync();
 
         // Assert
         result.Should().NotBeNull();
