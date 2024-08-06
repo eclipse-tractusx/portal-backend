@@ -73,7 +73,7 @@ public class ApplicationActivationService : IApplicationActivationService
         }
 
         var prerequisiteEntries = context.Checklist.Where(entry => entry.Key != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION);
-        if (!(prerequisiteEntries.All(entry => entry.Value == ApplicationChecklistEntryStatusId.DONE) || prerequisiteEntries.All(entry => entry is { Key: ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, Value: ApplicationChecklistEntryStatusId.SKIPPED } || (entry.Key != ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP && entry.Value == ApplicationChecklistEntryStatusId.DONE))))
+        if (prerequisiteEntries.Any(entry => entry.Value != ApplicationChecklistEntryStatusId.DONE && entry is not { Key: ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, Value: ApplicationChecklistEntryStatusId.SKIPPED }))
         {
             throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
         }
