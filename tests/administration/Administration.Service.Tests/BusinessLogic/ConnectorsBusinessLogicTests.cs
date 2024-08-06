@@ -202,6 +202,33 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateConnectorAsync_WithoutSelfDescriptionDocumentAndSdConnectionDisabled_CallsExpected()
+    {
+        // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = true
+        }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
+
+        // Act
+        await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
@@ -212,8 +239,8 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION.ToString());
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION.ToString());
     }
 
     [Fact]
