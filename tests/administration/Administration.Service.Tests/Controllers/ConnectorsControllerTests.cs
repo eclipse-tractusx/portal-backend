@@ -241,4 +241,30 @@ public class ConnectorsControllerTests
         result.Should().HaveSameCount(offerSubscriptionData)
             .And.ContainInOrder(offerSubscriptionData);
     }
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument()
+    {
+        // Arrange
+        var paginationResponse = new Pagination.Response<ConnectorMissingSdDocumentData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ConnectorMissingSdDocumentData>(5));
+        A.CallTo(() => _logic.GetConnectorsWithMissingSdDocument(A<int>._, A<int>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetConnectorsWithMissingSdDocument();
+
+        //Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionProcess_CallsExpected()
+    {
+        // Act
+        var result = await _controller.TriggerSelfDescriptionProcess();
+
+        // Assert
+        A.CallTo(() => _logic.TriggerSelfDescriptionCreation()).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

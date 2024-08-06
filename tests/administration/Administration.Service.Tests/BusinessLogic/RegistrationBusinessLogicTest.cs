@@ -74,6 +74,7 @@ public class RegistrationBusinessLogicTest
     private readonly IFixture _fixture;
     private readonly IRegistrationBusinessLogic _logic;
     private readonly ICompanyRepository _companyRepository;
+    private readonly IConnectorsRepository _connectorRepository;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
@@ -96,6 +97,7 @@ public class RegistrationBusinessLogicTest
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
+        _connectorRepository = A.Fake<IConnectorsRepository>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         _options = A.Fake<IOptions<RegistrationSettings>>();
@@ -117,6 +119,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
 
         A.CallTo(() => _identityData.IdentityId).Returns(Guid.NewGuid());
@@ -810,6 +813,8 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         var companyId = Guid.NewGuid();
+        A.CallTo(() => _companyRepository.IsExistingCompany(CompanyId))
+            .Returns(false);
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true, companyId, true));
 
@@ -818,6 +823,25 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, companyId, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForCompany(A<SelfDescriptionResponseData>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithValidCompany_CallsExpected()
+    {
+        // Arrange
+        var data = new SelfDescriptionResponseData(CompanyId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
+        A.CallTo(() => _companyRepository.IsExistingCompany(CompanyId))
+            .Returns(true);
+
+        // Act
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForCompany(data, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -829,6 +853,8 @@ public class RegistrationBusinessLogicTest
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns<(bool, Guid, bool)>(default);
+        A.CallTo(() => _companyRepository.IsExistingCompany(CompanyId))
+            .Returns(false);
 
         // Act
         Task Act() => _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
@@ -845,6 +871,8 @@ public class RegistrationBusinessLogicTest
         var data = new SelfDescriptionResponseData(ApplicationId, SelfDescriptionStatus.Confirm, null, "{ \"test\": true }");
         A.CallTo(() => _applicationRepository.GetCompanyIdSubmissionStatusForApplication(ApplicationId))
             .Returns((true, Guid.NewGuid(), false));
+        A.CallTo(() => _companyRepository.IsExistingCompany(CompanyId))
+            .Returns(false);
 
         // Act
         Task Act() => _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);

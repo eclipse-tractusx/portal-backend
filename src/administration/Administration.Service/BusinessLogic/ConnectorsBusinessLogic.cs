@@ -75,10 +75,12 @@ public class ConnectorsBusinessLogic(
         {
             throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
         }
+
         if (!result.IsProviderCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
         }
+
         return result.ConnectorData;
     }
 
@@ -248,6 +250,7 @@ public class ConnectorsBusinessLogic(
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
         }
+
         if (result.ServiceAccountId.HasValue && result.UserStatusId != UserStatusId.INACTIVE)
         {
             portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(result.ServiceAccountId.Value, null, i =>
@@ -315,6 +318,7 @@ public class ConnectorsBusinessLogic(
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("activeConnectorOfferSubscription", string.Join(",", activeConnectorOfferSubscription)) });
         }
+
         var assignedOfferSubscriptions = connectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds);
         if (assignedOfferSubscriptions.Any())
         {
@@ -358,7 +362,7 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
         }
 
-        await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, _identityData.IdentityId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -419,4 +423,24 @@ public class ConnectorsBusinessLogic(
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet) =>
         portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .GetConnectorOfferSubscriptionData(connectorIdSet, _identityData.CompanyId);
+
+    public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size) =>
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorsWithMissingSdDocument());
+
+    public async Task TriggerSelfDescriptionCreation()
+    {
+        var hasMissingSdDocumentConnectors = await portalRepositories.GetInstance<IConnectorsRepository>().HasAnyConnectorsWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
+        if (hasMissingSdDocumentConnectors)
+        {
+            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, ProcessStepStatusId.TODO, processId);
+
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
 }

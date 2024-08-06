@@ -38,5 +38,5 @@ public interface ISdFactoryService
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
     Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken);
 
-    Task RegisterSelfDescriptionAsync(Guid applicationId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task RegisterSelfDescriptionAsync(Guid externalId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken);
 }

@@ -359,6 +359,13 @@ public class CompanyDataBusinessLogic(
         );
     }
 
+    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) =>
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            portalRepositories.GetInstance<ICompanyRepository>().GetCompaniesWithMissingSdDocument());
+
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
@@ -431,5 +438,19 @@ public class CompanyDataBusinessLogic(
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
+    }
+
+    public async Task TriggerSelfDescriptionCreation()
+    {
+        var hasMissingSdDocumentCompanies = await portalRepositories.GetInstance<ICompanyRepository>().HasAnyCompaniesWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
+        if (hasMissingSdDocumentCompanies)
+        {
+            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
+
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepStatusId.TODO, processId);
+
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
     }
 }

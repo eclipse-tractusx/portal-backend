@@ -550,6 +550,51 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetConnectorsWithMissingSdDocument
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSdDocument_ReturnsExpectedConnectors()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await Pagination.CreateResponseAsync(
+            0,
+            10,
+            15,
+            sut.GetConnectorsWithMissingSdDocument());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().HaveCount(4).And.Satisfy(
+            x => x.Name == "Test Connector 7",
+            x => x.Name == "Test Connector 6",
+            x => x.Name == "Test Connector 5",
+            x => x.Name == "Test Connector 4");
+    }
+
+    #endregion
+
+    #region GetConnectorsWithMissingSelfDescription
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSelfDescription_ReturnsExpectedConnectors()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetNextConnectorsWithMissingSelfDescription().ToListAsync().ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2).And.AllSatisfy(
+            x => x.BusinessPartnerNumber.Should().NotBeNullOrEmpty());
+    }
+
+    #endregion
+
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();

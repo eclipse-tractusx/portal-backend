@@ -100,4 +100,8 @@ public interface IConnectorsBusinessLogic
     /// </param>
     /// <returns>Returns an IAsyncEnumerable of <see cref="OfferSubscriptionConnectorData"/></returns>
     IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet);
+
+    Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size);
+
+    Task TriggerSelfDescriptionCreation();
 }

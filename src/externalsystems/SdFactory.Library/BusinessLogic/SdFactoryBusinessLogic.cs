@@ -101,7 +101,7 @@ public class SdFactoryBusinessLogic(
 
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
+        var confirm = ValidateConfirmationData(data);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
@@ -113,7 +113,7 @@ public class SdFactoryBusinessLogic(
 
         if (confirm)
         {
-            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
@@ -133,32 +133,39 @@ public class SdFactoryBusinessLogic(
     }
 
     /// <inheritdoc />
-    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
+    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
-        Guid? documentId = null;
-        if (confirm)
+        if (ValidateConfirmationData(data))
         {
-            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
-        portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
-        {
-            if (documentId != null)
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionDocumentId = documentId;
                 con.StatusId = ConnectorStatusId.ACTIVE;
-            }
-
-            if (!confirm)
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+        }
+        else
+        {
+            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionMessage = data.Message!;
-            }
-
-            con.DateLastChanged = DateTimeOffset.UtcNow;
-        });
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+        }
     }
 
-    private static bool ValidateData(SelfDescriptionResponseData data)
+    public async Task ProcessFinishSelfDescriptionLpForCompany(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        if (data.Status == SelfDescriptionStatus.Confirm)
+        {
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.ExternalId, null,
+                c => { c.SelfDescriptionDocumentId = documentId; });
+        }
+    }
+
+    private static bool ValidateConfirmationData(SelfDescriptionResponseData data)
     {
         var confirm = data.Status == SelfDescriptionStatus.Confirm;
         switch (confirm)
@@ -172,7 +179,7 @@ public class SdFactoryBusinessLogic(
         return confirm;
     }
 
-    private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessAndCreateDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });

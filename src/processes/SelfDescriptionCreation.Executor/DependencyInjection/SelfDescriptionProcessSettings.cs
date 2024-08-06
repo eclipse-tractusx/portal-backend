@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,15 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 
-public record WalletData(
-    [property: JsonPropertyName("name")] string? Name,
-    [property: JsonPropertyName("bpn")] string? Bpn,
-    [property: JsonPropertyName("did")] string? Did,
-    [property: JsonPropertyName("createdAt")] DateTime CreatedAt,
-    [property: JsonPropertyName("pendingMembershipIssuance")] bool PendingMembershipIssuance,
-    [property: JsonPropertyName("vcs")] object[]? Vcs
-);
+public class SelfDescriptionProcessSettings
+{
+    /// <summary>
+    /// Url to display the self description document
+    /// </summary>
+    [Required(AllowEmptyStrings = false)]
+    public string SelfDescriptionDocumentUrl { get; set; } = null!;
+}

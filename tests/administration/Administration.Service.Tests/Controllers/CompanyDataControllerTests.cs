@@ -187,4 +187,30 @@ public class CompanyDataControllerTests
         result.DecentralIdentityManagementAuthUrl.Should().Be(decentralIdentityManagementAuthUrl);
         result.DecentralIdentityManagementServiceUrl.Should().Be(decentralIdentityManagementServiceUrl);
     }
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument()
+    {
+        // Arrange
+        var paginationResponse = new Pagination.Response<CompanyMissingSdDocumentData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyMissingSdDocumentData>(5));
+        A.CallTo(() => _logic.GetCompaniesWithMissingSdDocument(A<int>._, A<int>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetCompaniesWithMissingSdDocument();
+
+        //Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionProcess_CallsExpected()
+    {
+        // Act
+        var result = await _controller.TriggerSelfDescriptionProcess();
+
+        // Assert
+        A.CallTo(() => _logic.TriggerSelfDescriptionCreation()).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

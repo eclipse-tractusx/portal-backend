@@ -19,6 +19,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -411,4 +412,55 @@ public class CompanyRepository(PortalDbContext context)
     public void RemoveProviderCompanyDetails(Guid providerCompanyDetailId) =>
         context.ProviderCompanyDetails
             .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default));
+
+    public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            context.Companies.AsNoTracking()
+                .Where(c =>
+                    c.CompanyStatusId == CompanyStatusId.ACTIVE &&
+                    c.SelfDescriptionDocumentId == null &&
+                    c.CompanyApplications.Any(ca =>
+                        ca.ApplicationChecklistEntries.Any(a =>
+                            a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                            a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                            a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+                .GroupBy(c => c.CompanyStatusId),
+            c => c.OrderByDescending(company => company.Name),
+            c => new CompanyMissingSdDocumentData(
+                c.Id,
+                c.Name)
+        ).SingleOrDefaultAsync();
+
+    public Task<bool> HasAnyCompaniesWithMissingSelfDescription() =>
+        context.Companies.AnyAsync(c =>
+            c.CompanyStatusId == CompanyStatusId.ACTIVE &&
+            c.SelfDescriptionDocumentId == null &&
+            c.CompanyApplications.Any(ca =>
+                ca.ApplicationChecklistEntries.Any(a =>
+                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)));
+
+    public IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetNextCompaniesWithMissingSelfDescription() =>
+        context.Companies.Where(c =>
+            c.CompanyStatusId == CompanyStatusId.ACTIVE &&
+            c.SelfDescriptionDocumentId == null &&
+            c.CompanyApplications.Any(ca =>
+                ca.ApplicationChecklistEntries.Any(a =>
+                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+            .Select(c => new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+                c.Id,
+                c.CompanyIdentifiers.Select(ci => new ValueTuple<UniqueIdentifierId, string>(ci.UniqueIdentifierId, ci.Value)),
+                c.BusinessPartnerNumber,
+                c.Address!.Country!.Alpha2Code
+            ))
+            .Take(2)
+            .ToAsyncEnumerable();
+
+    public Task<bool> IsExistingCompany(Guid companyId) =>
+        context.Companies.AnyAsync(c => c.Id == companyId);
 }

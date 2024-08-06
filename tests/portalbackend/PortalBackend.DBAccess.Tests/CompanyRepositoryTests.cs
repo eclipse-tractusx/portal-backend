@@ -1025,6 +1025,80 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetCompaniesWithMissingSdDocument
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument_ReturnsExpectedCompanies()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await Pagination.CreateResponseAsync(
+            0,
+            10,
+            15,
+            sut.GetCompaniesWithMissingSdDocument());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().HaveCount(2).And.Satisfy(
+            x => x.Name == "CX-Test-Access",
+            x => x.Name == "Bayerische Motorenwerke AG");
+    }
+
+    #endregion
+
+    #region GetCompaniesWithMissingSelfDescription
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSelfDescription_ReturnsExpectedCompanies()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetNextCompaniesWithMissingSelfDescription().ToListAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2).And.Satisfy(
+            x => x.BusinessPartnerNumber == "BPNL00000003CRHL",
+            x => x.BusinessPartnerNumber == "BPNL00000003AYRE");
+    }
+
+    #endregion
+
+    #region IsExistingCompany
+
+    [Fact]
+    public async Task IsExistingCompany_WithExistingCompany_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsExistingCompany(_validCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsExistingCompany_WithNotExistingCompany_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsExistingCompany(Guid.NewGuid()).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(ICompanyRepository, PortalDbContext)> CreateSut()

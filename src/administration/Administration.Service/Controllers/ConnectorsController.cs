@@ -257,4 +257,43 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
         _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet);
+
+    /// <summary>
+    /// Retrieves all active connectors with missing sd document.
+    /// </summary>
+    /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
+    /// <param name="size" example="15">Optional query parameter defining the number of connectors listed per page.</param>
+    /// <returns>Paginated result of connector view models.</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/connectors/missing-sd-document <br />
+    /// Example: GET: /api/administration/connectors/missing-sd-document?page=0&amp;size=15
+    /// </remarks>
+    /// <response code="200">Returns a list of all active connectors with missing sd document.</response>
+    [HttpGet]
+    [Route("missing-sd-document")]
+    [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Pagination.Response<ConnectorMissingSdDocumentData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        _businessLogic.GetConnectorsWithMissingSdDocument(page, size);
+
+    /// <summary>
+    /// Triggers the process to create the missing self description documents
+    /// </summary>
+    /// <returns>NoContent</returns>
+    /// Example: POST: /api/administration/connectors/trigger-self-description
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("trigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerSelfDescriptionProcess()
+    {
+        await _businessLogic.TriggerSelfDescriptionCreation().ConfigureAwait(false);
+        return NoContent();
+    }
 }

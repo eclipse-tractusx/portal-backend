@@ -61,6 +61,7 @@ public class ConnectorsBusinessLogicTests
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IOptions<ConnectorsSettings> _options;
     private readonly IIdentityService _identityService;
 
@@ -77,6 +78,7 @@ public class ConnectorsBusinessLogicTests
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
         _identityService = A.Fake<IIdentityService>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
@@ -525,7 +527,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1215,6 +1217,106 @@ public class ConnectorsBusinessLogicTests
 
     #endregion
 
+    #region GetConnectorsWithMissingSdDocument
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSdDocument_WithMoreData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocConnectors(15);
+
+        // Act
+        var result = await _logic.GetConnectorsWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSdDocument_WithLessData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocConnectors(7);
+
+        // Act
+        var result = await _logic.GetConnectorsWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(7);
+    }
+
+    #endregion
+
+    #region TriggerSelfDescriptionCreation
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithMissingSdDocsForConnector_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _connectorsRepository.HasAnyConnectorsWithMissingSelfDescription())
+            .Returns(true);
+
+        // Act
+        await _logic.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().NotBeNull()
+            .And.ContainSingle()
+            .Which.ProcessTypeId.Should().Be(ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(1)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithoutMissingSdDocsForConnector_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
+            .Returns(false);
+
+        // Act
+        await _logic.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().BeEmpty();
+        processSteps.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()
@@ -1270,6 +1372,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     private void SetupIdentity()
@@ -1283,6 +1386,15 @@ public class ConnectorsBusinessLogicTests
     {
         A.CallTo(() => _identity.IdentityId).Returns(ServiceAccountUserId);
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+    }
+
+    private void SetupFakesForGetMissingSdDocConnectors(int count = 5)
+    {
+        var companyMissingSdDocumentData = _fixture.CreateMany<ConnectorMissingSdDocumentData>(count);
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<ConnectorMissingSdDocumentData>(companyMissingSdDocumentData.Count(), companyMissingSdDocumentData.Skip(skip).Take(take)));
+
+        A.CallTo(() => _connectorsRepository.GetConnectorsWithMissingSdDocument())!
+            .Returns(paginationResult);
     }
 
     #endregion

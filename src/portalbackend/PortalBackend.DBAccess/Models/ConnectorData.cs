@@ -79,3 +79,5 @@ public record DeleteConnectorData(
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
 
 public record TechnicalUserData(Guid Id, string Name, string? ClientId, string Description);
+
+public record ConnectorMissingSdDocumentData(Guid ConnectorId, string Name, Guid CompanyId, string CompanyName);
