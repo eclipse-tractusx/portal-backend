@@ -24,16 +24,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public static class ApplicationChecklistEntryTypeIdExtensions
 {
-    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>> ManualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeId)[] {
+    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>> ManualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeIds)[] {
             (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, new[] { ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE }),
             (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new[] { ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT }),
             (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, new[] { ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP }),
             (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new[] { ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL }),
-        }.ToImmutableDictionary(x => x.EntryTypeId, x => x.StepTypeId);
+        }.ToImmutableDictionary(x => x.EntryTypeId, x => x.StepTypeIds);
 
     public static IEnumerable<ProcessStepTypeId> GetManualTriggerProcessStepIds(this ApplicationChecklistEntryTypeId entryTypeId) =>
-        ManualProcessStepIds.TryGetValue(entryTypeId, out var stepTypeId)
-            ? stepTypeId
+        ManualProcessStepIds.TryGetValue(entryTypeId, out var stepTypeIds)
+            ? stepTypeIds
             : Enumerable.Empty<ProcessStepTypeId>();
 
     public static IEnumerable<ProcessStepTypeId> GetManualTriggerProcessStepIds(this IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds) =>

@@ -58,7 +58,7 @@ public class SdFactoryBusinessLogic(
                     entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.SKIPPED;
                     entry.Comment = "Self description was skipped due to clearinghouse trigger is disabled";
                 },
-                new[] { ProcessStepTypeId.ACTIVATE_APPLICATION },
+                [ProcessStepTypeId.ACTIVATE_APPLICATION],
                 null,
                 true,
                 "Self description was skipped due to clearinghouse trigger is disabled"
@@ -71,7 +71,7 @@ public class SdFactoryBusinessLogic(
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new[] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
+            [ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP],
             null,
             true,
             null
@@ -110,9 +110,9 @@ public class SdFactoryBusinessLogic(
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
-                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+                processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (confirm)
