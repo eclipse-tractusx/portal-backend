@@ -56,8 +56,10 @@ public static class AppExtensions
     /// <param name="appId">id of the app to create the roles for</param>
     /// <param name="userRoles">the user roles to add</param>
     /// <returns>returns the created appRoleData</returns>
-    public static IEnumerable<AppRoleData> CreateUserRolesWithDescriptions(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles) =>
-        userRoles.Zip(
+    public static async Task<IEnumerable<AppRoleData>> CreateUserRolesWithDescriptions(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles)
+    {
+        userRoles = await GetUniqueAppUserRoles(userRolesRepository, appId, userRoles);
+        return userRoles.Zip(
             userRolesRepository.CreateAppUserRoles(userRoles.Select(x => (appId, x.Role))),
             (AppUserRole appUserRole, UserRole userRole) =>
                 {
@@ -65,4 +67,21 @@ public static class AppExtensions
                     return new AppRoleData(userRole.Id, appUserRole.Role);
                 })
             .ToList();
+    }
+
+    /// <summary>
+    /// Get unique roles by eleminating the duplicate roles from the request (client) and existing roles from the Database
+    /// </summary>
+    /// <remarks></remarks>
+    /// <param name="userRolesRepository">repository</param>
+    /// <param name="appId">id of the app</param>
+    /// <param name="userRoles">the app user roles</param>
+    /// <returns>returns the filtered and unique roles</returns>
+    private static async Task<IEnumerable<AppUserRole>> GetUniqueAppUserRoles(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles)
+    {
+        var existingRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
+        if (existingRoles.Any())
+            userRoles = userRoles.Where(w => !existingRoles.Contains(w.Role));
+        return userRoles.GroupBy(g => g.Role).Select(s => s.First());
+    }
 }

@@ -111,9 +111,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         {
             throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of app {appId}");
         }
-
-        userRoles = await GetUniqueAppUserRoles(appId, userRoles);
-        var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+        var roleData = await AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
 
         // When user will try to upload the same role names which are already attched to an APP and duplicate roles have also been ignored.
         // and when no role has been modified against the given appId, no need to procced further
@@ -125,7 +123,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         foreach (var clientId in result.ClientClientIds)
         {
-            await _provisioningManager.AddRolesToClientAsync(clientId, userRoles.Select(x => x.Role)).ConfigureAwait(ConfigureAwaitOptions.None);
+            await _provisioningManager.AddRolesToClientAsync(clientId, roleData.Select(x => x.RoleName)).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
@@ -387,20 +385,5 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
             throw new ConflictException($"App {appId} is not Active");
         }
         return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
-    }
-
-    /// <summary>
-    /// Get unique roles by eleminating the duplicate roles from the request (client) and existing roles from the Database
-    /// </summary>
-    /// <remarks></remarks>
-    /// <param name="appId">id of the app</param>
-    /// <param name="userRoles">the app user roles</param>
-    /// <returns>returns the filtered and unique roles</returns>
-    private async Task<IEnumerable<AppUserRole>> GetUniqueAppUserRoles(Guid appId, IEnumerable<AppUserRole> userRoles)
-    {
-        var existingRoles = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
-        if (existingRoles.Any())
-            userRoles = userRoles.Where(w => !existingRoles.Contains(w.Role));
-        return userRoles.GroupBy(g => g.Role).Select(s => s.First());
     }
 }
