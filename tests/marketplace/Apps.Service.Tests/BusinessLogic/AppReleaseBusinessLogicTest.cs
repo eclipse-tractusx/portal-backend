@@ -145,17 +145,14 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
             .Returns((true, true));
 
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(new[] { "Exsiting Role" }.ToAsyncEnumerable());
+
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
-                var existingRoles = new List<(Guid AppId, string Role)>();
-                userRoles = existingRoles != null && existingRoles.Any()
-                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
-                                .Except(existingRoles)
-                                .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList()
-                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
                 return userRoles;
             });
 
@@ -231,17 +228,14 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
             .Returns((true, true));
 
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(new[] { "Exsiting Role" }.ToAsyncEnumerable());
+
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
-                var existingRoles = new List<(Guid AppId, string Role)>();
-                userRoles = existingRoles != null && existingRoles.Any()
-                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
-                                .Except(existingRoles)
-                                .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList()
-                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
                 return userRoles;
             });
 
@@ -308,18 +302,14 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
             .Returns((true, true));
 
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(new[] { roleId, roleId, "Exsiting Role" }.ToAsyncEnumerable());
+
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
             {
-                var existingRoles = new List<(Guid AppId, string Role)>()
-                { (appId, roleId) };
-                userRoles = existingRoles != null && existingRoles.Any()
-                ? userRoles = appRoles.Select(x => (x.AppId, x.Role))
-                                .Except(existingRoles)
-                                .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                                .ToList()
-                : userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
                 return userRoles;
             });
 

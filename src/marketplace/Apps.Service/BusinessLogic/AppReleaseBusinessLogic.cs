@@ -93,10 +93,11 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
+        userRoles = await GetUniqueAppUserRoles(appId, userRoles);
         var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
 
-        // When user will try to upload the same role names which are already attched to an APP so, duplicate roles would be ignored.
-        // So, when no role has been added against the given appId, no need to procced further
+        // When user will try to upload the same role names which are already attched to an APP and duplicate roles have also been ignored.
+        // and when no role has been added against the given appId, no need to procced further
         // No need to update the Offer entity
         if (!roleData.Any())
             return roleData;
@@ -180,16 +181,16 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     public async Task DeleteAppRolesAsync(Guid appId, IEnumerable<Guid> roleIds)
     {
         var companyId = _identityData.CompanyId;
-        var (OfferStatus, IsProviderCompanyUser, RoleIds) = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRolesAsync(appId, companyId, OfferStatusId.CREATED, roleIds).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!IsProviderCompanyUser)
+        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRolesAsync(appId, companyId, OfferStatusId.CREATED, roleIds).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!appUserRole.IsProviderCompanyUser)
         {
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
-        if (!OfferStatus)
+        if (!appUserRole.OfferStatus)
         {
             throw new ControllerArgumentException($"AppId {appId} must be in Created State");
         }
-        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRoles(RoleIds);
+        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRoles(appUserRole.RoleIds);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -593,5 +594,20 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company");
         }
         return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
+    }
+
+    /// <summary>
+    /// Get unique roles by eleminating the duplicate roles from the request (client) and existing roles from the Database
+    /// </summary>
+    /// <remarks></remarks>
+    /// <param name="appId">id of the app</param>
+    /// <param name="userRoles">the app user roles</param>
+    /// <returns>returns the filtered and unique roles</returns>
+    private async Task<IEnumerable<AppUserRole>> GetUniqueAppUserRoles(Guid appId, IEnumerable<AppUserRole> userRoles)
+    {
+        var existingRoles = await _portalRepositories.GetInstance<IUserRolesRepository>().GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
+        if (existingRoles.Any())
+            userRoles = userRoles.Where(w => !existingRoles.Contains(w.Role));
+        return userRoles.GroupBy(g => g.Role).Select(s => s.First());
     }
 }

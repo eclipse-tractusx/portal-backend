@@ -58,16 +58,11 @@ public static class AppExtensions
     /// <returns>returns the created appRoleData</returns>
     public static IEnumerable<AppRoleData> CreateUserRolesWithDescriptions(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles) =>
         userRoles.Zip(
-            // Distinct() will eleminate the role with same Role Name value
-            // It will ba a bit confusing if Role Names are duplicate but description of role is different
-            // Description with multiple language code of a Role make sense
-            userRolesRepository.CreateAppUserRoles(userRoles.Select(x => (appId, x.Role)).Distinct()),
+            userRolesRepository.CreateAppUserRoles(userRoles.Select(x => (appId, x.Role))),
             (AppUserRole appUserRole, UserRole userRole) =>
                 {
-                    // Since duplicate roles have already been elemenated so, first value of Role's Description amongs the duplicate roles would be selected
-                    var appUserRoleDescriptions = userRoles.First(x => userRole.UserRoleText == x.Role);
-                    userRolesRepository.CreateAppUserRoleDescriptions(appUserRoleDescriptions.Descriptions.Select(appUserRoleDescription => (userRole.Id, appUserRoleDescription.LanguageCode, appUserRoleDescription.Description)));
-                    return new AppRoleData(userRole.Id, appUserRoleDescriptions.Role);
+                    userRolesRepository.CreateAppUserRoleDescriptions(appUserRole.Descriptions.Select(appUserRoleDescription => (userRole.Id, appUserRoleDescription.LanguageCode, appUserRoleDescription.Description)));
+                    return new AppRoleData(userRole.Id, appUserRole.Role);
                 })
             .ToList();
 }

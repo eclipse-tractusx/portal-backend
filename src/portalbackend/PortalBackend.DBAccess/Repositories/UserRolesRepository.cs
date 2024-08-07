@@ -37,23 +37,9 @@ public class UserRolesRepository : IUserRolesRepository
 
     public IEnumerable<UserRole> CreateAppUserRoles(IEnumerable<(Guid AppId, string Role)> appIdRoles)
     {
-        // Checking if given roles already exists against the AppId into the database
-        var appRoles = _dbContext.UserRoles.Where(w => appIdRoles.Select(a => a.AppId).Contains(w.OfferId))
-                                           .Select(x => new { AppId = x.OfferId, Role = x.UserRoleText })
-                                           .ToList();
-        List<UserRole>? uniqueRoles = appRoles != null && appRoles.Any()
-        ?   // Selecting the roles, except those that are already part of an APP
-            uniqueRoles = appIdRoles.Select(x => new { x.AppId, x.Role })
-                        .Except(appRoles)
-                        .Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId))
-                        .ToList()
-        :   // No roles has been attached to the APP so, all given roles would be inserting into the database
-            uniqueRoles = appIdRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-
-        // When user will try to upload the same roles which are already attched to an APP so, no row will be effected
-        if (uniqueRoles.Any())
-            _dbContext.AddRange(uniqueRoles);
-        return uniqueRoles;
+        var appRoles = appIdRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
+        _dbContext.AddRange(appRoles);
+        return appRoles;
     }
 
     ///<inheritdoc/>
