@@ -145,10 +145,12 @@ public class SdFactoryBusinessLogicTests
         result.Should().NotBeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
         result.ModifyChecklistEntry!.Invoke(entry);
-        entry.ApplicationChecklistEntryStatusId.Should().Be(clearinghouseConnectDisabled ? ApplicationChecklistEntryStatusId.DONE : ApplicationChecklistEntryStatusId.IN_PROGRESS);
+        result.ProcessMessage.Should().Be(clearinghouseConnectDisabled ? "Self description was skipped due to clearinghouse trigger is disabled" : null);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(clearinghouseConnectDisabled ? ApplicationChecklistEntryStatusId.SKIPPED : ApplicationChecklistEntryStatusId.IN_PROGRESS);
         result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ACTIVATE_APPLICATION : x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
+        result.StepStatusId.Should().Be(clearinghouseConnectDisabled ? ProcessStepStatusId.SKIPPED : ProcessStepStatusId.DONE);
     }
 
     [Fact]
