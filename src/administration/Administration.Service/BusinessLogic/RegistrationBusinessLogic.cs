@@ -63,7 +63,6 @@ public sealed class RegistrationBusinessLogic(
     : IRegistrationBusinessLogic
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly RegistrationSettings _settings = configuration.Value;
