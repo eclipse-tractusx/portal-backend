@@ -89,8 +89,8 @@ public class ApplicationActivationService : IApplicationActivationService
         {
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
+        var (companyId, companyName, businessPartnerNumber, iamIdps, applicationTypeId, networkRegistrationProcessId) = result;
 
-        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse, applicationTypeId, networkRegistrationProcessId) = result;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
@@ -99,7 +99,7 @@ public class ApplicationActivationService : IApplicationActivationService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
         await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SetTheme(iamIdpAliasse).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SetTheme(iamIdps).ConfigureAwait(ConfigureAwaitOptions.None);
 
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {
@@ -247,11 +247,11 @@ public class ApplicationActivationService : IApplicationActivationService
         }
     }
 
-    private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
+    private async Task SetTheme(IEnumerable<IdentityProviderForTheme> iamIdps)
     {
-        foreach (var alias in iamIdpAliasse)
+        foreach (var iamIdp in iamIdps.Where(i => i.IdentityProviderType == IdentityProviderTypeId.SHARED))
         {
-            await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
+            await _provisioningManager.UpdateSharedRealmTheme(iamIdp.IamIdpAliases, _settings.LoginTheme).ConfigureAwait(false);
         }
     }
 
