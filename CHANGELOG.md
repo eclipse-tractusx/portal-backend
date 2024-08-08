@@ -2,6 +2,45 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.2.0-RC1
+
+### Change
+
+* **Certificate Management (Administration Service)**
+  * enhanced attributes in database and endpoint details [#823](https://github.com/eclipse-tractusx/portal-backend/pull/823)
+* **Onboarding Service Provider**
+  * added endpoint to OSP companies details [#866](https://github.com/eclipse-tractusx/portal-backend/pull/866)
+* **Technical Users**
+  * adjusted logic for technical users to delete DIM users [#804](https://github.com/eclipse-tractusx/portal-backend/pull/804)
+* **Connector Management and toggle to deactivate the GX compliance service interface**
+  * added endpoints to get companies and connectors with missing self description  documents [#854](https://github.com/eclipse-tractusx/portal-backend/pull/854)
+  * added process for self description document creation [#854](https://github.com/eclipse-tractusx/portal-backend/pull/854)
+* **Registration Process and toggle to deactivate the GX compliance service interface**
+  * enhanced application checklist with a comment of the skipped self description step [#847](https://github.com/eclipse-tractusx/portal-backend/pull/847)
+  * adjusted selfDescription retriever to check if clearinghouseConnect is disabled [#847](https://github.com/eclipse-tractusx/portal-backend/pull/847)
+* **Registration Process (Administration Service)**
+  * added type to applications endpoint [#900](https://github.com/eclipse-tractusx/portal-backend/pull/900)
+
+### Technical Support
+
+* changed licensing and legal docs [#795](https://github.com/eclipse-tractusx/portal-backend/pull/795)
+* dev-flow: maintain latest changes in main branch [#198](https://github.com/eclipse-tractusx/portal-frontend-registration/pull/198)
+* code-quality: fixed imports [#869](https://github.com/eclipse-tractusx/portal-backend/pull/869)
+* merged migrations into one since 2.1.0-rc1 [#908](https://github.com/eclipse-tractusx/portal-backend/pull/908)
+
+### Bugfixes
+
+* **Business Partner Data Management**
+  * allowed null values for geographic coordinate altitude [#882](https://github.com/eclipse-tractusx/portal-backend/pull/882)
+* **Onboarding Service Provider**
+  * added companyUsers to invitation for OSP process [#892](https://github.com/eclipse-tractusx/portal-backend/pull/892)
+* **Connector Management and toggle to deactivate the GX compliance service interface**
+  * adjusted self description document validation for connector creation [#894](https://github.com/eclipse-tractusx/portal-backend/pull/894)
+* **Registration Process**
+  * removed active flag to get the name in case of declined registration [#873](https://github.com/eclipse-tractusx/portal-backend/pull/873)
+* **Service Release**
+  * fixed returning of the correct lead picture [#904](https://github.com/eclipse-tractusx/portal-backend/pull/904)
+
 ## 2.1.0
 
 ### Change
@@ -17,7 +56,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Feature
 
-* Registration Process (Administration Service)
+* **Registration Process (Administration Service)**
   * added configuration toggle to deactivate the GX compliance service interface dependency incl. SD factory connectivity to enable registration and connector creation without external dependency [#793](https://github.com/eclipse-tractusx/portal-backend/pull/793)
 
 ### Technical Support
