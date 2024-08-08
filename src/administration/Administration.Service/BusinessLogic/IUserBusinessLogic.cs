@@ -32,8 +32,8 @@ public interface IUserBusinessLogic
     Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo);
     Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter);
     Task<CompanyUserDetailData> GetOwnCompanyUserDetailsAsync(Guid userId);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers);
-    Task<int> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber);
+    Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken);
+    Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken);
     Task<CompanyOwnUserDetails> GetOwnUserDetails();
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails);
 

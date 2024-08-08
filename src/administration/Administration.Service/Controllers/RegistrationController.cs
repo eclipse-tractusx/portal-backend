@@ -308,7 +308,7 @@ public class RegistrationController : ControllerBase
     /// </summary>
     /// <param name="applicationId" example="">Id of the application that should be triggered</param>
     /// <returns>NoContent</returns>
-    /// Example: POST: api/administration/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/trigger-self-description <br />
+    /// Example: POST: api/administration/registration/application/{applicationId}/trigger-self-description <br />
     /// <response code="204">Empty response on success.</response>
     /// <response code="400">Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.</response>
     /// <response code="404">No application found for the applicationId.</response>
