@@ -32,4 +32,6 @@ public class BpdmServiceSettings : KeyVaultAuthSettings
     public string BaseAddress { get; set; } = null!;
 
     public bool UseDimWallet { get; set; }
+
+    public bool StartAsReady { get; set; }
 }
