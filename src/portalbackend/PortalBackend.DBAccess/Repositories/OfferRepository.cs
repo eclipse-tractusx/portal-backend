@@ -356,7 +356,9 @@ public class OfferRepository : IOfferRepository
                     ? new OfferProviderData(
                         x.Offer.Name,
                         x.Offer.Provider,
-                        x.Offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
+                        x.Offer.Documents.Where(document => ((offerTypeId == OfferTypeId.APP && document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE) ||
+                                                             (offerTypeId == OfferTypeId.SERVICE && document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE))
+                                                 && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                         x.Offer.ProviderCompany!.Name,
                         offerTypeId == OfferTypeId.APP
                             ? x.Offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name))
