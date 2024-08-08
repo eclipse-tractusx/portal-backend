@@ -23,7 +23,7 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Models;
 
 public record NotificationRequest(
-    [property: JsonPropertyName("requester")] Guid Requester,
+    [property: JsonPropertyName("receiver")] Guid Receiver,
     [property: JsonPropertyName("content")] string Content,
     [property: JsonPropertyName("notificationTypeId")] NotificationTypeId NotificationTypeId
 );
