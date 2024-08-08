@@ -257,7 +257,7 @@ public class ServiceReleaseBusinessLogicTest
             .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCY_SERVICE })
             .Create();
 
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
             .Returns(data);
 
         var result = await _sut.GetServiceDetailsForStatusAsync(serviceId);

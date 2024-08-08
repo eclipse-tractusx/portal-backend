@@ -601,14 +601,14 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferProviderResponse>();
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(data);
 
         // Act
         var result = await _sut.GetAppDetailsForStatusAsync(appId);
 
         // Assert
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
             .MustHaveHappenedOnceExactly();
 
         result.Title.Should().Be(data.Title);
@@ -638,7 +638,7 @@ public class AppReleaseBusinessLogicTest
                         .With(x => x.UseCase, default(IEnumerable<AppUseCaseData>?))
                         .Create();
 
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
             .Returns(data);
 
         var Act = () => _sut.GetAppDetailsForStatusAsync(appId);
@@ -647,7 +647,7 @@ public class AppReleaseBusinessLogicTest
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
             .MustHaveHappenedOnceExactly();
 
         result.Message.Should().Be("usecase should never be null here");

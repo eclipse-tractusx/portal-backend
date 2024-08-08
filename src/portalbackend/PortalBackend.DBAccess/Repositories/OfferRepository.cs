@@ -341,7 +341,7 @@ public class OfferRepository : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId) =>
+    public Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
         _context.Offers
             .AsNoTracking()
             .AsSplitQuery()
@@ -356,7 +356,7 @@ public class OfferRepository : IOfferRepository
                     ? new OfferProviderData(
                         x.Offer.Name,
                         x.Offer.Provider,
-                        x.Offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
+                        x.Offer.Documents.Where(document => document.DocumentTypeId == documentTypeId && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                         x.Offer.ProviderCompany!.Name,
                         offerTypeId == OfferTypeId.APP
                             ? x.Offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name))

@@ -104,8 +104,9 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId"></param>
     /// <param name="offerTypeId"></param>
+    /// <param name="documentTypeId"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId);
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 
     /// <summary>
     /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user
