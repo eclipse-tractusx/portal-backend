@@ -20,7 +20,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -53,20 +52,18 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
+        var results = sut.CreateOffer(OfferTypeId.SERVICE, service =>
         {
-            service.Name = "Test Service";
             service.ContactEmail = "test@email.com";
         });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        results.Name.Should().Be("Test Service");
+        results.ContactEmail.Should().Be("test@email.com");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test Service");
     }
 
     #endregion
