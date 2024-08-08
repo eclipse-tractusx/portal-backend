@@ -125,7 +125,6 @@ public class CreateNewTestAppScenario : EndToEndTestBase
             return false;
         }
         return newAppRequest.Title == appDetailWithStatus.Title &&
-               newAppRequest.Provider == appDetailWithStatus.Provider &&
                newAppRequest.SalesManagerId == appDetailWithStatus.SalesManagerId &&
                newAppRequest.UseCaseIds.SequenceEqual(appDetailWithStatus.UseCase.Select(t => t.Id)) &&
                newAppRequest.Descriptions.SequenceEqual(appDetailWithStatus.Descriptions) &&

@@ -153,19 +153,18 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSutWithContext();
 
         // Act
-        var results = sut.CreateOffer("Catena-X", OfferTypeId.APP, offer =>
+        var results = sut.CreateOffer(OfferTypeId.APP, offer =>
         {
-            offer.Name = "Test App";
+            offer.ContactEmail = "test@email.com";
         });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
-        results.Name.Should().Be("Test App");
+        results.ContactEmail.Should().Be("test@email.com");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test App");
     }
 
     #endregion

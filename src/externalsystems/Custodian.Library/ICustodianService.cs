@@ -20,10 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 

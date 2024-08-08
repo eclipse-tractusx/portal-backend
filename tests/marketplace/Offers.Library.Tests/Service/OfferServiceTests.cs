@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -119,14 +118,14 @@ public class OfferServiceTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer?>>._))
+            .Invokes((OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new Offer(serviceId, null!, default, default)
+            .Returns(new Offer(serviceId, default, default)
             {
                 OfferTypeId = OfferTypeId.SERVICE
             });
@@ -146,14 +145,14 @@ public class OfferServiceTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer?>>._))
+            .Invokes((OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
             })
-            .Returns(new Offer(serviceId, null!, default, default)
+            .Returns(new Offer(serviceId, default, default)
             {
                 OfferTypeId = OfferTypeId.SERVICE
             });
