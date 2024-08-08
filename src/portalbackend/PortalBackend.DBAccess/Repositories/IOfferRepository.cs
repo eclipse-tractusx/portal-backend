@@ -176,8 +176,9 @@ public interface IOfferRepository
     /// <param name="offerId"></param>
     /// <param name="userId"></param>
     /// <param name="offerTypeId"></param>
+    /// <param name="documentTypeId"></param>
     /// <returns></returns>
-    Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId);
+    Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
 
     /// <summary>
     /// Verify that user is linked to the appId

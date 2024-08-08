@@ -105,7 +105,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.ServiceTypeIds == null)
         {
             throw new UnexpectedConditionException("serviceTypeIds should never be null here");

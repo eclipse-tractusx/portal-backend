@@ -267,10 +267,10 @@ public class OfferService : IOfferService
     }
 
     /// <inheritdoc />
-    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId)
+    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         var companyId = _identityData.CompanyId;
-        var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var offerDetail = await _portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId, documentTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetail == default)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");

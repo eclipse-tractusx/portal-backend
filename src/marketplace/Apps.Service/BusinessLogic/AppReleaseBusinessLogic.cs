@@ -124,7 +124,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.UseCase == null)
         {
             throw new UnexpectedConditionException("usecase should never be null here");
