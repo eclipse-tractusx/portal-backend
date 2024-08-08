@@ -35,6 +35,13 @@ public interface IUserRolesRepository
     /// <returns></returns>
     UserRole DeleteUserRole(Guid roleId);
 
+    /// <summary>
+    /// Bulk deletion of existing User Roles
+    /// </summary>
+    /// <param name="roleIds">List role Ids to be deleted</param>
+    /// <returns></returns>
+    void DeleteUserRoles(IEnumerable<Guid> roleIds);
+
     IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions);
     IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId);
     void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds);
