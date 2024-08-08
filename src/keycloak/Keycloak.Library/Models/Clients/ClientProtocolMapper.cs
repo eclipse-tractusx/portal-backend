@@ -25,6 +25,7 @@
  ********************************************************************************/
 
 using Newtonsoft.Json;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
@@ -41,5 +42,5 @@ public class ClientProtocolMapper
     [JsonProperty("consentRequired")]
     public bool? ConsentRequired { get; set; }
     [JsonProperty("config")]
-    public ClientConfig? Config { get; set; }
+    public Config? Config { get; set; }
 }

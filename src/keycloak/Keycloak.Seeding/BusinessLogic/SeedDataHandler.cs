@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,7 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -34,71 +35,84 @@ public class SeedDataHandler : ISeedDataHandler
         PropertyNameCaseInsensitive = false
     };
 
-    private KeycloakRealm? jsonRealm;
+    private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
 
-    public async Task Import(string path, CancellationToken cancellationToken)
+    public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
-        using (var stream = File.OpenRead(path))
-        {
-            jsonRealm =
-                await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken)
-                    .ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
-        }
+        _keycloakRealm = (await realmSettings.DataPathes
+            .AggregateAsync(
+                new KeycloakRealm(),
+                async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
+            .Merge(realmSettings.ToModel());
 
         _idOfClients = null;
     }
 
+    private static async Task<KeycloakRealm> ReadJsonRealm(string path, string realm, CancellationToken cancellationToken)
+    {
+        KeycloakRealm jsonRealm;
+        using (var stream = File.OpenRead(path))
+        {
+            jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken)
+                                    .ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
+        }
+        if (jsonRealm.Realm != null && jsonRealm.Realm != realm)
+            throw new ConfigurationException($"json realm {jsonRealm.Realm} doesn't match the configured realm: {realm}");
+
+        return jsonRealm;
+    }
+
     public string Realm
     {
-        get => jsonRealm?.Realm ?? throw new ConflictException("realm must not be null");
+        get => _keycloakRealm?.Realm ?? throw new ConflictException("realm must not be null");
     }
 
     public KeycloakRealm KeycloakRealm
     {
-        get => jsonRealm ?? throw new InvalidOperationException("Import has not been called");
+        get => _keycloakRealm ?? throw new InvalidOperationException("Import has not been called");
     }
 
     public IEnumerable<ClientModel> Clients
     {
-        get => jsonRealm?.Clients ?? Enumerable.Empty<ClientModel>();
+        get => _keycloakRealm?.Clients ?? Enumerable.Empty<ClientModel>();
     }
 
-    public IReadOnlyDictionary<string, IEnumerable<RoleModel>> ClientRoles
+    public IEnumerable<(string ClientId, IEnumerable<RoleModel> RoleModels)> ClientRoles
     {
-        get => jsonRealm?.Roles?.Client ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>()
-            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
+        get => _keycloakRealm?.Roles?.Client?.FilterNotNullValues().Select(x => (x.Key, x.Value)) ?? Enumerable.Empty<(string, IEnumerable<RoleModel>)>();
     }
 
     public IEnumerable<RoleModel> RealmRoles
     {
-        get => jsonRealm?.Roles?.Realm ?? Enumerable.Empty<RoleModel>();
+        get => _keycloakRealm?.Roles?.Realm ?? Enumerable.Empty<RoleModel>();
     }
 
     public IEnumerable<IdentityProviderModel> IdentityProviders
     {
-        get => jsonRealm?.IdentityProviders ?? Enumerable.Empty<IdentityProviderModel>();
+        get => _keycloakRealm?.IdentityProviders ?? Enumerable.Empty<IdentityProviderModel>();
     }
 
     public IEnumerable<IdentityProviderMapperModel> IdentityProviderMappers
     {
-        get => jsonRealm?.IdentityProviderMappers ?? Enumerable.Empty<IdentityProviderMapperModel>();
+        get => _keycloakRealm?.IdentityProviderMappers ?? Enumerable.Empty<IdentityProviderMapperModel>();
     }
 
     public IEnumerable<UserModel> Users
     {
-        get => jsonRealm?.Users ?? Enumerable.Empty<UserModel>();
+        get => _keycloakRealm?.Users ?? Enumerable.Empty<UserModel>();
     }
 
     public IEnumerable<AuthenticationFlowModel> TopLevelCustomAuthenticationFlows
     {
-        get => jsonRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ??
+        get => _keycloakRealm?.AuthenticationFlows?.Where(x => (x.TopLevel ?? false) && !(x.BuiltIn ?? false)) ??
                Enumerable.Empty<AuthenticationFlowModel>();
     }
 
     public IEnumerable<ClientScopeModel> ClientScopes
     {
-        get => jsonRealm?.ClientScopes ?? Enumerable.Empty<ClientScopeModel>();
+        get => _keycloakRealm?.ClientScopes ?? Enumerable.Empty<ClientScopeModel>();
     }
 
     public IReadOnlyDictionary<string, string> ClientsDictionary
@@ -106,10 +120,9 @@ public class SeedDataHandler : ISeedDataHandler
         get => _idOfClients ?? throw new InvalidOperationException("ClientInternalIds have not been set");
     }
 
-    public IReadOnlyDictionary<string, IEnumerable<ClientScopeMappingModel>> ClientScopeMappings
+    public IEnumerable<(string ClientId, IEnumerable<ClientScopeMappingModel> ClientScopeMappingModels)> ClientScopeMappings
     {
-        get => jsonRealm?.ClientScopeMappings ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>()
-            .ToImmutableDictionary(x => x.Item1, x => x.Item2);
+        get => _keycloakRealm?.ClientScopeMappings?.FilterNotNullValues().Select(x => (x.Key, x.Value)) ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>();
     }
 
     public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)
@@ -127,11 +140,11 @@ public class SeedDataHandler : ISeedDataHandler
             .GetValueOrDefault(clientId) ?? throw new ConflictException($"clientId is unknown or id of client is null {clientId}");
 
     public AuthenticationFlowModel GetAuthenticationFlow(string? alias) =>
-        jsonRealm?.AuthenticationFlows?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
+        _keycloakRealm?.AuthenticationFlows?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticationFlow {alias} does not exist in seeding-data");
 
     public IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias) =>
         GetAuthenticationFlow(alias).AuthenticationExecutions ?? Enumerable.Empty<AuthenticationExecutionModel>();
 
     public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
-        jsonRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
+        _keycloakRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
 }

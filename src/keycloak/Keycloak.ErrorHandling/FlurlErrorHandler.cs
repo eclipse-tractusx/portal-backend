@@ -21,45 +21,54 @@ using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 
 public static class FlurlErrorHandler
 {
-    public static void ConfigureErrorHandler(ILogger logger, bool isDevelopment)
+    public static void ConfigureErrorHandler(ILogger logger)
     {
         FlurlHttp.Configure(settings => settings.OnError = (call) =>
         {
             var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
 
-            if (isDevelopment)
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                LogDevelopmentError(logger, call);
+                LogDebug(logger, call);
             }
-            else
-            {
-                logger.LogError(call.Exception, "{Message}", message);
-            }
-
             if (call.HttpResponseMessage != null)
             {
+                var errorContent = JsonSerializer.Deserialize<KeycloakErrorResponse>(call.HttpResponseMessage.Content.ReadAsStream())?.ErrorMessage;
+                if (!string.IsNullOrWhiteSpace(errorContent))
+                {
+                    message = errorContent;
+                }
                 throw call.HttpResponseMessage.StatusCode switch
                 {
                     HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
                     HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
-                    HttpStatusCode.BadRequest => new ArgumentException(message, call.Exception),
+                    HttpStatusCode.BadRequest => new KeycloakNoSuccessException(message, call.Exception),
                     _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
                 };
             }
+            throw new ServiceException(message, call.Exception);
         });
     }
 
-    private static void LogDevelopmentError(ILogger logger, FlurlCall call)
+    private static void LogDebug(ILogger logger, FlurlCall call)
     {
         var request = call.HttpRequestMessage == null ? "" : $"{call.HttpRequestMessage.Method} {call.HttpRequestMessage.RequestUri} HTTP/{call.HttpRequestMessage.Version}\n{call.HttpRequestMessage.Headers}\n";
         var requestBody = call.RequestBody == null ? "\n" : call.RequestBody + "\n\n";
         var response = call.HttpResponseMessage == null ? "" : call.HttpResponseMessage.ReasonPhrase + "\n";
         var responseContent = call.HttpResponseMessage?.Content == null ? "" : call.HttpResponseMessage.Content.ReadAsStringAsync().Result + "\n";
-        logger.LogError(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
+        logger.LogDebug(call.Exception, "{Request}{Body}{Response}{Content}", request, requestBody, response, responseContent);
+    }
+
+    public class KeycloakErrorResponse
+    {
+        [JsonPropertyName("errorMessage")]
+        public string? ErrorMessage { get; set; }
     }
 }

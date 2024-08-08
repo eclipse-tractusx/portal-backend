@@ -28,10 +28,49 @@ public class KeycloakRealmModelTests
     public async Task SeedDataHandlerImportsExpected()
     {
         // Arrange
+        var settings = new KeycloakSeederSettings()
+        {
+            Realms = [
+                new()
+                {
+                    Realm = "TestRealm",
+                    InstanceName = "foo",
+                    DataPathes = ["TestSeeds/test-realm.json"],
+                    Clients = [
+                        new()
+                        {
+                            ClientId = "TestClientId",
+                            Secret = "testsecret",
+                            RedirectUris = [
+                                "https://redirect.url"
+                            ],
+                            Attributes = [
+                                new()
+                                {
+                                    Name = "login_theme",
+                                    Value = "test"
+                                }
+                            ]
+                        }
+                    ],
+                    IdentityProviders = [
+                        new()
+                        {
+                            Alias = "Test Identity Provider",
+                            Config = new()
+                            {
+                                TokenUrl = "https://token.test",
+                                ClientSecret = "foobarsecret"
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
         var sut = new SeedDataHandler();
 
         // Act
-        await sut.Import("TestSeeds/test-realm.json", CancellationToken.None);
+        await sut.Import(settings.Realms.First(), CancellationToken.None);
 
         var keycloakRealm = sut.KeycloakRealm;
         var clients = sut.Clients;
@@ -106,11 +145,10 @@ public class KeycloakRealmModelTests
                 x.FailureFactor == 30 &&
                 x.Roles != null &&
                 x.Roles.Client != null &&
-                x.Roles.Client.SequenceEqual(clientRoles) &&
+                x.Roles.Client.SequenceEqual(clientRoles.Select(x => KeyValuePair.Create<string, IEnumerable<RoleModel>?>(x.ClientId, x.RoleModels))) &&
                 x.Roles.Realm != null &&
                 x.Roles.Realm.SequenceEqual(realmRoles) &&
-                x.Groups != null &&
-                // roles and groups are being asserted separately
+                x.Groups != null && // roles and groups are being asserted separately
                 x.DefaultRole != null &&
                 x.DefaultRole.Id == "fd20bacb-f39f-499c-8fc3-c3d14e0770d9" &&
                 x.DefaultRole.Name == "default-roles-testrealm" &&
@@ -160,11 +198,9 @@ public class KeycloakRealmModelTests
                 x.Users != null &&
                 x.ScopeMappings != null &&
                 x.ClientScopeMappings != null &&
-                x.Clients != null &&
-                x.Clients.SequenceEqual(clients) &&
+                x.Clients != null && // clients are being asserted separately
                 x.ClientScopes != null &&
-                x.ClientScopes.SequenceEqual(clientScopes) &&
-                // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
+                x.ClientScopes.SequenceEqual(clientScopes) && // users, scopeMappings, clientScopeMappings, clients, clientScopes are being asserted separately
                 x.DefaultDefaultClientScopes != null &&
                 x.DefaultDefaultClientScopes.SequenceEqual(new[] { "role_list", "profile", "email", "roles", "web-origins" }) &&
                 x.DefaultOptionalClientScopes != null &&
@@ -204,42 +240,57 @@ public class KeycloakRealmModelTests
                 !x.AdminEventsEnabled.Value &&
                 x.AdminEventsDetailsEnabled.HasValue &&
                 !x.AdminEventsDetailsEnabled.Value &&
-                x.IdentityProviders != null &&
-                x.IdentityProviders.SequenceEqual(identityProviders) &&
+                x.IdentityProviders != null && // identityProviders, identityProviderMappers, components are being asserted separately
                 x.IdentityProviderMappers != null &&
                 x.IdentityProviderMappers.SequenceEqual(identityProviderMappers) &&
-                // identityProviders, identityProviderMappers, components are being asserted separately
                 x.InternationalizationEnabled.HasValue &&
                 x.InternationalizationEnabled.Value &&
                 x.SupportedLocales != null &&
                 x.SupportedLocales.SequenceEqual(new[] { "de", "no", "ru", "sv", "pt-BR", "lt", "en", "it", "fr", "hu", "zh-CN", "es", "cs", "ja", "sk", "pl", "da", "ca", "nl", "tr" }) &&
                 x.DefaultLocale == "en" &&
-                // authenticationFlows, authenticatorConfigs, requiredActions are being asserted separately
-                x.BrowserFlow == "browser" &&
+                x.BrowserFlow == "browser" && // authenticationFlows, authenticatorConfigs, requiredActions are being asserted separately
                 x.RegistrationFlow == "registration" &&
                 x.DirectGrantFlow == "direct grant" &&
                 x.ResetCredentialsFlow == "reset credentials" &&
                 x.ClientAuthenticationFlow == "clients" &&
                 x.DockerAuthenticationFlow == "docker auth" &&
                 x.Attributes != null &&
-                x.Attributes.SequenceEqual(new Dictionary<string, string> {
-                    { "cibaBackchannelTokenDeliveryMode", "poll" },
-                    { "cibaAuthRequestedUserHint", "login_hint" },
-                    { "oauth2DevicePollingInterval", "5" },
-                    { "clientOfflineSessionMaxLifespan", "0" },
-                    { "clientSessionIdleTimeout", "0" },
-                    { "userProfileEnabled", "false" },
-                    { "clientOfflineSessionIdleTimeout", "0" },
-                    { "cibaInterval", "5" },
-                    { "cibaExpiresIn", "120" },
-                    { "oauth2DeviceCodeLifespan", "600" },
-                    { "parRequestUriLifespan", "60" },
-                    { "clientSessionMaxLifespan", "0" },
-                    { "frontendUrl", "http://frontend.url" }
+                x.Attributes.SequenceEqual(new[] {
+                    KeyValuePair.Create<string, string?>("cibaBackchannelTokenDeliveryMode", "poll"),
+                    KeyValuePair.Create<string, string?>("cibaAuthRequestedUserHint", "login_hint"),
+                    KeyValuePair.Create<string, string?>("oauth2DevicePollingInterval", "5"),
+                    KeyValuePair.Create<string, string?>("clientOfflineSessionMaxLifespan", "0"),
+                    KeyValuePair.Create<string, string?>("clientSessionIdleTimeout", "0"),
+                    KeyValuePair.Create<string, string?>("userProfileEnabled", "false"),
+                    KeyValuePair.Create<string, string?>("clientOfflineSessionIdleTimeout", "0"),
+                    KeyValuePair.Create<string, string?>("cibaInterval", "5"),
+                    KeyValuePair.Create<string, string?>("cibaExpiresIn", "120"),
+                    KeyValuePair.Create<string, string?>("oauth2DeviceCodeLifespan", "600"),
+                    KeyValuePair.Create<string, string?>("parRequestUriLifespan", "60"),
+                    KeyValuePair.Create<string, string?>("clientSessionMaxLifespan", "0"),
+                    KeyValuePair.Create<string, string?>("frontendUrl", "http://frontend.url")
                 }) &&
                 x.KeycloakVersion == "16.1.1" &&
                 x.UserManagedAccessAllowed.HasValue &&
                 !x.UserManagedAccessAllowed.Value
+            );
+
+        keycloakRealm.Clients.Should().Contain(x => x.ClientId == "TestClientId")
+            .Which.Should().Match<ClientModel>(x =>
+                x.Name == "TestClient Name" &&
+                x.Secret == "testsecret" &&
+                x.RedirectUris != null &&
+                x.RedirectUris.SequenceEqual(new[] { "https://redirect.url" }) &&
+                x.Attributes != null &&
+                x.Attributes["login_theme"] == "test"
+            );
+
+        keycloakRealm.IdentityProviders.Should().Contain(x => x.Alias == "Test Identity Provider")
+            .Which.Should().Match<IdentityProviderModel>(x =>
+                x.DisplayName == "Test Identity Provider Display Name" &&
+                x.Config != null &&
+                x.Config.TokenUrl == "https://token.test" &&
+                x.Config.ClientSecret == "foobarsecret"
             );
 
         keycloakRealm.Groups.Should().ContainSingle()
@@ -247,11 +298,8 @@ public class KeycloakRealmModelTests
                 x.Id == "145bc75c-7755-4cd2-a746-45097fb2883a" &&
                 x.Name == "Test Group 1" &&
                 x.Path == "/Test Group 1" &&
-                x.Attributes.NullOrContentEqual(
-                    new Dictionary<string, IEnumerable<string>>
-                    {
-                        { "Test Group 1 Attribute", new [] { "Test Group 1 Attribute Value" } }
-                    },
+                x.Attributes.NullOrNullableContentEqual(
+                    new[] { KeyValuePair.Create<string, IEnumerable<string>?>("Test Group 1 Attribute", new[] { "Test Group 1 Attribute Value" }) },
                     null) &&
                 x.RealmRoles != null &&
                 x.RealmRoles.SequenceEqual(
@@ -259,11 +307,8 @@ public class KeycloakRealmModelTests
                     {
                         "offline_access"
                     }) &&
-                x.ClientRoles.NullOrContentEqual(
-                    new Dictionary<string, IEnumerable<string>>
-                    {
-                        { "realm-management", new [] { "create-client" } }
-                    },
+                x.ClientRoles.NullOrNullableContentEqual(
+                    new[] { KeyValuePair.Create<string, IEnumerable<string>?>("realm-management", new[] { "create-client" }) },
                     null)
             );
 
@@ -278,11 +323,8 @@ public class KeycloakRealmModelTests
                 x.Composites.Realm != null &&
                 x.Composites.Realm.SequenceEqual(new[] { "offline_access", "uma_authorization" }) &&
                 x.Composites.Client != null &&
-                x.Composites.Client.NullOrContentEqual(
-                    new Dictionary<string, IEnumerable<string>>
-                    {
-                        { "account", new [] { "view-profile", "manage-account" } }
-                    },
+                x.Composites.Client.NullOrNullableContentEqual(
+                    new[] { KeyValuePair.Create<string, IEnumerable<string>?>("account", new[] { "view-profile", "manage-account" }) },
                     null
                 ) &&
                 x.ClientRole.HasValue &&
@@ -308,10 +350,18 @@ public class KeycloakRealmModelTests
                 x.Id == "e9b8d11f-8e45-4910-8dbb-aa206764f1bc");
 
         clientRoles.Should().HaveCount(8)
-            .And.ContainKeys(new[] { "realm-management", "security-admin-console", "admin-cli", "account-console", "broker", "TestClientId", "account", "TestServiceAccount1" });
+            .And.Satisfy(
+                x => x.ClientId == "realm-management",
+                x => x.ClientId == "security-admin-console",
+                x => x.ClientId == "admin-cli",
+                x => x.ClientId == "account-console",
+                x => x.ClientId == "broker",
+                x => x.ClientId == "TestClientId",
+                x => x.ClientId == "account",
+                x => x.ClientId == "TestServiceAccount1");
 
-        clientRoles.Should().ContainKey("TestClientId")
-            .WhoseValue.Should().HaveCount(2)
+        clientRoles.Should().ContainSingle(x => x.ClientId == "TestClientId")
+            .Which.RoleModels.Should().HaveCount(2)
             .And.Satisfy(
                 x =>
                     x.Id == "889fd981-c56f-4b46-bc43-f62e1004185e" &&
@@ -320,20 +370,14 @@ public class KeycloakRealmModelTests
                     x.Composite.HasValue &&
                     x.Composite.Value &&
                     x.Composites != null &&
-                    x.Composites.Client.NullOrContentEqual(
-                        new Dictionary<string, IEnumerable<string>>
-                        {
-                            { "TestClientId", new [] { "test_role_1" } }
-                        },
+                    x.Composites.Client.NullOrNullableContentEqual(
+                        new[] { KeyValuePair.Create<string, IEnumerable<string>?>("TestClientId", new[] { "test_role_1" }) },
                         null) &&
                     x.ClientRole.HasValue &&
                     x.ClientRole.Value &&
                     x.ContainerId == "654052fa-59c4-484e-90f7-0c389c0e9d37" &&
-                    x.Attributes.NullOrContentEqual(
-                        new Dictionary<string, IEnumerable<string>>
-                        {
-                            { "Test Composite Role Attribute", new [] { "Test Composite Role Attribute Value" } }
-                        },
+                    x.Attributes.NullOrNullableContentEqual(
+                        new[] { KeyValuePair.Create<string, IEnumerable<string>?>("Test Composite Role Attribute", new[] { "Test Composite Role Attribute Value" }) },
                         null
                     ),
                 x =>
@@ -346,11 +390,8 @@ public class KeycloakRealmModelTests
                     x.ClientRole.HasValue &&
                     x.ClientRole.Value &&
                     x.ContainerId == "654052fa-59c4-484e-90f7-0c389c0e9d37" &&
-                    x.Attributes.NullOrContentEqual(
-                        new Dictionary<string, IEnumerable<string>>
-                        {
-                            { "test_role_1_attribute", new [] { "test_role_1_attribute_value" } }
-                        },
+                    x.Attributes.NullOrNullableContentEqual(
+                        new[] { KeyValuePair.Create<string, IEnumerable<string>?>("test_role_1_attribute", new[] { "test_role_1_attribute_value" }) },
                         null
                     ));
 
@@ -388,7 +429,7 @@ public class KeycloakRealmModelTests
                 x.FirstName == "Test" &&
                 x.LastName == "User" &&
                 x.Email == "test.user@mail.org" &&
-                x.Attributes.NullOrContentEqual(new Dictionary<string, IEnumerable<string>> { { "foo", new[] { "DEADBEEF", "deadbeef" } } }, null) &&
+                x.Attributes.NullOrNullableContentEqual(new[] { KeyValuePair.Create<string, IEnumerable<string>?>("foo", new[] { "DEADBEEF", "deadbeef" }) }, null) &&
                 x.Credentials != null &&
                 !x.Credentials.Any() &&
                 x.DisableableCredentialTypes != null &&
@@ -397,7 +438,7 @@ public class KeycloakRealmModelTests
                 x.FederatedIdentities.Select(i => new ValueTuple<string?, string?, string?>(i.IdentityProvider, i.UserId, i.UserName)).NullOrContentEqual(new[] { new ValueTuple<string?, string?, string?>("Test Identity Provider", "testIdentityProviderUserId1", "testIdentityProviderUserName1") }, null) &&
                 x.RealmRoles != null &&
                 x.RealmRoles.SequenceEqual(new[] { "default-roles-testrealm", "test_realm_role_1" }) &&
-                x.ClientRoles.NullOrContentEqual(new Dictionary<string, IEnumerable<string>> { { "TestClientId", new[] { "test_role_1" } } }, null) &&
+                x.ClientRoles.NullOrNullableContentEqual(new[] { KeyValuePair.Create<string, IEnumerable<string>?>("TestClientId", new[] { "test_role_1" }) }, null) &&
                 x.NotBefore == 0 &&
                 x.Groups != null &&
                 !x.Groups.Any());

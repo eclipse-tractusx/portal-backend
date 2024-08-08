@@ -44,6 +44,10 @@ public class Config
     public string? IdTokenClaim { get; set; }
     [JsonProperty("access.token.claim")]
     public string? AccessTokenClaim { get; set; }
+    [JsonProperty("introspection.token.claim")]
+    public string? IntrospectionTokenClaim { get; set; }
+    [JsonProperty("lightweight.claim")]
+    public string? LightweightClaim { get; set; }
     [JsonProperty("claim.name")]
     public string? ClaimName { get; set; }
     [JsonProperty("jsonType.label")]
@@ -62,9 +66,10 @@ public class Config
     public string? UserAttributeLocality { get; set; }
     [JsonProperty("included.client.audience")]
     public string? IncludedClientAudience { get; set; }
+    [JsonProperty("included.custom.audience")]
+    public string? IncludedCustomAudience { get; set; }
     [JsonProperty("multivalued")]
     public string? Multivalued { get; set; }
-
     [JsonProperty("user.session.note")]
     public string? UserSessionNote { get; set; }
 }
