@@ -125,7 +125,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.ResetCredentialsFlow = seedRealm.ResetCredentialsFlow;
             keycloakRealm.ClientAuthenticationFlow = seedRealm.ClientAuthenticationFlow;
             keycloakRealm.DockerAuthenticationFlow = seedRealm.DockerAuthenticationFlow;
-            keycloakRealm.Attributes = seedRealm.Attributes?.FilterNotNullValues()?.ToDictionary();
+            keycloakRealm.Attributes = seedRealm.Attributes?.FilterNotNullValues().ToDictionary();
             keycloakRealm.UserManagedAccessAllowed = seedRealm.UserManagedAccessAllowed;
             keycloakRealm.PasswordPolicy = seedRealm.PasswordPolicy;
 

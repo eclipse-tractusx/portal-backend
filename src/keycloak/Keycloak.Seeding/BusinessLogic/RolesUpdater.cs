@@ -217,7 +217,7 @@ public class RolesUpdater : IRolesUpdater
             Description = update.Description,
             Composite = update.Composite,
             ClientRole = update.ClientRole,
-            Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary()
+            Attributes = update.Attributes?.FilterNotNullValues().ToDictionary()
         };
 
     private static Role CreateUpdateRole(string id, string containerId, RoleModel update)

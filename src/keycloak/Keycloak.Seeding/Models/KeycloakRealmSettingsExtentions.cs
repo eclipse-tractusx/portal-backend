@@ -108,7 +108,7 @@ public static class KeycloakRealmSettingsExtentions
             WebAuthnPolicyPasswordlessAcceptableAaguids = keycloakRealmSettings.WebAuthnPolicyPasswordlessAcceptableAaguids,
             Users = keycloakRealmSettings.Users?.Select(ToModel),
             ScopeMappings = keycloakRealmSettings.ScopeMappings?.Select(ToModel),
-            ClientScopeMappings = keycloakRealmSettings.ClientScopeMappings?.Select(ToModel)?.ToImmutableDictionary(),
+            ClientScopeMappings = keycloakRealmSettings.ClientScopeMappings?.Select(ToModel).ToImmutableDictionary(),
             Clients = keycloakRealmSettings.Clients?.Select(ToModel),
             ClientScopes = keycloakRealmSettings.ClientScopes?.Select(ToModel),
             DefaultDefaultClientScopes = keycloakRealmSettings.DefaultDefaultClientScopes,
@@ -126,7 +126,7 @@ public static class KeycloakRealmSettingsExtentions
             AdminEventsDetailsEnabled = keycloakRealmSettings.AdminEventsDetailsEnabled,
             IdentityProviders = keycloakRealmSettings.IdentityProviders?.Select(ToModel),
             IdentityProviderMappers = keycloakRealmSettings.IdentityProviderMappers?.Select(ToModel),
-            Components = keycloakRealmSettings.Components?.Select(ToModel)?.ToImmutableDictionary(),
+            Components = keycloakRealmSettings.Components?.Select(ToModel).ToImmutableDictionary(),
             InternationalizationEnabled = keycloakRealmSettings.InternationalizationEnabled,
             SupportedLocales = keycloakRealmSettings.SupportedLocales,
             DefaultLocale = keycloakRealmSettings.DefaultLocale,
@@ -139,7 +139,7 @@ public static class KeycloakRealmSettingsExtentions
             ResetCredentialsFlow = keycloakRealmSettings.ResetCredentialsFlow,
             ClientAuthenticationFlow = keycloakRealmSettings.ClientAuthenticationFlow,
             DockerAuthenticationFlow = keycloakRealmSettings.DockerAuthenticationFlow,
-            Attributes = keycloakRealmSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
+            Attributes = keycloakRealmSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
             KeycloakVersion = keycloakRealmSettings.KeycloakVersion,
             UserManagedAccessAllowed = keycloakRealmSettings.UserManagedAccessAllowed,
             ClientProfiles = keycloakRealmSettings.ClientProfiles?.ToModel(),
@@ -177,12 +177,12 @@ public static class KeycloakRealmSettingsExtentions
             roleSettings.Composite,
             roleSettings.ClientRole,
             roleSettings.ContainerId,
-            roleSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
+            roleSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
             roleSettings.Composites?.ToModel());
 
     private static RolesModel ToModel(this RolesSettings rolesSettings) =>
         new(rolesSettings.Realm?.Select(x => x.ToModel()),
-            rolesSettings.Client?.Select(ToModel)?.ToImmutableDictionary());
+            rolesSettings.Client?.Select(ToModel).ToImmutableDictionary());
 
     private static KeyValuePair<string, IEnumerable<string>?> ToModel(UserClientRolesSettings userClientRolesSettings) =>
         KeyValuePair.Create(
@@ -193,9 +193,9 @@ public static class KeycloakRealmSettingsExtentions
         new(groupSettings.Id,
             groupSettings.Name,
             groupSettings.Path,
-            groupSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
+            groupSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
             groupSettings.RealmRoles,
-            groupSettings.ClientRoles?.Select(ToModel)?.ToImmutableDictionary(),
+            groupSettings.ClientRoles?.Select(ToModel).ToImmutableDictionary(),
             groupSettings.SubGroups);
 
     public static KeyValuePair<string, string?> ToModel(CredentialsConfigSettings credentialsConfigSettings) =>
@@ -205,7 +205,7 @@ public static class KeycloakRealmSettingsExtentions
 
     private static CredentialsModel ToModel(CredentialsSettings credentialsSettings) =>
         new(credentialsSettings.Algorithm,
-            credentialsSettings.Config?.Select(ToModel)?.ToImmutableDictionary(),
+            credentialsSettings.Config?.Select(ToModel).ToImmutableDictionary(),
             credentialsSettings.Counter,
             credentialsSettings.CreatedDate,
             credentialsSettings.Device,
@@ -246,13 +246,13 @@ public static class KeycloakRealmSettingsExtentions
             userSettings.FirstName,
             userSettings.LastName,
             userSettings.Email,
-            userSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
+            userSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
             userSettings.Credentials?.Select(ToModel),
             userSettings.DisableableCredentialTypes,
             userSettings.RequiredActions,
             userSettings.FederatedIdentities?.Select(ToModel),
             userSettings.RealmRoles,
-            userSettings.ClientRoles?.Select(ToModel)?.ToImmutableDictionary(),
+            userSettings.ClientRoles?.Select(ToModel).ToImmutableDictionary(),
             userSettings.NotBefore,
             userSettings.Groups,
             userSettings.ServiceAccountClientId,
@@ -295,7 +295,7 @@ public static class KeycloakRealmSettingsExtentions
             protocolMapperSettings.Protocol,
             protocolMapperSettings.ProtocolMapper,
             protocolMapperSettings.ConsentRequired,
-            protocolMapperSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
+            protocolMapperSettings.Config?.Select(ToModel).ToImmutableDictionary());
 
     private static ClientAccessModel ToModel(this ClientAccessSettings clientAccessSettings) =>
         new(clientAccessSettings.Configure,
@@ -324,8 +324,8 @@ public static class KeycloakRealmSettingsExtentions
             clientSettings.PublicClient,
             clientSettings.FrontchannelLogout,
             clientSettings.Protocol,
-            clientSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
-            clientSettings.AuthenticationFlowBindingOverrides?.Select(ToModel)?.ToImmutableDictionary(),
+            clientSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
+            clientSettings.AuthenticationFlowBindingOverrides?.Select(ToModel).ToImmutableDictionary(),
             clientSettings.FullScopeAllowed,
             clientSettings.NodeReRegistrationTimeout,
             clientSettings.DefaultClientScopes,
@@ -341,7 +341,7 @@ public static class KeycloakRealmSettingsExtentions
         new(clientScopeSettings.Id,
             clientScopeSettings.Name,
             clientScopeSettings.Protocol,
-            clientScopeSettings.Attributes?.Select(ToModel)?.ToImmutableDictionary(),
+            clientScopeSettings.Attributes?.Select(ToModel).ToImmutableDictionary(),
             clientScopeSettings.ProtocolMappers?.Select(ToModel),
             clientScopeSettings.Description);
 
@@ -431,7 +431,7 @@ public static class KeycloakRealmSettingsExtentions
             identityProviderMapperSettings.Name,
             identityProviderMapperSettings.IdentityProviderAlias,
             identityProviderMapperSettings.IdentityProviderMapper,
-            identityProviderMapperSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
+            identityProviderMapperSettings.Config?.Select(ToModel).ToImmutableDictionary());
 
     private static KeyValuePair<string, IEnumerable<string>?> ToModel(ComponentConfigSettings componentConfigSettings) =>
         KeyValuePair.Create(
@@ -444,7 +444,7 @@ public static class KeycloakRealmSettingsExtentions
             componentSettings.ProviderId,
             componentSettings.SubType,
             componentSettings.SubComponents,
-            componentSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
+            componentSettings.Config?.Select(ToModel).ToImmutableDictionary());
 
     private static KeyValuePair<string, IEnumerable<ComponentModel>?> ToModel(ComponentSettingsEntry componentSettingsEntry) =>
         KeyValuePair.Create(
@@ -478,7 +478,7 @@ public static class KeycloakRealmSettingsExtentions
     private static AuthenticatorConfigModel ToModel(AuthenticatorConfigSettings authenticatorConfigSettings) =>
         new(authenticatorConfigSettings.Id,
             authenticatorConfigSettings.Alias,
-            authenticatorConfigSettings.Config?.Select(ToModel)?.ToImmutableDictionary());
+            authenticatorConfigSettings.Config?.Select(ToModel).ToImmutableDictionary());
 
     private static RequiredActionModel ToModel(this RequiredActionSettings requiredActionSettings) =>
         new(requiredActionSettings.Alias,

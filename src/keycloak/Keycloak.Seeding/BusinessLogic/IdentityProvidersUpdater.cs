@@ -244,7 +244,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
     private static IdentityProviderMapper UpdateIdentityProviderMapper(IdentityProviderMapper mapper, IdentityProviderMapperModel updateMapper)
     {
         mapper._IdentityProviderMapper = updateMapper.IdentityProviderMapper;
-        mapper.Config = updateMapper.Config?.FilterNotNullValues()?.ToDictionary();
+        mapper.Config = updateMapper.Config?.FilterNotNullValues().ToDictionary();
         return mapper;
     }
 

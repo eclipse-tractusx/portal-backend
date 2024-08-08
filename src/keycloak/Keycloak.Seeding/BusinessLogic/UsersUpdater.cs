@@ -156,7 +156,7 @@ public class UsersUpdater : IUsersUpdater
         DisableableCredentialTypes = update.DisableableCredentialTypes,
         RequiredActions = update.RequiredActions,
         NotBefore = update.NotBefore,
-        Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
+        Attributes = update.Attributes?.FilterNotNullValues().ToDictionary(),
         Groups = update.Groups,
         ServiceAccountClientId = update.ServiceAccountClientId,
         Access = CreateUpdateUserAccess(update.Access),
@@ -282,7 +282,7 @@ public class UsersUpdater : IUsersUpdater
         new()
         {
             Algorithm = update.Algorithm,
-            Config = update.Config?.FilterNotNullValues()?.ToDictionary(),
+            Config = update.Config?.FilterNotNullValues().ToDictionary(),
             Counter = update.Counter,
             CreatedDate = update.CreatedDate,
             Device = update.Device,
@@ -324,8 +324,8 @@ public class UsersUpdater : IUsersUpdater
                     RequiredActions = update.RequiredActions,
                     NotBefore = update.NotBefore,
                     Access = CreateUpdateUserAccess(update.Access),
-                    Attributes = update.Attributes?.FilterNotNullValues()?.ToDictionary(),
-                    ClientRoles = update.ClientRoles?.FilterNotNullValues()?.ToDictionary(),
+                    Attributes = update.Attributes?.FilterNotNullValues().ToDictionary(),
+                    ClientRoles = update.ClientRoles?.FilterNotNullValues().ToDictionary(),
                     Credentials = update.Credentials?.Select(CreateUpdateCredentials),
                     FederatedIdentities = update.FederatedIdentities?.Select(CreateUpdateFederatedIdentity),
                     FederationLink = update.FederationLink,

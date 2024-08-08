@@ -278,7 +278,7 @@ public class UserBusinessLogic(
         var iamUserId = await provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ??
                         throw new ConflictException($"user {userId} not found in keycloak");
 
-        var (successfulBpns, unsuccessfulBpns) = await businessPartnerNumbers.AggregateAwait(
+        var (successfulBpns, unsuccessfulBpns) = await businessPartnerNumbers.AggregateAsync(
             (SuccessfulBpns: ImmutableList.CreateBuilder<string>(), UnsuccessfulBpns: ImmutableList.CreateBuilder<UnsuccessfulBpns>()),
             async (acc, bpn) =>
             {
@@ -293,7 +293,8 @@ public class UserBusinessLogic(
                 }
                 return acc;
             },
-            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable())
+            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable()),
+            cancellationToken
         ).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (successfulBpns.Count != 0)

@@ -275,7 +275,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                         new AuthenticatorConfig
                         {
                             Alias = update.AuthenticatorConfig,
-                            Config = _seedData.GetAuthenticatorConfig(update.AuthenticatorConfig).Config?.FilterNotNullValues()?.ToDictionary()
+                            Config = _seedData.GetAuthenticatorConfig(update.AuthenticatorConfig).Config?.FilterNotNullValues().ToDictionary()
                         },
                         cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
@@ -292,7 +292,7 @@ public class AuthenticationFlowsUpdater : IAuthenticationFlowsUpdater
                     if (config == null)
                         throw new UnexpectedConditionException("authenticatorConfig is null");
                     config.Alias = update.AuthenticatorConfig;
-                    config.Config = updateConfig.Config?.FilterNotNullValues()?.ToDictionary();
+                    config.Config = updateConfig.Config?.FilterNotNullValues().ToDictionary();
                     await _keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig, config, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
             }
