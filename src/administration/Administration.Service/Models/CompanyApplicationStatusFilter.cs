@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// Filter operations for the CompanyApplicationStatus

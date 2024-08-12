@@ -34,7 +34,7 @@ public interface IApplicationRepository
     Task<(bool Exists, bool IsUserOfCompany, CompanyApplicationStatusId ApplicationStatus)> GetOwnCompanyApplicationStatusUserDataUntrackedAsync(Guid applicationId, Guid companyId);
     Task<CompanyApplicationUserEmailData?> GetOwnCompanyApplicationUserEmailDataAsync(Guid applicationId, Guid companyUserId, IEnumerable<DocumentTypeId> submitDocumentTypeIds);
     IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
-    IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
+    IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, string? externalId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
     Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId);
     Task<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)> GetCompanyApplicationsDeclineData(Guid companyUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
     Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
