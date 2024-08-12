@@ -42,7 +42,7 @@ public class DimUserProcessService(
     {
         var (bpn, dimName) = await GetBpnDimName(dimServiceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);
         await dimService.DeleteTechnicalUser(bpn, new TechnicalUserData(processId, dimName), cancellationToken).ConfigureAwait(false);
-        return ([ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER], ProcessStepStatusId.DONE, true, null);
+        return ([ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE], ProcessStepStatusId.DONE, true, null);
     }
 
     private async Task<(string Bpn, string DimName)> GetBpnDimName(Guid dimServiceAccountId)

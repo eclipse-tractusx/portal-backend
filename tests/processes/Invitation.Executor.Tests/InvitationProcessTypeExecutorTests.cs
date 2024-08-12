@@ -298,7 +298,7 @@ public class InvitationProcessTypeExecutorTests
     public void IsExecutableProcessStep_ReturnsExpected(bool checklistHandlerReturnValue)
     {
         // Arrange
-        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP : ProcessStepTypeId.START_AUTOSETUP;
+        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP : ProcessStepTypeId.AWAIT_START_AUTOSETUP;
 
         // Act
         var result = _executor.IsExecutableStepTypeId(processStepTypeId);

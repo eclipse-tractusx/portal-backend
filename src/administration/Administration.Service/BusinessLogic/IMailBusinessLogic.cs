@@ -24,4 +24,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface IMailBusinessLogic
 {
     Task SendMail(MailData mailData);
+    Task RetriggerSendMail(Guid processId);
 }

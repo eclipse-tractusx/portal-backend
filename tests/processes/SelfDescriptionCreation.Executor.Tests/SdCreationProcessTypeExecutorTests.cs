@@ -243,7 +243,7 @@ public class SdCreationProcessTypeExecutorTests
     [Theory]
     [InlineData(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, true)]
     [InlineData(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, true)]
-    [InlineData(ProcessStepTypeId.START_AUTOSETUP, false)]
+    [InlineData(ProcessStepTypeId.AWAIT_START_AUTOSETUP, false)]
     public void IsExecutableProcessStep_ReturnsExpected(ProcessStepTypeId processStepTypeId, bool expectedValue)
     {
         // Act

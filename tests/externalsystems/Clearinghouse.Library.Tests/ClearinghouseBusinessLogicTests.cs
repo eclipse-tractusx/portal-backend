@@ -78,22 +78,21 @@ public class ClearinghouseBusinessLogicTests
     #region HandleStartClearingHouse
 
     [Theory]
-    [InlineData(ProcessStepTypeId.VERIFY_REGISTRATION)]
+    [InlineData(ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL)]
     [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.ACTIVATE_APPLICATION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
-    [InlineData(ProcessStepTypeId.OVERRIDE_BUSINESS_PARTNER_NUMBER)]
-    [InlineData(ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE)]
     public async Task HandleStartClearingHouse_ForInvalidProcessStepTypeId_ThrowsUnexpectedCondition(ProcessStepTypeId stepTypeId)
     {
         // Arrange
@@ -179,8 +178,8 @@ public class ClearinghouseBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.END_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.END_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
+    [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     public async Task HandleStartClearingHouse_WithValidData_CallsExpected(ProcessStepTypeId stepTypeId, ApplicationChecklistEntryStatusId statusId, ProcessStepTypeId expectedProcessTypeId)
     {
         // Arrange
@@ -308,7 +307,7 @@ public class ClearinghouseBusinessLogicTests
         A.CallTo(() => _clearinghouseService.TriggerCompanyDataPost(A<ClearinghouseTransferData>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         result.ScheduleStepTypeIds.Should().HaveCount(1);
-        result.ScheduleStepTypeIds.Should().Contain(ProcessStepTypeId.END_CLEARING_HOUSE);
+        result.ScheduleStepTypeIds.Should().Contain(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }
@@ -353,7 +352,7 @@ public class ClearinghouseBusinessLogicTests
         await _logic.ProcessEndClearinghouse(IdWithBpn, data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         entry.Comment.Should().Be("Comment about the error");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.FAILED);
@@ -413,7 +412,7 @@ public class ClearinghouseBusinessLogicTests
                 IdWithBpn,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
-                ProcessStepTypeId.END_CLEARING_HOUSE,
+                ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));

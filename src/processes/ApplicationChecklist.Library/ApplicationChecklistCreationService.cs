@@ -92,8 +92,8 @@ public class ApplicationChecklistCreationService : IApplicationChecklistCreation
             switch (entryTypeId)
             {
                 case ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION:
-                    yield return ProcessStepTypeId.VERIFY_REGISTRATION;
-                    yield return ProcessStepTypeId.DECLINE_APPLICATION;
+                    yield return ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION;
+                    yield return ProcessStepTypeId.MANUAL_DECLINE_APPLICATION;
                     break;
                 case ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER when (statusId == ApplicationChecklistEntryStatusId.TO_DO):
                     yield return ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH;

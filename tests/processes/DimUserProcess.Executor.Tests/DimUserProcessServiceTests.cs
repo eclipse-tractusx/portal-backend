@@ -101,7 +101,7 @@ public class DimUserProcessServiceTests
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.nextStepTypeIds.Should().ContainSingle()
-            .Which.Should().Be(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER);
+            .Which.Should().Be(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE);
     }
 
     [Theory]

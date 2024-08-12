@@ -134,7 +134,7 @@ public class IssuerComponentBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.STORED_BPN_CREDENTIAL);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE);
         result.Modified.Should().BeTrue();
         result.SkipStepTypeIds.Should().BeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
@@ -268,7 +268,7 @@ public class IssuerComponentBusinessLogicTests
                 IdWithBpn,
                 ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
-                ProcessStepTypeId.STORED_BPN_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
@@ -294,7 +294,7 @@ public class IssuerComponentBusinessLogicTests
                 IdWithBpn,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
-                ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
@@ -353,7 +353,7 @@ public class IssuerComponentBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE);
         result.Modified.Should().BeTrue();
         result.SkipStepTypeIds.Should().BeNull();
         result.ModifyChecklistEntry.Should().NotBeNull();
@@ -487,7 +487,7 @@ public class IssuerComponentBusinessLogicTests
                 IdWithBpn,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
-                ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));
@@ -513,7 +513,7 @@ public class IssuerComponentBusinessLogicTests
                 IdWithBpn,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
-                ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep>()));

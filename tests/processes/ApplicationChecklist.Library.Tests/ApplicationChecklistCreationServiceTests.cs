@@ -255,8 +255,8 @@ public class ChecklistCreationServiceTests
 
     [Theory]
     [InlineData(new[] { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION }, new[] { ApplicationChecklistEntryStatusId.TO_DO }, new[] {
-            ProcessStepTypeId.VERIFY_REGISTRATION,
-            ProcessStepTypeId.DECLINE_APPLICATION,
+            ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION,
+            ProcessStepTypeId.MANUAL_DECLINE_APPLICATION,
         })]
     [InlineData(new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER }, new[] { ApplicationChecklistEntryStatusId.TO_DO }, new[] {
             ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,

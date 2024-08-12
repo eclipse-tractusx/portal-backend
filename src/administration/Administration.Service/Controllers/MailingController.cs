@@ -33,24 +33,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [ApiController]
 [Produces("application/json")]
-public class MailController : ControllerBase
+public class MailController(IMailBusinessLogic businessLogic) : ControllerBase
 {
-    private readonly IMailBusinessLogic _businessLogic;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="businessLogic">Mail business logic.</param>
-    public MailController(IMailBusinessLogic businessLogic)
-    {
-        _businessLogic = businessLogic;
-    }
-
     /// <summary>
     /// Creates a mail from the given data
     /// </summary>
     /// <param name="data">Data for the mail</param>
-    /// <returns>Return NoContent</returns>
     /// <remarks>Example: POST: /api/administration/mail/ssi-credentials</remarks>
     [HttpPost]
     [Route("ssi-credentials")]
@@ -61,7 +49,25 @@ public class MailController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SendMail([FromBody] MailData data)
     {
-        await _businessLogic.SendMail(data).ConfigureAwait(false);
+        await businessLogic.SendMail(data).ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the mail sending
+    /// </summary>
+    /// <param name="processId">The mailing process id of the to retrigger</param>
+    /// <remarks>Example: POST: /api/administration/mail/retrigger-send-mail</remarks>
+    [HttpPost]
+    [Route("retrigger-send-mail")]
+    [Authorize(Roles = "retrigger_mail")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<NoContentResult> RetriggerSendMail([FromRoute] Guid processId)
+    {
+        await businessLogic.RetriggerSendMail(processId).ConfigureAwait(false);
         return NoContent();
     }
 }

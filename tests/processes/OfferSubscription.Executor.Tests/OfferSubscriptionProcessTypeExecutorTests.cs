@@ -201,7 +201,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepTypeId.START_AUTOSETUP)]
+    [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER, ProcessStepTypeId.AWAIT_START_AUTOSETUP)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION)]
     [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK)]
@@ -273,12 +273,12 @@ public class OfferSubscriptionProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, true)]
     [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK, true)]
     [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION, false)]
-    [InlineData(ProcessStepTypeId.START_AUTOSETUP, false)]
-    [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE, false)]
+    [InlineData(ProcessStepTypeId.AWAIT_START_AUTOSETUP, false)]
+    [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE, false)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, false)]
-    [InlineData(ProcessStepTypeId.DECLINE_APPLICATION, false)]
+    [InlineData(ProcessStepTypeId.MANUAL_DECLINE_APPLICATION, false)]
     [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET, false)]
-    [InlineData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, false)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION, false)]
     public void IsExecutableProcessStep_ReturnsExpected(ProcessStepTypeId processStepTypeId, bool expectedResult)
     {
         // Act
@@ -324,7 +324,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .Returns(Guid.Empty);
 
         A.CallTo(() => _offerProviderBusinessLogic.TriggerProvider(_subscriptionId, A<CancellationToken>._))
-            .Returns(([ProcessStepTypeId.START_AUTOSETUP], ProcessStepStatusId.DONE, true, null));
+            .Returns(([ProcessStepTypeId.AWAIT_START_AUTOSETUP], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .Returns(([ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateTechnicalUser(_processId, _subscriptionId, A<IEnumerable<UserRoleConfig>>._))

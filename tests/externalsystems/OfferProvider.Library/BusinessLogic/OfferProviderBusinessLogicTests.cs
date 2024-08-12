@@ -104,7 +104,7 @@ public class OfferProviderBusinessLogicTests
 
         // Assert
         result.nextStepTypeIds.Should().ContainSingle()
-            .And.Satisfy(x => x == ProcessStepTypeId.START_AUTOSETUP);
+            .And.Satisfy(x => x == ProcessStepTypeId.AWAIT_START_AUTOSETUP);
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         A.CallTo(() =>
                 _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._,

@@ -71,7 +71,7 @@ public class SdFactoryBusinessLogic(
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            [ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP],
+            [ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE],
             null,
             true,
             null
@@ -111,7 +111,7 @@ public class SdFactoryBusinessLogic(
                 data.ExternalId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
+                ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE,
                 processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 

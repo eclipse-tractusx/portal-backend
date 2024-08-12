@@ -338,7 +338,7 @@ public class ServiceAccountBusinessLogic(
 
         if (processData.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION)
         {
-            context.ScheduleProcessSteps([ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION]);
+            context.ScheduleProcessSteps([ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION]);
         }
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
@@ -368,7 +368,7 @@ public class ServiceAccountBusinessLogic(
                 [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER,
+        var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE,
             portalRepositories, () => $"externalId {processId}");
 
         portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(
@@ -382,4 +382,6 @@ public class ServiceAccountBusinessLogic(
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
+
+    public Task RetriggerDimTechnicalUser(Guid processId, ProcessStepTypeId processStepTypeId) => processStepTypeId.TriggerProcessStep(processId, portalRepositories);
 }

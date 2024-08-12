@@ -173,7 +173,7 @@ public class DimUserProcessTypeExecutorTests
         // Assert execute
         executionResult.Modified.Should().BeTrue();
         executionResult.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        executionResult.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER);
+        executionResult.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE);
         executionResult.SkipStepTypeIds.Should().BeNull();
     }
 
@@ -305,7 +305,7 @@ public class DimUserProcessTypeExecutorTests
     public void IsExecutableProcessStep_ReturnsExpected(bool checklistHandlerReturnValue)
     {
         // Arrange
-        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER : ProcessStepTypeId.START_AUTOSETUP;
+        var processStepTypeId = checklistHandlerReturnValue ? ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER : ProcessStepTypeId.AWAIT_START_AUTOSETUP;
 
         // Act
         var result = _executor.IsExecutableStepTypeId(processStepTypeId);
@@ -354,7 +354,7 @@ public class DimUserProcessTypeExecutorTests
             .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null));
 
         A.CallTo(() => _dimUserProcessService.DeleteDimUser(A<Guid>._, _dimServiceAccountId, A<CancellationToken>._))
-            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER, 1), ProcessStepStatusId.DONE, true, null));
+            .Returns(new ValueTuple<IEnumerable<ProcessStepTypeId>?, ProcessStepStatusId, bool, string?>(Enumerable.Repeat(ProcessStepTypeId.AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE, 1), ProcessStepStatusId.DONE, true, null));
     }
 
     #endregion

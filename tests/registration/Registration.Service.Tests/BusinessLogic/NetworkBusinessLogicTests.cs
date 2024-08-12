@@ -313,7 +313,7 @@ public class NetworkBusinessLogicTests
                 (ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO),
             });
         A.CallTo(() => _checklistService.GetInitialProcessStepTypeIds(A<IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>._))
-            .Returns(new[] { ProcessStepTypeId.VERIFY_REGISTRATION, ProcessStepTypeId.DECLINE_APPLICATION });
+            .Returns(new[] { ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION, ProcessStepTypeId.MANUAL_DECLINE_APPLICATION });
 
         // Act
         await _sut.Submit(data);
@@ -335,8 +335,8 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
             .MustHaveHappenedOnceExactly();
         processSteps.Should().Satisfy(
-            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.VERIFY_REGISTRATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
-            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.DECLINE_APPLICATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
+            x => x.ProcessId == processId && x.ProcessStepTypeId == ProcessStepTypeId.MANUAL_DECLINE_APPLICATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO,
             x => x.ProcessId == submitProcessId && x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }
 

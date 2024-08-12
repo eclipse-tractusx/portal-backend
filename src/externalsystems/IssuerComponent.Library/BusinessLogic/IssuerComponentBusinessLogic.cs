@@ -75,7 +75,7 @@ public class IssuerComponentBusinessLogic(
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            [ProcessStepTypeId.STORED_BPN_CREDENTIAL],
+            [ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE],
             null,
             true,
             null);
@@ -88,7 +88,7 @@ public class IssuerComponentBusinessLogic(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                ProcessStepTypeId.STORED_BPN_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE,
                 processStepTypeIds: [ProcessStepTypeId.REQUEST_MEMBERSHIP_CREDENTIAL])
             .ConfigureAwait(false);
 
@@ -143,7 +143,7 @@ public class IssuerComponentBusinessLogic(
             {
                 checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            [ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL],
+            [ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE],
             null,
             true,
             null);
@@ -156,7 +156,7 @@ public class IssuerComponentBusinessLogic(
                 applicationId,
                 ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                ProcessStepTypeId.STORED_MEMBERSHIP_CREDENTIAL,
+                ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 processStepTypeIds: [ProcessStepTypeId.START_CLEARING_HOUSE])
             .ConfigureAwait(false);
 

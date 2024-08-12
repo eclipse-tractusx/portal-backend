@@ -75,7 +75,7 @@ public class ClearinghouseBusinessLogic(
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            [ProcessStepTypeId.END_CLEARING_HOUSE],
+            [ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE],
             null,
             true,
             null);
@@ -116,7 +116,7 @@ public class ClearinghouseBusinessLogic(
                 applicationId,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                ProcessStepTypeId.END_CLEARING_HOUSE,
+                ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE,
                 processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -133,7 +133,7 @@ public class ClearinghouseBusinessLogic(
                 item.Comment = data.Message;
             },
             declined
-                ? [ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE]
+                ? [ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE]
                 : [ProcessStepTypeId.START_SELF_DESCRIPTION_LP]);
     }
 }

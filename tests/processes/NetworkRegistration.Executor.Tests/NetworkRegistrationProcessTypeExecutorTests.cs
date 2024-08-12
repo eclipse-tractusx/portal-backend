@@ -66,7 +66,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.VERIFY_REGISTRATION)]
+    [InlineData(ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL)]
@@ -74,19 +74,18 @@ public class NetworkRegistrationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.ACTIVATE_APPLICATION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
-    [InlineData(ProcessStepTypeId.OVERRIDE_BUSINESS_PARTNER_NUMBER)]
-    [InlineData(ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP)]
-    [InlineData(ProcessStepTypeId.DECLINE_APPLICATION)]
+    [InlineData(ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE)]
+    [InlineData(ProcessStepTypeId.MANUAL_DECLINE_APPLICATION)]
     [InlineData(ProcessStepTypeId.TRIGGER_PROVIDER)]
-    [InlineData(ProcessStepTypeId.START_AUTOSETUP)]
+    [InlineData(ProcessStepTypeId.AWAIT_START_AUTOSETUP)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION)]
     [InlineData(ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION)]
     [InlineData(ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
@@ -96,7 +95,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK)]
-    [InlineData(ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER)]
     [InlineData(ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS)]
     public void IsExecutableStepTypeId_WithInvalid_ReturnsExpected(ProcessStepTypeId processStepTypeId)
@@ -351,7 +350,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
         initializeResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Act
-        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.START_AUTOSETUP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
+        var result = await _sut.ExecuteProcessStep(ProcessStepTypeId.AWAIT_START_AUTOSETUP, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         A.CallTo(() => _networkRegistrationHandler.SynchronizeUser(networkRegistrationId)).MustNotHaveHappened();

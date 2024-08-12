@@ -42,9 +42,9 @@ public class IdentityProviderProvisioningExtensionsTest
     public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
     {
         // Act
-        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetIdentityProviderProvisioningRetriggerStep());
+        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.AWAIT_START_AUTOSETUP.GetIdentityProviderProvisioningRetriggerStep());
 
         // Assert
-        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process IdentityProviderProvisioning");
+        ex.Message.Should().Be($"ProcessStepTypeId {ProcessStepTypeId.AWAIT_START_AUTOSETUP} is not supported for Process IdentityProviderProvisioning");
     }
 }
