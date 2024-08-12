@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -41,6 +42,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly UserSettings _settings;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
+    private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
     /// Constructor.
@@ -50,18 +52,21 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// <param name="identityService">Access to the identity Service</param>
     /// <param name="errorMessageService">ErrorMessage Service</param>
     /// <param name="settings">Settings</param>
+    /// <param name="portalRepositories">Portal Repositories</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
         IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
-        IOptions<UserSettings> settings)
+        IOptions<UserSettings> settings,
+        IPortalRepositories portalRepositories)
     {
         _userProvisioningService = userProvisioningService;
         _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _settings = settings.Value;
+        _portalRepositories = portalRepositories;
     }
 
     public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, CancellationToken cancellationToken)
@@ -167,6 +172,52 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         }
     }
 
+    private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanySharedIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        UserCreationRoleDataIdpInfo? userCreationInfo = null;
+
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
+
+        await foreach (var result in
+            _userProvisioningService
+                .CreateOwnCompanyIdpUsersAsync(
+                    companyNameIdpAliasData,
+                    userCreationInfos
+                        .Select(info =>
+                        {
+                            userCreationInfo = info;
+                            return info;
+                        }),
+                    cancellationToken)
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false))
+        {
+            if (userCreationInfo == null)
+            {
+                throw new UnexpectedConditionException("userCreationInfo should never be null here");
+            }
+            if (result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
+            {
+                yield return result;
+                continue;
+            }
+
+            var mailParameters = ImmutableDictionary.CreateRange(new[]
+            {
+                KeyValuePair.Create("password", result.Password ?? ""),
+                KeyValuePair.Create("companyName", displayName),
+                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
+                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
+                KeyValuePair.Create("passwordResendUrl", _settings.Portal.PasswordResendAddress),
+            });
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserTemplate", mailParameters);
+            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserPasswordTemplate", mailParameters);
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+
+            yield return (result.CompanyUserId, result.UserName, result.Password, null);
+        }
+    }
+
     private static void ValidateUserCreationRoles(IEnumerable<string> roles)
     {
         if (!roles.Any())
@@ -199,7 +250,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var validRoleData = new List<UserRoleData>();
 
@@ -225,8 +276,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     true);
             },
             lines =>
-                _userProvisioningService
-                    .CreateOwnCompanyIdpUsersAsync(
+                CreateOwnCompanySharedIdpUsersWithEmailAsync(
+                        nameCreatedBy,
                         companyNameIdpAliasData,
                         lines,
                         cancellationToken)
