@@ -193,12 +193,20 @@ public class RegistrationBusinessLogicTest
     #region GetOSPCompanyApplicationDetailsAsync
 
     [Theory]
-    [InlineData(null)]
-    [InlineData(CompanyApplicationStatusFilter.Closed)]
-    [InlineData(CompanyApplicationStatusFilter.InReview)]
-    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter)
+    [InlineData(null, null)]
+    [InlineData(null, DateCreatedOrderFilter.ASC)]
+    [InlineData(null, DateCreatedOrderFilter.DESC)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, null)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, null)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.ASC)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.ASC)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.DESC)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.DESC)]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter, DateCreatedOrderFilter? dateCreatedOrderFilter)
     {
         // Arrange
+        var companyName = _fixture.Create<string>();
+        var externalId = _fixture.Create<string>();
         var data = _fixture.CreateMany<(Guid Id, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId, DateTimeOffset Created)>(10)
             .Select(x => new CompanyApplication(x.Id, x.CompanyId, x.CompanyApplicationStatusId, CompanyApplicationTypeId.EXTERNAL, x.Created)
             {
@@ -221,7 +229,7 @@ public class RegistrationBusinessLogicTest
             .Returns(queryData);
 
         // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, null, null);
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, companyName, externalId, dateCreatedOrderFilter);
 
         // Assert
         Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
@@ -229,25 +237,41 @@ public class RegistrationBusinessLogicTest
         switch (statusFilter)
         {
             case CompanyApplicationStatusFilter.Closed:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
                 break;
             case CompanyApplicationStatusFilter.InReview:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
                 break;
             default:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
                 break;
         }
 
         result.Meta.NumberOfElements.Should().Be(10);
 
-        var sorted = data.OrderByDescending(application => application.Company!.DateCreated).ToImmutableArray();
+        var sorted = dateCreatedOrderFilter switch
+        {
+            DateCreatedOrderFilter.ASC => data.OrderBy(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
+            DateCreatedOrderFilter.DESC => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
+            _ => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray()
+        };
 
         result.Content.Should().HaveCount(3).And.Satisfy(
             x => x.ApplicationId == sorted[0].Id && x.CompanyApplicationStatusId == sorted[0].ApplicationStatusId && x.DateCreated == sorted[0].DateCreated && x.DateLastChanged == sorted[0].DateLastChanged && x.CompanyId == sorted[0].CompanyId && x.CompanyName == sorted[0].Company!.Name && x.BusinessPartnerNumber == sorted[0].Company!.BusinessPartnerNumber,
             x => x.ApplicationId == sorted[1].Id && x.CompanyApplicationStatusId == sorted[1].ApplicationStatusId && x.DateCreated == sorted[1].DateCreated && x.DateLastChanged == sorted[1].DateLastChanged && x.CompanyId == sorted[1].CompanyId && x.CompanyName == sorted[1].Company!.Name && x.BusinessPartnerNumber == sorted[1].Company!.BusinessPartnerNumber,
             x => x.ApplicationId == sorted[2].Id && x.CompanyApplicationStatusId == sorted[2].ApplicationStatusId && x.DateCreated == sorted[2].DateCreated && x.DateLastChanged == sorted[2].DateLastChanged && x.CompanyId == sorted[2].CompanyId && x.CompanyName == sorted[2].Company!.Name && x.BusinessPartnerNumber == sorted[2].Company!.BusinessPartnerNumber
         );
+
+        switch (dateCreatedOrderFilter)
+        {
+            case DateCreatedOrderFilter.ASC:
+                result.Content.Should().BeInAscendingOrder(x => x.DateCreated);
+                break;
+            case null:
+            case DateCreatedOrderFilter.DESC:
+                result.Content.Should().BeInDescendingOrder(x => x.DateCreated);
+                break;
+        }
     }
 
     #endregion

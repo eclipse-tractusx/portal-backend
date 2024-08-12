@@ -162,26 +162,28 @@ public sealed class RegistrationBusinessLogic(
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
             throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
         }
-        var applications = portalRepositories.GetInstance<IApplicationRepository>()
+        var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
                 companyName?.Length >= 3 ? companyName : null, externalId,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+
+        var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
+            ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
+            : applicationsQuery.AsSplitQuery().OrderBy(application => application.DateCreated);
 
         return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
-                applications.CountAsync(),
-                applications
-                    .AsSplitQuery()
-                    .OrderByDescending(application => application.DateCreated)
+                applicationsQuery.CountAsync(),
+                orderedQuery
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new CompanyDetailsOspOnboarding(

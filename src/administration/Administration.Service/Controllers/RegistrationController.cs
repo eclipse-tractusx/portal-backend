@@ -569,6 +569,7 @@ public class RegistrationController : ControllerBase
     /// <param name="companyApplicationStatusFilter">Search by company applicationstatus</param>
     /// <param name="companyName">search by company name</param>
     /// <param name="externalId">search by external Id</param>
+    /// <param name="dateCreatedOrderFilter">sort result by dateCreated ascending or descending</param>
     /// <returns>OSp Company Application Details</returns>
     /// <remarks>
     /// Example: GET: api/administration/registration/network/companies?companyName=Car&amp;page=0&amp;size=4&amp;companyApplicationStatus=Closed <br />
@@ -580,7 +581,7 @@ public class RegistrationController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("network/companies")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyDetailsOspOnboarding>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null, [FromQuery] string? externalId = null) =>
-        _logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId);
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null, [FromQuery] string? externalId = null, [FromQuery] DateCreatedOrderFilter? dateCreatedOrderFilter = null) =>
+        _logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId, dateCreatedOrderFilter);
 }
 

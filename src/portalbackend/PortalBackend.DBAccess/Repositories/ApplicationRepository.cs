@@ -140,7 +140,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 application.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL &&
                 application.OnboardingServiceProviderId == onboardingServiceProviderId &&
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
-                (externalId == null || EF.Functions.ILike(application.NetworkRegistration!.ExternalId, $"{externalId.EscapeForILike()}%")) &&
+                (externalId == null || application.NetworkRegistration!.ExternalId == externalId) &&
                 applicationStatusIds.Contains(application.ApplicationStatusId));
 
     public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId) =>
