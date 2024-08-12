@@ -25,9 +25,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 public record CompanyDetailsOspOnboarding(
 
     [property: JsonPropertyName("companyId")] Guid CompanyId,
+    [property: JsonPropertyName("externalId")] string ExternalId,
     [property: JsonPropertyName("applicationId")] Guid ApplicationId,
     [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
-    [property: JsonPropertyName("applicationDateCreated")] DateTimeOffset DateCreated,
+    [property: JsonPropertyName("applicationDateCreated")] DateTimeOffset ApplicationDateCreated,
+    [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
     [property: JsonPropertyName("lastChangedDate")] DateTimeOffset? DateLastChanged,
     [property: JsonPropertyName("companyName")] string CompanyName,
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,

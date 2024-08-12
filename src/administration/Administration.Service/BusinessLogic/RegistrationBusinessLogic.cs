@@ -162,7 +162,7 @@ public sealed class RegistrationBusinessLogic(
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId)
     {
         if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
         {
@@ -170,7 +170,7 @@ public sealed class RegistrationBusinessLogic(
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
-                companyName?.Length >= 3 ? companyName : null,
+                companyName?.Length >= 3 ? companyName : null, externalId,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
 
         return Pagination.CreateResponseAsync(
@@ -186,9 +186,11 @@ public sealed class RegistrationBusinessLogic(
                     .Take(take)
                     .Select(application => new CompanyDetailsOspOnboarding(
                         application.CompanyId,
+                        application.NetworkRegistration!.ExternalId,
                         application.Id,
                         application.ApplicationStatusId,
                         application.DateCreated,
+                        application.Company!.DateCreated,
                         application.DateLastChanged,
                         application.Company!.Name,
                         application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
@@ -211,7 +213,7 @@ public sealed class RegistrationBusinessLogic(
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
                 applications.CountAsync(),
-                applications.OrderByDescending(application => application.DateCreated)
+                applications.OrderByDescending(application => application.Company!.DateCreated)
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new

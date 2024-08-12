@@ -207,16 +207,21 @@ public class RegistrationBusinessLogicTest
                     Name = _fixture.Create<string>(),
                     BusinessPartnerNumber = _fixture.Create<string>(),
                 },
+                NetworkRegistration = new NetworkRegistration(Guid.NewGuid(), _fixture.Create<string>(), x.CompanyId, Guid.NewGuid(), Guid.NewGuid(), x.Id, x.Created)
+                {
+                    ExternalId = _fixture.Create<string>(),
+                    DateCreated = _fixture.Create<DateTimeOffset>(),
+                },
                 DateLastChanged = _fixture.Create<DateTimeOffset>()
             }).ToImmutableList();
 
         var queryData = new AsyncEnumerableStub<CompanyApplication>(data).AsQueryable();
 
-        A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(A<Guid>._, A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+        A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(A<Guid>._, A<string?>._, A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns(queryData);
 
         // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, null);
+        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, null, null);
 
         // Assert
         Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
@@ -224,19 +229,19 @@ public class RegistrationBusinessLogicTest
         switch (statusFilter)
         {
             case CompanyApplicationStatusFilter.Closed:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
                 break;
             case CompanyApplicationStatusFilter.InReview:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
                 break;
             default:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, null, null, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
                 break;
         }
 
         result.Meta.NumberOfElements.Should().Be(10);
 
-        var sorted = data.OrderByDescending(application => application.DateCreated).ToImmutableArray();
+        var sorted = data.OrderByDescending(application => application.Company!.DateCreated).ToImmutableArray();
 
         result.Content.Should().HaveCount(3).And.Satisfy(
             x => x.ApplicationId == sorted[0].Id && x.CompanyApplicationStatusId == sorted[0].ApplicationStatusId && x.DateCreated == sorted[0].DateCreated && x.DateLastChanged == sorted[0].DateLastChanged && x.CompanyId == sorted[0].CompanyId && x.CompanyName == sorted[0].Company!.Name && x.BusinessPartnerNumber == sorted[0].Company!.BusinessPartnerNumber,
