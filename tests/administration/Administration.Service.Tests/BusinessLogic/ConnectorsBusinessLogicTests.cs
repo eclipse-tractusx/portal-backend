@@ -193,6 +193,25 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateConnectorAsync_WithExistingConnector_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _connectorsRepository.CheckConnectorExists(A<string>._, A<string>._))
+            .Returns(true);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
+        Task Act() => _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("CONNECTOR_DUPLICATE");
+        _connectors.Should().BeEmpty();
+        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task CreateConnectorAsync_WithInvalidTechnicalUser_ThrowsControllerArgumentException()
     {
         // Arrange
@@ -381,6 +400,27 @@ public class ConnectorsBusinessLogicTests
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
+    }
+
+    [Fact]
+    public async Task CreateManagedConnectorAsync_WithExistingConnector_ThrowsConflictException()
+    {
+        // Arrange
+        A.CallTo(() => _connectorsRepository.CheckConnectorExists(A<string>._, A<string>._))
+            .Returns(true);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
+        Task Act() => _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("CONNECTOR_DUPLICATE");
+        _connectors.Should().BeEmpty();
+        A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId))
+            .MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
