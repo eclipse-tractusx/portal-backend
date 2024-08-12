@@ -161,7 +161,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         result.Should().NotBeEmpty();
-        _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().Which.StatusId.Should().Be(clearingHouseDisabled ? ConnectorStatusId.PENDING : ConnectorStatusId.ACTIVE);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
@@ -201,33 +201,6 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public async Task CreateConnectorAsync_WithoutSelfDescriptionDocumentAndSdConnectionDisabled_CallsExpected()
-    {
-        // Arrange
-        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
-        {
-            MaxPageSize = 15,
-            ValidCertificationContentTypes = new[]
-            {
-                "application/x-pem-file",
-                "application/x-x509-ca-cert",
-                "application/pkix-cert"
-            },
-            ClearinghouseConnectDisabled = true
-        }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
-
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
-        A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
-
-        // Act
-        await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -318,7 +291,8 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         result.Should().NotBeEmpty();
-        _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().Which.StatusId.Should().Be(clearingHouseDisabled ? ConnectorStatusId.PENDING : ConnectorStatusId.ACTIVE);
+
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }

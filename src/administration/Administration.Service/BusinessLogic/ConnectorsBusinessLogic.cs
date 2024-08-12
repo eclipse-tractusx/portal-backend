@@ -216,7 +216,7 @@ public class ConnectorsBusinessLogic(
                 connector.HostId = host;
                 connector.TypeId = type;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
-                connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
+                connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.PENDING : ConnectorStatusId.ACTIVE;
                 if (technicalUserId != null)
                 {
                     connector.CompanyServiceAccountId = technicalUserId;
