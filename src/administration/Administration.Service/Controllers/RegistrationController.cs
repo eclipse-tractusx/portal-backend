@@ -584,4 +584,3 @@ public class RegistrationController : ControllerBase
         _logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId);
 }
 
-
