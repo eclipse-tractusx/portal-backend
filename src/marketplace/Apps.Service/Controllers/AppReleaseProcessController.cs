@@ -200,29 +200,6 @@ public class AppReleaseProcessController : ControllerBase
     }
 
     /// <summary>
-    /// Removes the provided list of recently uploaded roles from the persistence layer by appId and roleIds.
-    /// </summary>
-    /// <param name="appId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the app.</param>
-    /// <param name="roleIds" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Single or list of IDs of the AppUserRole to be deleted.</param>
-    /// <remarks>Example: POST: /api/apps/appreleaseprocess/{appId}/roles:batchDelete
-    /// (Please follow the link to find out why batch delete API has POST method: https://cloud.google.com/apis/design/custom_methods)</remarks>
-    /// <response code="204">Empty response on success.</response>
-    /// <response code="400">Input is incorrect</response>
-    /// <response code="403">User is not associated with provider company</response>
-    [HttpPost]
-    [Route("{appId}/roles:batchDelete")]
-    [Authorize(Roles = "edit_apps")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public async Task<NoContentResult> DeleteAppRolesAsync([FromRoute] Guid appId, [FromBody] IEnumerable<Guid> roleIds)
-    {
-        await _appReleaseBusinessLogic.DeleteAppRolesAsync(appId, roleIds);
-        return NoContent();
-    }
-
-    /// <summary>
     /// Get All Users with Role of Sales Manager
     /// </summary>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager</remarks>

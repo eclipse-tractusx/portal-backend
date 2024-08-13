@@ -178,22 +178,6 @@ public class AppReleaseProcessControllerTest
     }
 
     [Fact]
-    public async Task DeleteAppRolesAsync_ReturnsExpectedResult()
-    {
-        //Arrange
-        var appId = Guid.NewGuid();
-        var roleIds = _fixture.CreateMany<Guid>();
-
-        //Act
-        var result = await _controller.DeleteAppRolesAsync(appId, roleIds);
-
-        // Assert 
-        Assert.IsType<NoContentResult>(result);
-        A.CallTo(() => _logic.DeleteAppRolesAsync(appId, roleIds))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
     public async Task GetAppProviderSalesManagerAsync_ReturnsExpectedResult()
     {
         //Arrange

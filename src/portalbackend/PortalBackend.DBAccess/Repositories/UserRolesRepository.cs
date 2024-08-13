@@ -46,10 +46,6 @@ public class UserRolesRepository : IUserRolesRepository
     public UserRole DeleteUserRole(Guid roleId) =>
         _dbContext.Remove(new UserRole(roleId, null!, Guid.Empty)).Entity;
 
-    ///<inheritdoc/>
-    public void DeleteUserRoles(IEnumerable<Guid> roleIds) =>
-        _dbContext.RemoveRange(roleIds.Select(roleId => new UserRole(roleId, null!, Guid.Empty)));
-
     public IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions)
     {
         var roleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToList();

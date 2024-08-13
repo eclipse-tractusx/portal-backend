@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -46,6 +47,7 @@ public static class AppExtensions
         {
             throw new ControllerArgumentException("Language Code must not be empty");
         }
+        appUserRolesDescription.DuplicatesBy(x => x.Role).IfAny(duplicateRoles => throw new ControllerArgumentException($"Roles are ambiguous: {string.Join(",", duplicateRoles.Select(x => x.Role))}"));
     }
 
     /// <summary>
@@ -81,7 +83,7 @@ public static class AppExtensions
     {
         var existingRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
         if (existingRoles.Any())
-            userRoles = userRoles.Where(w => !existingRoles.Contains(w.Role));
-        return userRoles.GroupBy(g => g.Role).Select(s => s.First());
+            userRoles = userRoles.ExceptBy(existingRoles, userRole => userRole.Role);
+        return userRoles;
     }
 }

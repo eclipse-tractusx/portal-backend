@@ -95,8 +95,8 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         }
         var roleData = await AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
 
-        // When user will try to upload the same role names which are already attched to an APP and duplicate roles have also been ignored.
-        // and when no role has been added against the given appId, no need to procced further
+        // When user will try to upload the same role names which are already attched to an APP.
+        // so, no role will be added against the given appId so, no need to procced further
         // No need to update the Offer entity
         if (!roleData.Any())
             return roleData;
@@ -173,23 +173,6 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new NotFoundException($"role {roleId} does not exist");
         }
         _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-    }
-
-    /// <inheritdoc/>
-    public async Task DeleteAppRolesAsync(Guid appId, IEnumerable<Guid> roleIds)
-    {
-        var companyId = _identityData.CompanyId;
-        var appUserRole = await _portalRepositories.GetInstance<IOfferRepository>().GetAppUserRolesAsync(appId, companyId, OfferStatusId.CREATED, roleIds).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!appUserRole.IsProviderCompanyUser)
-        {
-            throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
-        }
-        if (!appUserRole.OfferStatus)
-        {
-            throw new ControllerArgumentException($"AppId {appId} must be in Created State");
-        }
-        _portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRoles(appUserRole.RoleIds);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
