@@ -17,8 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.RegularExpressions;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public static class ValidationExpressions
