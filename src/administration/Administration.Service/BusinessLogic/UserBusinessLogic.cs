@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -34,7 +35,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Collections.Immutable;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -268,8 +268,6 @@ public class UserBusinessLogic(
 
     public async Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
     {
-        var successfulBpns = new List<string>();
-        var unsuccessfulBpnsList = new List<UnsuccessfulBpns>();
         var companyId = _identityData.CompanyId;
         var (assignedBusinessPartnerNumbers, isValidUser) = await portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidUser)
@@ -279,31 +277,34 @@ public class UserBusinessLogic(
 
         var iamUserId = await provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ??
                         throw new ConflictException($"user {userId} not found in keycloak");
-        var businessPartnerRepository = portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-        foreach (var bpn in businessPartnerNumbers)
-        {
-            var (bpns, error) = await CompanyUsersBpnCheck(bpn, token, cancellationToken);
-            if (error == null)
+
+        var (successfulBpns, unsuccessfulBpns) = await businessPartnerNumbers.AggregateAwait(
+            (SuccessfulBpns: ImmutableList.CreateBuilder<string>(), UnsuccessfulBpns: ImmutableList.CreateBuilder<UnsuccessfulBpns>()),
+            async (acc, bpn) =>
             {
-                successfulBpns.Add(bpns);
-            }
-            else
-            {
-                unsuccessfulBpnsList.Add(new UnsuccessfulBpns(bpns, error.Message));
-            }
-        }
+                var (bpns, error) = await CompanyUsersBpnCheck(bpn, token, cancellationToken).ConfigureAwait(false);
+                if (error == null)
+                {
+                    acc.SuccessfulBpns.Add(bpns);
+                }
+                else
+                {
+                    acc.UnsuccessfulBpns.Add(new UnsuccessfulBpns(bpns, error.Message));
+                }
+                return acc;
+            },
+            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable())
+        ).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (successfulBpns.Count != 0)
         {
             await provisioningManager.AddBpnAttributetoUserAsync(iamUserId, successfulBpns).ConfigureAwait(false);
-            foreach (var businessPartnerToAdd in successfulBpns.Except(assignedBusinessPartnerNumbers))
-            {
-                businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(userId, businessPartnerToAdd);
-            }
+            successfulBpns.Except(assignedBusinessPartnerNumbers).IfAny(businessPartnersToAdd =>
+                portalRepositories.GetInstance<IUserBusinessPartnerRepository>().CreateCompanyUserAssignedBusinessPartners(businessPartnersToAdd.Select(bpn => (userId, bpn))));
         }
 
         await portalRepositories.SaveAsync();
-        return new CompanyUsersBpnDetails(successfulBpns, unsuccessfulBpnsList);
+        return new CompanyUsersBpnDetails(successfulBpns, unsuccessfulBpns);
     }
 
     private async ValueTask<(string bpns, Exception? error)> CompanyUsersBpnCheck(string bpn, string token, CancellationToken cancellationToken)

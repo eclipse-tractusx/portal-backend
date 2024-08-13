@@ -17,12 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
-
-public class BpdmAccessSettings
+public static class AsyncAggregateExtensions
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseUrl { get; set; } = null!;
+    public static Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> select) =>
+        source.Aggregate(
+            Task.FromResult(seed),
+            async (accTask, item) => await accumulate(await accTask.ConfigureAwait(ConfigureAwaitOptions.None), item).ConfigureAwait(ConfigureAwaitOptions.None),
+            async (accTask) => select(await accTask.ConfigureAwait(ConfigureAwaitOptions.None)));
 }

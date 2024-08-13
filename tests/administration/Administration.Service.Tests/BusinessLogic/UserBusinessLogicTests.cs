@@ -1468,7 +1468,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(A<string>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._)).MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid, string)>>.That.Matches(x => x.Count() == 4))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _bpnAccess.FetchLegalEntityByBpn(A<string>._, A<string>._, CancellationToken.None)).MustHaveHappened(8, Times.Exactly);
         result.Should().NotBeNull();
         result.SuccessfulBpns.Should().HaveCount(successfullBpns.Count());

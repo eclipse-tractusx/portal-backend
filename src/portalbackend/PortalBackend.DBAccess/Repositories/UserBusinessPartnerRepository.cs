@@ -33,6 +33,11 @@ public class UserBusinessPartnerRepository(PortalDbContext dbContext)
                 businessPartnerNumber
             )).Entity;
 
+    public void CreateCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserIdBpns) =>
+        dbContext.CompanyUserAssignedBusinessPartners.AddRange(companyUserIdBpns.Select(x => new CompanyUserAssignedBusinessPartner(
+                x.CompanyUserId,
+                x.BusinessPartnerNumber)));
+
     public CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
         dbContext.Remove(
             new CompanyUserAssignedBusinessPartner(
