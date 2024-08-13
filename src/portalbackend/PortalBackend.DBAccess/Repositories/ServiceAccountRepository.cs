@@ -218,7 +218,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
         portalDbContext.CompanyServiceAccounts
             .Where(sa =>
                 sa.Id == technicalUserId &&
-                sa.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                (sa.Identity!.UserStatusId == UserStatusId.ACTIVE || sa.Identity!.UserStatusId == UserStatusId.PENDING) &&
                 sa.Identity.CompanyId == companyId)
             .AnyAsync();
 
