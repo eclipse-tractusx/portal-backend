@@ -123,10 +123,10 @@ public class InvitationBusinessLogicTests
     }
 
     [Theory]
-    [InlineData((string?)null)] // null value
+    [InlineData(null)] // null value
     [InlineData("Organisation Name ")] // Ends with whitespace
     [InlineData("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWX")] // Exceeds 160 characters
-    public async Task ExecuteInvitation_WithInvalidOrganisationName_ThrowsControllerArgumentException(string invalidName)
+    public async Task ExecuteInvitation_WithInvalidOrganisationName_ThrowsControllerArgumentException(string? invalidName)
     {
         var invitationData = _fixture.Build<CompanyInvitationData>()
             .With(x => x.OrganisationName, invalidName)

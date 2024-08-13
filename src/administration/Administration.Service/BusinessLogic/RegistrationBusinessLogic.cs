@@ -198,7 +198,7 @@ public sealed class RegistrationBusinessLogic(
     }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
-         if (companyName != null && !companyName.IsValidCompanyName())  
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
