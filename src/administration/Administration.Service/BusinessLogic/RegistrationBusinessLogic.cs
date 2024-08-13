@@ -84,7 +84,7 @@ public sealed class RegistrationBusinessLogic(
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
-        if (!ValidationExpressionsValidator.IsValidCompanyName(companyWithAddress.Name))
+        if (!companyWithAddress.Name.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
@@ -123,7 +123,7 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
@@ -163,7 +163,7 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
@@ -198,7 +198,7 @@ public sealed class RegistrationBusinessLogic(
     }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
-        if (!ValidationExpressionsValidator.IsValidCompanyName(companyName))
+         if (companyName != null && !companyName.IsValidCompanyName())  
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }

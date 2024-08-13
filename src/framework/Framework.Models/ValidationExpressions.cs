@@ -28,5 +28,4 @@ public static class ValidationExpressions
     public const string Bpns = @"^(BPNS|bpns)[\w|\d]{12}$";
     public const string Company = @"^(?!.*\s$)([\wÀ-ÿ£$€¥¢@%*+\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
     public const string ExternalCertificateNumber = @"^[a-zA-Z0-9]{0,36}$";
-    public static readonly Regex CompanyRegex = new(ValidationExpressions.Company, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(1));
 }

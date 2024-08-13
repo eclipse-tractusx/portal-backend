@@ -187,7 +187,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !ValidationExpressionsValidator.IsValidCompanyName(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }
@@ -267,7 +267,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {companyId} is not the app provider.");
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !ValidationExpressionsValidator.IsValidCompanyName(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }

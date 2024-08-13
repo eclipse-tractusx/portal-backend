@@ -23,8 +23,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public static class ValidationExpressionsValidator
 {
-    public static bool IsValidCompanyName(string companyName)
+    private static readonly Regex CompanyRegex = new(ValidationExpressions.Company, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(1));
+    public static bool IsValidCompanyName(this string companyName)
     {
-        return ValidationExpressions.CompanyRegex.IsMatch(companyName);
+        return CompanyRegex.IsMatch(companyName);
     }
 }

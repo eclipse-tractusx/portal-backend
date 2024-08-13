@@ -48,12 +48,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             throw new ControllerArgumentException("email must not be empty", "email");
         }
 
-        if (string.IsNullOrWhiteSpace(invitationData.OrganisationName))
-        {
-            throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
-        }
-
-        if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !ValidationExpressionsValidator.IsValidCompanyName(invitationData.OrganisationName))
+        if (invitationData.OrganisationName == null || !invitationData.OrganisationName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(invitationData.OrganisationName))]);
         }

@@ -133,7 +133,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     /// <inheritdoc/>
     public async Task<Pagination.Response<OfferCompanySubscriptionStatusResponse>> GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(int page, int size, SubscriptionStatusSorting? sorting, OfferSubscriptionStatusId? statusId, Guid? offerId, string? companyName = null)
     {
-        if (!string.IsNullOrEmpty(companyName) && !ValidationExpressionsValidator.IsValidCompanyName(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }

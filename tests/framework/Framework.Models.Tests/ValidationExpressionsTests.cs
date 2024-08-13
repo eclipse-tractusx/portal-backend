@@ -59,7 +59,7 @@ public class ValidationExpressionsTests
     [InlineData("   ", false)] // Multiple spaces
     public void TestCompanyNameRegex(string companyName, bool expectedResult)
     {
-        var result = ValidationExpressionsValidator.IsValidCompanyName(companyName);
+        var result = companyName.IsValidCompanyName();
         Assert.Equal(expectedResult, result);
     }
 }

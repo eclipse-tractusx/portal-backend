@@ -52,7 +52,7 @@ public class NetworkBusinessLogic(
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
-        if (!ValidationExpressionsValidator.IsValidCompanyName(data.Name))
+        if (!data.Name.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }

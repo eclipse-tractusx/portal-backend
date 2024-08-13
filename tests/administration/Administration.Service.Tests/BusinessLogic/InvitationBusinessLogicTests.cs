@@ -73,23 +73,6 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async Task ExecuteInvitation_WithoutOrganisationName_ThrowsControllerArgumentException()
-    {
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.OrganisationName, (string?)null)
-            .WithNamePattern(x => x.FirstName)
-            .WithNamePattern(x => x.LastName)
-            .WithEmailPattern(x => x.Email)
-            .Create();
-
-        async Task Act() => await _sut.ExecuteInvitation(invitationData);
-
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
-        ex.ParamName.Should().Be("organisationName");
-    }
-
-    [Fact]
     public async Task ExecuteInvitation_WithValidData_CreatesExpected()
     {
         var processes = new List<Process>();
@@ -140,6 +123,7 @@ public class InvitationBusinessLogicTests
     }
 
     [Theory]
+    [InlineData((string?)null)] // null value
     [InlineData("Organisation Name ")] // Ends with whitespace
     [InlineData("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWX")] // Exceeds 160 characters
     public async Task ExecuteInvitation_WithInvalidOrganisationName_ThrowsControllerArgumentException(string invalidName)

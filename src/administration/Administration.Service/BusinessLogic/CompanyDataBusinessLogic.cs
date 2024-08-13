@@ -266,7 +266,7 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException("ValidTill date should be greater than current date");
         }
 
-        if (!string.IsNullOrEmpty(data.Issuer) && !ValidationExpressionsValidator.IsValidCompanyName(data.Issuer))
+        if (data.Issuer != null && !data.Issuer.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(data.Issuer))]);
         }
