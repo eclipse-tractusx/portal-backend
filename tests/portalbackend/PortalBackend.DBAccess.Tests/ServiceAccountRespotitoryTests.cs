@@ -439,6 +439,32 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task CheckActiveServiceAccountExistsForCompanyAsyncForPendingStatus_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.CheckActiveServiceAccountExistsForCompanyAsync(new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193394"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckActiveServiceAccountExistsForCompanyAsyncForInactiveStatus_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.CheckActiveServiceAccountExistsForCompanyAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
     #endregion
 
     #region CreateDimCompanyServiceAccount
