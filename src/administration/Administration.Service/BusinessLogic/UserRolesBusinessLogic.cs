@@ -154,7 +154,7 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
         var distinctRoles = roles.Where(role => !string.IsNullOrWhiteSpace(role)).Distinct().ToImmutableList();
         var existingRoles = await getUserRoleModificationData(companyUserId, distinctRoles, offerId).ToListAsync().ConfigureAwait(false);
         existingRoles.DuplicatesBy(x => x.CompanyUserRoleText).IfAny(
-            duplicateRoles => throw new ConflictException($"roles {string.Join(",", $"{duplicateRoles.Select(role => $"[{role.CompanyUserRoleText}, {role.CompanyUserRoleId}]")}")} are ambigous"));
+            duplicateRoles => throw new ConflictException($"roles {string.Join(",", duplicateRoles.Select(role => $"[{role.CompanyUserRoleText}, {role.CompanyUserRoleId}]"))} are ambigous"));
 
         distinctRoles.Except(existingRoles.Where(r => r.IsAssignable).Select(r => r.CompanyUserRoleText)).IfAny(
             nonExistingRoles => throw new ControllerArgumentException($"Invalid roles {string.Join(",", nonExistingRoles)}", nameof(roles)));

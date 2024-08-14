@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -46,6 +47,7 @@ public static class AppExtensions
         {
             throw new ControllerArgumentException("Language Code must not be empty");
         }
+        appUserRolesDescription.DuplicatesBy(x => x.Role).IfAny(duplicateRoles => throw new ControllerArgumentException($"Roles are ambiguous: {string.Join(",", duplicateRoles.Select(x => x.Role))}"));
     }
 
     /// <summary>
@@ -56,8 +58,10 @@ public static class AppExtensions
     /// <param name="appId">id of the app to create the roles for</param>
     /// <param name="userRoles">the user roles to add</param>
     /// <returns>returns the created appRoleData</returns>
-    public static IEnumerable<AppRoleData> CreateUserRolesWithDescriptions(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles) =>
-        userRoles.Zip(
+    public static async Task<IEnumerable<AppRoleData>> CreateUserRolesWithDescriptions(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles)
+    {
+        userRoles = await GetUniqueAppUserRoles(userRolesRepository, appId, userRoles);
+        return userRoles.Zip(
             userRolesRepository.CreateAppUserRoles(userRoles.Select(x => (appId, x.Role))),
             (AppUserRole appUserRole, UserRole userRole) =>
                 {
@@ -65,4 +69,19 @@ public static class AppExtensions
                     return new AppRoleData(userRole.Id, appUserRole.Role);
                 })
             .ToList();
+    }
+
+    /// <summary>
+    /// Get unique roles by eleminating the duplicate roles from the request (client) and existing roles from the Database
+    /// </summary>
+    /// <remarks></remarks>
+    /// <param name="userRolesRepository">repository</param>
+    /// <param name="appId">id of the app</param>
+    /// <param name="userRoles">the app user roles</param>
+    /// <returns>returns the filtered and unique roles</returns>
+    private static async Task<IEnumerable<AppUserRole>> GetUniqueAppUserRoles(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles)
+    {
+        var existingRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
+        return userRoles.ExceptBy(existingRoles, userRole => userRole.Role);
+    }
 }
