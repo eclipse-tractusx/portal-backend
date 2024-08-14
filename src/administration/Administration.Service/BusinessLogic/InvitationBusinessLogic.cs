@@ -24,13 +24,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
 public class InvitationBusinessLogic : IInvitationBusinessLogic
 {
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
@@ -50,14 +48,9 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
             throw new ControllerArgumentException("email must not be empty", "email");
         }
 
-        if (string.IsNullOrWhiteSpace(invitationData.OrganisationName))
+        if (invitationData.OrganisationName == null || !invitationData.OrganisationName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("organisationName must not be empty", "organisationName");
-        }
-
-        if (!string.IsNullOrEmpty(invitationData.OrganisationName) && !Company.IsMatch(invitationData.OrganisationName))
-        {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(invitationData.OrganisationName))]);
         }
 
         return ExecuteInvitationInternalAsync(invitationData);

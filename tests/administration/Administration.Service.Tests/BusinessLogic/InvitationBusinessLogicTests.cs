@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -72,23 +73,6 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async Task ExecuteInvitation_WithoutOrganisationName_ThrowsControllerArgumentException()
-    {
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.OrganisationName, (string?)null)
-            .WithNamePattern(x => x.FirstName)
-            .WithNamePattern(x => x.LastName)
-            .WithEmailPattern(x => x.Email)
-            .Create();
-
-        async Task Act() => await _sut.ExecuteInvitation(invitationData);
-
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
-        ex.ParamName.Should().Be("organisationName");
-    }
-
-    [Fact]
     public async Task ExecuteInvitation_WithValidData_CreatesExpected()
     {
         var processes = new List<Process>();
@@ -110,6 +94,48 @@ public class InvitationBusinessLogicTests
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
+    }
+
+    [Theory]
+    [InlineData("ValidOrganisationName123")]
+    [InlineData("Organisation Name")]
+    [InlineData("Organisation$Name")]
+    [InlineData("Organisation\\Name")]
+    [InlineData("Organisation/Name")]
+    [InlineData("Organisation<Name>")]
+    [InlineData("Organisation Name!")]
+    [InlineData("7-ELEVEN INTERNATIONAL LLC")]
+    [InlineData("C")]
+    [InlineData("+SEN Inc.")]
+    [InlineData("Double \"Quote\" Company S.A.")]
+    [InlineData("Special Characters ^&%#@*/_-\\")]
+    [InlineData("German: ÄÖÜß")]
+    [InlineData("Icelandic: ÆÐÞ")]
+    public async Task ExecuteInvitation_WithValidOrganisationName_DoesNotThrowException(string validName)
+    {
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.OrganisationName, validName)
+            .Create();
+
+        Func<Task> Act = async () => await _sut.ExecuteInvitation(invitationData);
+
+        await Act.Should().NotThrowAsync<ControllerArgumentException>();
+    }
+
+    [Theory]
+    [InlineData(null)] // null value
+    [InlineData("Organisation Name ")] // Ends with whitespace
+    [InlineData("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWX")] // Exceeds 160 characters
+    public async Task ExecuteInvitation_WithInvalidOrganisationName_ThrowsControllerArgumentException(string? invalidName)
+    {
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.OrganisationName, invalidName)
+            .Create();
+
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
+
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(ValidationExpressionErrors.INCORRECT_COMPANY_NAME.ToString());
     }
 
     #endregion

@@ -47,16 +47,14 @@ public class NetworkBusinessLogic(
 {
     private static readonly Regex Name = new(ValidationExpressions.Name, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex ExternalId = new("^[A-Za-z0-9\\-+_/,.]{6,36}$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly PartnerRegistrationSettings _settings = options.Value;
 
     public async Task HandlePartnerRegistration(PartnerRegistrationData data)
     {
-        if (!string.IsNullOrEmpty(data.Name) && !Company.IsMatch(data.Name))
+        if (!data.Name.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
 
         var ownerCompanyId = _identityData.CompanyId;

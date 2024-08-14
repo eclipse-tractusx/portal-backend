@@ -31,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -40,7 +39,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
@@ -189,9 +187,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }
 
         return CreateAppAsync(appRequestModel);
@@ -269,9 +267,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {companyId} is not the app provider.");
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

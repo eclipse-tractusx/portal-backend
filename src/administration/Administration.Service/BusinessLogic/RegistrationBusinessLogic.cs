@@ -63,7 +63,6 @@ public sealed class RegistrationBusinessLogic(
     : IRegistrationBusinessLogic
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly RegistrationSettings _settings = configuration.Value;
@@ -85,9 +84,9 @@ public sealed class RegistrationBusinessLogic(
         {
             throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
-        if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
+        if (!companyWithAddress.Name.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
 
         return new CompanyWithAddressData(
@@ -124,9 +123,9 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -164,9 +163,9 @@ public sealed class RegistrationBusinessLogic(
 
     public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
@@ -199,9 +198,9 @@ public sealed class RegistrationBusinessLogic(
     }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 

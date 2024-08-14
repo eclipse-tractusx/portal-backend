@@ -19,6 +19,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -48,6 +50,8 @@ await WebAppHelper
             .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
             .AddOfferDocumentServices();

@@ -45,7 +45,6 @@ public class CompanyDataBusinessLogic(
 {
     private static readonly Regex BpnsRegex = new(ValidationExpressions.Bpns, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex EcmRegex = new(ValidationExpressions.ExternalCertificateNumber, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly CompanyDataSettings _settings = options.Value;
 
@@ -267,9 +266,9 @@ public class CompanyDataBusinessLogic(
             throw new ControllerArgumentException("ValidTill date should be greater than current date");
         }
 
-        if (data.Issuer != null && !Company.IsMatch(data.Issuer!))
+        if (data.Issuer != null && !data.Issuer.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(data.Issuer))]);
         }
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();

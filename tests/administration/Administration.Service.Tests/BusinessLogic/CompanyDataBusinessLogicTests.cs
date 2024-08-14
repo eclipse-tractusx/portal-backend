@@ -885,7 +885,7 @@ public class CompanyDataBusinessLogicTests
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
         var externalCertificateNumber = "2345678";
         var sites = new[] { "BPNS00000003CRHK" };
-        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), "+ACC");
+        var data = new CompanyCertificateCreationData(CompanyCertificateTypeId.IATF, file, externalCertificateNumber, sites, _now.AddMicroseconds(-1), _now.AddMicroseconds(1), " +ACC");
 
         A.CallTo(() => _companyCertificateRepository.CheckCompanyCertificateType(CompanyCertificateTypeId.IATF))
         .Returns(false);
@@ -895,7 +895,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Issuer length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name");
+        ex.Message.Should().Be(ValidationExpressionErrors.INCORRECT_COMPANY_NAME.ToString());
     }
 
     #endregion
