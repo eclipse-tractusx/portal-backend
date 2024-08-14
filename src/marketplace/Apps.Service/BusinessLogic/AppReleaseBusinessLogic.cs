@@ -189,7 +189,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", nameof(appRequestModel.Provider))]);
         }
 
         return CreateAppAsync(appRequestModel);
@@ -269,7 +269,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 
         if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", nameof(appRequestModel.Provider))]);
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

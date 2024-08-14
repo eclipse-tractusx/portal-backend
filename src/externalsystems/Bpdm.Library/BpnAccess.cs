@@ -28,13 +28,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
 public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
 {
-    private readonly HttpClient _httpClient = httpFactory.CreateClient(nameof(BpnAccess));
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        var result = await _httpClient.GetAsync($"legal-entities/{businessPartnerNumber}?idType=BPN", cancellationToken)
+        var httpClient = httpFactory.CreateClient(nameof(BpnAccess));
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var result = await httpClient.GetAsync($"legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}?idType=BPN", cancellationToken)
             .CatchingIntoServiceExceptionFor("bpn-fetch-legal-entity")
             .ConfigureAwait(false);
         try
