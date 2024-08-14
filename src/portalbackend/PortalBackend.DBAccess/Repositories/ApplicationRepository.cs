@@ -206,7 +206,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> SharedIdpAliase, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
@@ -214,7 +214,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias),
+                ca.Company.IdentityProviders.Where(x => x.IdentityProviderTypeId == IdentityProviderTypeId.SHARED && x.IamIdentityProvider != null).Select(x => x.IamIdentityProvider!.IamIdpAlias),
                 ca.CompanyApplicationTypeId,
                 ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
                     ca.Company.NetworkRegistration!.ProcessId :
