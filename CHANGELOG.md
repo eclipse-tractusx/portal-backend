@@ -6,7 +6,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ### Change
 
-* **Network Registrations (Administration Service)**
+* **Network Registration (Administration Service)**
   * enhanced endpoint `GET /api/administration/registration/network/companies` with additional fields and filter possibilities [#916](https://github.com/eclipse-tractusx/portal-backend/pull/916)
 
 ### Bugfixes
