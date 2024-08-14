@@ -40,11 +40,6 @@ public class RegistrationSettings
     public string HelpAddress { get; set; } = null!;
 
     public bool UseDimWallet { get; set; }
-
-    /// <summary>
-    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
-    /// </summary>
-    public bool ClearinghouseConnectDisabled { get; set; }
 }
 
 public static class RegistrationSettingsExtension
