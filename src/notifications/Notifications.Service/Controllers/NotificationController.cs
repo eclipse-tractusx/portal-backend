@@ -37,19 +37,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.Controllers;
 [EnvironmentRoute("MVC_ROUTING_BASEPATH")]
 [Consumes("application/json")]
 [Produces("application/json")]
-public class NotificationController : ControllerBase
+public class NotificationController(INotificationBusinessLogic logic)
+    : ControllerBase
 {
-    private readonly INotificationBusinessLogic _logic;
-
-    /// <summary>
-    ///     Creates a new instance of <see cref="NotificationController" />
-    /// </summary>
-    /// <param name="logic">The business logic for the notifications</param>
-    public NotificationController(INotificationBusinessLogic logic)
-    {
-        _logic = logic;
-    }
-
     /// <summary>
     ///     Gets all notifications for the logged in user
     /// </summary>
@@ -86,7 +76,7 @@ public class NotificationController : ControllerBase
         [FromQuery] bool? doneState = null,
         [FromQuery] string? searchQuery = null
         ) =>
-        _logic.GetNotificationsAsync(page, size, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery), searchSemantic);
+        logic.GetNotificationsAsync(page, size, new NotificationFilters(isRead, notificationTypeId, notificationTopicId, onlyDueDate, sorting, doneState, searchTypeIds, searchQuery), searchSemantic);
 
     /// <summary>
     ///     Gets a notification for the logged in user
@@ -104,7 +94,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<NotificationDetailData> GetNotification([FromRoute] Guid notificationId) =>
-        _logic.GetNotificationDetailDataAsync(notificationId);
+        logic.GetNotificationDetailDataAsync(notificationId);
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -124,7 +114,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public Task<int> NotificationCount([FromQuery] bool? isRead) =>
-        _logic.GetNotificationCountAsync(isRead);
+        logic.GetNotificationCountAsync(isRead);
 
     /// <summary>
     /// Gets the notification count for the current logged in user
@@ -138,7 +128,7 @@ public class NotificationController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [ProducesResponseType(typeof(NotificationCountDetails), StatusCodes.Status200OK)]
     public Task<NotificationCountDetails> NotificationCountDetails() =>
-        _logic.GetNotificationCountDetailsAsync();
+        logic.GetNotificationCountDetailsAsync();
 
     /// <summary>
     /// Changes the read status of a notification
@@ -160,7 +150,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> SetNotificationToRead([FromRoute] Guid notificationId, [FromQuery] bool isRead = true)
     {
-        await _logic.SetNotificationStatusAsync(notificationId, isRead).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.SetNotificationStatusAsync(notificationId, isRead).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -182,7 +172,7 @@ public class NotificationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteNotification([FromRoute] Guid notificationId)
     {
-        await _logic.DeleteNotificationAsync(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.DeleteNotificationAsync(notificationId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -190,21 +180,20 @@ public class NotificationController : ControllerBase
     /// Creates a notification with the given data
     /// </summary>
     /// <param name="data">Data for the notification</param>
-    /// <returns>Return NoContent</returns>
     /// <remarks>Example: POST: /api/notification/ssi-credentials</remarks>
     /// <response code="204">Count of the notifications.</response>
     /// <response code="400">NotificationStatus does not exist.</response>
     /// <response code="403">IamUserId is not assigned.</response>
     [HttpPost]
     [Route("ssi-credentials")]
-    [Authorize(Roles = "create_notifications")]
-    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Roles = "create_ssi_notifications")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
     [ProducesResponseType(typeof(int), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> CreateNotification([FromBody] NotificationRequest data)
     {
-        await _logic.CreateNotification(data).ConfigureAwait(false);
+        await logic.CreateNotification(data).ConfigureAwait(false);
         return NoContent();
     }
 }

@@ -464,7 +464,7 @@ public class NotificationBusinessLogicTests
         }));
         var userId = Guid.NewGuid();
         var data = _fixture.Build<NotificationRequest>()
-            .With(x => x.Requester, userId)
+            .With(x => x.Receiver, userId)
             .With(x => x.NotificationTypeId, NotificationTypeId.CREDENTIAL_APPROVAL)
             .Create();
         A.CallTo(() => _userRepository.CheckUserExists(userId)).Returns(false);
@@ -487,7 +487,7 @@ public class NotificationBusinessLogicTests
             MaxPageSize = 15
         }));
         var userId = Guid.NewGuid();
-        var data = _fixture.Build<NotificationRequest>().With(x => x.Requester, userId).With(x => x.NotificationTypeId, NotificationTypeId.INFO).Create();
+        var data = _fixture.Build<NotificationRequest>().With(x => x.Receiver, userId).With(x => x.NotificationTypeId, NotificationTypeId.INFO).Create();
         async Task Act() => await sut.CreateNotification(data).ConfigureAwait(false);
 
         // Act
@@ -509,7 +509,7 @@ public class NotificationBusinessLogicTests
         var userId = Guid.NewGuid();
         var notifications = new List<Notification>();
         var data = _fixture.Build<NotificationRequest>()
-            .With(x => x.Requester, userId)
+            .With(x => x.Receiver, userId)
             .With(x => x.Content, "test")
             .With(x => x.NotificationTypeId, notificationTypeId)
             .Create();
