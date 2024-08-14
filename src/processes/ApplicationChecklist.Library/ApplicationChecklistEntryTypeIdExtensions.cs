@@ -39,15 +39,14 @@ public static class ApplicationChecklistEntryTypeIdExtensions
     public static IEnumerable<ProcessStepTypeId> GetManualTriggerProcessStepIds(this IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds) =>
         ManualProcessStepIds.IntersectBy(entryTypeIds, x => x.Key).SelectMany(x => x.Value).Distinct();
 
-    public static (ProcessStepTypeId ProcessStepTypeId, ApplicationChecklistEntryStatusId ChecklistEntryStatusId) GetNextProcessStepDataForManualTriggerProcessStepId(this ProcessStepTypeId processStepTypeId, bool clearinghouseConnectDisabled) =>
+    public static (ProcessStepTypeId ProcessStepTypeId, ApplicationChecklistEntryStatusId ChecklistEntryStatusId) GetNextProcessStepDataForManualTriggerProcessStepId(this ProcessStepTypeId processStepTypeId) =>
         processStepTypeId switch
         {
             ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE => (ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET => (ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET => (ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT => (ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryStatusId.TO_DO),
-            ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP when clearinghouseConnectDisabled => (ProcessStepTypeId.ACTIVATE_APPLICATION, ApplicationChecklistEntryStatusId.SKIPPED),
-            ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP when !clearinghouseConnectDisabled => (ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
+            ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP => (ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH => (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL => (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE => (ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),

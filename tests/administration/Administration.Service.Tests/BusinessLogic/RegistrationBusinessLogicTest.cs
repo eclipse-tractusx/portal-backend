@@ -781,15 +781,14 @@ public class RegistrationBusinessLogicTest
     }
 
     [Theory]
-    [InlineData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT, ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.ACTIVATE_APPLICATION, ApplicationChecklistEntryStatusId.SKIPPED, true)]
-    [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO, false)]
-    [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS, false)]
-    public async Task TriggerChecklistAsync_WithValidData_ReturnsExpected(ApplicationChecklistEntryTypeId typeId, ProcessStepTypeId stepId, ProcessStepTypeId nextStepId, ApplicationChecklistEntryStatusId statusId, bool clearinghouseConnectDisabled)
+    [InlineData(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.CREATE_IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.CREATE_DIM_WALLET, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT, ProcessStepTypeId.VALIDATE_DID_DOCUMENT, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP, ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO)]
+    [InlineData(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL, ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS)]
+    public async Task TriggerChecklistAsync_WithValidData_ReturnsExpected(ApplicationChecklistEntryTypeId typeId, ProcessStepTypeId stepId, ProcessStepTypeId nextStepId, ApplicationChecklistEntryStatusId statusId)
     {
         // Arrange
         var checklistEntry = new ApplicationChecklistEntry(Guid.NewGuid(), typeId,
@@ -824,7 +823,6 @@ public class RegistrationBusinessLogicTest
         //Act
 
         var settings = A.Fake<RegistrationSettings>();
-        settings.ClearinghouseConnectDisabled = clearinghouseConnectDisabled;
         A.CallTo(() => _options.Value).Returns(settings);
         var logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, _identityService, _logger);
         await logic.TriggerChecklistAsync(applicationId, typeId, stepId);
