@@ -122,7 +122,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zum Zugriff auf das eigene Wallet - VC abfragen, VC anfragen, VC speicher, etc."
+    "description": "Technischer User für den Zugriff auf die eigene Firmen-Wallet - VC anfordern, VP anfordern, VC speichern usw."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
@@ -132,7 +132,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "language_short_name": "de",
-    "description": "TEchnischer Benutzer für Dataspace Discovery Endpunkte"
+    "description": "Technischer User für Dataspace Discovery Endpunkte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
@@ -142,7 +142,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zum Hinzufügen von Dienstangeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connectorregistrierungen für Dritte."
+    "description": "Technischer User zum Hinzufügen von Angeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connector Registrierungen für Dritte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
@@ -152,7 +152,7 @@
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zur Erstellung von Registrierungen von Drittanbietern durch Onboarding von Dienstleistungsunternehmen."
+    "description": "Technischer User zur Erstellung von Registrierungen von Drittanbietern durch Onboarding Service Provider."
   },
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
@@ -182,7 +182,7 @@
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zur Ansicht semantischer Modelle."
+    "description": "Technischer User zur Ansicht semantischer Modelle."
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
@@ -192,7 +192,7 @@
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
     "language_short_name": "de",
-    "description": "Technischer Benutzer für den Zugang zu den Mitgliedsinformationen von Catena-X."
+    "description": "Technischer User für den Zugriff auf Catena-X Mitgliedsinformationen."
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
