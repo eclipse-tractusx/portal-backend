@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+
 public static class AsyncAggregateExtensions
 {
     public static Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> select) =>
