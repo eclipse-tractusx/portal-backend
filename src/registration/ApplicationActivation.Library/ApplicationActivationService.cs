@@ -90,7 +90,7 @@ public class ApplicationActivationService : IApplicationActivationService
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
 
-        var (companyId, companyName, businessPartnerNumber, iamIdpAliasse, applicationTypeId, networkRegistrationProcessId) = result;
+        var (companyId, companyName, businessPartnerNumber, sharedIdpAliase, applicationTypeId, networkRegistrationProcessId) = result;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
@@ -99,7 +99,7 @@ public class ApplicationActivationService : IApplicationActivationService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
         await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SetTheme(iamIdpAliasse).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SetTheme(sharedIdpAliase).ConfigureAwait(ConfigureAwaitOptions.None);
 
         applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
         {

@@ -161,33 +161,37 @@ public sealed class RegistrationBusinessLogic(
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter)
     {
         if (companyName != null && !companyName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
-        var applications = portalRepositories.GetInstance<IApplicationRepository>()
+        var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
-                companyName?.Length >= 3 ? companyName : null,
+                companyName?.Length >= 3 ? companyName : null, externalId,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+
+        var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
+            ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
+            : applicationsQuery.AsSplitQuery().OrderBy(application => application.DateCreated);
 
         return Pagination.CreateResponseAsync(
             page,
             size,
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
-                applications.CountAsync(),
-                applications
-                    .AsSplitQuery()
-                    .OrderByDescending(application => application.DateCreated)
+                applicationsQuery.CountAsync(),
+                orderedQuery
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new CompanyDetailsOspOnboarding(
                         application.CompanyId,
+                        application.NetworkRegistration!.ExternalId,
                         application.Id,
                         application.ApplicationStatusId,
                         application.DateCreated,
+                        application.Company!.DateCreated,
                         application.DateLastChanged,
                         application.Company!.Name,
                         application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
@@ -210,7 +214,7 @@ public sealed class RegistrationBusinessLogic(
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
                 applications.CountAsync(),
-                applications.OrderByDescending(application => application.DateCreated)
+                applications.OrderByDescending(application => application.Company!.DateCreated)
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new
@@ -394,7 +398,7 @@ public sealed class RegistrationBusinessLogic(
             throw new ControllerArgumentException($"The processStep {processStepTypeId} is not retriggerable");
         }
 
-        var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId(_settings.ClearinghouseConnectDisabled);
+        var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId();
         if (nextStepData == default)
         {
             throw new UnexpectedConditionException($"While the processStep {processStepTypeId} is configured to be retriggerable there is no next step configured");

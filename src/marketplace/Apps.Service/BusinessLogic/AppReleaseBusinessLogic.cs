@@ -91,7 +91,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
-        var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+        var roleData = await AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+
+        // When user will try to upload the same role names which are already attched to an APP.
+        // so, no role will be added against the given appId so, no need to procced further
+        // No need to update the Offer entity
+        if (!roleData.Any())
+            return roleData;
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);

@@ -145,6 +145,9 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
             .Returns((true, true));
 
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(new[] { "Exsiting Role" }.ToAsyncEnumerable());
+
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
@@ -212,6 +215,78 @@ public class AppReleaseBusinessLogicTest
                 x => x.RoleId == userRoles!.ElementAt(1).Id && x.RoleName == appUserRoles[1].Role,
                 x => x.RoleId == userRoles!.ElementAt(2).Id && x.RoleName == appUserRoles[2].Role
             );
+    }
+
+    [Fact]
+    public async Task CreateServiceOffering_WithExistingData_NoRowEffecting()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var appUserRoles = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
+
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(appId, _identity.CompanyId, OfferTypeId.APP))
+            .Returns((true, true));
+
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(appUserRoles.Select(x => x.Role).ToAsyncEnumerable());
+
+        IEnumerable<UserRole>? userRoles = null;
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
+            {
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
+                return userRoles;
+            });
+
+        var userRoleDescriptions = new List<IEnumerable<UserRoleDescription>>();
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions) =>
+            {
+                var createdUserRoleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToImmutableArray();
+                userRoleDescriptions.Add(createdUserRoleDescriptions);
+                return createdUserRoleDescriptions;
+            });
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
+        // Act
+        var result = await _sut.AddAppUserRoleAsync(appId, appUserRoles);
+
+        // Assert
+        A.CallTo(() => _offerRepository.IsProviderCompanyUserAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._)).MustHaveHappened();
+
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._)).MustHaveHappenedOnceExactly();
+        userRoles.Should().NotBeNull()
+            .And.HaveCount(0);
+
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustNotHaveHappened();
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._)).MustNotHaveHappened();
+        userRoleDescriptions.Should().NotBeNull()
+            .And.HaveCount(0);
+
+        result.Should().NotBeNull()
+            .And.HaveCount(0);
+    }
+
+    [Fact]
+    public async Task CreateServiceOffering_WithValidButDuplicateData_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var appId = _fixture.Create<Guid>();
+        var roleId = _fixture.Create<string>();
+        var appUserRoles = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(roleId, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
+
+        // Act
+        async Task Act() => await _sut.AddAppUserRoleAsync(appId, appUserRoles);
+
+        // Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        error.Message.Should().Be($"Roles are ambiguous: {roleId},{roleId}");
     }
 
     #region AddAppAsync

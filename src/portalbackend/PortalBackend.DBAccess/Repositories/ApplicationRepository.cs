@@ -134,12 +134,13 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+    public IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, string? externalId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         portalDbContext.CompanyApplications.AsNoTracking()
             .Where(application =>
                 application.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL &&
                 application.OnboardingServiceProviderId == onboardingServiceProviderId &&
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
+                (externalId == null || application.NetworkRegistration!.ExternalId == externalId) &&
                 applicationStatusIds.Contains(application.ApplicationStatusId));
 
     public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId) =>
@@ -205,7 +206,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> SharedIdpAliase, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
@@ -213,7 +214,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias),
+                ca.Company.IdentityProviders.Where(x => x.IdentityProviderTypeId == IdentityProviderTypeId.SHARED && x.IamIdentityProvider != null).Select(x => x.IamIdentityProvider!.IamIdpAlias),
                 ca.CompanyApplicationTypeId,
                 ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
                     ca.Company.NetworkRegistration!.ProcessId :
