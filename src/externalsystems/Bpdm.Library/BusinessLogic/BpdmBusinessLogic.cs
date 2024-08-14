@@ -84,7 +84,7 @@ public class BpdmBusinessLogic(
             data.Identifiers);
 
         await bpdmService.PutInputLegalEntity(bpdmTransferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!_settings.StartAsReady)
+        if (!_settings.StartSharingStateAsReady)
         {
             await bpdmService.SetSharingStateToReady(context.ApplicationId.ToString(), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }

@@ -33,5 +33,5 @@ public class BpdmServiceSettings : KeyVaultAuthSettings
 
     public bool UseDimWallet { get; set; }
 
-    public bool StartAsReady { get; set; }
+    public bool StartSharingStateAsReady { get; set; }
 }

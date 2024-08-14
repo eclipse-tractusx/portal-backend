@@ -240,7 +240,7 @@ public class BpdmBusinessLogicTests
             GrantType = "test",
             TokenAddress = "https://example.org/token",
             UseDimWallet = false,
-            StartAsReady = startAsReady
+            StartSharingStateAsReady = startAsReady
         });
         var logic = new BpdmBusinessLogic(_portalRepositories, _bpdmService, _options);
 
