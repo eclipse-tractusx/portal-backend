@@ -82,8 +82,6 @@ public static class AppExtensions
     private static async Task<IEnumerable<AppUserRole>> GetUniqueAppUserRoles(IUserRolesRepository userRolesRepository, Guid appId, IEnumerable<AppUserRole> userRoles)
     {
         var existingRoles = await userRolesRepository.GetUserRolesForOfferIdAsync(appId).ToListAsync().ConfigureAwait(false);
-        if (existingRoles.Any())
-            userRoles = userRoles.ExceptBy(existingRoles, userRole => userRole.Role);
-        return userRoles;
+        return userRoles.ExceptBy(existingRoles, userRole => userRole.Role);
     }
 }
