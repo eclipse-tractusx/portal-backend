@@ -79,6 +79,15 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Description = entry.Description;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        await SeedTable<UserRoleDescription>(
+            "user_role_descriptions",
+            x => new { x.UserRoleId, x.LanguageShortName },
+            x => x.dbEntity.Description != x.dataEntity.Description,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Description = entry.Description;
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
         await SeedTable<UserRoleCollectionDescription>(
             "user_role_collection_descriptions",
             x => new { x.UserRoleCollectionId, x.LanguageShortName },
