@@ -111,5 +111,5 @@ public record BpdmLegalEntityData(
     BpdmLegalEntity LegalEntity,
     BpdmSite? Site,
     BpdmAddress Address,
-    bool OwnCompanyData
+    bool IsOwnCompanyData
 );
