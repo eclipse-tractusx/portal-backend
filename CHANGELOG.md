@@ -2,6 +2,22 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.2.0-RC2
+
+### Change
+
+* **Network Registration (Administration Service)**
+  * enhanced endpoint `GET /api/administration/registration/network/companies` with additional fields and filter possibilities [#916](https://github.com/eclipse-tractusx/portal-backend/pull/916)
+
+### Bugfixes
+
+* **Application Activation**
+  * adjusted the set of the theme only for shared idps [#852](https://github.com/eclipse-tractusx/portal-backend/pull/852)
+* **App Roles**
+  * added a duplication check for roles before adding them [#877](https://github.com/eclipse-tractusx/portal-backend/pull/877)
+* **BPDM**
+  * adjusted the structure of the bpdm request for the `input/business-partners` request [#928](https://github.com/eclipse-tractusx/portal-backend/pull/928)
+
 ## 2.2.0-RC1
 
 ### Change
