@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -106,6 +105,6 @@ public interface IConnectorsRepository
 
     void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions);
     Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument();
-    Task<bool> HasAnyConnectorsWithMissingSelfDescription();
-    IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetNextConnectorsWithMissingSelfDescription();
+    IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription();
+    Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
 }

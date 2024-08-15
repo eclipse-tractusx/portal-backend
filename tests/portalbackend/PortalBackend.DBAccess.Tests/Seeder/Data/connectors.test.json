@@ -106,9 +106,10 @@
     "connector_url": "www.google.de",
     "type_id": 1,
     "status_id": 1,
-    "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "provider_id": "a45f3b2e-29f7-4b52-8bb2-15b204849d87",
     "host_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
     "location_id": "DE",
-    "self_description_document_id": null
+    "self_description_document_id": null,
+    "sd_creation_process_id":  "4a5059d9-c427-42b7-aa54-5e5a240946d3"
   }
 ]

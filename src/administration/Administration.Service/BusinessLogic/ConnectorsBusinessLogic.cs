@@ -30,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Text.RegularExpressions;
@@ -346,7 +347,7 @@ public class ConnectorsBusinessLogic(
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
+        logger.LogInformation("Process SelfDescription called with the following data {@Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
 
         var result = await portalRepositories.GetInstance<IConnectorsRepository>()
             .GetConnectorDataById(data.ExternalId)
@@ -433,14 +434,33 @@ public class ConnectorsBusinessLogic(
 
     public async Task TriggerSelfDescriptionCreation()
     {
-        var hasMissingSdDocumentConnectors = await portalRepositories.GetInstance<IConnectorsRepository>().HasAnyConnectorsWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
-        if (hasMissingSdDocumentConnectors)
+        var connectorRepository = portalRepositories.GetInstance<IConnectorsRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var connectorIds = connectorRepository.GetConnectorIdsWithMissingSelfDescription();
+        await foreach (var connectorId in connectorIds)
         {
-            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
             var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
             processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, ProcessStepStatusId.TODO, processId);
-
-            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+            connectorRepository.AttachAndModifyConnector(connectorId, c => c.SdCreationProcessId = null, c => c.SdCreationProcessId = processId);
         }
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    public async Task RetriggerSelfDescriptionCreation(Guid processId)
+    {
+        const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION;
+        const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION;
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(NextStep, 1));
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

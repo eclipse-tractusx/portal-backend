@@ -1049,26 +1049,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetCompaniesWithMissingSelfDescription
-
-    [Fact]
-    public async Task GetCompaniesWithMissingSelfDescription_ReturnsExpectedCompanies()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut();
-
-        // Act
-        var result = await sut.GetNextCompaniesWithMissingSelfDescription().ToListAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(2).And.Satisfy(
-            x => x.BusinessPartnerNumber == "BPNL00000003CRHL",
-            x => x.BusinessPartnerNumber == "BPNL00000003AYRE");
-    }
-
-    #endregion
-
     #region IsExistingCompany
 
     [Fact]

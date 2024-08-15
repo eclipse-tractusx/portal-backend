@@ -83,6 +83,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<AuditConnector20230503> AuditConnector20230503 { get; set; } = default!;
     public virtual DbSet<AuditConnector20230803> AuditConnector20230803 { get; set; } = default!;
     public virtual DbSet<AuditConnector20231115> AuditConnector20231115 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20240814> AuditConnector20240814 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20230526> AuditIdentity20230526 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20231115> AuditIdentity20231115 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
@@ -535,6 +536,11 @@ public class PortalDbContext : DbContext
             entity.HasOne(p => p.SelfDescriptionDocument)
                 .WithMany(d => d.Companies)
                 .HasForeignKey(d => d.SelfDescriptionDocumentId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.SdCreationProcess)
+                .WithOne(p => p.SdCreationCompany)
+                .HasForeignKey<Company>(d => d.SdCreationProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasMany(p => p.IdentityProviders)
@@ -1111,7 +1117,12 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<Connector>(d => d.CompanyServiceAccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Connector, AuditConnector20231115>();
+            entity.HasOne(d => d.SdCreationProcess)
+                .WithOne(p => p.SdCreationConnector)
+                .HasForeignKey<Connector>(d => d.SdCreationProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasAuditV1Triggers<Connector, AuditConnector20240814>();
         });
 
         modelBuilder.Entity<ConnectorStatus>()

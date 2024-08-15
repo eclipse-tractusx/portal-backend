@@ -213,4 +213,18 @@ public class CompanyDataControllerTests
         A.CallTo(() => _logic.TriggerSelfDescriptionCreation()).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionProcess_CallsExpected()
+    {
+        //Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerSelfDescriptionProcess(processId);
+
+        // Assert
+        A.CallTo(() => _logic.RetriggerSelfDescriptionCreation(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

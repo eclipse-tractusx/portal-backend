@@ -29,8 +29,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 /// <inheritdoc/>
-public class CompanyRepository(PortalDbContext context)
-    : ICompanyRepository
+public class CompanyRepository(PortalDbContext context) : ICompanyRepository
 {
     /// <inheritdoc/>
     Company ICompanyRepository.CreateCompany(string companyName, Action<Company>? setOptionalParameters)
@@ -433,34 +432,36 @@ public class CompanyRepository(PortalDbContext context)
                 c.Name)
         ).SingleOrDefaultAsync();
 
-    public Task<bool> HasAnyCompaniesWithMissingSelfDescription() =>
-        context.Companies.AnyAsync(c =>
-            c.CompanyStatusId == CompanyStatusId.ACTIVE &&
-            c.SelfDescriptionDocumentId == null &&
-            c.CompanyApplications.Any(ca =>
-                ca.ApplicationChecklistEntries.Any(a =>
-                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
-                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
-                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)));
-
-    public IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetNextCompaniesWithMissingSelfDescription() =>
+    public IAsyncEnumerable<Guid> GetCompanyIdsWithMissingSelfDescription() =>
         context.Companies.Where(c =>
-            c.CompanyStatusId == CompanyStatusId.ACTIVE &&
-            c.SelfDescriptionDocumentId == null &&
-            c.CompanyApplications.Any(ca =>
-                ca.ApplicationChecklistEntries.Any(a =>
-                    a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
-                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
-                    a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+                c.CompanyStatusId == CompanyStatusId.ACTIVE &&
+                c.SelfDescriptionDocumentId == null &&
+                c.SdCreationProcessId == null &&
+                c.CompanyApplications.Any(ca =>
+                    ca.ApplicationChecklistEntries.Any(a =>
+                        a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                        a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.TO_DO &&
+                        a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.IN_PROGRESS)))
+            .Select(c => c.Id)
+            .ToAsyncEnumerable();
+
+    public Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId) =>
+        context.Companies
+            .Where(c => c.SdCreationProcessId == processId)
             .Select(c => new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
                 c.Id,
                 c.CompanyIdentifiers.Select(ci => new ValueTuple<UniqueIdentifierId, string>(ci.UniqueIdentifierId, ci.Value)),
                 c.BusinessPartnerNumber,
                 c.Address!.Country!.Alpha2Code
             ))
-            .Take(2)
-            .ToAsyncEnumerable();
+            .SingleOrDefaultAsync();
 
     public Task<bool> IsExistingCompany(Guid companyId) =>
         context.Companies.AnyAsync(c => c.Id == companyId);
+
+    public Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn) =>
+        context.Companies
+            .Where(x => x.BusinessPartnerNumber == bpn)
+            .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
+            .SingleOrDefaultAsync();
 }
