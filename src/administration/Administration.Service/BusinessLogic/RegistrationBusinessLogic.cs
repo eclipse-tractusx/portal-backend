@@ -173,7 +173,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.Invitations
                             .Select(invitation => invitation.CompanyUser)
                             .Where(companyUser => companyUser!.Email != null)
-                            .OrderByDescending(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE) // Order by ACTIVE status so that it will prioritize active user first 
+                            .Where(companyUser => application.ApplicationStatusId == CompanyApplicationStatusId.DECLINED || companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
                         application.Company.BusinessPartnerNumber))
