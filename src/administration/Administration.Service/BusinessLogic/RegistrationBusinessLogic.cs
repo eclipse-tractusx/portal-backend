@@ -172,8 +172,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
                             .Select(invitation => invitation.CompanyUser)
-                            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
-                                && companyUser.Email != null)
+                            .Where(companyUser => companyUser!.Email != null)
+                            .OrderByDescending(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE) // Order by ACTIVE status so that it will prioritize active user first 
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
                         application.Company.BusinessPartnerNumber))
