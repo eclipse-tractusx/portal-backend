@@ -129,6 +129,31 @@ public class ConnectorsBusinessLogicTests
         result.Content.Should().HaveCount(resultPageSize);
     }
 
+    [Theory]
+    [InlineData(0, 10, 5, 1, 0, 5)]
+    public async Task GetAllCompanyConnectorDatasWithCheckTypeCompanyConnector_WithValidData_ReturnsExpected(int page, int size, int numberOfElements, int numberOfPages, int resultPage, int resultPageSize)
+    {
+        var data = _fixture.Build<ConnectorData>()
+            .With(x => x.Type, ConnectorTypeId.COMPANY_CONNECTOR)
+            .CreateMany(numberOfElements).ToImmutableArray();
+
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
+
+        // Act
+        var result = await _logic.GetAllCompanyConnectorDatas(page, size);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.Meta.NumberOfElements.Should().Be(numberOfElements);
+        result.Meta.NumberOfPages.Should().Be(numberOfPages);
+        result.Meta.Page.Should().Be(resultPage);
+        result.Meta.PageSize.Should().Be(resultPageSize);
+        result.Content.Should().HaveCount(resultPageSize);
+        result.Content.Should().Contain(x => x.Type == ConnectorTypeId.COMPANY_CONNECTOR);
+    }
+
     #endregion
 
     #region Create Connector

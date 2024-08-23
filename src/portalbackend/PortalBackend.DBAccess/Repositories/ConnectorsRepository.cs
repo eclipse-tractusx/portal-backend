@@ -46,7 +46,9 @@ public class ConnectorsRepository : IConnectorsRepository
             skip,
             take,
             _context.Connectors.AsNoTracking()
-                .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE)
+                .Where(x => x.ProviderId == companyId &&
+                       x.StatusId != ConnectorStatusId.INACTIVE &&
+                       x.TypeId == ConnectorTypeId.COMPANY_CONNECTOR)
                 .GroupBy(c => c.ProviderId),
             connector => connector.OrderByDescending(connector => connector.Name),
             con => new ConnectorData(
