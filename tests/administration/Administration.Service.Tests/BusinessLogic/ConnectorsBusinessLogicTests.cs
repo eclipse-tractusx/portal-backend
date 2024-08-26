@@ -44,7 +44,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private static readonly Guid ServiceAccountUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020003");
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
-    private static readonly Guid ProviderCompanyId = new("ac1cf001-7fbc-1f2f-817f-bce058020029");
+    private static readonly Guid HostCompanyId = new("ac1cf001-7fbc-1f2f-817f-bce058020029");
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
@@ -319,7 +319,9 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         result.Should().NotBeEmpty();
-        _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().And.Satisfy(x =>
+            x.HostId == HostCompanyId &&
+            x.ProviderId == _identity.CompanyId);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
@@ -506,7 +508,7 @@ public class ConnectorsBusinessLogicTests
           x.Value == saId.ToString(),
           y => y.Name == "companyId"
           &&
-          y.Value == ProviderCompanyId.ToString()
+          y.Value == HostCompanyId.ToString()
           );
     }
 
@@ -1334,7 +1336,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
             .Returns((null, null));
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(_validOfferSubscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ProviderCompanyId, ValidCompanyBpn));
+            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ProviderCompanyId: HostCompanyId, ValidCompanyBpn));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes((string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields) =>
@@ -1378,7 +1380,7 @@ public class ConnectorsBusinessLogicTests
 
     private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
     {
-        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ProviderCompanyId))
+        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
             .Returns(true);
     }
 
