@@ -28,7 +28,7 @@ using Testcontainers.PostgreSql;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 
-public class ConsortiaDataDbFixture : IAsyncLifetime
+public class TestDataDbFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
         .WithDatabase("test_db")
@@ -78,7 +78,7 @@ public class ConsortiaDataDbFixture : IAsyncLifetime
 
         var seederOptions = Options.Create(new SeederSettings
         {
-            TestDataEnvironments = new[] { "consortia" },
+            TestDataEnvironments = new[] { "test" },
             DataPaths = new[] { "Seeder/Data" }
         });
         var insertSeeder = new BatchInsertSeeder(context,

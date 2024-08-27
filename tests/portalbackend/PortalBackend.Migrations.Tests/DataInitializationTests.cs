@@ -24,11 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 /// <summary>
 /// This class is only to test if the setup data are correctly set
 /// </summary>
-public class DataInitializationTests : IClassFixture<ConsortiaDataDbFixture>
+public class DataInitializationTests : IClassFixture<TestDataDbFixture>
 {
-    private readonly ConsortiaDataDbFixture _dbTestDbFixture;
+    private readonly TestDataDbFixture _dbTestDbFixture;
 
-    public DataInitializationTests(ConsortiaDataDbFixture testDbFixture)
+    public DataInitializationTests(TestDataDbFixture testDbFixture)
     {
         _dbTestDbFixture = testDbFixture;
     }
