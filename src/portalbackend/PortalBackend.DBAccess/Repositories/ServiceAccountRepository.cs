@@ -94,11 +94,11 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
-    public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
+    public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
         portalDbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
-                serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                (serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE || serviceAccount.Identity!.UserStatusId == UserStatusId.PENDING) &&
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(sa => new OwnServiceAccountData(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
@@ -108,8 +108,15 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 sa.ClientClientId,
                 sa.Connector!.StatusId,
                 sa.OfferSubscription!.OfferSubscriptionStatusId,
-                sa.DimCompanyServiceAccount != null,
-                sa.DimUserCreationData!.ProcessId))
+                sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
+                sa.DimUserCreationData != null,
+                sa.DimUserCreationData == null ? null : new ProcessData(
+                    sa.DimUserCreationData.ProcessId,
+                    sa.DimUserCreationData!.Process!.ProcessSteps
+                        .Where(ps =>
+                            ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                            processStepsToFilter.Contains(ps.ProcessStepTypeId))
+                        .Select(x => x.Id))))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>

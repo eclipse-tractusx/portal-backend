@@ -84,8 +84,11 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<int> DeleteServiceAccount([FromRoute] Guid serviceAccountId) =>
-        _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId);
+    public async Task<NoContentResult> DeleteServiceAccount([FromRoute] Guid serviceAccountId)
+    {
+        await _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
 
     /// <summary>
     /// Gets the service account details for the given id

@@ -48,6 +48,7 @@ public class IdentityProviderController : ControllerBase
     }
 
     /// <summary>
+    /// 
     /// Gets the details of the own company identity provider
     /// </summary>
     /// <returns>Returns the details of the own company identity provider</returns>
