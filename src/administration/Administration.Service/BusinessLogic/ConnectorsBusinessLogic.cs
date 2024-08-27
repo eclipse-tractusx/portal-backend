@@ -157,7 +157,7 @@ public class ConnectorsBusinessLogic(
 
         await ValidateTechnicalUser(technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, result.CompanyId, companyId, technicalUserId);
+        var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, companyId, result.CompanyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
             connectorRequestModel,
             result.ProviderBpn,
