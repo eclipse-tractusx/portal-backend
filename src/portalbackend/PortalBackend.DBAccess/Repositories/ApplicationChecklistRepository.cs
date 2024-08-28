@@ -26,19 +26,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class ApplicationChecklistRepository : IApplicationChecklistRepository
+public class ApplicationChecklistRepository(PortalDbContext dbContext)
+    : IApplicationChecklistRepository
 {
-    private readonly PortalDbContext _portalDbContext;
-
-    /// <summary>
-    /// Creates a new instance of <see cref="ApplicationChecklistRepository"/>
-    /// </summary>
-    /// <param name="portalDbContext">The portal db context</param>
-    public ApplicationChecklistRepository(PortalDbContext portalDbContext)
-    {
-        _portalDbContext = portalDbContext;
-    }
-
     /// <inheritdoc />
     public void CreateChecklistForApplication(Guid applicationId, IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId)> checklistEntries)
     {
@@ -48,7 +38,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                 x.TypeId,
                 x.StatusId,
                 DateTimeOffset.UtcNow));
-        _portalDbContext.ApplicationChecklist.AddRange(entries);
+        dbContext.ApplicationChecklist.AddRange(entries);
     }
 
     /// <inheritdoc />
@@ -56,14 +46,14 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
     {
         var entity = new ApplicationChecklistEntry(applicationId, applicationChecklistTypeId, default, default);
         initialize?.Invoke(entity);
-        _portalDbContext.ApplicationChecklist.Attach(entity);
+        dbContext.ApplicationChecklist.Attach(entity);
         entity.DateLastChanged = DateTimeOffset.UtcNow;
         setFields.Invoke(entity);
         return entity;
     }
 
     public Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId) =>
-        _portalDbContext.Processes
+        dbContext.Processes
             .AsNoTracking()
             .Where(process => process.Id == processId)
             .Select(process =>
@@ -79,7 +69,7 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
             .SingleOrDefaultAsync();
 
     public Task<VerifyChecklistData?> GetChecklistProcessStepData(Guid applicationId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
-        _portalDbContext.CompanyApplications
+        dbContext.CompanyApplications
             .AsNoTracking()
             .AsSplitQuery()
             .Where(application => application.Id == applicationId)
@@ -106,4 +96,19 @@ public class ApplicationChecklistRepository : IApplicationChecklistRepository
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)
                     : null))
             .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<Guid> GetApplicationsForClearinghouseRetrigger(DateTimeOffset dateCreatedThreshold) =>
+        dbContext.CompanyApplications
+            .Where(ca =>
+                ca.ApplicationChecklistEntries.Any(ce =>
+                    ce.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.CLEARING_HOUSE &&
+                    ce.ApplicationChecklistEntryStatusId == ApplicationChecklistEntryStatusId.IN_PROGRESS &&
+                    ce.DateCreated < dateCreatedThreshold) &&
+                ca.ChecklistProcess!.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST &&
+                ca.ChecklistProcess!.ProcessSteps.Any(ps =>
+                    ps.ProcessStepTypeId == ProcessStepTypeId.END_CLEARING_HOUSE &&
+                    ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                    ps.DateCreated < dateCreatedThreshold))
+            .Select(x => x.Id)
+            .ToAsyncEnumerable();
 }

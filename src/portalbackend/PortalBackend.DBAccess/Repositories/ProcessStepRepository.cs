@@ -26,36 +26,25 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class ProcessStepRepository : IProcessStepRepository
+public class ProcessStepRepository(PortalDbContext dbContext) : IProcessStepRepository
 {
-    private readonly PortalDbContext _context;
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="portalDbContext">PortalDb context.</param>
-    public ProcessStepRepository(PortalDbContext portalDbContext)
-    {
-        _context = portalDbContext;
-    }
-
     public Process CreateProcess(ProcessTypeId processTypeId) =>
-        _context.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
+        dbContext.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
 
     public IEnumerable<Process> CreateProcessRange(IEnumerable<ProcessTypeId> processTypeIds)
     {
         var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableList();
-        _context.AddRange(processes);
+        dbContext.AddRange(processes);
         return processes;
     }
 
     public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
-        _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
+        dbContext.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
 
     public IEnumerable<ProcessStep> CreateProcessStepRange(IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
     {
         var processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
-        _context.AddRange(processSteps);
+        dbContext.AddRange(processSteps);
         return processSteps;
     }
 
@@ -63,7 +52,7 @@ public class ProcessStepRepository : IProcessStepRepository
     {
         var step = new ProcessStep(processStepId, default, default, Guid.Empty, default);
         initialize?.Invoke(step);
-        _context.Attach(step);
+        dbContext.Attach(step);
         step.DateLastChanged = DateTimeOffset.UtcNow;
         modify(step);
     }
@@ -76,7 +65,7 @@ public class ProcessStepRepository : IProcessStepRepository
                 data.Initialize?.Invoke(step);
                 return (Step: step, data.Modify);
             }).ToImmutableList();
-        _context.AttachRange(stepModifyData.Select(data => data.Step));
+        dbContext.AttachRange(stepModifyData.Select(data => data.Step));
         stepModifyData.ForEach(data =>
             {
                 data.Step.DateLastChanged = DateTimeOffset.UtcNow;
@@ -85,7 +74,7 @@ public class ProcessStepRepository : IProcessStepRepository
     }
 
     public IAsyncEnumerable<Process> GetActiveProcesses(IEnumerable<ProcessTypeId> processTypeIds, IEnumerable<ProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate) =>
-        _context.Processes
+        dbContext.Processes
             .AsNoTracking()
             .Where(process =>
                 processTypeIds.Contains(process.ProcessTypeId) &&
@@ -94,8 +83,7 @@ public class ProcessStepRepository : IProcessStepRepository
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<(Guid ProcessStepId, ProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId) =>
-        _context.ProcessSteps
-            .AsNoTracking()
+        dbContext.ProcessSteps
             .Where(step =>
                 step.ProcessId == processId &&
                 step.ProcessStepStatusId == ProcessStepStatusId.TODO)
@@ -107,8 +95,7 @@ public class ProcessStepRepository : IProcessStepRepository
             .AsAsyncEnumerable();
 
     public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, ProcessTypeId processTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
-        _context.Processes
-            .AsNoTracking()
+        dbContext.Processes
             .Where(x => x.Id == processId && x.ProcessTypeId == processTypeId)
             .Select(x => new ValueTuple<bool, VerifyProcessData>(
                 true,
@@ -122,8 +109,7 @@ public class ProcessStepRepository : IProcessStepRepository
             .SingleOrDefaultAsync();
 
     public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId, Guid? ServiceAccountVersion)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
-        _context.Processes
-            .AsNoTracking()
+        dbContext.Processes
             .Where(x => x.Id == processId)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?, Guid?>(
                 x.ProcessTypeId,
@@ -139,8 +125,7 @@ public class ProcessStepRepository : IProcessStepRepository
             .SingleOrDefaultAsync();
 
     public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
-        _context.Processes
-            .AsNoTracking()
+        dbContext.Processes
             .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
                 x.ProcessTypeId,

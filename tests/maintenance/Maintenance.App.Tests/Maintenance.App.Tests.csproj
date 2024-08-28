@@ -21,6 +21,7 @@
 
     <PropertyGroup>
         <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests</AssemblyName>
+        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests</RootNamespace>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -52,6 +53,14 @@
         <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
         <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="appsettings.IntegrationTests.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

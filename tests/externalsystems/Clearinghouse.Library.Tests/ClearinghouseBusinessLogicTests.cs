@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -52,6 +53,8 @@ public class ClearinghouseBusinessLogicTests
     private readonly IClearinghouseService _clearinghouseService;
     private readonly IApplicationChecklistService _checklistService;
     private readonly ICustodianBusinessLogic _custodianBusinessLogic;
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IApplicationChecklistRepository _applicationChecklistRepository;
 
     public ClearinghouseBusinessLogicTests()
     {
@@ -61,14 +64,19 @@ public class ClearinghouseBusinessLogicTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _applicationRepository = A.Fake<IApplicationRepository>();
+        _applicationChecklistRepository = A.Fake<IApplicationChecklistRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _clearinghouseService = A.Fake<IClearinghouseService>();
         _custodianBusinessLogic = A.Fake<ICustodianBusinessLogic>();
         _checklistService = A.Fake<IApplicationChecklistService>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_applicationChecklistRepository);
 
-        _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(DateTimeOffset.UtcNow);
+
+        _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, _dateTimeProvider, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
             UseDimWallet = false
@@ -225,7 +233,7 @@ public class ClearinghouseBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
             .Returns<(bool, string?)>(default);
-        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
+        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, _dateTimeProvider, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
             UseDimWallet = true
@@ -256,7 +264,7 @@ public class ClearinghouseBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
             .Returns((true, null));
-        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
+        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, _dateTimeProvider, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
             UseDimWallet = true
@@ -289,7 +297,7 @@ public class ClearinghouseBusinessLogicTests
         A.CallTo(() => _applicationRepository.GetDidForApplicationId(A<Guid>._))
             .Returns((true, "did:web:test123456"));
         SetupForHandleStartClearingHouse();
-        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, Options.Create(new ClearinghouseSettings
+        var logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _custodianBusinessLogic, _checklistService, _dateTimeProvider, Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://api.com",
             UseDimWallet = true
@@ -360,6 +368,29 @@ public class ClearinghouseBusinessLogicTests
 
     #endregion
 
+    #region CheckEndClearinghouseProcesses
+
+    [Fact]
+    public async Task CheckEndClearinghouseProcesses_WithEntry_CreatesProcessStep()
+    {
+        // Arrange
+        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        A.CallTo(() => _applicationChecklistRepository.GetApplicationsForClearinghouseRetrigger(A<DateTimeOffset>._))
+            .Returns(Enumerable.Repeat(IdWithBpn, 1).ToAsyncEnumerable());
+        SetupForCheckEndClearinghouseProcesses(Enumerable.Repeat(entry, 1));
+
+        // Act
+        await _logic.CheckEndClearinghouseProcesses(CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().Be("Reset to retrigger clearinghouse");
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupForHandleStartClearingHouse()
@@ -416,6 +447,40 @@ public class ClearinghouseBusinessLogicTests
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+    }
+
+    private void SetupForCheckEndClearinghouseProcesses(IEnumerable<ApplicationChecklistEntry> applicationChecklistEntries)
+    {
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData data, Action<ApplicationChecklistEntry>? _, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId> _) =>
+            {
+                var entry = applicationChecklistEntries.SingleOrDefault(x => x.ApplicationId == data.ApplicationId);
+                if (entry == null)
+                    return;
+
+                entry.DateLastChanged = DateTimeOffset.UtcNow;
+                modifyApplicationChecklistEntry(entry);
+            });
+
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(
+                A<Guid>._,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
+                ProcessStepTypeId.END_CLEARING_HOUSE,
+                A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
+                A<IEnumerable<ProcessStepTypeId>?>._))
+            .ReturnsLazily((Guid id,
+                ApplicationChecklistEntryTypeId _,
+                IEnumerable<ApplicationChecklistEntryStatusId> _,
+                ProcessStepTypeId _,
+                IEnumerable<ApplicationChecklistEntryTypeId>? _,
+                IEnumerable<ProcessStepTypeId>? _) => new IApplicationChecklistService.ManualChecklistProcessStepData(
+                id,
+                new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
+                Guid.Empty,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,
+                new List<ProcessStep>()));
     }
 
     #endregion

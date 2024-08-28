@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -33,6 +34,7 @@ public class ClearinghouseBusinessLogic(
     IClearinghouseService clearinghouseService,
     ICustodianBusinessLogic custodianBusinessLogic,
     IApplicationChecklistService checklistService,
+    IDateTimeProvider dateTimeProvider,
     IOptions<ClearinghouseSettings> options)
     : IClearinghouseBusinessLogic
 {
@@ -135,5 +137,40 @@ public class ClearinghouseBusinessLogic(
             declined
                 ? [ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE]
                 : [ProcessStepTypeId.START_SELF_DESCRIPTION_LP]);
+    }
+
+    public async Task CheckEndClearinghouseProcesses(CancellationToken stoppingToken)
+    {
+        var applicationIds = await portalRepositories.GetInstance<IApplicationChecklistRepository>()
+            .GetApplicationsForClearinghouseRetrigger(dateTimeProvider.OffsetNow.AddDays(-_settings.RetriggerEndClearinghouseIntervalInDays))
+            .ToListAsync(stoppingToken).ConfigureAwait(false);
+
+        var hasChanges = false;
+        foreach (var applicationId in applicationIds)
+        {
+            var context = await checklistService
+                .VerifyChecklistEntryAndProcessSteps(
+                    applicationId,
+                    ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                    [ApplicationChecklistEntryStatusId.IN_PROGRESS],
+                    ProcessStepTypeId.END_CLEARING_HOUSE)
+                .ConfigureAwait(ConfigureAwaitOptions.None);
+
+            checklistService.FinalizeChecklistEntryAndProcessSteps(
+                context,
+                null,
+                item =>
+                {
+                    item.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.TO_DO;
+                    item.Comment = "Reset to retrigger clearinghouse";
+                },
+                [ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE]);
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
     }
 }

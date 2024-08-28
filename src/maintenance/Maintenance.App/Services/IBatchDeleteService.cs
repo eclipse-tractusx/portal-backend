@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,24 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.ComponentModel.DataAnnotations;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Service to delete the pending and inactive documents as well as the depending on consents from the database
 /// </summary>
-public class ClearinghouseSettings : KeyVaultAuthSettings
+public interface IBatchDeleteService
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string CallbackUrl { get; set; } = null!;
-
-    public bool UseDimWallet { get; set; }
-
-    [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+    /// <summary>
+    /// Cleans up the documents and related entries from the database
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token</param>
+    Task CleanupDocuments(CancellationToken cancellationToken);
 }

@@ -147,10 +147,18 @@ public interface IDocumentRepository
     void RemoveDocuments(IEnumerable<Guid> documentIds);
 
     /// <summary>
+    /// Delete List Of Document
+    /// </summary>
+    /// <param name="offerAssignedDocuments"></param>
+    void RemoveOfferAssignedDocuments(IEnumerable<OfferAssignedDocument> offerAssignedDocuments);
+
+    /// <summary>
     /// Gets the registration document with the given id
     /// </summary>
     /// <param name="documentId">Id of the document</param>
     /// <param name="documentTypeIds">the document types</param>
     /// <returns></returns>
     Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds);
+
+    Task<List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)>> GetDocumentDataForCleanup(DateTimeOffset dateCreated);
 }
