@@ -41,7 +41,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _portalRepositories = portalRepositories;
     }
 
-    public Task ExecuteInvitation(CompanyInvitationData invitationData)
+    public Task<Guid> ExecuteInvitation(CompanyInvitationData invitationData)
     {
         if (string.IsNullOrWhiteSpace(invitationData.Email))
         {
@@ -56,13 +56,13 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         return ExecuteInvitationInternalAsync(invitationData);
     }
 
-    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
+    private async Task<Guid> ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var (userName, firstName, lastName, email, organisationName) = invitationData;
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.INVITATION).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, processId);
-        _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(firstName, lastName, email, organisationName, processId, ci =>
+        var companyInvitation = _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(firstName, lastName, email, organisationName, processId, ci =>
             {
                 if (!string.IsNullOrWhiteSpace(userName))
                 {
@@ -70,6 +70,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
                 }
             });
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return companyInvitation.Id;
     }
 
     public Task RetriggerCreateCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);
@@ -107,5 +108,11 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    public async Task<CompanyInvitationDetails> GetApplicationAndCompanyDetails(Guid invitationId)
+    {
+        var companyInvitation = await _portalRepositories.GetInstance<ICompanyInvitationRepository>().GetInvitationCompanyAndApplicationId(invitationId);
+        return new CompanyInvitationDetails(companyInvitation.ApplicationId, companyInvitation.CompanyId);
     }
 }

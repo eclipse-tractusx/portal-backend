@@ -104,4 +104,14 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             .Where(x => x.Id == invitationId)
             .Select(x => x.ServiceAccountUserId)
             .SingleOrDefaultAsync();
+
+    public Task<(Guid? ApplicationId, Guid? CompanyId)> GetInvitationCompanyAndApplicationId(Guid invitationId) =>
+        _context.CompanyInvitations
+            .Where(x => x.Id == invitationId)
+            .Select(x => new ValueTuple<Guid?, Guid?>(
+
+                x.ApplicationId,
+                x.Application!.CompanyId
+            ))
+            .SingleOrDefaultAsync();
 }

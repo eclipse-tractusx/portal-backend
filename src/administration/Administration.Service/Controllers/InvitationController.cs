@@ -68,7 +68,7 @@ public class InvitationController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
+    public Task<Guid> ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
         _logic.ExecuteInvitation(invitationData);
 
     /// <summary>
@@ -238,4 +238,21 @@ public class InvitationController : ControllerBase
         await _logic.RetriggerInvitationCreateUser(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+    /// <summary>
+    /// Get the application id and company id by using invitation id
+    /// </summary>
+    /// <param name="invitationId"></param>
+    /// <returns>application id and company id</returns>
+    /// Example: GET: api/administration/invitation/{invitationId}
+    [HttpGet]
+    [Authorize(Roles = "invite_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{invitationId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<CompanyInvitationDetails> GetApplicationAndCompanyDetails([FromRoute] Guid invitationId) =>
+        _logic.GetApplicationAndCompanyDetails(invitationId);
 }

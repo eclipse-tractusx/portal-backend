@@ -41,12 +41,15 @@ public class InvitationControllerTests
     {
         // Arrange
         var data = _fixture.Create<CompanyInvitationData>();
+        var invitationId = Guid.NewGuid();
+        A.CallTo(() => _logic.ExecuteInvitation(A<CompanyInvitationData>._)).Returns(invitationId);
 
         // Act
-        await _controller.ExecuteInvitation(data);
+        var result = await _controller.ExecuteInvitation(data);
 
         // Assert
         A.CallTo(() => _logic.ExecuteInvitation(data)).MustHaveHappenedOnceExactly();
+        result.Should().Be(invitationId);
     }
 
     [Fact]
@@ -151,6 +154,22 @@ public class InvitationControllerTests
         // Assert
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.RetriggerInvitationCreateUser(processId))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetApplicationAndCompanyDetails_ReturnsExpected()
+    {
+        // Arrange
+        var expectedResult = new CompanyInvitationDetails(Guid.NewGuid(), Guid.NewGuid());
+        var invitationId = Guid.NewGuid();
+        A.CallTo(() => _logic.GetApplicationAndCompanyDetails(A<Guid>._)).Returns(expectedResult);
+        // Act
+        var result = await _controller.GetApplicationAndCompanyDetails(invitationId);
+
+        // Assert
+        result.Should().Be(expectedResult);
+        A.CallTo(() => _logic.GetApplicationAndCompanyDetails(invitationId))
             .MustHaveHappenedOnceExactly();
     }
 }

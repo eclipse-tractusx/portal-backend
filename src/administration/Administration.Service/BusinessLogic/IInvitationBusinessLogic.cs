@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 {
     public interface IInvitationBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData invitationData);
+        Task<Guid> ExecuteInvitation(CompanyInvitationData invitationData);
         Task RetriggerCreateCentralIdp(Guid processId);
         Task RetriggerCreateSharedIdpServiceAccount(Guid processId);
         Task RetriggerUpdateCentralIdpUrls(Guid processId);
@@ -32,5 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
         Task RetriggerEnableCentralIdp(Guid processId);
         Task RetriggerCreateDatabaseIdp(Guid processId);
         Task RetriggerInvitationCreateUser(Guid processId);
+        Task<CompanyInvitationDetails> GetApplicationAndCompanyDetails(Guid invitationId);
     }
 }

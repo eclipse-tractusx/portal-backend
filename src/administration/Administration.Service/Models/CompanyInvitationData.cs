@@ -69,3 +69,5 @@ public class CompanyInvitationData
         organisationName = OrganisationName;
     }
 }
+
+public record CompanyInvitationDetails(Guid? ApplicationId, Guid? CompanyId);

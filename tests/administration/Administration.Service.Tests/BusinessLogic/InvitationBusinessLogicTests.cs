@@ -89,11 +89,14 @@ public class InvitationBusinessLogicTests
             .WithEmailPattern(x => x.Email)
             .Create();
 
-        await _sut.ExecuteInvitation(invitationData);
+        var result = await _sut.ExecuteInvitation(invitationData);
 
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
+
+        result.Should().NotBe(Guid.Empty, "result should return valid GUID value");
+        result.Should().Be(invitations.FirstOrDefault()!.Id);
     }
 
     [Theory]
@@ -526,6 +529,10 @@ public class InvitationBusinessLogicTests
                 var entity = new CompanyInvitation(Guid.NewGuid(), firstName, lastName, email, organisationName, processId);
                 setOptionalFields?.Invoke(entity);
                 invitations.Add(entity);
+            }).ReturnsLazily((string firstName, string lastName, string email, string organisationName, Guid processId, Action<CompanyInvitation>? setOptionalFields) =>
+            {
+                var entity = invitations.FirstOrDefault();
+                return entity ?? new CompanyInvitation(Guid.NewGuid(), firstName, lastName, email, organisationName, processId);
             });
     }
 
@@ -536,6 +543,40 @@ public class InvitationBusinessLogicTests
                 {
                     processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
                 });
+    }
+
+    #endregion
+
+    #region GetApplicationAndCompanyDetails
+
+    [Fact]
+    public async Task GetApplicationAndCompanyDetails_ReturnNull()
+    {
+        // Arrange
+        var invitationId = Guid.NewGuid();
+        var expectedResult = (Guid.NewGuid(), Guid.NewGuid());
+        A.CallTo(() => _companyInvitationRepository.GetInvitationCompanyAndApplicationId(invitationId)).Returns(expectedResult);
+
+        // Act
+        var result = await _sut.GetApplicationAndCompanyDetails(Guid.NewGuid());
+
+        // Assert
+        result.Should().Be(new CompanyInvitationDetails(null, null));
+    }
+
+    [Fact]
+    public async Task GetApplicationAndCompanyDetails_ReturnResult()
+    {
+        // Arrange
+        var invitationId = Guid.NewGuid();
+        var expectedResult = (Guid.NewGuid(), Guid.NewGuid());
+        A.CallTo(() => _companyInvitationRepository.GetInvitationCompanyAndApplicationId(A<Guid>._)).Returns(expectedResult);
+
+        // Act
+        var result = await _sut.GetApplicationAndCompanyDetails(Guid.NewGuid());
+
+        // Assert
+        result.Should().Be(new CompanyInvitationDetails(expectedResult.Item1, expectedResult.Item2));
     }
 
     #endregion

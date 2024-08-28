@@ -33,4 +33,5 @@ public interface ICompanyInvitationRepository
     Task<string?> GetIdpNameForInvitationId(Guid invitationId);
     Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId);
     Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId);
+    Task<(Guid? ApplicationId, Guid? CompanyId)> GetInvitationCompanyAndApplicationId(Guid invitationId);
 }
