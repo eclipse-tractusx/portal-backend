@@ -568,7 +568,6 @@ public class InvitationBusinessLogicTests
     public async Task GetApplicationAndCompanyDetails_ReturnResult()
     {
         // Arrange
-        var invitationId = Guid.NewGuid();
         var expectedResult = (Guid.NewGuid(), Guid.NewGuid());
         A.CallTo(() => _companyInvitationRepository.GetInvitationCompanyAndApplicationId(A<Guid>._)).Returns(expectedResult);
 
