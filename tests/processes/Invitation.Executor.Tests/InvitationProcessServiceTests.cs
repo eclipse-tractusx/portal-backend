@@ -295,7 +295,7 @@ public class InvitationProcessServiceTests
         var password = _fixture.Create<string>();
         var (secret, initializationVector) = CryptoHelper.Encrypt(password, _encryptionKey, CipherMode.CBC, PaddingMode.PKCS7);
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector, 0));
+            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector));
 
         // Act
         var result = await _sut.UpdateCentralIdpUrl(companyInvitation.Id);
@@ -316,7 +316,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", "idp1", null, null, null));
+            .Returns(("testCorp", "cl1", "idp1", null, null));
 
         // Act
         Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
@@ -332,7 +332,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", null, null, null, null));
+            .Returns(("testCorp", "cl1", null, null, null));
 
         // Act
         Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
@@ -348,7 +348,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", null, null, null, null, null));
+            .Returns(("testCorp", null, null, null, null));
 
         // Act
         Task Act() => _sut.UpdateCentralIdpUrl(companyInvitation.Id);
@@ -411,7 +411,7 @@ public class InvitationProcessServiceTests
         var password = _fixture.Create<string>();
         var (secret, initializationVector) = CryptoHelper.Encrypt(password, _encryptionKey, CipherMode.CBC, PaddingMode.PKCS7);
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector, 0));
+            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector));
 
         // Act
         var result = await _sut.CreateSharedIdpRealm(companyInvitation.Id);
@@ -432,7 +432,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", "idp1", null, null, null));
+            .Returns(("testCorp", "cl1", "idp1", null, null));
 
         // Act
         Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
@@ -448,7 +448,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", null, null, null, null));
+            .Returns(("testCorp", "cl1", null, null, null));
 
         // Act
         Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
@@ -464,7 +464,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", null, null, null, null, null));
+            .Returns(("testCorp", null, null, null, null));
 
         // Act
         Task Act() => _sut.CreateSharedIdpRealm(companyInvitation.Id);
@@ -486,7 +486,7 @@ public class InvitationProcessServiceTests
         var password = _fixture.Create<string>();
         var (secret, initializationVector) = CryptoHelper.Encrypt(password, _encryptionKey, CipherMode.CBC, PaddingMode.PKCS7);
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector, 0));
+            .Returns(("testCorp", "idp1", "cl1", secret, initializationVector));
 
         // Act
         var result = await _sut.CreateSharedClient(companyInvitation.Id);
@@ -507,7 +507,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", "idp1", null, null, null));
+            .Returns(("testCorp", "cl1", "idp1", null, null));
 
         // Act
         Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
@@ -523,7 +523,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", "cl1", null, null, null, null));
+            .Returns(("testCorp", "cl1", null, null, null));
 
         // Act
         Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
@@ -539,7 +539,7 @@ public class InvitationProcessServiceTests
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
         A.CallTo(() => _companyInvitationRepository.GetUpdateCentralIdpUrlData(companyInvitation.Id))
-            .Returns(("testCorp", null, null, null, null, null));
+            .Returns(("testCorp", null, null, null, null));
 
         // Act
         Task Act() => _sut.CreateSharedClient(companyInvitation.Id);
@@ -600,39 +600,22 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        var company = _fixture.Build<Company>().With(x => x.Name, "testCorp").With(x => x.CompanyWalletData, (CompanyWalletData?)null).Create();
-        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
         var idpId = Guid.NewGuid();
 
-        A.CallTo(() => _companyInvitationRepository.GetIdpAndOrgName(companyInvitation.Id))
-            .Returns((true, "testCorp", "cl1-testCorp"));
-        A.CallTo(() => _companyRepository.CreateCompany("testCorp", A<Action<Company>>._)).Returns(company);
-        A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
-            .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
-            {
-                initialize?.Invoke(companyInvitation);
-                modify(companyInvitation);
-            });
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null))
-            .Returns(new IdentityProvider(idpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, DateTimeOffset.UtcNow));
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null))
-            .Returns(new CompanyApplication(applicationId, company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow));
-        A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
-            .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
-            {
-                initialize?.Invoke(companyInvitation);
-                modify(companyInvitation);
-            });
+        A.CallTo(() => _companyInvitationRepository.GetIdpAndCompanyId(companyInvitation.Id))
+            .Returns((true, companyId, "cl1-testCorp"));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null))
+            .Returns(new IdentityProvider(idpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, DateTimeOffset.UtcNow));
 
         // Act
         var result = await _sut.CreateIdpDatabase(companyInvitation.Id);
 
         // Assert
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null))
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(idpId, "cl1-testCorp"))
             .MustHaveHappenedOnceExactly();
-        companyInvitation.ApplicationId.Should().Be(applicationId);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
@@ -645,8 +628,8 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        A.CallTo(() => _companyInvitationRepository.GetIdpAndOrgName(companyInvitation.Id))
-            .Returns((false, "testCorp", (string?)null));
+        A.CallTo(() => _companyInvitationRepository.GetIdpAndCompanyId(companyInvitation.Id))
+            .Returns((false, Guid.NewGuid(), null));
 
         // Act
         Task Act() => _sut.CreateIdpDatabase(companyInvitation.Id);
@@ -661,8 +644,8 @@ public class InvitationProcessServiceTests
     {
         // Arrange
         var companyInvitation = _fixture.Create<CompanyInvitation>();
-        A.CallTo(() => _companyInvitationRepository.GetIdpAndOrgName(companyInvitation.Id))
-            .Returns((true, "testCorp", (string?)null));
+        A.CallTo(() => _companyInvitationRepository.GetIdpAndCompanyId(companyInvitation.Id))
+            .Returns((true, Guid.NewGuid(), null));
 
         // Act
         Task Act() => _sut.CreateIdpDatabase(companyInvitation.Id);
