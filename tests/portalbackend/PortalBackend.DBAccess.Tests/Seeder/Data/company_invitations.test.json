@@ -11,6 +11,7 @@
     "idp_name": "test idp",
     "password": null,
     "client_id": "cl1",
-    "client_secret": null
+    "client_secret": null,
+    "application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2"
   }
 ]

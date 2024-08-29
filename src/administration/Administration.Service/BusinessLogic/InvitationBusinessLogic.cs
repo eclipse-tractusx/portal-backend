@@ -62,13 +62,20 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.INVITATION).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, processId);
+
+        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(organisationName);
+
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var applicationId = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL).Id;
         _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(firstName, lastName, email, organisationName, processId, ci =>
+        {
+            ci.ApplicationId = applicationId;
+            if (!string.IsNullOrWhiteSpace(userName))
             {
-                if (!string.IsNullOrWhiteSpace(userName))
-                {
-                    ci.UserName = userName;
-                }
-            });
+                ci.UserName = userName;
+            }
+        });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 

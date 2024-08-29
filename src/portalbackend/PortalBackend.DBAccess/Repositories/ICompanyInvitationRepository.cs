@@ -29,8 +29,9 @@ public interface ICompanyInvitationRepository
     Task<string?> GetOrganisationNameForInvitation(Guid invitationId);
     Task<(bool Exists, Guid? ApplicationId, Guid? CompanyId, string CompanyName, IEnumerable<(Guid IdpId, string IdpName)> IdpInformation, UserInvitationInformation UserInformation)> GetInvitationUserData(Guid companyInvitationId);
     Task<(bool Exists, string OrgName, string? IdpName)> GetIdpAndOrgName(Guid invitationId);
+    Task<(bool Exists, Guid CompanyId, string? IdpName)> GetIdpAndCompanyId(Guid invitationId);
     void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify);
     Task<string?> GetIdpNameForInvitationId(Guid invitationId);
-    Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId);
+    Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector)> GetUpdateCentralIdpUrlData(Guid invitationId);
     Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId);
 }
