@@ -122,12 +122,11 @@ public class ServiceAccountBusinessLogic(
         var userStatus = UserStatusId.DELETED;
         switch (result)
         {
-            case { IsDimServiceAccount: true, DimServiceAccountWasCreated: true }:
+            case { IsDimServiceAccount: true, CreationProcessInProgress: false }:
                 userStatus = await CreateDeletionProcess(serviceAccountId, result).ConfigureAwait(ConfigureAwaitOptions.None);
                 break;
-            case { IsDimServiceAccount: true, DimServiceAccountWasCreated: false }:
-                HandleCreationProcessSkip(result);
-                break;
+            case { IsDimServiceAccount: true, CreationProcessInProgress: true }:
+                throw ConflictException.Create(AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS);
             default:
                 if (!string.IsNullOrWhiteSpace(result.ClientClientId))
                 {
@@ -153,21 +152,6 @@ public class ServiceAccountBusinessLogic(
         return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private void HandleCreationProcessSkip(OwnServiceAccountData result)
-    {
-        if (result.ProcessData != null)
-        {
-            portalRepositories.GetInstance<IProcessStepRepository>().AttachAndModifyProcessSteps(result.ProcessData.ProcessStepIds.Select(x => new ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>(
-                x,
-                ps => ps.ProcessStepStatusId = ProcessStepStatusId.TODO,
-                ps =>
-                {
-                    ps.ProcessStepStatusId = ProcessStepStatusId.SKIPPED;
-                    ps.Message = "Skipped due to service account deletion";
-                })));
-        }
-    }
-
     private void ModifyConnectorForDeleteServiceAccount(Guid serviceAccountId, OwnServiceAccountData result)
     {
         if (result.ConnectorId != null)
@@ -186,7 +170,7 @@ public class ServiceAccountBusinessLogic(
 
     private async Task<UserStatusId> CreateDeletionProcess(Guid serviceAccountId, OwnServiceAccountData result)
     {
-        var processId = result.ProcessData?.ProcessId ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
+        var processId = result.ProcessId ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
 
         var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
             .GetProcessDataForServiceAccountDeletionCallback(processId, null)

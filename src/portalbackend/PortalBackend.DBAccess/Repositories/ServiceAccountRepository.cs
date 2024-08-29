@@ -98,7 +98,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
         portalDbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
-                (serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE || serviceAccount.Identity!.UserStatusId == UserStatusId.PENDING) &&
+                serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
                 (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
             .Select(sa => new OwnServiceAccountData(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
@@ -109,14 +109,11 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 sa.Connector!.StatusId,
                 sa.OfferSubscription!.OfferSubscriptionStatusId,
                 sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
-                sa.DimUserCreationData != null,
-                sa.DimUserCreationData == null ? null : new ProcessData(
-                    sa.DimUserCreationData.ProcessId,
-                    sa.DimUserCreationData!.Process!.ProcessSteps
-                        .Where(ps =>
+                sa.DimUserCreationData!.Process!.ProcessSteps
+                        .Any(ps =>
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
-                            processStepsToFilter.Contains(ps.ProcessStepTypeId))
-                        .Select(x => x.Id))))
+                            processStepsToFilter.Contains(ps.ProcessStepTypeId)),
+                sa.DimUserCreationData == null ? null : sa.DimUserCreationData!.ProcessId))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>

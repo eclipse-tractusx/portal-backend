@@ -30,8 +30,8 @@ public record OwnServiceAccountData(
     ConnectorStatusId? StatusId,
     OfferSubscriptionStatusId? OfferStatusId,
     bool IsDimServiceAccount,
-    bool DimServiceAccountWasCreated,
-    ProcessData? ProcessData
+    bool CreationProcessInProgress,
+    Guid? ProcessId
 );
 
 public record ProcessData(Guid ProcessId, IEnumerable<Guid> ProcessStepIds);

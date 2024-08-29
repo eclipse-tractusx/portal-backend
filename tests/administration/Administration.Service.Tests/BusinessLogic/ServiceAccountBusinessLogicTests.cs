@@ -550,14 +550,13 @@ public class ServiceAccountBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(true, false, false, false)]
-    [InlineData(false, false, true, false)]
-    [InlineData(false, true, true, false)]
-    [InlineData(true, false, true, false)]
-    [InlineData(false, false, false, false)]
-    [InlineData(false, true, false, false)]
-    [InlineData(false, true, false, true)]
-    public async Task DeleteOwnCompanyServiceAccountAsync_WithoutClient_CallsExpected(bool withClient, bool isDimServiceAccount, bool withServiceAccount, bool withCreationStepsInTodo)
+    [InlineData(true, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    public async Task DeleteOwnCompanyServiceAccountAsync_WithoutClient_CallsExpected(bool withClient, bool isDimServiceAccount, bool withServiceAccount)
     {
         // Arrange
         var identity = _fixture.Build<Identity>()
@@ -568,7 +567,7 @@ public class ServiceAccountBusinessLogicTests
             .With(x => x.CompanyServiceAccountId, ValidServiceAccountId)
             .Create();
         var processId = Guid.NewGuid();
-        SetupDeleteOwnCompanyServiceAccount(withServiceAccount, isDimServiceAccount, withClient, connector, identity, processId, withCreationStepsInTodo);
+        SetupDeleteOwnCompanyServiceAccount(withServiceAccount, isDimServiceAccount, withClient, connector, identity, processId);
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
 
         // Act
@@ -577,11 +576,10 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         if (isDimServiceAccount)
         {
-            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.First().ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER && x.First().ProcessStepStatusId == ProcessStepStatusId.TODO && x.First().ProcessId == processId))).MustHaveHappened(withCreationStepsInTodo ? 0 : 1, Times.Exactly);
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)>>._)).MustHaveHappened(withCreationStepsInTodo ? 1 : 0, Times.Exactly);
+            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.First().ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER && x.First().ProcessStepStatusId == ProcessStepStatusId.TODO && x.First().ProcessId == processId))).MustHaveHappenedOnceExactly();
             A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(A<string>._)).MustNotHaveHappened();
-            identity.UserStatusId.Should().Be(withCreationStepsInTodo ? UserStatusId.DELETED : UserStatusId.PENDING_DELETION);
+            identity.UserStatusId.Should().Be(UserStatusId.PENDING_DELETION);
         }
         else if (withClient)
         {
@@ -599,6 +597,29 @@ public class ServiceAccountBusinessLogicTests
 
         var validServiceAccountUserRoleIds = _userRoleIds.Select(userRoleId => (ValidServiceAccountId, userRoleId));
         A.CallTo(() => _userRolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(validServiceAccountUserRoleIds))).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteOwnCompanyServiceAccountAsync_WithCreationProcessInProgress_ThrowsException()
+    {
+        // Arrange
+        var identity = _fixture.Build<Identity>()
+            .With(x => x.Id, ValidServiceAccountId)
+            .With(x => x.UserStatusId, UserStatusId.ACTIVE)
+            .Create();
+        var connector = _fixture.Build<Connector>()
+            .With(x => x.CompanyServiceAccountId, ValidServiceAccountId)
+            .Create();
+        var processId = Guid.NewGuid();
+        SetupDeleteOwnCompanyServiceAccount(true, true, true, connector, identity, processId, true);
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService);
+        Task Act() => sut.DeleteOwnCompanyServiceAccountAsync(ValidServiceAccountId);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("TECHNICAL_USER_CREATION_IN_PROGRESS");
     }
 
     #endregion
@@ -802,7 +823,7 @@ public class ServiceAccountBusinessLogicTests
     {
         var serviceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test-sa", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(ValidServiceAccountId, ValidCompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new OwnServiceAccountData(_userRoleIds, serviceAccount.Id, serviceAccount.Version, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.PENDING, isDimServiceAccount, !withCreateStepsInTodo, processId == null ? null : new ProcessData(processId.Value, withCreateStepsInTodo ? Enumerable.Repeat(Guid.NewGuid(), 1) : Enumerable.Empty<Guid>())));
+            .Returns(new OwnServiceAccountData(_userRoleIds, serviceAccount.Id, serviceAccount.Version, withServiceAccount ? ValidConnectorId : null, withClient ? ClientId : null, ConnectorStatusId.INACTIVE, OfferSubscriptionStatusId.PENDING, isDimServiceAccount, withCreateStepsInTodo, processId));
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId), A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns<OwnServiceAccountData?>(null);
 
