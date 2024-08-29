@@ -29,8 +29,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\SdFactory.Library\SdFactory.Library.csproj" />
-    <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
+    <ProjectReference Include="..\Processes.Library\Processes.Library.csproj" />
   </ItemGroup>
 
 </Project>

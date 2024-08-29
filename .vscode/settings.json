@@ -82,5 +82,11 @@
             "${commentprefix#} ${cx_header_with_#}",
             "${commentend#}"
         ]
-    }
+    },
+    "cSpell.enableFiletypes": [
+        "dockercompose",
+        "dotenv",
+        "editorconfig"
+    ],
+    "dotnet-test-explorer.testProjectPath": "tests/**/*csproj"
 }

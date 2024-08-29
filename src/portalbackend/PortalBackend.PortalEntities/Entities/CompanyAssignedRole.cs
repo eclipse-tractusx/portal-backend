@@ -39,7 +39,7 @@ public class CompanyAssignedRole : IAuditableV1
     public CompanyRoleId CompanyRoleId { get; private set; }
 
     [LastEditorV1]
-    public Guid? LastEditorId { get; private set; }
+    public Guid? LastEditorId { get; set; }
 
     // Navigation properties
     public virtual Identity? LastEditor { get; private set; }

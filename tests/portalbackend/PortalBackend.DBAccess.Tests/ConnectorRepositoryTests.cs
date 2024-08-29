@@ -64,15 +64,12 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().HaveCount(3).And.Satisfy(
+        result.Content.Should().HaveCount(2).And.Satisfy(
             x => x.Name == "Test Connector 6"
                 && x.TechnicalUser!.Id == new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca")
                 && x.TechnicalUser.Name == "test-user-service-accounts"
                 && x.ConnectorUrl == "www.google.de",
             x => x.Name == "Test Connector 1"
-                && x.TechnicalUser == null
-                && x.ConnectorUrl == "www.google.de",
-            x => x.Name == "Test Connector 42"
                 && x.TechnicalUser == null
                 && x.ConnectorUrl == "www.google.de");
     }
@@ -585,12 +582,10 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetNextConnectorsWithMissingSelfDescription().ToListAsync().ConfigureAwait(false);
+        var result = await sut.GetConnectorForProcessId(new Guid("4a5059d9-c427-42b7-aa54-5e5a240946d3")).ConfigureAwait(false);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(2).And.AllSatisfy(
-            x => x.BusinessPartnerNumber.Should().NotBeNullOrEmpty());
+        result.BusinessPartnerNumber.Should().Be("BPNL000000001OSP");
     }
 
     #endregion

@@ -56,13 +56,13 @@ public class ConnectorsBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IConnectorsRepository _connectorsRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
-    private readonly IProcessStepRepository _processStepRepository;
     private readonly IOptions<ConnectorsSettings> _options;
     private readonly IIdentityService _identityService;
 
@@ -75,12 +75,12 @@ public class ConnectorsBusinessLogicTests
         _companyRepository = A.Fake<ICompanyRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _userRepository = A.Fake<IUserRepository>();
-        _portalRepositories = A.Fake<IPortalRepositories>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
         _identityService = A.Fake<IIdentityService>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         _options = A.Fake<IOptions<ConnectorsSettings>>();
@@ -1272,20 +1272,24 @@ public class ConnectorsBusinessLogicTests
             {
                 processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _connectorsRepository.HasAnyConnectorsWithMissingSelfDescription())
-            .Returns(true);
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
 
         // Act
         await _logic.TriggerSelfDescriptionCreation();
 
         // Assert
-        processes.Should().NotBeNull()
-            .And.ContainSingle()
-            .Which.ProcessTypeId.Should().Be(ProcessTypeId.SELF_DESCRIPTION_CREATION);
-        processSteps.Should().NotBeNull().And.HaveCount(1)
+        processes.Should().NotBeNull().And.HaveCount(2)
             .And.Satisfy(
-                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION,
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(2)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION,
+        p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+            .MustHaveHappenedTwiceExactly();
     }
 
     [Fact]
@@ -1306,8 +1310,8 @@ public class ConnectorsBusinessLogicTests
             {
                 processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
-            .Returns(false);
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
 
         // Act
         await _logic.TriggerSelfDescriptionCreation();
@@ -1315,7 +1319,6 @@ public class ConnectorsBusinessLogicTests
         // Assert
         processes.Should().BeEmpty();
         processSteps.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
@@ -1347,14 +1350,6 @@ public class ConnectorsBusinessLogicTests
             })
             .Returns(new Connector(Guid.NewGuid(), null!, null!, null!));
 
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>?>._, A<Action<Connector>>.That.IsNotNull()))
-            .Invokes((Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters) =>
-            {
-                var connector = _connectors.First(x => x.Id == connectorId);
-                initialize?.Invoke(connector);
-                setOptionalParameters.Invoke(connector);
-            });
-
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, _identity.CompanyId))
             .Returns((_fixture.Create<ConnectorInformationData>(), true));
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(A<Guid>.That.Not.Matches(x => x == ExistingConnectorId), _identity.CompanyId))
@@ -1372,6 +1367,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -53,5 +52,6 @@ public interface ICompanyDataBusinessLogic
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);
     Task<DimUrlsResponse> GetDimServiceUrls();
     Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size);
+    Task RetriggerSelfDescriptionCreation(Guid processId);
     Task TriggerSelfDescriptionCreation();
 }
