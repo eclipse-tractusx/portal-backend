@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
@@ -136,7 +137,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> UpdateCentralIdpUrl(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (orgName, idpName, clientId, clientSecret, initializationVector) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -148,28 +149,23 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
-        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
+        var secret = Decrypt(clientSecret, initializationVector);
 
         await _idpManagement.UpdateCentralIdentityProviderUrlsAsync(idpName, orgName, _settings.InitialLoginTheme, clientId, secret).ConfigureAwait(false);
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_SHARED_CLIENT, 1), ProcessStepStatusId.DONE, true, null);
     }
 
-    private string Decrypt(byte[]? clientSecret, byte[]? initializationVector, int? encryptionMode)
+    private string Decrypt(byte[]? clientSecret, byte[]? initializationVector)
     {
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
+
         if (clientSecret == null)
         {
             throw new ConflictException("ClientSecret must not be null");
         }
 
-        if (encryptionMode == null)
-        {
-            throw new ConflictException("EncryptionMode must not be null");
-        }
-
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == encryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {encryptionMode} is not configured");
-
-        return CryptoHelper.Decrypt(clientSecret, initializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        return cryptoHelper.Decrypt(clientSecret, initializationVector);
     }
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateCentralIdpOrgMapper(Guid invitationId)
@@ -181,6 +177,7 @@ public class InvitationProcessService : IInvitationProcessService
         {
             throw new ConflictException($"Invitation {invitationId} does not exist");
         }
+
         if (string.IsNullOrWhiteSpace(idpName))
         {
             throw new ConflictException(IdpNotSetErrorMessage);
@@ -194,7 +191,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedIdpRealm(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (orgName, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (orgName, idpName, clientId, clientSecret, initializationVector) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -206,7 +203,7 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
-        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
+        var secret = Decrypt(clientSecret, initializationVector);
 
         await _idpManagement
             .CreateSharedRealmIdpClientAsync(idpName, _settings.InitialLoginTheme, orgName, clientId, secret)
@@ -218,7 +215,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateSharedClient(Guid invitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (_, idpName, clientId, clientSecret, initializationVector, encryptionMode) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (_, idpName, clientId, clientSecret, initializationVector) = await companyInvitationRepository.GetUpdateCentralIdpUrlData(invitationId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (string.IsNullOrWhiteSpace(idpName))
         {
@@ -230,7 +227,7 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("ClientId must not be null");
         }
 
-        var secret = Decrypt(clientSecret, initializationVector, encryptionMode);
+        var secret = Decrypt(clientSecret, initializationVector);
 
         await _idpManagement
             .CreateSharedClientAsync(idpName, clientId, secret)
@@ -259,7 +256,7 @@ public class InvitationProcessService : IInvitationProcessService
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateIdpDatabase(Guid companyInvitationId)
     {
         var companyInvitationRepository = _portalRepositories.GetInstance<ICompanyInvitationRepository>();
-        var (exists, orgName, idpName) = await companyInvitationRepository.GetIdpAndOrgName(companyInvitationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (exists, companyId, idpName) = await companyInvitationRepository.GetIdpAndCompanyId(companyInvitationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!exists)
         {
             throw new NotFoundException($"CompanyInvitation {companyInvitationId} does not exist");
@@ -270,16 +267,10 @@ public class InvitationProcessService : IInvitationProcessService
             throw new ConflictException("IdpName must be set for the company invitation");
         }
 
-        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(orgName);
-
         var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, company.Id, null);
-        identityProvider.Companies.Add(company);
+        var identityProvider = identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null);
+        identityProvider.Companies.Add(new Company(companyId, null!, CompanyStatusId.PENDING, DateTimeOffset.UtcNow));
         identityProviderRepository.CreateIamIdentityProvider(identityProvider.Id, idpName);
-
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var applicationId = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL).Id;
-        companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitationId, x => { x.ApplicationId = null; }, x => { x.ApplicationId = applicationId; });
 
         return (Enumerable.Repeat(ProcessStepTypeId.INVITATION_CREATE_USER, 1), ProcessStepStatusId.DONE, true, null);
     }

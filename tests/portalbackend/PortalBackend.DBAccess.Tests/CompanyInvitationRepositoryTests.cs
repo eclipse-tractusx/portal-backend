@@ -230,10 +230,10 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetIdpAndOrgName
+    #region
 
     [Fact]
-    public async Task GetIdpAndOrgNameAsync_WithExistingForProcessId_ReturnsExpected()
+    public async Task GetIdpAndOrgName_WithExisting_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
@@ -248,13 +248,45 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
-    public async Task GetInvitationIdpCreationData_WithoutExistingForProcessId_ReturnsExpected()
+    public async Task GetIdpAndOrgName_WithoutExisting_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
 
         // Act
         var data = await sut.GetIdpAndOrgName(Guid.NewGuid());
+
+        // Assert
+        data.Exists.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GetIdpAndCompanyId
+
+    [Fact]
+    public async Task GetIdpAndCompanyId_WithExisting_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetIdpAndCompanyId(_invitationId);
+
+        // Assert
+        data.Exists.Should().BeTrue();
+        data.CompanyId.Should().Be("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
+        data.IdpName.Should().Be("test idp");
+    }
+
+    [Fact]
+    public async Task GetIdpAndCompanyId_WithoutExisting_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetIdpAndCompanyId(Guid.NewGuid());
 
         // Assert
         data.Exists.Should().BeFalse();

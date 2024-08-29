@@ -32,9 +32,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 
 public class InvitationBusinessLogicTests
 {
+    private static readonly Guid ApplicationId = Guid.NewGuid();
+    private static readonly Guid CompanyId = Guid.NewGuid();
     private readonly IFixture _fixture;
     private readonly IProcessStepRepository _processStepRepository;
     private readonly ICompanyInvitationRepository _companyInvitationRepository;
+    private readonly ICompanyRepository _companyRepository;
+    private readonly IApplicationRepository _applicationRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly InvitationBusinessLogic _sut;
 
@@ -46,9 +50,13 @@ public class InvitationBusinessLogicTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _companyInvitationRepository = A.Fake<ICompanyInvitationRepository>();
+        _companyRepository = A.Fake<ICompanyRepository>();
+        _applicationRepository = A.Fake<IApplicationRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyInvitationRepository>()).Returns(_companyInvitationRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
 
         _sut = new InvitationBusinessLogic(_portalRepositories);
     }
@@ -93,7 +101,9 @@ public class InvitationBusinessLogicTests
 
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
-        invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
+        invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName" && x.ApplicationId == ApplicationId);
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -504,6 +514,7 @@ public class InvitationBusinessLogicTests
 
     private void SetupFakesForInvite(List<Process> processes, List<ProcessStep> processSteps, List<CompanyInvitation> invitations)
     {
+        var company = new Company(CompanyId, "testOrg", CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var createdProcessId = Guid.NewGuid();
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.INVITATION))
             .Invokes((ProcessTypeId processTypeId) =>
@@ -527,6 +538,9 @@ public class InvitationBusinessLogicTests
                 setOptionalFields?.Invoke(entity);
                 invitations.Add(entity);
             });
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._)).Returns(company);
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null))
+            .Returns(new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow));
     }
 
     private void SetupFakesForRetrigger(List<ProcessStep> processSteps)

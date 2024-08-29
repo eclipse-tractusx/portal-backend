@@ -1,21 +1,21 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
- *
- * See the NOTICE file(s) distributed with this work for additional
- * information regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ********************************************************************************/
+* Copyright (c) 2024 Contributors to the Eclipse Foundation
+*
+* See the NOTICE file(s) distributed with this work for additional
+* information regarding copyright ownership.
+*
+* This program and the accompanying materials are made available under the
+* terms of the Apache License, Version 2.0 which is available at
+* https://www.apache.org/licenses/LICENSE-2.0.
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+* WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+* License for the specific language governing permissions and limitations
+* under the License.
+*
+* SPDX-License-Identifier: Apache-2.0
+********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -73,6 +73,16 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             ))
             .SingleOrDefaultAsync();
 
+    public Task<(bool Exists, Guid CompanyId, string? IdpName)> GetIdpAndCompanyId(Guid invitationId) =>
+        _context.CompanyInvitations
+            .Where(x => x.Id == invitationId)
+            .Select(x => new ValueTuple<bool, Guid, string?>(
+                true,
+                x.Application!.CompanyId,
+                x.IdpName
+            ))
+            .SingleOrDefaultAsync();
+
     public void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify)
     {
         var entity = new CompanyInvitation(invitationId, null!, null!, null!, null!, Guid.Empty);
@@ -87,16 +97,15 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
             .Select(x => x.IdpName)
             .SingleOrDefaultAsync();
 
-    public Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId) =>
+    public Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector)> GetUpdateCentralIdpUrlData(Guid invitationId) =>
         _context.CompanyInvitations
             .Where(x => x.Id == invitationId)
-            .Select(x => new ValueTuple<string, string?, string?, byte[]?, byte[]?, int?>(
+            .Select(x => new ValueTuple<string, string?, string?, byte[]?, byte[]?>(
                 x.OrganisationName,
                 x.IdpName,
                 x.ClientId,
                 x.ClientSecret,
-                x.InitializationVector,
-                x.EncryptionMode))
+                x.InitializationVector))
             .SingleOrDefaultAsync();
 
     public Task<string?> GetServiceAccountUserIdForInvitation(Guid invitationId) =>
