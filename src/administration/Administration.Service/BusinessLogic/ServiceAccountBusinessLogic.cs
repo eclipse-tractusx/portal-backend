@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
@@ -98,8 +99,14 @@ public class ServiceAccountBusinessLogic(
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
         var companyId = _identityData.CompanyId;
-        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None)
-                ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+        var technicalUserCreationSteps = new[]
+        {
+            ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER,
+            ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
+            ProcessStepTypeId.RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
+        };
+        var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId, technicalUserCreationSteps).ConfigureAwait(ConfigureAwaitOptions.None)
+                ?? throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
 
         if (result.StatusId is ConnectorStatusId.ACTIVE or ConnectorStatusId.PENDING)
         {
@@ -112,41 +119,41 @@ public class ServiceAccountBusinessLogic(
         }
 
         // serviceAccount
-        if (result.IsDimServiceAccount)
+        var userStatus = UserStatusId.DELETED;
+        switch (result)
         {
-            var processId = result.ProcessId ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
-
-            var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
-                .GetProcessDataForServiceAccountDeletionCallback(processId, null)
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-
-            var context = processData.ProcessData.CreateManualProcessData(null,
-                portalRepositories, () => $"externalId {processId}");
-
-            context.ProcessSteps.Where(step => step.ProcessStepTypeId != ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER).IfAny(pending =>
-                throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, [new("serviceAccountId", serviceAccountId.ToString()), new("processStepTypeIds", string.Join(",", pending))]));
-
-            if (!context.ProcessSteps.Any(step => step.ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER))
-            {
-                portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
+            case { IsDimServiceAccount: true, CreationProcessInProgress: false }:
+                userStatus = await CreateDeletionProcess(serviceAccountId, result).ConfigureAwait(ConfigureAwaitOptions.None);
+                break;
+            case { IsDimServiceAccount: true, CreationProcessInProgress: true }:
+                throw ConflictException.Create(AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS);
+            default:
+                if (!string.IsNullOrWhiteSpace(result.ClientClientId))
                 {
-                    i.UserStatusId = UserStatusId.PENDING_DELETION;
-                });
-                context.ScheduleProcessSteps([ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER]);
-                context.FinalizeProcessStep();
-            }
+                    await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
+                }
+
+                break;
         }
-        else if (!string.IsNullOrWhiteSpace(result.ClientClientId))
-        {
-            await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
-            portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(serviceAccountId, null, i =>
+
+        portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(
+            serviceAccountId,
+            i =>
             {
-                i.UserStatusId = UserStatusId.DELETED;
+                i.UserStatusId = UserStatusId.PENDING;
+            },
+            i =>
+            {
+                i.UserStatusId = userStatus;
             });
-        }
-
         portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
+        ModifyConnectorForDeleteServiceAccount(serviceAccountId, result);
 
+        return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private void ModifyConnectorForDeleteServiceAccount(Guid serviceAccountId, OwnServiceAccountData result)
+    {
         if (result.ConnectorId != null)
         {
             portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(result.ConnectorId.Value,
@@ -159,8 +166,28 @@ public class ServiceAccountBusinessLogic(
                     connector.CompanyServiceAccountId = null;
                 });
         }
+    }
 
-        return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    private async Task<UserStatusId> CreateDeletionProcess(Guid serviceAccountId, OwnServiceAccountData result)
+    {
+        var processId = result.ProcessId ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
+
+        var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
+            .GetProcessDataForServiceAccountDeletionCallback(processId, null)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        var context = processData.ProcessData.CreateManualProcessData(null,
+            portalRepositories, () => $"externalId {processId}");
+
+        context.ProcessSteps.Where(step => step.ProcessStepTypeId != ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER).IfAny(pending =>
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, [new("serviceAccountId", serviceAccountId.ToString()), new("processStepTypeIds", string.Join(",", pending))]));
+
+        if (context.ProcessSteps.Any(step => step.ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER))
+            return UserStatusId.DELETED;
+
+        context.ScheduleProcessSteps([ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER]);
+        context.FinalizeProcessStep();
+        return UserStatusId.PENDING_DELETION;
     }
 
     public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId)
@@ -170,7 +197,7 @@ public class ServiceAccountBusinessLogic(
 
         if (result == null)
         {
-            throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+            throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
 
         IamClientAuthMethod? iamClientAuthMethod;
@@ -220,7 +247,7 @@ public class ServiceAccountBusinessLogic(
         var result = await portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(serviceAccountId, companyId);
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
 
         if (result.ClientClientId == null)
@@ -259,7 +286,7 @@ public class ServiceAccountBusinessLogic(
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamClientIdAsync(serviceAccountId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_CONFLICT, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
         }
 
         if (result.UserStatusId == UserStatusId.INACTIVE)
@@ -398,7 +425,7 @@ public class ServiceAccountBusinessLogic(
             null,
             i =>
             {
-                i.UserStatusId = UserStatusId.INACTIVE;
+                i.UserStatusId = UserStatusId.DELETED;
             });
 
         context.FinalizeProcessStep();
