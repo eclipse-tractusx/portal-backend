@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyIn
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
@@ -70,7 +71,8 @@ try
                 .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
                 .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
-                .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>();
+                .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>()
+                .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {

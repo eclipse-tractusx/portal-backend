@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -26,7 +25,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConnector20231115))]
+[AuditEntityV1(typeof(AuditConnector20240814))]
 public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)
@@ -69,6 +68,8 @@ public class Connector : IAuditableV1, IBaseEntity
 
     public Guid? CompanyServiceAccountId { get; set; }
 
+    public Guid? SdCreationProcessId { get; set; }
+
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
 
@@ -80,6 +81,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Country? Location { get; set; }
     public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
     public virtual Identity? LastEditor { get; set; }
+    public virtual Process? SdCreationProcess { get; set; }
 
     /// <summary>
     /// Mapping to the assigned document

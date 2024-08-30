@@ -101,35 +101,23 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange
-        var company1 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
             Guid.NewGuid(),
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
             "BPNL000000001TEST",
             "DE");
-        var company2 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
-            Guid.NewGuid(),
-            new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000002TEST",
-            "DE");
-        var companies =
-            new List<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string?
-                BusinessPartnerNumber, string CountryCode)>
-            {
-                company1,
-                company2
-            };
-        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
-            .Returns(companies.ToAsyncEnumerable());
+        A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
+            .Returns(company);
 
         // Act
         var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION);
+        result.ScheduleStepTypeIds.Should().BeNull();
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(company1.Item1, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(company.Item1, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -146,31 +134,22 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange
-        var connector1 = new ValueTuple<Guid, string, Guid?>(
+        var connector = new ValueTuple<Guid, string, Guid>(
             Guid.NewGuid(),
             "BPNL000000001TEST",
             Guid.NewGuid());
-        var connector2 = new ValueTuple<Guid, string, Guid?>(
-            Guid.NewGuid(),
-            "BPNL000000002TEST",
-            Guid.NewGuid());
-        var connectors = new List<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)>
-            {
-                connector1,
-                connector2
-            };
-        A.CallTo(() => _connectorsRepository.GetNextConnectorsWithMissingSelfDescription())
-            .Returns(connectors.ToAsyncEnumerable());
+        A.CallTo(() => _connectorsRepository.GetConnectorForProcessId(processId))
+            .Returns(connector);
 
         // Act
         var result = await _executor.ExecuteProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, Enumerable.Empty<ProcessStepTypeId>(), CancellationToken.None);
 
         // Assert
         result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+        result.ScheduleStepTypeIds.Should().BeNull();
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector1.Item1, A<string>._, "BPNL000000001TEST", A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, A<string>._, "BPNL000000001TEST", A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -189,25 +168,13 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        var company1 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
             Guid.NewGuid(),
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
             "BPNL000000001TEST",
             "DE");
-        var company2 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
-            Guid.NewGuid(),
-            new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000002TEST",
-            "DE");
-        var companies =
-            new List<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string?
-                BusinessPartnerNumber, string CountryCode)>
-            {
-                company1,
-                company2
-            };
-        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
-            .Returns(companies.ToAsyncEnumerable());
+        A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
+            .Returns(company);
 
         var error = _fixture.Create<TestException>();
         A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
@@ -239,25 +206,13 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        var company1 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
             Guid.NewGuid(),
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
             "BPNL000000001TEST",
             "DE");
-        var company2 = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
-            Guid.NewGuid(),
-            new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000002TEST",
-            "DE");
-        var companies =
-            new List<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string?
-                BusinessPartnerNumber, string CountryCode)>
-            {
-                company1,
-                company2
-            };
-        A.CallTo(() => _companyRepository.GetNextCompaniesWithMissingSelfDescription())
-            .Returns(companies.ToAsyncEnumerable());
+        A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
+            .Returns(company);
 
         var error = new SystemException(_fixture.Create<string>());
         A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))

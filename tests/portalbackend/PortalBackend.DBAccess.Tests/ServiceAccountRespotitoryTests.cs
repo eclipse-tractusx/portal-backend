@@ -122,7 +122,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, _validCompanyId);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBe(default);
@@ -136,7 +136,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), _validCompanyId);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         result.Should().Be(default);
@@ -150,7 +150,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyServiceAccountId = new("93eecd4e-ca47-4dd2-85bf-775ea72eb000");
         Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(companyServiceAccountId, companyId);
+        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(companyServiceAccountId, companyId, Enumerable.Empty<ProcessStepTypeId>());
         // Assert
         result.Should().NotBeNull();
     }

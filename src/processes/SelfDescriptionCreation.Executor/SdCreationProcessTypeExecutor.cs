@@ -33,6 +33,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
 {
     private readonly SelfDescriptionProcessSettings _settings = options.Value;
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = [ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION];
+    private Guid? _processId;
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.SELF_DESCRIPTION_CREATION;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => ExecutableProcessSteps.Contains(processStepTypeId);
@@ -41,6 +42,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
+        _processId = processId;
         return await Task.FromResult(new IProcessTypeExecutor.InitializationResult(false, null));
     }
 
@@ -71,55 +73,43 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
 
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForCompany(CancellationToken cancellationToken)
     {
-        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
-        var companyInformation = companyRepository.GetNextCompaniesWithMissingSelfDescription();
-        await using var enumerator = companyInformation.GetAsyncEnumerator(cancellationToken);
-
-        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        if (_processId == null)
         {
-            var (id, uniqueIdentifiers, businessPartnerNumber, countryCode) = enumerator.Current;
-            if (string.IsNullOrWhiteSpace(businessPartnerNumber))
-            {
-                throw new ConflictException("BusinessPartnerNumber should never be null here.");
-            }
-
-            await sdFactoryService.RegisterSelfDescriptionAsync(id, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-
-            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? Enumerable.Repeat(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, 1) // in case there are further companies or connectors need self description documents
-                : null;
-            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"create self description document started for connector {id}");
+            throw new ConflictException("process id must always be set");
         }
 
-        return (null, ProcessStepStatusId.DONE, false, "no companies without self description document");
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
+        var (id, uniqueIdentifiers, businessPartnerNumber, countryCode) = await companyRepository.GetCompanyByProcessId(_processId.Value);
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ConflictException("BusinessPartnerNumber should never be null here.");
+        }
+
+        await sdFactoryService.RegisterSelfDescriptionAsync(id, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return (null, ProcessStepStatusId.DONE, true, null);
     }
 
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForConnector(CancellationToken cancellationToken)
     {
-        var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
-        var connectorInformation = connectorsRepository.GetNextConnectorsWithMissingSelfDescription();
-        await using var enumerator = connectorInformation.GetAsyncEnumerator(cancellationToken);
-
-        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        if (_processId == null)
         {
-            var (id, businessPartnerNumber, selfDescriptionDocumentId) = enumerator.Current;
-            if (string.IsNullOrWhiteSpace(businessPartnerNumber))
-            {
-                throw new ConflictException("BusinessPartnerNumber should never be null here.");
-            }
-
-            var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
-            await sdFactoryService.RegisterConnectorAsync(id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-
-            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? Enumerable.Repeat(ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION, 1) // in case there are further companies or connectors need self description documents
-                : null;
-            return (nextStepTypeIds, ProcessStepStatusId.DONE, true, $"create self description document started for connector {id}");
+            throw new ConflictException("process id must always be set");
         }
 
-        return (null, ProcessStepStatusId.DONE, false, "no connectors without self description document");
+        var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
+        var (id, businessPartnerNumber, selfDescriptionDocumentId) = await connectorsRepository.GetConnectorForProcessId(_processId.Value).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ConflictException("BusinessPartnerNumber should never be null here.");
+        }
+
+        var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
+        await sdFactoryService.RegisterConnectorAsync(id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return (null, ProcessStepStatusId.DONE, true, null);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId stepTypeId) =>

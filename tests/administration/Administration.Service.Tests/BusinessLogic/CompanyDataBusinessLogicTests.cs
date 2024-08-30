@@ -1176,6 +1176,77 @@ public class CompanyDataBusinessLogicTests
 
     #endregion
 
+    #region TriggerSelfDescriptionCreation
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithMissingSdDocsForConnectorAndCompany_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _companyRepository.GetCompanyIdsWithMissingSelfDescription())
+            .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
+
+        // Act
+        await _sut.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().NotBeNull()
+            .And.HaveCount(2).And.Satisfy(
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION,
+                    p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(2)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION,
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedTwiceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithoutMissingSdDocsForCompany_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _companyRepository.GetCompanyIdsWithMissingSelfDescription())
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
+
+        // Act
+        await _sut.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().BeEmpty();
+        processSteps.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region GetDimServiceUrls
 
     [Fact]
@@ -1235,74 +1306,6 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         result.DecentralIdentityManagementAuthUrl.Should().BeNull();
-    }
-
-    #endregion
-
-    #region TriggerSelfDescriptionCreation
-
-    [Fact]
-    public async Task TriggerSelfDescriptionCreation_WithMissingSdDocsForConnectorAndCompany_CallsExpected()
-    {
-        // Arrange
-        var processId = Guid.NewGuid();
-        var processes = new List<Process>();
-        var processSteps = new List<ProcessStep>();
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .Invokes((ProcessTypeId processTypeId) =>
-            {
-                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
-            })
-            .Returns(new Process(processId, default, default));
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
-            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
-            {
-                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
-            });
-        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
-            .Returns(true);
-
-        // Act
-        await _sut.TriggerSelfDescriptionCreation();
-
-        // Assert
-        processes.Should().NotBeNull()
-            .And.ContainSingle()
-            .Which.ProcessTypeId.Should().Be(ProcessTypeId.SELF_DESCRIPTION_CREATION);
-        processSteps.Should().NotBeNull().And.HaveCount(1)
-            .And.Satisfy(
-                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION);
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task TriggerSelfDescriptionCreation_WithoutMissingSdDocsForCompany_CallsExpected()
-    {
-        // Arrange
-        var processId = Guid.NewGuid();
-        var processes = new List<Process>();
-        var processSteps = new List<ProcessStep>();
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .Invokes((ProcessTypeId processTypeId) =>
-            {
-                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
-            })
-            .Returns(new Process(processId, default, default));
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
-            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
-            {
-                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
-            });
-        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
-            .Returns(false);
-
-        // Act
-        await _sut.TriggerSelfDescriptionCreation();
-
-        // Assert
-        processes.Should().BeEmpty();
-        processSteps.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion

@@ -44,6 +44,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private static readonly Guid ServiceAccountUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020003");
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
+    private static readonly Guid HostCompanyId = new("ac1cf001-7fbc-1f2f-817f-bce058020029");
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
@@ -55,13 +56,13 @@ public class ConnectorsBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IConnectorsRepository _connectorsRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
-    private readonly IProcessStepRepository _processStepRepository;
     private readonly IOptions<ConnectorsSettings> _options;
     private readonly IIdentityService _identityService;
 
@@ -74,12 +75,12 @@ public class ConnectorsBusinessLogicTests
         _companyRepository = A.Fake<ICompanyRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _userRepository = A.Fake<IUserRepository>();
-        _portalRepositories = A.Fake<IPortalRepositories>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
         _identityService = A.Fake<IIdentityService>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         _options = A.Fake<IOptions<ConnectorsSettings>>();
@@ -312,13 +313,15 @@ public class ConnectorsBusinessLogicTests
         }), _sdFactoryBusinessLogic, _identityService, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
-
+        SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged();
         // Act
         var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
-        _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().And.Satisfy(x =>
+            x.HostId == HostCompanyId &&
+            x.ProviderId == _identity.CompanyId);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
@@ -505,7 +508,7 @@ public class ConnectorsBusinessLogicTests
           x.Value == saId.ToString(),
           y => y.Name == "companyId"
           &&
-          y.Value == _identity.CompanyId.ToString()
+          y.Value == HostCompanyId.ToString()
           );
     }
 
@@ -1269,20 +1272,24 @@ public class ConnectorsBusinessLogicTests
             {
                 processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _connectorsRepository.HasAnyConnectorsWithMissingSelfDescription())
-            .Returns(true);
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
 
         // Act
         await _logic.TriggerSelfDescriptionCreation();
 
         // Assert
-        processes.Should().NotBeNull()
-            .And.ContainSingle()
-            .Which.ProcessTypeId.Should().Be(ProcessTypeId.SELF_DESCRIPTION_CREATION);
-        processSteps.Should().NotBeNull().And.HaveCount(1)
+        processes.Should().NotBeNull().And.HaveCount(2)
             .And.Satisfy(
-                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION,
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(2)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION,
+        p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+            .MustHaveHappenedTwiceExactly();
     }
 
     [Fact]
@@ -1303,8 +1310,8 @@ public class ConnectorsBusinessLogicTests
             {
                 processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
-        A.CallTo(() => _companyRepository.HasAnyCompaniesWithMissingSelfDescription())
-            .Returns(false);
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
 
         // Act
         await _logic.TriggerSelfDescriptionCreation();
@@ -1312,7 +1319,6 @@ public class ConnectorsBusinessLogicTests
         // Assert
         processes.Should().BeEmpty();
         processSteps.Should().BeEmpty();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
@@ -1333,7 +1339,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
             .Returns((null, null));
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(_validOfferSubscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ValidCompanyId, ValidCompanyBpn));
+            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ProviderCompanyId: HostCompanyId, ValidCompanyBpn));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes((string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields) =>
@@ -1343,14 +1349,6 @@ public class ConnectorsBusinessLogicTests
                 _connectors.Add(connector);
             })
             .Returns(new Connector(Guid.NewGuid(), null!, null!, null!));
-
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>?>._, A<Action<Connector>>.That.IsNotNull()))
-            .Invokes((Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters) =>
-            {
-                var connector = _connectors.First(x => x.Id == connectorId);
-                initialize?.Invoke(connector);
-                setOptionalParameters.Invoke(connector);
-            });
 
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, _identity.CompanyId))
             .Returns((_fixture.Create<ConnectorInformationData>(), true));
@@ -1369,10 +1367,17 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+    }
+
+    private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
+    {
+        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
+            .Returns(true);
     }
 
     private void SetupIdentity()

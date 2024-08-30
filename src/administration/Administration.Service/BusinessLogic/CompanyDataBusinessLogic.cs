@@ -32,6 +32,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
+using System.Collections.Immutable;
+using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -358,13 +363,6 @@ public class CompanyDataBusinessLogic(
         );
     }
 
-    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) =>
-        Pagination.CreateResponseAsync(
-            page,
-            size,
-            _settings.MaxPageSize,
-            portalRepositories.GetInstance<ICompanyRepository>().GetCompaniesWithMissingSdDocument());
-
     /// <inheritdoc />
     public async Task<int> DeleteCompanyCertificateAsync(Guid documentId)
     {
@@ -431,6 +429,7 @@ public class CompanyDataBusinessLogic(
         {
             throw new NotFoundException($"Company certificate document {documentId} does not exist");
         }
+
         if (!documentDetails.IsStatusLocked)
         {
             throw new ForbiddenException($"Document {documentId} status is not locked");
@@ -439,17 +438,42 @@ public class CompanyDataBusinessLogic(
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
 
+    public Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size) =>
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            portalRepositories.GetInstance<ICompanyRepository>().GetCompaniesWithMissingSdDocument());
+
     public async Task TriggerSelfDescriptionCreation()
     {
-        var hasMissingSdDocumentCompanies = await portalRepositories.GetInstance<ICompanyRepository>().HasAnyCompaniesWithMissingSelfDescription().ConfigureAwait(ConfigureAwaitOptions.None);
-        if (hasMissingSdDocumentCompanies)
+        var companiesWithMissingSd = portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdsWithMissingSelfDescription();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
+        await foreach (var companyId in companiesWithMissingSd)
         {
-            var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
             var processId = processStepRepository.CreateProcess(ProcessTypeId.SELF_DESCRIPTION_CREATION).Id;
-
             processStepRepository.CreateProcessStep(ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepStatusId.TODO, processId);
-
-            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+            companyRepository.AttachAndModifyCompany(companyId, c => c.SdCreationProcessId = null, c => c.SdCreationProcessId = processId);
         }
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    public async Task RetriggerSelfDescriptionCreation(Guid processId)
+    {
+        const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION;
+        const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION;
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(NextStep, 1));
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

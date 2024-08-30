@@ -181,7 +181,8 @@ public interface ICompanyRepository
     Task<(string? Holder, string? BusinessPartnerNumber, WalletInformation? WalletInformation)> GetWalletData(Guid identityId);
     void RemoveProviderCompanyDetails(Guid providerCompanyDetailId);
     Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument();
-    Task<bool> HasAnyCompaniesWithMissingSelfDescription();
-    IAsyncEnumerable<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetNextCompaniesWithMissingSelfDescription();
+    IAsyncEnumerable<Guid> GetCompanyIdsWithMissingSelfDescription();
+    Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId);
     Task<bool> IsExistingCompany(Guid companyId);
+    Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
 }

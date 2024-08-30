@@ -221,13 +221,15 @@ public class ConnectorsRepository : IConnectorsRepository
                 con.HostId != null ? con.Host!.Name : con.Provider!.Name)
         ).SingleOrDefaultAsync();
 
-    public Task<bool> HasAnyConnectorsWithMissingSelfDescription() =>
-        _context.Connectors.AnyAsync(c => c.SelfDescriptionDocumentId == null);
-
-    public IAsyncEnumerable<(Guid Id, string? BusinessPartnerNumber, Guid? SelfDescriptionDocumentId)> GetNextConnectorsWithMissingSelfDescription() =>
+    public IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription() =>
         _context.Connectors
-            .Where(c => c.StatusId == ConnectorStatusId.ACTIVE && c.SelfDescriptionDocumentId == null)
-            .Select(c => new ValueTuple<Guid, string?, Guid?>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId))
-            .Take(2)
+            .Where(c => c.StatusId == ConnectorStatusId.ACTIVE && c.SelfDescriptionDocumentId == null && c.Provider!.SelfDescriptionDocumentId != null)
+            .Select(c => c.Id)
             .ToAsyncEnumerable();
+
+    public Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId) =>
+        _context.Connectors
+            .Where(c => c.SdCreationProcessId == processId)
+            .Select(c => new ValueTuple<Guid, string?, Guid>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId!.Value))
+            .SingleOrDefaultAsync();
 }

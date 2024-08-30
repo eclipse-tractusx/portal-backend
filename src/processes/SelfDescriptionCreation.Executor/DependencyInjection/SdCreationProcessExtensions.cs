@@ -17,9 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-public record CompanyMissingSdDocumentData(
-    Guid CompanyId,
-    string Name
-);
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
+
+public static class SdCreationProcessExtensions
+{
+    public static IServiceCollection AddSelfDescriptionCreationProcessExecutor(this IServiceCollection services, IConfiguration config)
+    {
+        var section = config.GetSection("SelfDescriptionCreationProcess");
+        services.AddOptions<SelfDescriptionProcessSettings>()
+            .Bind(section)
+            .ValidateDistinctValues(section)
+            .ValidateOnStart();
+
+        return services
+            .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();
+    }
+}

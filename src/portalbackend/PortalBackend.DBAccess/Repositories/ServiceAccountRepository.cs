@@ -94,7 +94,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                             userRole.UserRoleText))))
             .SingleOrDefaultAsync();
 
-    public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId) =>
+    public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
         portalDbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId &&
@@ -108,8 +108,12 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 sa.ClientClientId,
                 sa.Connector!.StatusId,
                 sa.OfferSubscription!.OfferSubscriptionStatusId,
-                sa.DimCompanyServiceAccount != null,
-                sa.DimUserCreationData!.ProcessId))
+                sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
+                sa.DimUserCreationData!.Process!.ProcessSteps
+                        .Any(ps =>
+                            ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                            processStepsToFilter.Contains(ps.ProcessStepTypeId)),
+                sa.DimUserCreationData == null ? null : sa.DimUserCreationData!.ProcessId))
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>

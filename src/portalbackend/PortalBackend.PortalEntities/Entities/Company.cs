@@ -28,6 +28,7 @@ public class Company : IBaseEntity
     private Company()
     {
         Name = null!;
+        DidDocumentLocation = null!;
         Agreements = new HashSet<Agreement>();
         BoughtOffers = new HashSet<Offer>();
         ProvidedOffers = new HashSet<Offer>();
@@ -76,6 +77,8 @@ public class Company : IBaseEntity
 
     public string? DidDocumentLocation { get; set; }
 
+    public Guid? SdCreationProcessId { get; set; }
+
     // Navigation properties
     public virtual Address? Address { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
@@ -84,6 +87,7 @@ public class Company : IBaseEntity
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual CompanyWalletData? CompanyWalletData { get; set; }
+    public virtual Process? SdCreationProcess { get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }

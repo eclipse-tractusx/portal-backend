@@ -37,7 +37,8 @@
     "shortname": "CX-Test-Access",
     "company_status_id": 2,
     "address_id": "b4db3945-19a7-4a50-97d6-e66e8dfd04fe",
-    "self_description_document_id": null
+    "self_description_document_id": null,
+    "sd_creation_process_id":  "107cd9bd-0c4c-4fb9-9f2a-1a389bf46c76"
   },
   {
     "id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -77,7 +78,7 @@
     "shortname": "OSP",
     "company_status_id": 1,
     "address_id": "c2b23d31-3666-42e6-bba2-bb550c2cc7f6",
-    "self_description_document_id": null
+    "self_description_document_id": "1ac8aca1-4cf3-462b-90fe-e92d49a4950b"
   },
   {
     "id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",

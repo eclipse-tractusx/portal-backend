@@ -2,6 +2,18 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.2.0-RC3
+
+### Bugfixes
+
+* **REgistration Process**
+  * removed DIM authentication details from logs [#951](https://github.com/eclipse-tractusx/portal-backend/pull/951)
+  * adjust retrigger process for sd creation [#938](https://github.com/eclipse-tractusx/portal-backend/pull/938)
+* **Connector creation**
+  * adjusted the host and provider company for managed connectors [#948](https://github.com/eclipse-tractusx/portal-backend/pull/948)
+* **Technical Users**
+  * adjusted logic to delete external technical users [#956](https://github.com/eclipse-tractusx/portal-backend/pull/956)
+  
 ## 2.2.0-RC2
 
 ### Change
