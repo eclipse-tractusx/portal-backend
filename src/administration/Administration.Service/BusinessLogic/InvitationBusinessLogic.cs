@@ -41,7 +41,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _portalRepositories = portalRepositories;
     }
 
-    public Task ExecuteInvitation(CompanyInvitationData invitationData)
+    public Task<CompanyInvitationResponse> ExecuteInvitation(CompanyInvitationData invitationData)
     {
         if (string.IsNullOrWhiteSpace(invitationData.Email))
         {
@@ -56,7 +56,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         return ExecuteInvitationInternalAsync(invitationData);
     }
 
-    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
+    private async Task<CompanyInvitationResponse> ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var (userName, firstName, lastName, email, organisationName) = invitationData;
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
@@ -77,6 +77,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         });
 
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return new CompanyInvitationResponse(applicationId, company.Id);
     }
 
     public Task RetriggerCreateCentralIdp(Guid processId) => TriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP);

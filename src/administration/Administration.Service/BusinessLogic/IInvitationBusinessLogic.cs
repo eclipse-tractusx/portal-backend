@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 {
     public interface IInvitationBusinessLogic
     {
-        Task ExecuteInvitation(CompanyInvitationData invitationData);
+        Task<CompanyInvitationResponse> ExecuteInvitation(CompanyInvitationData invitationData);
         Task RetriggerCreateCentralIdp(Guid processId);
         Task RetriggerCreateSharedIdpServiceAccount(Guid processId);
         Task RetriggerUpdateCentralIdpUrls(Guid processId);
