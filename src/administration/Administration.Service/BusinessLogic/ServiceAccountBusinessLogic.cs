@@ -187,8 +187,7 @@ public class ServiceAccountBusinessLogic(
             result.ConnectorData,
             result.OfferSubscriptionData,
             result.CompanyLastEditorData!.Name,
-            result.CompanyLastEditorData.CompanyName,
-            result.SubscriptionId);
+            result.CompanyLastEditorData.CompanyName);
     }
 
     public async Task<ServiceAccountDetails> ResetOwnCompanyServiceAccountSecretAsync(Guid serviceAccountId)
@@ -215,8 +214,7 @@ public class ServiceAccountBusinessLogic(
             authData.IamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
-            authData.Secret,
-            result.SubscriptionId);
+            authData.Secret);
     }
 
     public async Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails)
