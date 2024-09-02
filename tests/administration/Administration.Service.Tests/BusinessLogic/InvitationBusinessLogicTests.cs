@@ -97,13 +97,14 @@ public class InvitationBusinessLogicTests
             .WithEmailPattern(x => x.Email)
             .Create();
 
-        await _sut.ExecuteInvitation(invitationData);
+        var result = await _sut.ExecuteInvitation(invitationData);
 
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName" && x.ApplicationId == ApplicationId);
         A.CallTo(() => _companyRepository.CreateCompany(A<string>._, null)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null)).MustHaveHappenedOnceExactly();
+        result.Should().Be(new CompanyInvitationResponse(ApplicationId, CompanyId));
     }
 
     [Theory]

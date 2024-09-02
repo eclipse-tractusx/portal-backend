@@ -41,12 +41,15 @@ public class InvitationControllerTests
     {
         // Arrange
         var data = _fixture.Create<CompanyInvitationData>();
+        var expectedResponse = new CompanyInvitationResponse(Guid.NewGuid(), Guid.NewGuid());
+        A.CallTo(() => _logic.ExecuteInvitation(A<CompanyInvitationData>._)).Returns(expectedResponse);
 
         // Act
-        await _controller.ExecuteInvitation(data);
+        var result = await _controller.ExecuteInvitation(data);
 
         // Assert
         A.CallTo(() => _logic.ExecuteInvitation(data)).MustHaveHappenedOnceExactly();
+        result.Should().Be(expectedResponse);
     }
 
     [Fact]
