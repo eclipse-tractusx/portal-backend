@@ -35,6 +35,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\administration\Administration.Service\Administration.Service.csproj" />
     <ProjectReference Include="..\..\..\src\externalsystems\OnboardingServiceProvider.Library\OnboardingServiceProvider.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\..\..\src\web\Web.PublicInfos\Web.PublicInfos.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>

@@ -25,6 +25,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -294,10 +296,10 @@ public class DimBusinessLogicTests
     public async Task ProcessDimResponse_WithDidSchemaInvalid_CallsExpected()
     {
         // Arrange
-        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
+        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
         {
             { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new(ApplicationChecklistEntryStatusId.TO_DO, string.Empty) }
-        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>());
+        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>());
         var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n    \"https://www.w3.org/ns/did/v1\",\n    \"https://w3id.org/security/suites/ed25519-2020/v1\"\n  ],\n  \"id\": \"did:web:example.com:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"type\": \"JsonWebKey2020\",\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"type\": \"CredentialStore\",\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
         var data = _fixture.Build<DimWalletData>()
             .With(x => x.DidDocument, didDocument)
@@ -323,10 +325,10 @@ public class DimBusinessLogicTests
     public async Task ProcessDimResponse_WithFailingSchemaValidation_CallsExpected()
     {
         // Arrange
-        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
+        var context = new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), Guid.NewGuid(), ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new Dictionary<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>()
         {
             { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new (ApplicationChecklistEntryStatusId.TO_DO, string.Empty )}
-        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep>());
+        }.ToImmutableDictionary(), Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>());
         var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n \"abc\" ],\n  \"id\": \"did:web:example.org:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
         var data = _fixture.Build<DimWalletData>().With(x => x.DidDocument, didDocument).With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX").Create();
         var companyId = Guid.NewGuid();
@@ -351,11 +353,11 @@ public class DimBusinessLogicTests
         // Arrange
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             ApplicationId,
-            _fixture.Create<Process>(),
+            _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(),
             Guid.NewGuid(),
             ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create<ApplicationChecklistEntryTypeId, ValueTuple<ApplicationChecklistEntryStatusId, string?>>(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new(ApplicationChecklistEntryStatusId.TO_DO, string.Empty)) }),
-            Enumerable.Empty<ProcessStep>());
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>());
 
         const string jsonData = """
                                         {

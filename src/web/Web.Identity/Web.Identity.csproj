@@ -31,6 +31,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Framework.Identity\Framework.Identity.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     </ItemGroup>

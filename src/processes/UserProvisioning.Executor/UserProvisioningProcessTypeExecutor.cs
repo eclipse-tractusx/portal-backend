@@ -18,16 +18,17 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
 
-public class UserProvisioningProcessTypeExecutor : IProcessTypeExecutor
+public class UserProvisioningProcessTypeExecutor : IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
@@ -52,7 +53,7 @@ public class UserProvisioningProcessTypeExecutor : IProcessTypeExecutor
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => ExecutableProcessSteps;
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => ValueTask.FromResult(false);
 
-    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
         var userId = await _portalRepositories.GetInstance<IUserRepository>().GetCompanyUserIdForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -62,10 +63,10 @@ public class UserProvisioningProcessTypeExecutor : IProcessTypeExecutor
         }
         _userId = userId;
         _processId = processId;
-        return new IProcessTypeExecutor.InitializationResult(false, null);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null);
     }
 
-    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
     {
         if (_userId == Guid.Empty)
         {
@@ -95,7 +96,7 @@ public class UserProvisioningProcessTypeExecutor : IProcessTypeExecutor
             (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex, processStepTypeId);
             modified = true;
         }
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId)

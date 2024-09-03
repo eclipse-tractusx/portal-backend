@@ -36,11 +36,11 @@
     <ItemGroup>
       <ProjectReference Include="..\..\externalsystems\Custodian.Library\Custodian.Library.csproj" />
       <ProjectReference Include="..\..\framework\Framework.DateTimeProvider\Framework.DateTimeProvider.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
       <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
       <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
       <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
-      <ProjectReference Include="..\..\processes\Processes.Library\Processes.Library.csproj" />
     </ItemGroup>
 
 </Project>

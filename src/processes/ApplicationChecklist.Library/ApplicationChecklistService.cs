@@ -19,6 +19,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -78,7 +80,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
     public void SkipProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         foreach (var processStepGroup in context.ProcessSteps.GroupBy(step => step.ProcessStepTypeId).IntersectBy(processStepTypeIds, step => step.Key))
         {
             var firstModified = false;
@@ -99,7 +101,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
     public void FinalizeChecklistEntryAndProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? initializeApplicationChecklistEntry, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
         var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         if (modifyApplicationChecklistEntry != null)
         {

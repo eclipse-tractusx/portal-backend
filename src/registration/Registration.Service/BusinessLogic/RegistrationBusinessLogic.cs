@@ -22,9 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -32,7 +35,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -561,9 +563,9 @@ public class RegistrationBusinessLogic(
 
         var entries = await checklistService.CreateInitialChecklistAsync(applicationId);
 
-        var process = portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
+        var process = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
 
-        portalRepositories.GetInstance<IProcessStepRepository>()
+        portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()
             .CreateProcessStepRange(
                 checklistService
                     .GetInitialProcessStepTypeIds(entries)
@@ -973,7 +975,7 @@ public class RegistrationBusinessLogic(
     private void ScheduleDeleteIdentityProviders(Guid companyId, IEnumerable<IdentityProviderStatusData> identityProviderStatusDatas)
     {
         var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         identityProviderStatusDatas
             .Where(data => data.IdentityProviderTypeId == IdentityProviderTypeId.MANAGED)
@@ -1030,7 +1032,7 @@ public class RegistrationBusinessLogic(
             .DeleteCompanyUserAssignedRoles(
                 companyUserDatas.SelectMany(data => data.IdentityAssignedRoleIds.Select(roleId => (data.CompanyUserId, roleId))));
 
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         var processIds = processStepRepository
             .CreateProcessRange(Enumerable.Repeat(ProcessTypeId.USER_PROVISIONING, companyUserDatas.Count()))
             .Select(x => x.Id)

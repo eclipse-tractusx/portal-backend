@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -30,7 +31,6 @@ public class DimUserProcessService(
     IDimService dimService,
     IPortalRepositories portalRepositories) : IDimUserProcessService
 {
-
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> CreateDimUser(Guid processId, Guid dimServiceAccountId, CancellationToken cancellationToken)
     {
         var (bpn, dimName) = await GetBpnDimName(dimServiceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);

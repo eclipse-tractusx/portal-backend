@@ -20,8 +20,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 
@@ -71,8 +72,8 @@ public static class VerifyApplicationChecklistDataExtensions
         }
     }
 
-    public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep processStep) =>
-        new IApplicationChecklistService.ManualChecklistProcessStepData(
+    public static IApplicationChecklistService.ManualChecklistProcessStepData CreateManualChecklistProcessStepData(this VerifyChecklistData checklistData, Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStep<ProcessTypeId, ProcessStepTypeId> processStep) =>
+        new(
             applicationId,
             checklistData.Process ?? throw new UnexpectedConditionException("checklistData.Process should never be null here"),
             processStep.Id,

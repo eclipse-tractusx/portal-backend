@@ -28,9 +28,10 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
-    <ProjectReference Include="..\Processes.Worker.Library\Processes.Worker.Library.csproj" />
-    <ProjectReference Include="..\Processes.Library\Processes.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
   </ItemGroup>
 </Project>

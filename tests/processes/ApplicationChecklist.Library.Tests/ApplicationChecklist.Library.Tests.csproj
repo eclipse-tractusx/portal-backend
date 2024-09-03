@@ -39,6 +39,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
       <ProjectReference Include="..\..\..\src\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
       <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>

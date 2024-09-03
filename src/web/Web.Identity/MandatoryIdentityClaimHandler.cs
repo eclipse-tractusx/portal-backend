@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -37,38 +36,32 @@ public class MandatoryIdentityClaimRequirement : IAuthorizationRequirement
     public PolicyTypeId PolicyTypeId { get; }
 }
 
-public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdentityClaimRequirement>
+public class MandatoryIdentityClaimHandler(
+    IClaimsIdentityDataBuilder claimsIdentityDataBuilder,
+    IPortalRepositories portalRepositories,
+    ILogger<MandatoryIdentityClaimHandler> logger)
+    : AuthorizationHandler<MandatoryIdentityClaimRequirement>
 {
-    private readonly IIdentityRepository _identityRepository;
-    private readonly ITechnicalUserRepository _technicalUserRepository;
-    private readonly IClaimsIdentityDataBuilder _identityDataBuilder;
-    private readonly ILogger<MandatoryIdentityClaimHandler> _logger;
-
-    public MandatoryIdentityClaimHandler(IClaimsIdentityDataBuilder claimsIdentityDataBuilder, IPortalRepositories portalRepositories, ILogger<MandatoryIdentityClaimHandler> logger)
-    {
-        _identityDataBuilder = claimsIdentityDataBuilder;
-        _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
-        _technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
-        _logger = logger;
-    }
+    private readonly IIdentityRepository _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
+    private readonly ITechnicalUserRepository _technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MandatoryIdentityClaimRequirement requirement)
     {
-        if (_identityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Initial)
+        if (claimsIdentityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Initial)
         {
             await InitializeClaims(context.User).ConfigureAwait(false);
         }
-        if (_identityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Empty)
+        if (claimsIdentityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Empty)
         {
             context.Fail();
             return;
         }
         if (requirement.PolicyTypeId switch
         {
-            PolicyTypeId.ValidIdentity => _identityDataBuilder.IdentityId != Guid.Empty,
+            PolicyTypeId.ValidIdentity => claimsIdentityDataBuilder.IdentityId != Guid.Empty,
             PolicyTypeId.ValidCompany => (await GetCompanyId().ConfigureAwait(false)) != Guid.Empty,
-            PolicyTypeId.CompanyUser => _identityDataBuilder.IdentityTypeId == IdentityTypeId.COMPANY_USER,
-            PolicyTypeId.ServiceAccount => _identityDataBuilder.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
+            PolicyTypeId.CompanyUser => claimsIdentityDataBuilder.IdentityTypeId == Framework.Identity.IdentityTypeId.COMPANY_USER,
+            PolicyTypeId.ServiceAccount => claimsIdentityDataBuilder.IdentityTypeId == Framework.Identity.IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
             _ => throw new UnexpectedConditionException($"unexpected PolicyTypeId {requirement.PolicyTypeId}")
         })
         {
@@ -85,9 +78,9 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         var preferredUserName = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.PreferredUserName)?.Value;
         if (Guid.TryParse(preferredUserName, out var identityId))
         {
-            _identityDataBuilder.AddIdentityId(identityId);
-            _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_USER);
-            _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Initialized;
+            claimsIdentityDataBuilder.AddIdentityId(identityId);
+            claimsIdentityDataBuilder.AddIdentityTypeId(Framework.Identity.IdentityTypeId.COMPANY_USER);
+            claimsIdentityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Initialized;
             return;
         }
 
@@ -95,37 +88,37 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         var clientId = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.ClientId)?.Value;
         if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _technicalUserRepository.GetTechnicalUserDataByClientId(clientId).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
-            _identityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);
-            _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
-            _identityDataBuilder.AddCompanyId(serviceAccountData.CompanyId);
-            _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
+            claimsIdentityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);
+            claimsIdentityDataBuilder.AddIdentityTypeId(Framework.Identity.IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+            claimsIdentityDataBuilder.AddCompanyId(serviceAccountData.CompanyId);
+            claimsIdentityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
             return;
         }
 
         var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
-        _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for sub {Sub}", preferredUserName, sub);
+        logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for sub {Sub}", preferredUserName, sub);
 
-        (Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
+        (Guid IdentityId, Framework.Identity.IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
         if (!string.IsNullOrWhiteSpace(sub) && (identityData = await _identityRepository.GetActiveIdentityDataByUserEntityId(sub).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
-            _identityDataBuilder.AddIdentityId(identityData.IdentityId);
-            _identityDataBuilder.AddIdentityTypeId(identityData.IdentityTypeId);
-            _identityDataBuilder.AddCompanyId(identityData.CompanyId);
-            _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
+            claimsIdentityDataBuilder.AddIdentityId(identityData.IdentityId);
+            claimsIdentityDataBuilder.AddIdentityTypeId(identityData.IdentityTypeId);
+            claimsIdentityDataBuilder.AddCompanyId(identityData.CompanyId);
+            claimsIdentityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
             return;
         }
 
-        _logger.LogWarning("No identity found for userEntityId {Sub}", sub);
-        _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Empty;
+        logger.LogWarning("No identity found for userEntityId {Sub}", sub);
+        claimsIdentityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Empty;
     }
 
     private async ValueTask<Guid> GetCompanyId()
     {
-        if (_identityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Initialized)
+        if (claimsIdentityDataBuilder.Status == IClaimsIdentityDataBuilderStatus.Initialized)
         {
-            _identityDataBuilder.AddCompanyId(await _identityRepository.GetActiveCompanyIdByIdentityId(_identityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None));
-            _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
+            claimsIdentityDataBuilder.AddCompanyId(await _identityRepository.GetActiveCompanyIdByIdentityId(claimsIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None));
+            claimsIdentityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
         }
-        return _identityDataBuilder.CompanyId;
+        return claimsIdentityDataBuilder.CompanyId;
     }
 }

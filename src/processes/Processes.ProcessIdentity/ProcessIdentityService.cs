@@ -17,7 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 

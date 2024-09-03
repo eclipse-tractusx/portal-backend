@@ -40,6 +40,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\externalsystems\SdFactory.Library\SdFactory.Library.csproj" />
+        <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 </Project>

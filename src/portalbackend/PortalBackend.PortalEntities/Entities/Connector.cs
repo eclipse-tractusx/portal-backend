@@ -17,9 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -81,7 +82,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Country? Location { get; set; }
     public virtual TechnicalUser? TechnicalUser { get; set; }
     public virtual Identity? LastEditor { get; set; }
-    public virtual Process? SdCreationProcess { get; set; }
+    public virtual Process<ProcessTypeId, ProcessStepTypeId>? SdCreationProcess { get; set; }
 
     /// <summary>
     /// Mapping to the assigned document

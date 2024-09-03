@@ -17,9 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -63,7 +64,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     // Navigation properties
     public virtual CompanyApplicationStatus? ApplicationStatus { get; set; }
     public virtual Company? Company { get; set; }
-    public virtual Process? ChecklistProcess { get; set; }
+    public virtual Process<ProcessTypeId, ProcessStepTypeId>? ChecklistProcess { get; set; }
     public virtual CompanyApplicationType? CompanyApplicationType { get; set; }
     public virtual Company? OnboardingServiceProvider { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; set; }

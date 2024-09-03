@@ -17,7 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -87,7 +88,7 @@ public class Company : IBaseEntity
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual CompanyWalletData? CompanyWalletData { get; set; }
-    public virtual Process? SdCreationProcess { get; set; }
+    public virtual Process<ProcessTypeId, ProcessStepTypeId>? SdCreationProcess { get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }

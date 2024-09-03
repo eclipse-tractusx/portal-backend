@@ -19,6 +19,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -206,13 +209,13 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, CompanyApplicationTypeId ApplicationTypeId, VerifyProcessData? NetworkRegistrationProcessData)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, CompanyApplicationTypeId ApplicationTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>? NetworkRegistrationProcessData)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications
             .AsNoTracking()
             .Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, CompanyApplicationTypeId, VerifyProcessData?>(
+            .Select(ca => new ValueTuple<Guid, string, string?, CompanyApplicationTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?>(
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,

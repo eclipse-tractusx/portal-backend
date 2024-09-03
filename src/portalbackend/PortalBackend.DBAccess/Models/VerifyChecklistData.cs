@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record VerifyChecklistData(
     bool IsSubmitted,
-    Process? Process,
+    Process<ProcessTypeId, ProcessStepTypeId>? Process,
     IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)>? Checklist,
-    IEnumerable<ProcessStep>? ProcessSteps);
+    IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? ProcessSteps);

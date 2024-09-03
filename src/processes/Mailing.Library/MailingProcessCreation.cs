@@ -21,6 +21,8 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -41,7 +43,7 @@ public class MailingProcessCreation : IMailingProcessCreation
 
     public void CreateMailProcess(string email, string template, IReadOnlyDictionary<string, string> mailParameters)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
         CreateMailingInformation(processId, email, template, mailParameters);
@@ -102,7 +104,7 @@ public class MailingProcessCreation : IMailingProcessCreation
                 return parameters;
             }
 
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
             var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
             processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             foreach (var template in templates)

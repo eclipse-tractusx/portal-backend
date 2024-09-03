@@ -23,8 +23,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -32,8 +36,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -445,7 +447,7 @@ public class CompanyDataBusinessLogic(
     public async Task TriggerSelfDescriptionCreation()
     {
         var companiesWithMissingSd = portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdsWithMissingSelfDescription();
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
         await foreach (var companyId in companiesWithMissingSd)
         {
@@ -461,7 +463,7 @@ public class CompanyDataBusinessLogic(
     {
         const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION;
         const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION;
-        var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_PROCESSID_NOT_EXIST, new ErrorParameter[] { new(nameof(processId), processId.ToString()) });

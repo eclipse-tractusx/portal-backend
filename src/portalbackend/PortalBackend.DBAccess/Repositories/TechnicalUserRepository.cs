@@ -19,11 +19,15 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Diagnostics;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -255,5 +259,38 @@ public class TechnicalUserRepository(PortalDbContext portalDbContext) : ITechnic
         portalDbContext.ExternalTechnicalUserCreationData
             .Where(x => x.ProcessId == processId)
             .Select(x => x.Id)
+            .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+        portalDbContext.ExternalTechnicalUserCreationData
+            .AsNoTracking()
+            .Where(x => x.ProcessId == processId)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>, Guid?, Guid?>(
+                x.Process!.ProcessTypeId,
+                new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                    x.Process,
+                    x.Process.ProcessSteps
+                        .Where(step =>
+                            processStepTypeIds.Contains(step.ProcessStepTypeId) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.TechnicalUserId,
+                x.TechnicalUser!.Version)
+            )
+            .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId)> GetProcessDataForTechnicalUserDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
+        portalDbContext.ExternalTechnicalUserCreationData
+            .AsNoTracking()
+            .Where(x => x.ProcessId == processId && x.Process!.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>, Guid?>(
+                x.Process!.ProcessTypeId,
+                new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                    x.Process,
+                    x.Process!.ProcessSteps
+                        .Where(step =>
+                            (processStepTypeIds == null || processStepTypeIds.Contains(step.ProcessStepTypeId)) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.TechnicalUserId)
+            )
             .SingleOrDefaultAsync();
 }

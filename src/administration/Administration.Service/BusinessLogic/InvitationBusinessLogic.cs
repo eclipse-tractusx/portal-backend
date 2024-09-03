@@ -20,10 +20,13 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -59,7 +62,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
     private async Task<CompanyInvitationResponse> ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var (userName, firstName, lastName, email, organisationName) = invitationData;
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.INVITATION).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, processId);
 
@@ -79,16 +82,16 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         return new CompanyInvitationResponse(applicationId, company.Id);
     }
 
-    public Task RetriggerCreateCentralIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerCreateSharedIdpServiceAccount(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerAddRealmRole(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_ADD_REALM_ROLE.TriggerProcessStep(processId, _portalRepositories);
+    public Task RetriggerCreateCentralIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerCreateSharedIdpServiceAccount(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerAddRealmRole(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_ADD_REALM_ROLE.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 
-    public Task RetriggerInviteSharedClient(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_CLIENT.TriggerProcessStep(processId, _portalRepositories);
+    public Task RetriggerInviteSharedClient(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_CLIENT.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 
-    public Task RetriggerUpdateCentralIdpUrls(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerCreateCentralIdpOrgMapper(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerCreateSharedRealmIdpClient(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerEnableCentralIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerCreateDatabaseIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP.TriggerProcessStep(processId, _portalRepositories);
-    public Task RetriggerInvitationCreateUser(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER.TriggerProcessStep(processId, _portalRepositories);
+    public Task RetriggerUpdateCentralIdpUrls(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerCreateCentralIdpOrgMapper(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerCreateSharedRealmIdpClient(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerEnableCentralIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerCreateDatabaseIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerInvitationCreateUser(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER.TriggerProcessStep(processId, _portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 }

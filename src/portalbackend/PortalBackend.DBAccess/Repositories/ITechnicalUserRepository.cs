@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -45,4 +46,6 @@ public interface ITechnicalUserRepository
     void CreateExternalTechnicalUserCreationData(Guid technicalUserId, Guid processId);
     Task<(bool IsValid, string? Bpn, string Name)> GetExternalTechnicalUserData(Guid externalTechnicalUserId);
     Task<Guid> GetExternalTechnicalUserIdForProcess(Guid processId);
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId)> GetProcessDataForTechnicalUserDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds);
 }

@@ -19,7 +19,10 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -46,7 +49,7 @@ public class NetworkRegistrationHandlerTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IUserRepository _userRepository;
     private readonly INetworkRepository _networkRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly NetworkRegistrationHandler _sut;
     private readonly IMailingProcessCreation _mailingProcessCreation;
 
@@ -60,7 +63,7 @@ public class NetworkRegistrationHandlerTests
         var portalRepositories = A.Fake<IPortalRepositories>();
         _userRepository = A.Fake<IUserRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
@@ -75,7 +78,7 @@ public class NetworkRegistrationHandlerTests
         A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
-        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
 
         _sut = new NetworkRegistrationHandler(portalRepositories, _userProvisioningService, _provisioningManager, _mailingProcessCreation, options);
     }

@@ -28,6 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
   </ItemGroup>
