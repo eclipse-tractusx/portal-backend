@@ -158,7 +158,8 @@ public class AppsController : ControllerBase
     /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
     /// <param name="page">The page that should be displayed</param>
     /// <param name="size">The size per page of elements that should be returned</param>
-    /// <param name="statusId">Filter for the offer subscription status. If not set all elements will be returned</param>
+    /// <param name="status">Filter for the offer subscription status. If not set, all elements will be returned</param>
+    /// <param name="name">An optional search query for the name</param>
     /// <response code="200">Returns list of applicable apps subscription statuses.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
@@ -167,8 +168,8 @@ public class AppsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSubscriptionStatusId? statusId = null) =>
-        _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, statusId);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSubscriptionStatusId? status = null, [FromQuery] string? name = null) =>
+        _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, status, name);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.

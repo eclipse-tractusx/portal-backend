@@ -858,7 +858,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(companyId, offerTypeId, documentTypeId, null)(0, 15);
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(companyId, offerTypeId, documentTypeId, null, null)(0, 15);
 
         // Assert
         switch (offerTypeId)
@@ -912,7 +912,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, OfferSubscriptionStatusId.ACTIVE)(0, 15);
+        var result = await sut.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"), OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, OfferSubscriptionStatusId.ACTIVE, null)(0, 15);
 
         // Assert
         result.Should().NotBeNull();
