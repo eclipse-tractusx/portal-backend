@@ -20,10 +20,11 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using System.Collections.Immutable;
 
@@ -61,5 +62,5 @@ public class MailBusinessLogic(
         }
     }
 
-    public Task RetriggerSendMail(Guid processId) => ProcessStepTypeId.RETRIGGER_SEND_MAIL.TriggerProcessStep(processId, portalRepositories);
+    public Task RetriggerSendMail(Guid processId) => ProcessStepTypeId.RETRIGGER_SEND_MAIL.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 }

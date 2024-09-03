@@ -20,7 +20,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 
@@ -30,6 +31,6 @@ public static class InvitationProcessCollectionExtensions
         services
             .AddIdpManagement(config)
             .AddTransient<IInvitationProcessService, InvitationProcessService>()
-            .AddTransient<IProcessTypeExecutor, InvitationProcessTypeExecutor>()
+            .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, InvitationProcessTypeExecutor>()
             .ConfigureInvitationSettings(config.GetSection("Invitation"));
 }

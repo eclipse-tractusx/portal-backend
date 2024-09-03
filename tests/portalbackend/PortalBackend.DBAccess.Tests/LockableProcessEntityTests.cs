@@ -19,8 +19,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -56,7 +56,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, _, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var result = process!.IsLocked();
         result.Should().BeFalse();
@@ -68,7 +68,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, _, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var result = process!.ReleaseLock();
         result.Should().BeFalse();
@@ -80,7 +80,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         process!.UpdateVersion();
         process!.Version.Should().NotBe(version);
@@ -88,7 +88,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var updated = await context.FindAsync<Process>(processId);
+        var updated = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         updated.Should().NotBeNull();
         updated!.Version.Should().Be(process.Version);
         updated.UpdateVersion();
@@ -97,7 +97,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var result = await context.FindAsync<Process>(processId);
+        var result = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         result.Should().NotBeNull();
         result!.Version.Should().Be(updated.Version);
     }
@@ -107,7 +107,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var isLocked = process!.TryLock(_soon);
         isLocked.Should().BeTrue();
@@ -115,7 +115,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var locked = await context.FindAsync<Process>(processId);
+        var locked = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         locked.Should().NotBeNull();
         locked!.Version.Should().Be(process.Version);
         var result = locked.IsLocked();
@@ -131,7 +131,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         process!.Version.Should().Be(version);
         var result = process.IsLockExpired(GetDateTimeOffset(timeFrame)!.Value);
@@ -147,7 +147,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var isLocked = process!.TryLock(_soon);
         isLocked.Should().BeTrue();
@@ -155,7 +155,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var locked = await context.FindAsync<Process>(processId);
+        var locked = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         locked.Should().NotBeNull();
         locked!.Version.Should().Be(process.Version);
         var result = locked.IsLockExpired(GetDateTimeOffset(timeFrame)!.Value);
@@ -168,7 +168,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var isLocked = process!.TryLock(_soon);
         isLocked.Should().BeTrue();
@@ -176,7 +176,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var locked = await context.FindAsync<Process>(processId);
+        var locked = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         locked.Should().NotBeNull();
         locked!.Version.Should().Be(process.Version);
         var result = locked.TryLock(_soon);
@@ -190,7 +190,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var isLocked = process!.TryLock(_soon);
         isLocked.Should().BeTrue();
@@ -198,7 +198,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var locked = await context.FindAsync<Process>(processId);
+        var locked = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         locked.Should().NotBeNull();
         locked!.Version.Should().Be(process.Version);
         var isReleased = locked.ReleaseLock();
@@ -214,14 +214,14 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         process!.UpdateVersion();
         process!.Version.Should().NotBe(version);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var parallel = context.Attach(new Process(processId, default, version)).Entity;
+        var parallel = context.Attach(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, version)).Entity;
         parallel!.Version.Should().NotBe(process.Version);
         parallel.UpdateVersion();
         parallel!.Version.Should().NotBe(version);
@@ -235,14 +235,14 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         process!.UpdateVersion();
         process!.Version.Should().NotBe(version);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var parallel = context.Attach(new Process(processId, default, version)).Entity;
+        var parallel = context.Attach(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, version)).Entity;
         parallel!.Version.Should().NotBe(process.Version);
         var isReLocked = parallel.TryLock(_soon);
         isReLocked.Should().BeTrue();
@@ -257,7 +257,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var locked = process!.TryLock(_soon);
         locked.Should().BeTrue();
@@ -265,7 +265,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var parallel = context.Attach(new Process(processId, default, version)).Entity;
+        var parallel = context.Attach(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, version)).Entity;
         parallel!.Version.Should().NotBe(process.Version);
         parallel.UpdateVersion();
         parallel!.Version.Should().NotBe(version);
@@ -279,7 +279,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     {
         var (processId, version, context) = await CreateProcessAndContext();
 
-        var process = await context.FindAsync<Process>(processId);
+        var process = await context.FindAsync<Process<ProcessTypeId, ProcessStepTypeId>>(processId);
         process.Should().NotBeNull();
         var isLocked = process!.TryLock(_soon);
         isLocked.Should().BeTrue();
@@ -287,7 +287,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var parallel = context.Attach(new Process(processId, default, version)).Entity;
+        var parallel = context.Attach(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, version)).Entity;
         parallel!.Version.Should().NotBe(process.Version);
         var isReLocked = parallel.TryLock(_soon);
         isReLocked.Should().BeTrue();
@@ -320,7 +320,7 @@ public class LockableProcessEntityTests : IAssemblyFixture<TestDbFixture>
     private async Task<(Guid Id, Guid Version, DbContext Context)> CreateProcessAndContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();
-        var process = context.Add(new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).Entity;
+        var process = context.Add(new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).Entity;
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
         return (process.Id, process.Version, context);

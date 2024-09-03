@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -442,7 +443,7 @@ public class ClearinghouseBusinessLogicTests
                 ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
     }
 
     private void SetupForCheckEndClearinghouseProcesses(IEnumerable<ApplicationChecklistEntry> applicationChecklistEntries)
@@ -472,7 +473,7 @@ public class ClearinghouseBusinessLogicTests
                 IEnumerable<ApplicationChecklistEntryTypeId>? _,
                 IEnumerable<ProcessStepTypeId>? _) => new IApplicationChecklistService.ManualChecklistProcessStepData(
                 id,
-                new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
+                new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
                 Guid.Empty,
                 ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,

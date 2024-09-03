@@ -19,7 +19,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -409,11 +412,11 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
-            .Select(x => new VerifyProcessData(
+            .Select(x => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                 x.Process,
                 x.Process!.ProcessSteps
                     .Where(step =>

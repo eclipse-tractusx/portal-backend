@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -45,4 +46,6 @@ public interface IServiceAccountRepository
     void CreateDimUserCreationData(Guid serviceAccountId, Guid processId);
     Task<(bool IsValid, string? Bpn, string Name)> GetDimServiceAccountData(Guid dimServiceAccountId);
     Task<Guid> GetDimServiceAccountIdForProcess(Guid processId);
+    Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? ServiceAccountId, Guid? ServiceAccountVersion)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds);
 }

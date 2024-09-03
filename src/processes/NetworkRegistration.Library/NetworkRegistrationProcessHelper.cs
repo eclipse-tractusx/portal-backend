@@ -18,22 +18,17 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 
-public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelper
+public class NetworkRegistrationProcessHelper(
+    IPortalRepositories portalRepositories)
+    : INetworkRegistrationProcessHelper
 {
-    private readonly IPortalRepositories _portalRepositories;
-
-    public NetworkRegistrationProcessHelper(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
-
     /// <inheritdoc />
     public async Task TriggerProcessStep(string externalId, ProcessStepTypeId stepToTrigger)
     {
@@ -47,17 +42,17 @@ public class NetworkRegistrationProcessHelper : INetworkRegistrationProcessHelpe
             _ => throw new ConflictException($"Step {stepToTrigger} is not retriggerable")
         };
 
-        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
+        var networkRepository = portalRepositories.GetInstance<INetworkRepository>();
         var (registrationIdExists, processData) = await networkRepository.IsValidRegistration(externalId, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!registrationIdExists)
         {
             throw new NotFoundException($"external registration {externalId} does not exist");
         }
 
-        var context = processData.CreateManualProcessData(stepToTrigger, _portalRepositories, () => $"externalId {externalId}");
+        var context = processData.CreateManualProcessData(stepToTrigger, portalRepositories, () => $"externalId {externalId}");
 
         context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }
