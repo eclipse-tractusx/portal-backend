@@ -38,6 +38,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\..\..\src\processes\IdentityProviderProvisioning.Executor\IdentityProviderProvisioning.Executor.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>

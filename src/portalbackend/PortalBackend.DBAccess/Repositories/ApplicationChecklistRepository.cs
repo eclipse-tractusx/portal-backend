@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -52,15 +53,15 @@ public class ApplicationChecklistRepository(PortalDbContext dbContext)
     }
 
     public Task<(bool IsValidProcessId, Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId EntryTypeId, ApplicationChecklistEntryStatusId EntryStatusId)> Checklist)> GetChecklistData(Guid processId) =>
-        dbContext.Processes
+        dbContext.CompanyApplications
             .AsNoTracking()
-            .Where(process => process.Id == processId)
-            .Select(process =>
+            .Where(ca => ca.ChecklistProcessId == processId)
+            .Select(ca =>
                 new ValueTuple<bool, Guid, CompanyApplicationStatusId, IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId)>>(
                     true,
-                    process.CompanyApplication!.Id,
-                    process.CompanyApplication.ApplicationStatusId,
-                    process.CompanyApplication.ApplicationChecklistEntries.Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
+                    ca!.Id,
+                    ca.ApplicationStatusId,
+                    ca.ApplicationChecklistEntries.Select(entry => new ValueTuple<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
                         entry.ApplicationChecklistEntryTypeId,
                         entry.ApplicationChecklistEntryStatusId
                     ))

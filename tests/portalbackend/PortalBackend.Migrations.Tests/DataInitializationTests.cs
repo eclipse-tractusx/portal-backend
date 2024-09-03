@@ -24,20 +24,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Tests;
 /// <summary>
 /// This class is only to test if the setup data are correctly set
 /// </summary>
-public class DataInitializationTests : IClassFixture<TestDataDbFixture>
+public class DataInitializationTests(TestDataDbFixture testDbFixture) : IClassFixture<TestDataDbFixture>
 {
-    private readonly TestDataDbFixture _dbTestDbFixture;
-
-    public DataInitializationTests(TestDataDbFixture testDbFixture)
-    {
-        _dbTestDbFixture = testDbFixture;
-    }
-
     [Fact]
     public async Task TestDataInitialization_EnsureCreated()
     {
         // Arrange
-        var context = _dbTestDbFixture.GetPortalDbContext();
+        var context = testDbFixture.GetPortalDbContext();
 
         // Act
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();

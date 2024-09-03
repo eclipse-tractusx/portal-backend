@@ -18,6 +18,8 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -51,12 +53,12 @@ public class NetworkRepository : INetworkRepository
             .Select(nr => nr.Id)
             .SingleOrDefaultAsync();
 
-    public Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(bool RegistrationIdExists, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.NetworkRegistrations
             .Where(x => x.ExternalId == externalId)
-            .Select(x => new ValueTuple<bool, VerifyProcessData>(
+            .Select(x => new ValueTuple<bool, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>(
                     true,
-                    new VerifyProcessData(
+                    new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                         x.Process,
                         x.Process!.ProcessSteps
                             .Where(step =>
@@ -123,7 +125,7 @@ public class NetworkRepository : INetworkRepository
        (
            (CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData,
            IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData,
-           VerifyProcessData ProcessData
+           VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData
        )? Data)> GetDeclineDataForApplicationId(Guid applicationId, CompanyApplicationTypeId validTypeId, IEnumerable<CompanyApplicationStatusId> validStatusIds, Guid companyId) =>
    _context.NetworkRegistrations
        .AsSplitQuery()
@@ -145,7 +147,7 @@ public class NetworkRepository : INetworkRepository
                ValueTuple<
                    ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>,
                    IEnumerable<ValueTuple<Guid, InvitationStatusId>>,
-                   VerifyProcessData
+                   VerifyProcessData<ProcessTypeId, ProcessStepTypeId>
                >?>(
            true,
            x.IsValidType,
@@ -155,14 +157,14 @@ public class NetworkRepository : INetworkRepository
                ? new ValueTuple<
                    ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>,
                    IEnumerable<ValueTuple<Guid, InvitationStatusId>>,
-                   VerifyProcessData>(
+                   VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>(
                        new ValueTuple<CompanyStatusId, IEnumerable<ValueTuple<Guid, UserStatusId>>>(
                            x.Company!.CompanyStatusId,
                            x.Company.Identities.Select(i => new ValueTuple<Guid, UserStatusId>(i.Id, i.UserStatusId))),
                        x.Invitations.Select(i => new ValueTuple<Guid, InvitationStatusId>(
                            i.Id,
                            i.InvitationStatusId)),
-                       new VerifyProcessData(
+                       new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                            x.Process,
                            x.Process!.ProcessSteps.Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)))
                : null

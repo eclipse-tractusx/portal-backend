@@ -27,14 +27,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -67,7 +70,7 @@ public class RegistrationBusinessLogicTest
     private readonly ICompanyRolesRepository _companyRolesRepository;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IConsentRepository _consentRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IApplicationChecklistCreationService _checklistService;
     private readonly IIdentityData _identity;
@@ -106,7 +109,7 @@ public class RegistrationBusinessLogicTest
 
         _checklistService = A.Fake<IApplicationChecklistCreationService>();
         _staticDataRepository = A.Fake<IStaticDataRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
 
@@ -2237,12 +2240,12 @@ public class RegistrationBusinessLogicTest
 
         var utcNow = DateTimeOffset.UtcNow;
 
-        Process? process = null;
+        Process<ProcessTypeId, ProcessStepTypeId>? process = null;
 
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+                process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processTypeId, Guid.NewGuid());
                 return process;
             });
 
@@ -2255,12 +2258,12 @@ public class RegistrationBusinessLogicTest
                 setOptionalParameters(application);
             });
 
-        IEnumerable<ProcessStep>? processSteps = null;
+        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
+                processSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
                 return processSteps;
             });
         var settings = new RegistrationSettings
@@ -3430,7 +3433,7 @@ public class RegistrationBusinessLogicTest
             .Returns(_consentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IStaticDataRepository>())
             .Returns(_staticDataRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>())
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>())
             .Returns(_identityProviderRepository);
@@ -3592,18 +3595,18 @@ public class RegistrationBusinessLogicTest
                 }
             });
 
-        var createdProcessesBuilder = ImmutableArray.CreateBuilder<Process>();
+        var createdProcessesBuilder = ImmutableArray.CreateBuilder<Process<ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcessRange(A<IEnumerable<ProcessTypeId>>._))
             .ReturnsLazily((IEnumerable<ProcessTypeId> processTypeIds) =>
             {
-                var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableArray();
+                var processes = processTypeIds.Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableArray();
                 createdProcessesBuilder.AddRange(processes);
                 return processes;
             });
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepStatusTypeIds) =>
-                processStepStatusTypeIds.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray());
+                processStepStatusTypeIds.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray());
 
         var modifiedIdentitiesBuilder = ImmutableArray.CreateBuilder<(Identity Initial, Identity Modified)>();
         A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<(Guid IdentityId, Action<Identity>?, Action<Identity>)>>._))
