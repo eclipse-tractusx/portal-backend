@@ -19,7 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndpointSetup;
 
 public class ConnectorsEndpoints
 {

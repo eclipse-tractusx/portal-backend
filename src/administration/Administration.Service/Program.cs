@@ -84,6 +84,7 @@ await WebAppHelper
 
         builder.Services
             .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
+            .AddTransient<IServiceAccountManagement, ServiceAccountManagement>()
             .AddPartnerRegistration(builder.Configuration)
             .AddNetworkRegistrationProcessHelper()
             .AddIssuerComponentService(builder.Configuration.GetSection("Issuer"));
