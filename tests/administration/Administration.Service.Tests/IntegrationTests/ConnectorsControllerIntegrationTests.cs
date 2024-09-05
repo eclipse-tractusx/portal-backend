@@ -50,6 +50,6 @@ public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTes
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();
-        pagination.Content.Should().HaveCount(2);
+        pagination.Content.Should().HaveCount(1);
     }
 }
