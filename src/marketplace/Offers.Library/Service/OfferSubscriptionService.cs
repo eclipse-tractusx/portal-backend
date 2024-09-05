@@ -86,7 +86,6 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             AutoSetupExecuted = !string.IsNullOrWhiteSpace(offerProviderDetails.AutoSetupUrl) && !offerProviderDetails.IsSingleInstance
         });
         await SendNotifications(offerId, offerTypeId, offerProviderDetails.SalesManagerId, _identityData.IdentityId, content, serviceManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         await _mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
@@ -101,6 +100,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 $"{offerTypeId.ToString().ToLower()}-subscription-request"
             },
             offerProviderDetails.ProviderCompanyId.Value).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
         return offerSubscription.Id;
     }
