@@ -205,10 +205,9 @@ public class RegistrationBusinessLogicTest
             .With(x => x.Bpna, businessPartnerNumber)
             .With(x => x.PhysicalPostalAddress, _fixture.Build<BpdmPhysicalPostalAddress>()
                 .With(x => x.Country, _fixture.Build<BpdmCountry>().With(x => x.TechnicalKey, country).Create())
-                .With(x => x.AdministrativeAreaLevel1,
-                    _fixture.Build<BpdmAdministrativeAreaLevel>().With(x => x.RegionCode, region).Create())
                 .With(x => x.PostalCode, zipCode)
                 .With(x => x.City, city)
+                .With(x => x.District, region)
                 .With(x => x.Street,
                     _fixture.Build<BpdmStreet>().With(x => x.Name, streetName).With(x => x.HouseNumber, streetNumber)
                         .Create())
