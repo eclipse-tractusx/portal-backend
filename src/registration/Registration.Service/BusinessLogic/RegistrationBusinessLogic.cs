@@ -106,7 +106,7 @@ public class RegistrationBusinessLogic(
             legalEntity.LegalShortName ?? "",
             physicalPostalAddress?.City ?? "",
             physicalPostalAddress?.Street?.Name ?? "",
-            physicalPostalAddress?.AdministrativeAreaLevel1?.RegionCode,
+            physicalPostalAddress?.District,
             null,
             physicalPostalAddress?.Street?.HouseNumber,
             physicalPostalAddress?.PostalCode,
