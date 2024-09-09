@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: KICS scan
-        uses: checkmarx/kics-github-action@252e73959bd4809a14863cbfbb42d7a90d5a4860 # v2.1.1
+        uses: checkmarx/kics-github-action@530ac1f8efe6202b0f12c9a6e952597ae707b755 # v2.1.2
         with:
           # Scanning directory .
           path: "."
@@ -69,7 +69,7 @@ jobs:
       # Upload findings to GitHub Advanced Security Dashboard
       - name: Upload SARIF file for GitHub Advanced Security Dashboard
         if: always()
-        uses: github/codeql-action/upload-sarif@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
+        uses: github/codeql-action/upload-sarif@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
           sarif_file: kicsResults/results.sarif
           
