@@ -32,7 +32,7 @@ public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
 
     public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
     {
-        var httpClient = httpFactory.CreateClient(nameof(BpnAccess));
+        using var httpClient = httpFactory.CreateClient(nameof(BpnAccess));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var result = await httpClient.GetAsync($"legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}?idType=BPN", cancellationToken)
             .CatchingIntoServiceExceptionFor("bpn-fetch-legal-entity")
