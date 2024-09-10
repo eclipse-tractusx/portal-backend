@@ -18,7 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndpointSetup;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -50,6 +50,6 @@ public class ConnectorsControllerIntegrationTests : IClassFixture<IntegrationTes
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var pagination = await response.GetResultFromContent<Pagination.Response<ConnectorData>>();
-        pagination.Content.Should().HaveCount(2);
+        pagination.Content.Should().HaveCount(1);
     }
 }

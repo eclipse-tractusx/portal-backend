@@ -17,19 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public record OwnServiceAccountData(
-    IEnumerable<Guid> UserRoleIds,
-    Guid ServiceAccountId,
-    Guid ServiceAccountVersion,
-    Guid? ConnectorId,
-    string? ClientClientId,
-    ConnectorStatusId? StatusId,
-    OfferSubscriptionStatusId? OfferStatusId,
-    bool IsDimServiceAccount,
-    bool CreationProcessInProgress,
-    Guid? ProcessId
-);
+public interface IServiceAccountManagement
+{
+    Task DeleteServiceAccount(Guid serviceAccountId, DeleteServiceAccountData result);
+}

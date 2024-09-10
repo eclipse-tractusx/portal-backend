@@ -28,7 +28,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
@@ -44,7 +43,8 @@ public class ServiceAccountBusinessLogic(
     IPortalRepositories portalRepositories,
     IOptions<ServiceAccountSettings> options,
     IServiceAccountCreation serviceAccountCreation,
-    IIdentityService identityService)
+    IIdentityService identityService,
+    IServiceAccountManagement serviceAccountManagement)
     : IServiceAccountBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
@@ -119,34 +119,7 @@ public class ServiceAccountBusinessLogic(
         }
 
         // serviceAccount
-        var userStatus = UserStatusId.DELETED;
-        switch (result)
-        {
-            case { IsDimServiceAccount: true, CreationProcessInProgress: false }:
-                userStatus = await CreateDeletionProcess(serviceAccountId, result).ConfigureAwait(ConfigureAwaitOptions.None);
-                break;
-            case { IsDimServiceAccount: true, CreationProcessInProgress: true }:
-                throw ConflictException.Create(AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS);
-            default:
-                if (!string.IsNullOrWhiteSpace(result.ClientClientId))
-                {
-                    await provisioningManager.DeleteCentralClientAsync(result.ClientClientId).ConfigureAwait(ConfigureAwaitOptions.None);
-                }
-
-                break;
-        }
-
-        portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(
-            serviceAccountId,
-            i =>
-            {
-                i.UserStatusId = UserStatusId.PENDING;
-            },
-            i =>
-            {
-                i.UserStatusId = userStatus;
-            });
-        portalRepositories.GetInstance<IUserRolesRepository>().DeleteCompanyUserAssignedRoles(result.UserRoleIds.Select(userRoleId => (serviceAccountId, userRoleId)));
+        await serviceAccountManagement.DeleteServiceAccount(serviceAccountId, new DeleteServiceAccountData(result.UserRoleIds, result.ClientClientId, result.IsDimServiceAccount, result.CreationProcessInProgress, result.ProcessId)).ConfigureAwait(ConfigureAwaitOptions.None);
         ModifyConnectorForDeleteServiceAccount(serviceAccountId, result);
 
         return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
@@ -166,28 +139,6 @@ public class ServiceAccountBusinessLogic(
                     connector.CompanyServiceAccountId = null;
                 });
         }
-    }
-
-    private async Task<UserStatusId> CreateDeletionProcess(Guid serviceAccountId, OwnServiceAccountData result)
-    {
-        var processId = result.ProcessId ?? throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, [new("serviceAccountId", serviceAccountId.ToString())]);
-
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
-            .GetProcessDataForServiceAccountDeletionCallback(processId, null)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        var context = processData.ProcessData.CreateManualProcessData(null,
-            portalRepositories, () => $"externalId {processId}");
-
-        context.ProcessSteps.Where(step => step.ProcessStepTypeId != ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER).IfAny(pending =>
-            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, [new("serviceAccountId", serviceAccountId.ToString()), new("processStepTypeIds", string.Join(",", pending))]));
-
-        if (context.ProcessSteps.Any(step => step.ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER))
-            return UserStatusId.DELETED;
-
-        context.ScheduleProcessSteps([ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER]);
-        context.FinalizeProcessStep();
-        return UserStatusId.PENDING_DELETION;
     }
 
     public async Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId)

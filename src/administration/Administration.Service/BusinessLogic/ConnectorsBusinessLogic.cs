@@ -45,6 +45,7 @@ public class ConnectorsBusinessLogic(
     IOptions<ConnectorsSettings> options,
     ISdFactoryBusinessLogic sdFactoryBusinessLogic,
     IIdentityService identityService,
+    IServiceAccountManagement serviceAccountManagement,
     ILogger<ConnectorsBusinessLogic> logger)
     : IConnectorsBusinessLogic
 {
@@ -242,22 +243,26 @@ public class ConnectorsBusinessLogic(
     }
 
     /// <inheritdoc/>
-    public async Task DeleteConnectorAsync(Guid connectorId)
+    public async Task DeleteConnectorAsync(Guid connectorId, bool deleteServiceAccount)
     {
         var companyId = _identityData.CompanyId;
         var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
-        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
+        var processStepsToFilter = new[]
+        {
+            ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER,
+            ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
+            ProcessStepTypeId.RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
+        };
+
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId, processStepsToFilter).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
         if (!result.IsProvidingOrHostCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
         }
 
-        if (result.ServiceAccountId.HasValue && result.UserStatusId != UserStatusId.INACTIVE)
+        if (result is { ServiceAccountId: not null, UserStatusId: UserStatusId.ACTIVE or UserStatusId.PENDING } && deleteServiceAccount)
         {
-            portalRepositories.GetInstance<IUserRepository>().AttachAndModifyIdentity(result.ServiceAccountId.Value, null, i =>
-            {
-                i.UserStatusId = UserStatusId.INACTIVE;
-            });
+            await serviceAccountManagement.DeleteServiceAccount(result.ServiceAccountId!.Value, result.DeleteServiceAccountData).ConfigureAwait(false);
         }
 
         switch (result.ConnectorStatus)
@@ -290,6 +295,7 @@ public class ConnectorsBusinessLogic(
     {
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
+            con.CompanyServiceAccountId = null;
             con.StatusId = ConnectorStatusId.INACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });

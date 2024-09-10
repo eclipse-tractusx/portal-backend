@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -195,10 +196,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId, string? alias) =>
         _context.IdentityProviders
             .AsNoTracking()
-            .Where(identityProvider => identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId))
+            .Where(identityProvider =>
+                (identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId)) &&
+                (alias == null || EF.Functions.ILike(identityProvider.IamIdentityProvider!.IamIdpAlias, $"{alias.EscapeForILike()}%"))
+                )
             .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?>(
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,

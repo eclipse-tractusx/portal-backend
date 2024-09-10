@@ -2,11 +2,23 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.2.0-RC4
+
+### Bugfixes
+
+* **Connectors**
+  * add filter for COMPANY_CONNECTOR [#972](https://github.com/eclipse-tractusx/portal-backend/pull/972)
+  * adjust connector deletion process [#968](https://github.com/eclipse-tractusx/portal-backend/pull/968)
+* **Idp**
+  * add search functionality to idp endpoint [#982](https://github.com/eclipse-tractusx/portal-backend/pull/982)
+* **Offer Management**
+  * adjust status query param for subscription-status [#969](https://github.com/eclipse-tractusx/portal-backend/pull/969)
+  
 ## 2.2.0-RC3
 
 ### Bugfixes
 
-* **REgistration Process**
+* **Registration Process**
   * removed DIM authentication details from logs [#951](https://github.com/eclipse-tractusx/portal-backend/pull/951)
   * adjust retrigger process for sd creation [#938](https://github.com/eclipse-tractusx/portal-backend/pull/938)
 * **Connector creation**

@@ -309,7 +309,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>>
-        GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId) =>
+        GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId,
+            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId, string? name) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -318,7 +319,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .Where(os =>
                         os.Offer!.OfferTypeId == offerTypeId &&
                         os.CompanyId == userCompanyId &&
-                        (statusId == null || os.OfferSubscriptionStatusId == statusId))
+                        (statusId == null || os.OfferSubscriptionStatusId == statusId) &&
+                        (name == null || (os.Offer.Name != null && EF.Functions.ILike(os.Offer!.Name, $"%{name.EscapeForILike()}%"))))
                     .GroupBy(os => os.CompanyId),
                 null,
                 os => new OfferSubscriptionStatusData(

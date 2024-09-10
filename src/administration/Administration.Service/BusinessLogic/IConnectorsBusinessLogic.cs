@@ -67,7 +67,8 @@ public interface IConnectorsBusinessLogic
     /// Remove a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
-    Task DeleteConnectorAsync(Guid connectorId);
+    /// <param name="deleteServiceAccount">if <c>true</c> the linked service account will be deleted, otherwise the connection to the connector will just be removed</param>
+    Task DeleteConnectorAsync(Guid connectorId, bool deleteServiceAccount);
 
     /// <summary>
     /// Retrieve connector end point along with bpns

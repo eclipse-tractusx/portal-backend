@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -84,8 +85,9 @@ public interface IConnectorsRepository
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="companyId">Id of the company</param>
+    /// <param name="processStepsToFilter"></param>
     /// <returns>returns SelfDescriptionDocument Data/c></returns>
-    Task<DeleteConnectorData?> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId);
+    Task<DeleteConnectorData?> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter);
 
     /// <summary>
     /// Gets the data required for the connector update
