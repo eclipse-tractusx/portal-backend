@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Microsoft and BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,7 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 public record ManualProcessStepData(
-    ProcessStepTypeId ProcessStepTypeId,
+    ProcessStepTypeId? ProcessStepTypeId,
     Process Process,
     IEnumerable<ProcessStep> ProcessSteps,
     IPortalRepositories PortalRepositories

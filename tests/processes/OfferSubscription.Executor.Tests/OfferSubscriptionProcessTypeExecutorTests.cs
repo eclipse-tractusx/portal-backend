@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -327,7 +327,7 @@ public class OfferSubscriptionProcessTypeExecutorTests
             .Returns(([ProcessStepTypeId.START_AUTOSETUP], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.CreateClient(_subscriptionId))
             .Returns(([ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION], ProcessStepStatusId.DONE, true, null));
-        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerSetupService.CreateTechnicalUser(_processId, _subscriptionId, A<IEnumerable<UserRoleConfig>>._))
             .Returns(([ProcessStepTypeId.ACTIVATE_SUBSCRIPTION], ProcessStepStatusId.DONE, true, null));
         A.CallTo(() => _offerSetupService.ActivateSubscription(_subscriptionId, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._, A<string>._))
             .Returns(([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK], ProcessStepStatusId.DONE, true, null));

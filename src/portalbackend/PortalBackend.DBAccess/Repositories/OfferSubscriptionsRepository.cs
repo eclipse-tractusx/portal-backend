@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -115,13 +115,13 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(Guid companyId, OfferSubscription? offerSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
+    public Task<(Guid CompanyId, bool IsValidOfferSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
         _context.CompanyUsers
             .Where(user => user.Id == userId)
             .Select(user => user.Identity!.Company)
-            .Select(company => new ValueTuple<Guid, OfferSubscription?>(
+            .Select(company => new ValueTuple<Guid, bool>(
                 company!.Id,
-                company.OfferSubscriptions.SingleOrDefault(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId)
+                company.OfferSubscriptions.Any(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId)
             ))
             .SingleOrDefaultAsync();
 
@@ -244,7 +244,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                             .Select(ps => new ValueTuple<ProcessStepTypeId, ProcessStepStatusId>(
                                 ps.ProcessStepTypeId,
                                 ps.ProcessStepStatusId))
-                            .Distinct())
+                            .Distinct(),
+                        x.Subscription.ConnectorAssignedOfferSubscriptions.Select(c => new SubscriptionAssignedConnectorData(c.ConnectorId, c.Connector!.Name, c.Connector.ConnectorUrl)),
+                        x.Company.CompanyWalletData == null ? null : new ExternalServiceData(x.Company.CompanyWalletData!.Did, x.Company.BusinessPartnerNumber, x.Company.CompanyWalletData.AuthenticationServiceUrl))
                     : null))
             .SingleOrDefaultAsync();
 
@@ -306,7 +308,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     }
 
     /// <inheritdoc />
-    public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>> GetOwnCompanySubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+    public Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>>
+        GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId,
+            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId, string? name) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
@@ -314,7 +318,9 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                     .AsNoTracking()
                     .Where(os =>
                         os.Offer!.OfferTypeId == offerTypeId &&
-                        os.CompanyId == userCompanyId)
+                        os.CompanyId == userCompanyId &&
+                        (statusId == null || os.OfferSubscriptionStatusId == statusId) &&
+                        (name == null || (os.Offer.Name != null && EF.Functions.ILike(os.Offer!.Name, $"%{name.EscapeForILike()}%"))))
                     .GroupBy(os => os.CompanyId),
                 null,
                 os => new OfferSubscriptionStatusData(
@@ -332,10 +338,10 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
-        _context.Processes
+        _context.OfferSubscriptions
             .AsNoTracking()
-            .Where(process => process.Id == processId)
-            .Select(process => process.OfferSubscription!.Id)
+            .Where(os => os.ProcessId == processId)
+            .Select(os => os.Id)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -396,7 +402,8 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 x.Offer.OfferTypeId == OfferTypeId.APP && (x.Offer.AppInstanceSetup == null || !x.Offer.AppInstanceSetup!.IsSingleInstance) ?
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId :
                     null,
-                x.CompanyServiceAccounts.Where(sa => sa.ClientClientId != null).Select(sa => sa.ClientClientId!)
+                x.CompanyServiceAccounts.Where(sa => sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL && sa.ClientClientId != null).Select(sa => sa.ClientClientId!),
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl != null
             ))
             .SingleOrDefaultAsync();
 
@@ -451,11 +458,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, CompanyServiceAccountKindId CompanyServiceAccountKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         _context.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string?)>, string?, string?, OfferSubscriptionStatusId>(
-                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?>(sa.Id, sa.ClientClientId)),
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, CompanyServiceAccountKindId)>, string?, string?, OfferSubscriptionStatusId>(
+                    x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?, CompanyServiceAccountKindId>(sa.Id, sa.ClientClientId, sa.CompanyServiceAccountKindId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
                     x.OfferSubscriptionStatusId

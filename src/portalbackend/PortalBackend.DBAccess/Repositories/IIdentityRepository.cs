@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,5 +26,4 @@ public interface IIdentityRepository
     Task<Guid> GetActiveCompanyIdByIdentityId(Guid identityId);
     Task<(IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByIdentityId(Guid identityId);
     Task<(Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId)> GetActiveIdentityDataByUserEntityId(string userEntityId);
-    IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdentityIdsWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, IEnumerable<Guid> identityIds);
 }

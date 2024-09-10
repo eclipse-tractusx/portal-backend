@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -84,6 +84,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyCertificateTypeAssignedStatus>("company_certificate_type_assigned_statuses", x => new { x.CompanyCertificateTypeId, x.CompanyCertificateTypeStatusId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyCertificateTypeDescription>("company_certificate_type_descriptions", x => new { x.CompanyCertificateTypeId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<IdentityAssignedRole>("identity_assigned_roles", x => new { x.IdentityId, x.UserRoleId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTable<IdentityProviderAssignedProcess>("identity_provider_assigned_processes", x => new { x.IdentityProviderId, x.ProcessId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConsentAssignedOffer>("consent_assigned_offers", x => new { x.OfferId, x.ConsentId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConsentAssignedOfferSubscription>("consent_assigned_offer_subscriptions", x => new { x.OfferSubscriptionId, x.ConsentId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<ConnectorAssignedOfferSubscription>("connector_assigned_offer_subscriptions", x => new { x.ConnectorId, x.OfferSubscriptionId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -104,10 +105,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<AppInstanceAssignedCompanyServiceAccount>("app_instance_assigned_company_service_accounts", x => new { x.AppInstanceId, x.CompanyServiceAccountId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<TechnicalUserProfileAssignedUserRole>("technical_user_profile_assigned_user_roles", x => new { x.TechnicalUserProfileId, x.UserRoleId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTable<VerifiedCredentialTypeAssignedKind>("verified_credential_type_assigned_kinds", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialTypeKindId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTable<VerifiedCredentialTypeAssignedUseCase>("verified_credential_type_assigned_use_cases", x => new { x.VerifiedCredentialTypeId, x.UseCaseId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTable<VerifiedCredentialTypeAssignedExternalType>("verified_credential_type_assigned_external_types", x => new { x.VerifiedCredentialTypeId, x.VerifiedCredentialExternalTypeId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -144,8 +142,6 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTableForBaseEntity<CompanySsiDetail>("company_ssi_details", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTableForBaseEntity<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<CompanyCertificate>("company_certificates", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<OnboardingServiceProviderDetail>("onboarding_service_provider_details", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<CompanyInvitation>("company_invitations", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

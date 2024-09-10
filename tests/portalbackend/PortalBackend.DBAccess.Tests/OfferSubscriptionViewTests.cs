@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -49,7 +49,7 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.OfferSubscriptionView.ToListAsync();
-        result.Should().HaveCount(14);
+        result.Should().HaveCount(15);
     }
 
     [Fact]

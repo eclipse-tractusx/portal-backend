@@ -122,7 +122,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zum Zugriff auf das eigene Wallet - VC abfragen, VC anfragen, VC speicher, etc."
+    "description": "Technischer User für den Zugriff auf die eigene Firmen-Wallet - VC anfordern, VP anfordern, VC speichern usw."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51157",
@@ -132,7 +132,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
     "language_short_name": "de",
-    "description": "TEchnischer Benutzer für Dataspace Discovery Endpunkte"
+    "description": "Technischer User für Dataspace Discovery Endpunkte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51165",
@@ -142,7 +142,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zum Hinzufügen von Dienstangeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connectorregistrierungen für Dritte."
+    "description": "Technischer User zum Hinzufügen von Angeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connector Registrierungen für Dritte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
@@ -152,7 +152,7 @@
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zur Erstellung von Registrierungen von Drittanbietern durch Onboarding von Dienstleistungsunternehmen."
+    "description": "Technischer User zur Erstellung von Registrierungen von Drittanbietern durch Onboarding Service Provider."
   },
   {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
@@ -162,27 +162,27 @@
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Consumer - Beschreibung tbd"
+    "description": "BPDM Sharing Input Consumer"
   },
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Consumer - description tbd"
+    "description": "BPDM Sharing Input Consumer"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "de",
-    "description": "BPDM Pool Admin - Beschreibung tbd"
+    "description": "BPDM Pool Admin"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
     "language_short_name": "en",
-    "description": "BPDM Pool Admin - description tbd"
+    "description": "BPDM Pool Admin"
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
     "language_short_name": "de",
-    "description": "Technischer Benutzer zur Ansicht semantischer Modelle."
+    "description": "Technischer User zur Ansicht semantischer Modelle."
   },
   {
     "user_role_id": "3940f9b0-4393-4463-b659-15463098557b",
@@ -192,7 +192,7 @@
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
     "language_short_name": "de",
-    "description": "Technischer Benutzer für den Zugang zu den Mitgliedsinformationen von Catena-X."
+    "description": "Technischer User für den Zugriff auf Catena-X Mitgliedsinformationen."
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228014cd6e7",
@@ -202,17 +202,17 @@
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "de",
-    "description": "BPDM Sharing Output Consumer - Beschreibung tbd"
+    "description": "BPDM Sharing Output Consumer"
   },
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "en",
-    "description": "BPDM Sharing Output Consumer - description tbd"
+    "description": "BPDM Sharing Output Consumer"
   },
   {
     "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
     "language_short_name": "de",
-    "description": "BPDM Sharing Admin - Beschreibung tbd"
+    "description": "BPDM Sharing Admin"
   },
   {
     "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
@@ -222,21 +222,41 @@
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Manager - Beschreibung tbd"
+    "description": "BPDM Sharing Input Manager"
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Manager - description tbd"
+    "description": "BPDM Sharing Input Manager"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "de",
-    "description": "BPDM Pool Consumer - Beschreibung tbd"
+    "description": "BPDM Pool Consumer"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "en",
-    "description": "BPDM Pool Consumer - description tbd"
+    "description": "BPDM Pool Consumer"
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228884cd7e5",
+    "language_short_name": "de",
+    "description": "Business Partner Data Manager"
+  },
+  {
+    "user_role_id": "ec3a3005-b59c-4319-a8eb-3228884cd7e5",
+    "language_short_name": "en",
+    "description": "Business Partner Data Manager"
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53267",
+    "language_short_name": "de",
+    "description": "BPDM Pool Sharing Consumer"
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53267",
+    "language_short_name": "en",
+    "description": "BPDM Pool Sharing Consumer"
   }
 ]

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
@@ -54,21 +55,18 @@ public class ServiceAccountController : ControllerBase
     /// <param name="serviceAccountCreationInfo"></param>
     /// <returns></returns>
     /// <remarks>Example: POST: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
-    /// <response code="201">The service account was created.</response>
+    /// <response code="200">The service account was created.</response>
     /// <response code="400">Missing mandatory input values (e.g. name) or not supported authenticationType selected.</response>
     /// <response code="404">Record was not found. Possible reason: invalid user role, requester user invalid.</response>
     [HttpPost]
     [Authorize(Roles = "add_tech_user_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
-    [ProducesResponseType(typeof(ServiceAccountDetails), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(IEnumerable<ServiceAccountDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<CreatedAtRouteResult> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo)
-    {
-        var serviceAccountDetails = await _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo).ConfigureAwait(ConfigureAwaitOptions.None);
-        return CreatedAtRoute("GetServiceAccountDetails", new { serviceAccountId = serviceAccountDetails.ServiceAccountId }, serviceAccountDetails);
-    }
+    public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo) =>
+        _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
 
     /// <summary>
     /// Deletes the service account with the given id
@@ -86,8 +84,11 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<int> DeleteServiceAccount([FromRoute] Guid serviceAccountId) =>
-        _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId);
+    public async Task<NoContentResult> DeleteServiceAccount([FromRoute] Guid serviceAccountId)
+    {
+        await _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
 
     /// <summary>
     /// Gets the service account details for the given id
@@ -165,6 +166,7 @@ public class ServiceAccountController : ControllerBase
     /// <param name="isOwner">isOwner either true or false</param>
     /// <param name="clientId">clientId is string clientclientid</param>
     /// <param name="filterForInactive">isUserStatusActive is True or False</param>
+    /// <param name="userStatus">userStatus is ACTIVE, INACTIVE, PENDING or DELETED (optional, multiple values allowed)</param>
     /// <returns>Returns the specific number of service account data for the given page.</returns>
     /// <remarks>Example: GET: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">Returns the specific number of service account data for the given page.</response>
@@ -173,8 +175,8 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive) =>
-        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive);
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive = false, [FromQuery] IEnumerable<UserStatusId>? userStatus = null) =>
+        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive, userStatus);
 
     /// <summary>
     /// Get all service account roles
@@ -196,15 +198,31 @@ public class ServiceAccountController : ControllerBase
     /// </summary>
     /// <param name="processId">The processId that was passed as externalId with the request for creation of the technical user.</param>
     /// <param name="callbackData">Information of the technical user which was created.</param>
-    /// <remarks>Example: POST: api/administration/serviceaccount/cllback/{externalId}</remarks>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}</remarks>
     /// <response code="200">returns all service account roles</response>
     [HttpPost]
     [Authorize(Roles = "technical_roles_management")]
-    [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [Route("callback/{externalId}")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}")]
     public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid processId, [FromBody] AuthenticationDetail callbackData)
     {
         await _logic.HandleServiceAccountCreationCallback(processId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Callback for the successful service account deletion
+    /// </summary>
+    /// <param name="processId">The processId that was passed as externalId with the request for deletion of the technical user.</param>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}/delete</remarks>
+    /// <response code="200">Ok</response>
+    [HttpPost]
+    [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}/delete")]
+    public async Task<OkResult> ServiceAccountDeletionCallback([FromRoute] Guid processId)
+    {
+        await _logic.HandleServiceAccountDeletionCallback(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return Ok();
     }
 }

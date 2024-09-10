@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,27 +28,11 @@ public class CompanyDataSettings
 {
     public CompanyDataSettings()
     {
-        UseCaseParticipationMediaTypes = null!;
-        SsiCertificateMediaTypes = null!;
         CompanyCertificateMediaTypes = null!;
         DecentralIdentityManagementAuthUrl = null!;
+        IssuerDid = null!;
+        BpnDidResolverUrl = null!;
     }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for use case participation
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> UseCaseParticipationMediaTypes { get; set; }
-
-    /// <summary>
-    /// The media types that are allowed for the uploaded document for ssi certificate
-    /// </summary>
-    [Required]
-    [EnumEnumeration]
-    [DistinctValues]
-    public IEnumerable<MediaTypeId> SsiCertificateMediaTypes { get; set; }
 
     /// <summary>
     /// The media types that are allowed for the uploaded document for company certificate
@@ -65,6 +49,12 @@ public class CompanyDataSettings
 
     [Required(AllowEmptyStrings = true)]
     public string DecentralIdentityManagementAuthUrl { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; }
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; }
 }
 
 public static class CompanyDataSettingsExtensions

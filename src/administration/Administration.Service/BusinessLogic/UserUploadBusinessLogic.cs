@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -129,7 +129,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         UserCreationRoleDataIdpInfo? userCreationInfo = null;
 
-        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
 
         await foreach (var result in
             _userProvisioningService
@@ -253,7 +253,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             unknownRoles => _userProvisioningService.GetOwnCompanyPortalRoleDatas(_settings.Portal.KeycloakClientID, unknownRoles, companyId),
             out var roleDataTask))
         {
-            var roleData = await roleDataTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            var roleData = await roleDataTask.ConfigureAwait(ConfigureAwaitOptions.None);
             if (roleData != null)
             {
                 validRoleData.AddRange(roleData);

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,58 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 
-public static class CryptoHelper
+public class CryptoHelper
 {
+    private readonly byte[] _encryptionKey;
+
+    private readonly CipherMode _cipherMode;
+    private readonly PaddingMode _paddingMode;
+
+    public CryptoHelper(byte[] encryptionKey, CipherMode cipherMode, PaddingMode paddingMode)
+    {
+        _encryptionKey = encryptionKey;
+        _cipherMode = cipherMode;
+        _paddingMode = paddingMode;
+    }
+
+    public (byte[] Result, byte[] InitializationVector) Encrypt(string data)
+    {
+        try
+        {
+            return Encrypt(data, _encryptionKey, _cipherMode, _paddingMode);
+        }
+        catch (ArgumentException e)
+        {
+            throw new ConfigurationException($"Invalid Encryption Config: {e.Message}", e);
+        }
+        catch (CryptographicException e)
+        {
+            throw new ConflictException($"Data could not be encrypted: {e.Message}", e);
+        }
+    }
+
+    public string Decrypt(byte[] data, byte[]? initializationVector)
+    {
+        try
+        {
+            return Decrypt(data, initializationVector, _encryptionKey, _cipherMode, _paddingMode);
+        }
+        catch (ArgumentException e)
+        {
+            throw new ConfigurationException($"Invalid Encryption Config: {e.Message}", e);
+        }
+        catch (CryptographicException e)
+        {
+            throw new ConflictException($"Data could not be decrypted: {e.Message}", e);
+        }
+    }
+
     public static (byte[] Result, byte[] InitializationVector) Encrypt(string data, byte[] encryptionKey, CipherMode cipherMode, PaddingMode paddingMode)
     {
         using var aes = Aes.Create();

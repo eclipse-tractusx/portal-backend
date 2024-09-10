@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -149,6 +149,9 @@ public class AppChangeBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP))
             .Returns((true, appName, _identity.CompanyId, clientIds));
 
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(new[] { "Exsiting Role" }.ToAsyncEnumerable());
+
         IEnumerable<UserRole>? userRoles = null;
         A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
             .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
@@ -224,6 +227,89 @@ public class AppChangeBusinessLogicTest
                 x => x.RoleId == userRoles!.ElementAt(1).Id && x.RoleName == appAssignedRoleDesc[1].Role,
                 x => x.RoleId == userRoles!.ElementAt(2).Id && x.RoleName == appAssignedRoleDesc[2].Role
             );
+    }
+
+    [Fact]
+    public async Task AddActiveAppUserRoleAsync_WithExistingData_NoRowEffecting()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var appName = _fixture.Create<string>();
+        var appAssignedRoleDesc = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(role, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
+        var clientIds = new[] { "client" };
+
+        A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP))
+            .Returns((true, appName, _identity.CompanyId, clientIds));
+
+        A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(appId))
+            .Returns(appAssignedRoleDesc.Select(x => x.Role).ToAsyncEnumerable());
+
+        IEnumerable<UserRole>? userRoles = null;
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid AppId, string Role)> appRoles) =>
+            {
+                userRoles = appRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToImmutableArray();
+                return userRoles;
+            });
+
+        var userRoleDescriptions = new List<IEnumerable<UserRoleDescription>>();
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._))
+            .ReturnsLazily((IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions) =>
+            {
+                var createdUserRoleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToImmutableArray();
+                userRoleDescriptions.Add(createdUserRoleDescriptions);
+                return createdUserRoleDescriptions;
+            });
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+            .Returns(_fixture.CreateMany<Guid>(4).AsFakeIAsyncEnumerable(out var createNotificationsResultAsyncEnumerator));
+
+        //Act
+        var result = await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
+
+        //Assert
+        A.CallTo(() => _offerRepository.GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP)).MustHaveHappened();
+
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoles(A<IEnumerable<(Guid, string)>>._)).MustHaveHappenedOnceExactly();
+        userRoles.Should().NotBeNull()
+            .And.HaveCount(0);
+
+        A.CallTo(() => _userRolesRepository.CreateAppUserRoleDescriptions(A<IEnumerable<(Guid, string, string)>>._)).MustNotHaveHappened();
+        userRoleDescriptions.Should().NotBeNull()
+            .And.HaveCount(0);
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(appId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustNotHaveHappened();
+        A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => createNotificationsResultAsyncEnumerator.MoveNextAsync())
+            .MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.AddRolesToClientAsync("client", A<IEnumerable<string>>.That.IsSameSequenceAs(appAssignedRoleDesc.Select(x => x.Role))))
+            .MustNotHaveHappened();
+
+        result.Should().NotBeNull()
+            .And.HaveCount(0);
+    }
+
+    [Fact]
+    public async Task AddDuplicateActiveAppUserRoleAsync_ThrowsControllerArgumentException()
+    {
+        //Arrange
+        var appId = _fixture.Create<Guid>();
+        var roleId = _fixture.Create<string>();
+        var appAssignedRoleDesc = _fixture.CreateMany<string>(3).Select(role => new AppUserRole(roleId, _fixture.CreateMany<AppUserRoleDescription>(2).ToImmutableArray())).ToImmutableArray();
+
+        //Act
+        async Task Act() => await _sut.AddActiveAppUserRoleAsync(appId, appAssignedRoleDesc);
+
+        //Assert
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        error.Message.Should().Be($"Roles are ambiguous: {roleId},{roleId}");
     }
 
     [Fact]
@@ -1192,10 +1278,12 @@ public class AppChangeBusinessLogicTest
     {
         // Arrange
         var appId = _fixture.Create<Guid>();
-        var userRole1 = new ActiveAppRoleDetails("TestRole1", [
+        var roleId1 = _fixture.Create<Guid>();
+        var roleId2 = _fixture.Create<Guid>();
+        var userRole1 = new ActiveAppRoleDetails(roleId1, "TestRole1", [
             new ActiveAppUserRoleDescription("en", "TestRole1 description")
         ]);
-        var userRole2 = new ActiveAppRoleDetails("TestRole2", [
+        var userRole2 = new ActiveAppRoleDetails(roleId2, "TestRole2", [
             new ActiveAppUserRoleDescription("en", "TestRole2 description")
         ]);
         var activeAppRoleDetails = (true, true, new[] {
@@ -1212,8 +1300,8 @@ public class AppChangeBusinessLogicTest
         // Assert
         result.Should().HaveCount(2)
             .And.Satisfy(
-                x => x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
-                x => x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
+                x => x.RoleId == roleId1 && x.Role == "TestRole1" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole1 description",
+                x => x.RoleId == roleId2 && x.Role == "TestRole2" && x.Descriptions.Count() == 1 && x.Descriptions.Single().Description == "TestRole2 description");
         A.CallTo(() => _userRolesRepository.GetActiveOfferRolesAsync(appId, OfferTypeId.APP, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }

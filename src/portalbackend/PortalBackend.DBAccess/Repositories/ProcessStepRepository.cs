@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
@@ -41,12 +42,19 @@ public class ProcessStepRepository : IProcessStepRepository
     public Process CreateProcess(ProcessTypeId processTypeId) =>
         _context.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
 
+    public IEnumerable<Process> CreateProcessRange(IEnumerable<ProcessTypeId> processTypeIds)
+    {
+        var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableList();
+        _context.AddRange(processes);
+        return processes;
+    }
+
     public ProcessStep CreateProcessStep(ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
         _context.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
 
     public IEnumerable<ProcessStep> CreateProcessStepRange(IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
     {
-        var processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+        var processSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
         _context.AddRange(processSteps);
         return processSteps;
     }
@@ -67,7 +75,7 @@ public class ProcessStepRepository : IProcessStepRepository
                 var step = new ProcessStep(data.ProcessStepId, default, default, Guid.Empty, default);
                 data.Initialize?.Invoke(step);
                 return (Step: step, data.Modify);
-            }).ToList();
+            }).ToImmutableList();
         _context.AttachRange(stepModifyData.Select(data => data.Step));
         stepModifyData.ForEach(data =>
             {
@@ -113,10 +121,11 @@ public class ProcessStepRepository : IProcessStepRepository
             ))
             .SingleOrDefaultAsync();
 
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, (Guid? OfferSubscriptionId, Guid? CompanyId, string? OfferName)? SubscriptionData, (string? ServiceAccountName, Guid? CompanyId)? ServiceAccountData)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId, Guid? ServiceAccountVersion)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         _context.Processes
+            .AsNoTracking()
             .Where(x => x.Id == processId)
-            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, ValueTuple<Guid?, Guid?, string?>?, ValueTuple<string?, Guid?>?>(
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?, Guid?>(
                 x.ProcessTypeId,
                 new VerifyProcessData(
                     x,
@@ -124,20 +133,24 @@ public class ProcessStepRepository : IProcessStepRepository
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
-                x.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION
-                    ? new ValueTuple<Guid?, Guid?, string?>(
-                        x.OfferSubscription!.Id,
-                        x.OfferSubscription.CompanyId,
-                        x.OfferSubscription.Offer!.Name
-                    )
-                    : null,
-                x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER
-                    ? new ValueTuple<string?, Guid?>(
-                        x.DimUserCreationData!.ServiceAccount!.Name,
-                        x.DimUserCreationData.ServiceAccount.Identity!.CompanyId
-                    )
-                    : null
-                )
+                x.DimUserCreationData!.ServiceAccountId,
+                x.DimUserCreationData.ServiceAccount!.Version)
+            )
+            .SingleOrDefaultAsync();
+
+    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
+        _context.Processes
+            .AsNoTracking()
+            .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
+            .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
+                x.ProcessTypeId,
+                new VerifyProcessData(
+                    x,
+                    x.ProcessSteps
+                        .Where(step =>
+                            (processStepTypeIds == null || processStepTypeIds.Contains(step.ProcessStepTypeId)) &&
+                            step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
+                x.DimUserCreationData!.ServiceAccountId)
             )
             .SingleOrDefaultAsync();
 }

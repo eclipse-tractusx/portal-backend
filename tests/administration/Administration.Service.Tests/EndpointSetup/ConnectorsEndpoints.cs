@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,7 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.IntegrationTests.EndpointSetup;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndpointSetup;
 
 public class ConnectorsEndpoints
 {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class ProvisioningManagerTests
             .WithGetClientSecretAsync(newClientId, new Credentials { Value = "super-secret" });
 
         // Act
-        await _sut.SetupClientAsync($"{url}/*", url, new[] { "adminRole" });
+        await _sut.SetupClientAsync($"{url}/*", url, ["adminRole"]);
 
         // Assert
         httpTest.ShouldHaveCalled($"{CentralUrl}/admin/realms/test/clients/{newClientId}/protocol-mappers/models")
@@ -129,7 +129,7 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "savalid" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
@@ -153,7 +153,7 @@ public class ProvisioningManagerTests
         using var httpTest = new HttpTest();
         httpTest.WithAuthorization()
             .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
-            .WithGetClientsAsync("master", new[] { new Client { Id = id, ClientId = "savalid" } })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "savalid" }])
             .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
             .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
 
@@ -182,4 +182,55 @@ public class ProvisioningManagerTests
         displayName.Should().NotBeNullOrWhiteSpace();
         displayName.Should().Be("test");
     }
+
+    #region DeleteSharedRealm
+
+    [Fact]
+    public async Task DeleteSharedRealmAsync_ReturnsExpected()
+    {
+        // Arrange
+        const string alias = "idp123";
+        const string id = "123";
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "saidp123" }])
+            .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
+            .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
+        // Act
+        await _sut.DeleteSharedRealmAsync(alias);
+
+        //Assert
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/{alias}")
+            .WithVerb(HttpMethod.Delete)
+            .Times(1);
+    }
+
+    #endregion
+
+    #region DeleteIdpSharedServiceAccount
+
+    [Fact]
+    public async Task DeleteIdpSharedServiceAccount_ReturnsExpected()
+    {
+        // Arrange
+        const string alias = "idp123";
+        const string id = "123";
+        using var httpTest = new HttpTest();
+        httpTest.WithAuthorization()
+            .WithGetIdentityProviderAsync(ValidClientName, new IdentityProvider.IdentityProvider { Alias = "Test", DisplayName = "test", Config = new Keycloak.Library.Models.RealmsAdmin.Config() })
+            .WithGetClientsAsync("master", [new Client { Id = id, ClientId = "saidp123" }])
+            .WithGetClientSecretAsync(id, new Credentials { Value = "super-secret" })
+            .WithGetRealmAsync(ValidClientName, new Realm { DisplayName = "test", LoginTheme = "test" });
+        // Act
+        await _sut.DeleteIdpSharedServiceAccount(alias);
+
+        //Assert
+        httpTest.ShouldHaveCalled($"{SharedUrl}/admin/realms/master/clients/{id}")
+            .WithVerb(HttpMethod.Delete)
+            .Times(1);
+    }
+
+    #endregion
+
 }

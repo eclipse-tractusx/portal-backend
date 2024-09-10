@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -191,5 +191,19 @@ public class RegistrationControllerTest
         // Assert
         A.CallTo(() => _registrationBusinessLogicFake.GetAllApplicationsForUserWithStatus()).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task DeclineApplicationRegistrationAsync_ReturnsExpectedCalls()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.DeclineApplicationRegistrationAsync(applicationId);
+
+        // Assert
+        A.CallTo(() => _registrationBusinessLogicFake.DeclineApplicationRegistrationAsync(applicationId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

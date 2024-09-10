@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,6 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
@@ -59,15 +61,13 @@ public interface ICustodianService
     /// Issue a verifiable credential for a use case
     /// </summary>
     /// <param name="bpn">BusinessPartnerNumber of the company to issue the credentials for</param>
-    /// <param name="useCaseDetailData">Additional data needed for the endpoint</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    Task TriggerFrameworkAsync(string bpn, UseCaseDetailData useCaseDetailData, CancellationToken cancellationToken);
+    Task TriggerFrameworkAsync(string bpn, CancellationToken cancellationToken);
 
     /// <summary>
     /// Issue a verifiable credential for a dismantler
     /// </summary>
     /// <param name="bpn">BusinessPartnerNumber of the company to issue the credentials for</param>
-    /// <param name="credentialTypeId">The credential type id</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    Task TriggerDismantlerAsync(string bpn, VerifiedCredentialTypeId credentialTypeId, CancellationToken cancellationToken);
+    Task TriggerDismantlerAsync(string bpn, CancellationToken cancellationToken);
 }

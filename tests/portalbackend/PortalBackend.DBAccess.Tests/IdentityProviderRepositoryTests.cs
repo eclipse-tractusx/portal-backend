@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,27 +17,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Collections.Immutable;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
+    private readonly IFixture _fixture;
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _companyId = new("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
 
     public IdentityProviderRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -219,14 +222,27 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var sut = await CreateSut();
 
-        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync();
+        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, null).ToListAsync();
 
         // Assert
-        results.Should().HaveCount(3);
-        results.Should().Satisfy(
+        results.Should().HaveCount(3)
+            .And.Satisfy(
             x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED,
             x => x.Alias == "Shared-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED,
             x => x.Alias == "Managed-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
+    }
+
+    [Fact]
+    public async Task GetCompanyIdentityProviderCategoryDataUntracked_WithValidAndAlias_ReturnsExpected()
+    {
+        var sut = await CreateSut();
+
+        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, "idp").ToListAsync();
+
+        // Assert
+        results.Should().ContainSingle()
+            .And.Satisfy(
+                x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
     }
 
     #endregion
@@ -439,6 +455,56 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.ConnectedCompanies.Should().HaveCount(2).And.Satisfy(
             x => x.CompanyId == new Guid("0dcd8209-85e2-4073-b130-ac094fb47106") && x.CompanyName == "SAP AG",
             x => x.CompanyId == new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd") && x.CompanyName == "Service Provider");
+    }
+
+    #endregion
+
+    #region GetIdentityProviderDataForProcessId
+
+    [Fact]
+    public async Task GetIdentityProviderDataForProcessIdAsync_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetIdentityProviderDataForProcessIdAsync(new Guid("44927361-3766-4f07-9f18-860158880d87"));
+
+        // Assert
+        result.Should().NotBeNull().And.Match<IdpData>(x =>
+            x.IdentityProviderId == new Guid("38f56465-ce26-4f25-9745-1791620dc203") &&
+            x.IdentityProviderTypeId == IdentityProviderTypeId.MANAGED &&
+            x.IamAlias == "to-decline-alias"
+        );
+    }
+
+    #endregion
+
+    #region DeleteCompanyIdentityProviderRange
+
+    [Fact]
+    public async Task DeleteCompanyIdentityProviderRange_ReturnsExpected()
+    {
+        // Arrange
+        var ids = _fixture.CreateMany<(Guid CompanyId, Guid IdentityProviderId)>(3).ToImmutableArray();
+        var (sut, context) = await CreateSutWithContext();
+
+        // Act
+        sut.DeleteCompanyIdentityProviderRange(ids);
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        changeTracker.HasChanges().Should().BeTrue();
+        var entries = changeTracker.Entries();
+        entries.Should().HaveCount(3)
+            .And.AllSatisfy(x => x.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Deleted));
+        entries.Select(x => x.Entity)
+            .Should().AllBeOfType<CompanyIdentityProvider>()
+            .Which.Should().Satisfy(
+                x => x.CompanyId == ids[0].CompanyId && x.IdentityProviderId == ids[0].IdentityProviderId,
+                x => x.CompanyId == ids[1].CompanyId && x.IdentityProviderId == ids[1].IdentityProviderId,
+                x => x.CompanyId == ids[2].CompanyId && x.IdentityProviderId == ids[2].IdentityProviderId
+            );
     }
 
     #endregion

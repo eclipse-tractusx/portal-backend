@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -160,14 +160,14 @@ public class AppsControllerTests
         //Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(3).ToImmutableArray();
         var pagination = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._))
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferSubscriptionStatusId?>._, A<string?>._))
             .Returns(pagination);
 
         //Act
         var result = await _controller.GetCompanySubscribedAppSubscriptionStatusesForUserAsync();
 
         //Assert
-        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 15)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(0, 15, null, null)).MustHaveHappenedOnceExactly();
         result.Content.Should().HaveCount(3).And.ContainInOrder(data);
     }
 
@@ -269,7 +269,7 @@ public class AppsControllerTests
         userRoleData.Add("IT Manager");
         var data = new OfferAutoSetupData(offerSubscriptionId, "https://test.de");
         var responseData = new OfferAutoSetupResponseData(
-            new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"),
+            Enumerable.Repeat(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcPW", "sa1"), 1),
             new ClientInfoData(Guid.NewGuid().ToString(), "http://www.google.com")
         );
         A.CallTo(() => _logic.AutoSetupAppAsync(A<OfferAutoSetupData>._))

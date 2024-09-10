@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,21 +37,7 @@ public interface ICompanyDataBusinessLogic
     IAsyncEnumerable<CompanyRoleConsentViewData> GetCompanyRoleAndConsentAgreementDetailsAsync(string? languageShortName);
 
     Task CreateCompanyRoleAndConsentAgreementDetailsAsync(IEnumerable<CompanyRoleConsentDetails> companyRoleConsentDetails);
-
-    Task<IEnumerable<UseCaseParticipationData>> GetUseCaseParticipationAsync(string? language);
-
-    Task<IEnumerable<SsiCertificateData>> GetSsiCertificatesAsync();
-
-    Task CreateUseCaseParticipation(UseCaseParticipationCreationData data, CancellationToken cancellationToken);
-    Task CreateSsiCertificate(SsiCertificateCreationData data, CancellationToken cancellationToken);
-
-    Task<Pagination.Response<CredentialDetailData>> GetCredentials(int page, int size, CompanySsiDetailStatusId? companySsiDetailStatusId, VerifiedCredentialTypeId? credentialTypeId, string? companyName, CompanySsiDetailSorting? sorting);
-
-    Task ApproveCredential(Guid credentialId, CancellationToken cancellationToken);
-
-    Task RejectCredential(Guid credentialId);
-
-    IAsyncEnumerable<VerifiedCredentialTypeId> GetCertificateTypes();
+    Task<Guid> CreateUseCaseParticipation(UseCaseParticipationCreationData data, string token, CancellationToken cancellationToken);
 
     IAsyncEnumerable<CompanyCertificateBpnData> GetCompanyCertificatesByBpn(string businessPartnerNumber);
 
@@ -66,4 +51,7 @@ public interface ICompanyDataBusinessLogic
 
     Task<Pagination.Response<CompanyCertificateData>> GetAllCompanyCertificatesAsync(int page, int size, CertificateSorting? sorting, CompanyCertificateStatusId? certificateStatus, CompanyCertificateTypeId? certificateType);
     Task<DimUrlsResponse> GetDimServiceUrls();
+    Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size);
+    Task RetriggerSelfDescriptionCreation(Guid processId);
+    Task TriggerSelfDescriptionCreation();
 }

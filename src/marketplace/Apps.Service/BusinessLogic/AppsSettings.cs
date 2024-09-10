@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -225,6 +225,15 @@ public class AppsSettings
     [Required]
     [DistinctValues("x => x.DocumentTypeId")]
     public IEnumerable<UploadDocumentConfig> UploadActiveAppDocumentTypeIds { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; } = null!;
 }
 
 /// <summary>

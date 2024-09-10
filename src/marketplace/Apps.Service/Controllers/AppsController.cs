@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -156,6 +156,10 @@ public class AppsController : ControllerBase
     /// Retrieves subscription statuses of apps.
     /// </summary>
     /// <remarks>Example: GET: /api/apps/subscribed/subscription-status</remarks>
+    /// <param name="page">The page that should be displayed</param>
+    /// <param name="size">The size per page of elements that should be returned</param>
+    /// <param name="status">Filter for the offer subscription status. If not set, all elements will be returned</param>
+    /// <param name="name">An optional search query for the name</param>
     /// <response code="200">Returns list of applicable apps subscription statuses.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
@@ -164,8 +168,8 @@ public class AppsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedAppSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSubscriptionStatusId? status = null, [FromQuery] string? name = null) =>
+        _appsBusinessLogic.GetCompanySubscribedAppSubscriptionStatusesForUserAsync(page, size, status, name);
 
     /// <summary>
     /// Retrieves subscription statuses of provided apps of the currently logged in user's company.
@@ -230,7 +234,7 @@ public class AppsController : ControllerBase
     /// <response code="404">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="500">Internal Server Error.</response>
     [HttpPut]
-    [Route("/subscription/{subscriptionId}/activate")]
+    [Route("subscription/{subscriptionId}/activate")]
     [Authorize(Roles = "activate_subscription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]

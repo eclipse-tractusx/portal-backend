@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -268,7 +268,7 @@ public class AppChangeController : ControllerBase
     /// <response code="400">The language does not exist.</response>
     /// <response code="404">The app was not found.</response>
     [HttpGet]
-    [Authorize(Roles = "view_client_roles")]
+    [Authorize(Roles = "edit_apps")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/roles")]
     [ProducesResponseType(typeof(IEnumerable<ActiveAppRoleDetails>), StatusCodes.Status200OK)]

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,10 +17,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record ServiceAccountData(
     string InternalClientId,
     string IamUserId,
     ClientAuthData AuthData
+);
+
+public record CreatedServiceAccountData(
+    Guid ServiceAccountId,
+    string Name,
+    string Description,
+    UserStatusId Status,
+    string? ClientId,
+    ServiceAccountData? ServiceAccountData,
+    IEnumerable<UserRoleData> UserRoleData
 );

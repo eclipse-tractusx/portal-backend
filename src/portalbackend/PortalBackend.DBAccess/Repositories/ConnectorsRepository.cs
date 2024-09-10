@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,29 +26,20 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-/// Implementation of <see cref="IConnectorsRepository"/> accessing database with EF Core.
-public class ConnectorsRepository : IConnectorsRepository
+/// <inheritdoc />
+public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsRepository
 {
-    private readonly PortalDbContext _context;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="portalDbContext">PortalDb context.</param>
-    public ConnectorsRepository(PortalDbContext portalDbContext)
-    {
-        _context = portalDbContext;
-    }
-
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
-            _context.Connectors.AsNoTracking()
-                .Where(x => x.ProviderId == companyId && x.StatusId != ConnectorStatusId.INACTIVE)
+            dbContext.Connectors.AsNoTracking()
+                .Where(x => x.ProviderId == companyId &&
+                       x.StatusId != ConnectorStatusId.INACTIVE &&
+                       x.TypeId == ConnectorTypeId.COMPANY_CONNECTOR)
                 .GroupBy(c => c.ProviderId),
-            connector => connector.OrderByDescending(connector => connector.Name),
+            connector => connector.OrderByDescending(c => c.Name),
             con => new ConnectorData(
                 con.Name,
                 con.Location!.Alpha2Code,
@@ -71,7 +62,7 @@ public class ConnectorsRepository : IConnectorsRepository
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
-            _context.Connectors.AsNoTracking()
+            dbContext.Connectors.AsNoTracking()
                 .Where(c => c.HostId == companyId &&
                             c.StatusId != ConnectorStatusId.INACTIVE &&
                             c.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
@@ -94,7 +85,7 @@ public class ConnectorsRepository : IConnectorsRepository
         ).SingleOrDefaultAsync();
 
     public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
-        _context.Connectors
+        dbContext.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorData, bool>(
@@ -118,7 +109,7 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId) =>
-        _context.Connectors
+        dbContext.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ValueTuple<ConnectorInformationData, bool>(
@@ -132,12 +123,12 @@ public class ConnectorsRepository : IConnectorsRepository
     {
         var connector = new Connector(Guid.NewGuid(), name, location, connectorUrl);
         setupOptionalFields?.Invoke(connector);
-        return _context.Connectors.Add(connector).Entity;
+        return dbContext.Connectors.Add(connector).Entity;
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
-        _context.Connectors
+        dbContext.Connectors
             .AsNoTracking()
             .Where(connector => connector.StatusId == ConnectorStatusId.ACTIVE && (!bpns.Any() || bpns.Contains(connector.Provider!.BusinessPartnerNumber)))
             .OrderBy(connector => connector.ProviderId)
@@ -153,21 +144,21 @@ public class ConnectorsRepository : IConnectorsRepository
     {
         var connector = new Connector(connectorId, null!, null!, null!);
         initialize?.Invoke(connector);
-        _context.Attach(connector);
+        dbContext.Attach(connector);
         setOptionalParameters(connector);
         return connector;
     }
 
     /// <inheritdoc />
     public Task<(Guid ConnectorId, Guid? SelfDescriptionDocumentId)> GetConnectorDataById(Guid connectorId) =>
-        _context.Connectors
+        dbContext.Connectors
             .Where(x => x.Id == connectorId && x.StatusId != ConnectorStatusId.INACTIVE)
             .Select(x => new ValueTuple<Guid, Guid?>(x.Id, x.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<DeleteConnectorData?> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId) =>
-        _context.Connectors
+    public Task<DeleteConnectorData?> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
+        dbContext.Connectors
             .Where(x => x.Id == connectorId)
             .Select(connector => new DeleteConnectorData(
                 connector.ProviderId == companyId || connector.HostId == companyId,
@@ -179,12 +170,21 @@ public class ConnectorsRepository : IConnectorsRepository
                     x.OfferSubscription!.OfferSubscriptionStatusId
                 )),
                 connector.CompanyServiceAccount!.Identity!.UserStatusId,
-                connector.CompanyServiceAccountId
+                connector.CompanyServiceAccountId,
+                new DeleteServiceAccountData(
+                    connector.CompanyServiceAccount!.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
+                    connector.CompanyServiceAccount.ClientClientId,
+                    connector.CompanyServiceAccount.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
+                    connector.CompanyServiceAccount.DimUserCreationData!.Process!.ProcessSteps
+                        .Any(ps =>
+                            ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                            processStepsToFilter.Contains(ps.ProcessStepTypeId)),
+                    connector.CompanyServiceAccount.DimUserCreationData == null ? null : connector.CompanyServiceAccount.DimUserCreationData!.ProcessId)
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<ConnectorUpdateInformation?> GetConnectorUpdateInformation(Guid connectorId, Guid companyId) =>
-        _context.Connectors
+        dbContext.Connectors
             .Where(c => c.Id == connectorId)
             .Select(c => new ConnectorUpdateInformation(
                 c.StatusId,
@@ -196,13 +196,40 @@ public class ConnectorsRepository : IConnectorsRepository
             .SingleOrDefaultAsync();
 
     public void DeleteConnector(Guid connectorId) =>
-        _context.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
+        dbContext.Connectors.Remove(new Connector(connectorId, null!, null!, null!));
 
     /// <inheritdoc />
     public ConnectorAssignedOfferSubscription CreateConnectorAssignedSubscriptions(Guid connectorId, Guid subscriptionId) =>
-        _context.ConnectorAssignedOfferSubscriptions.Add(new ConnectorAssignedOfferSubscription(connectorId, subscriptionId)).Entity;
+        dbContext.ConnectorAssignedOfferSubscriptions.Add(new ConnectorAssignedOfferSubscription(connectorId, subscriptionId)).Entity;
 
     /// <inheritdoc />
     public void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions) =>
-        _context.ConnectorAssignedOfferSubscriptions.RemoveRange(assignedOfferSubscriptions.Select(x => new ConnectorAssignedOfferSubscription(connectorId, x)));
+        dbContext.ConnectorAssignedOfferSubscriptions.RemoveRange(assignedOfferSubscriptions.Select(x => new ConnectorAssignedOfferSubscription(connectorId, x)));
+
+    public Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument() =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            dbContext.Connectors.AsNoTracking()
+                .Where(x => x.StatusId == ConnectorStatusId.ACTIVE && x.SelfDescriptionDocumentId == null)
+                .GroupBy(c => c.StatusId),
+            connector => connector.OrderByDescending(c => c.Name),
+            con => new ConnectorMissingSdDocumentData(
+                con.Id,
+                con.Name,
+                con.HostId ?? con.ProviderId,
+                con.HostId != null ? con.Host!.Name : con.Provider!.Name)
+        ).SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription() =>
+        dbContext.Connectors
+            .Where(c => c.StatusId == ConnectorStatusId.ACTIVE && c.SelfDescriptionDocumentId == null && c.Provider!.SelfDescriptionDocumentId != null)
+            .Select(c => c.Id)
+            .ToAsyncEnumerable();
+
+    public Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId) =>
+        dbContext.Connectors
+            .Where(c => c.SdCreationProcessId == processId)
+            .Select(c => new ValueTuple<Guid, string?, Guid>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId!.Value))
+            .SingleOrDefaultAsync();
 }

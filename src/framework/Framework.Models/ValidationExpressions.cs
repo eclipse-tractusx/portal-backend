@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,5 +23,7 @@ public static class ValidationExpressions
 {
     public const string Name = @"^.+$";
     public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
-    public const string Company = @"^\d*?[A-Za-zÀ-ÿ]\d?([A-Za-z0-9À-ÿ-_+=.,:;!?'\x22&#@()]\s?){2,40}$";
+    public const string Bpns = @"^(BPNS|bpns)[\w|\d]{12}$";
+    public const string Company = @"^(?!.*\s$)([\wÀ-ÿ£$€¥¢@%*+\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
+    public const string ExternalCertificateNumber = @"^[a-zA-Z0-9]{0,36}$";
 }

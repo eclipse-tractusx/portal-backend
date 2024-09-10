@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -535,4 +535,16 @@ public class UserRepository : IUserRepository
             .Select(x => x.Id)
             .Take(2)
             .ToAsyncEnumerable();
+
+    public void CreateCompanyUserAssignedProcessRange(IEnumerable<(Guid CompanyUserId, Guid ProcessId)> companyUserProcessIds) =>
+        _dbContext.AddRange(companyUserProcessIds.Select(x => new CompanyUserAssignedProcess(x.CompanyUserId, x.ProcessId)));
+
+    public Task<Guid> GetCompanyUserIdForProcessIdAsync(Guid processId) =>
+        _dbContext.CompanyUserAssignedProcesses
+            .Where(cuap => cuap.ProcessId == processId)
+            .Select(cuap => cuap.CompanyUserId)
+            .SingleOrDefaultAsync();
+
+    public void DeleteCompanyUserAssignedProcess(Guid companyUserId, Guid processId) =>
+        _dbContext.Remove(new CompanyUserAssignedProcess(companyUserId, processId));
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 
@@ -40,7 +39,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 /// </summary>
 public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
 {
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private readonly IPortalRepositories _portalRepositories;
     private readonly AppsSettings _settings;
     private readonly IOfferService _offerService;
@@ -93,7 +91,13 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
         {
             throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
         }
-        var roleData = AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+        var roleData = await AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
+
+        // When user will try to upload the same role names which are already attched to an APP.
+        // so, no role will be added against the given appId so, no need to procced further
+        // No need to update the Offer entity
+        if (!roleData.Any())
+            return roleData;
 
         _portalRepositories.GetInstance<IOfferRepository>().AttachAndModifyOffer(appId, offer =>
             offer.DateLastChanged = DateTimeOffset.UtcNow);
@@ -124,7 +128,7 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
     /// <inheritdoc/>
     public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.UseCase == null)
         {
             throw new UnexpectedConditionException("usecase should never be null here");
@@ -189,9 +193,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }
 
         return CreateAppAsync(appRequestModel);
@@ -269,9 +273,9 @@ public class AppReleaseBusinessLogic : IAppReleaseBusinessLogic
             throw new ForbiddenException($"Company {companyId} is not the app provider.");
         }
 
-        if (!string.IsNullOrEmpty(appRequestModel.Provider) && !Company.IsMatch(appRequestModel.Provider))
+        if (appRequestModel.Provider != null && !appRequestModel.Provider.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("Provider length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", nameof(appRequestModel.Provider));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(appRequestModel.Provider))]);
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

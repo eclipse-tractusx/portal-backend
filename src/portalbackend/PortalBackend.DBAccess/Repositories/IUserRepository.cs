@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -131,4 +131,7 @@ public interface IUserRepository
     void AttachAndModifyUserAssignedIdentityProvider(Guid companyUserId, Guid identityProviderId, Action<CompanyUserAssignedIdentityProvider>? initialize, Action<CompanyUserAssignedIdentityProvider> modify);
     Task<(bool Exists, string? RecipientMail)> GetUserMailData(Guid companyUserId);
     Task<bool> CheckUserExists(Guid companyUserId);
+    void CreateCompanyUserAssignedProcessRange(IEnumerable<(Guid CompanyUserId, Guid ProcessId)> companyUserProcessIds);
+    Task<Guid> GetCompanyUserIdForProcessIdAsync(Guid processId);
+    void DeleteCompanyUserAssignedProcess(Guid companyUserId, Guid processId);
 }

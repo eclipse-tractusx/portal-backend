@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInje
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -173,5 +174,30 @@ public class IssuerComponentBusinessLogic(
             data.Status == IssuerResponseStatus.SUCCESSFUL
                 ? [ProcessStepTypeId.START_CLEARING_HOUSE]
                 : null);
+    }
+
+    public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, string frameworkId, Guid identityId, string token, CancellationToken cancellationToken)
+    {
+        var (holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<ICompanyRepository>().GetWalletData(identityId).ConfigureAwait(false);
+        if (holder is null)
+        {
+            throw new ConflictException("The holder must be set");
+        }
+
+        if (businessPartnerNumber is null)
+        {
+            throw new ConflictException("The bpn must be set");
+        }
+
+        if (walletInformation is null)
+        {
+            throw new ConflictException("The wallet information must be set");
+        }
+
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId, new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), null);
+        return await service.CreateFrameworkCredential(data, token, cancellationToken).ConfigureAwait(false);
     }
 }

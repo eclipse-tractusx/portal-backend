@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -44,6 +44,7 @@ public class ConnectorsBusinessLogicTests
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private static readonly Guid ServiceAccountUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020003");
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
+    private static readonly Guid HostCompanyId = new("ac1cf001-7fbc-1f2f-817f-bce058020029");
     private static readonly Guid CompanyIdWithoutSdDocument = Guid.NewGuid();
     private static readonly Guid ExistingConnectorId = Guid.NewGuid();
     private static readonly Guid CompanyWithoutBpnId = Guid.NewGuid();
@@ -55,12 +56,15 @@ public class ConnectorsBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IConnectorsRepository _connectorsRepository;
+    private readonly IProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly IIdentityService _identityService;
+    private readonly IServiceAccountManagement _serviceAccountManagement;
 
     public ConnectorsBusinessLogicTests()
     {
@@ -71,11 +75,13 @@ public class ConnectorsBusinessLogicTests
         _companyRepository = A.Fake<ICompanyRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
         _userRepository = A.Fake<IUserRepository>();
-        _portalRepositories = A.Fake<IPortalRepositories>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
+        _serviceAccountManagement = A.Fake<IServiceAccountManagement>();
         _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
-        var identityService = A.Fake<IIdentityService>();
+        _identityService = A.Fake<IIdentityService>();
+        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _portalRepositories = A.Fake<IPortalRepositories>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         var options = A.Fake<IOptions<ConnectorsSettings>>();
@@ -93,12 +99,11 @@ public class ConnectorsBusinessLogicTests
         SetupRepositoryMethods();
 
         A.CallTo(() => options.Value).Returns(settings);
-        A.CallTo(() => identityService.IdentityData).Returns(_identity);
-        var logger = A.Fake<ILogger<ConnectorsBusinessLogic>>();
+        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         SetupIdentity();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, identityService, logger);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
     }
 
     #region GetAllCompanyConnectorDatas
@@ -129,23 +134,62 @@ public class ConnectorsBusinessLogicTests
         result.Content.Should().HaveCount(resultPageSize);
     }
 
+    [Theory]
+    [InlineData(0, 10, 5, 1, 0, 5)]
+    public async Task GetAllCompanyConnectorDatasWithCheckTypeCompanyConnector_WithValidData_ReturnsExpected(int page, int size, int numberOfElements, int numberOfPages, int resultPage, int resultPageSize)
+    {
+        var data = _fixture.Build<ConnectorData>()
+            .With(x => x.Type, ConnectorTypeId.COMPANY_CONNECTOR)
+            .CreateMany(numberOfElements).ToImmutableArray();
+
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
+            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
+
+        // Act
+        var result = await _logic.GetAllCompanyConnectorDatas(page, size);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(_identity.CompanyId)).MustHaveHappenedOnceExactly();
+        result.Should().NotBeNull();
+        result.Meta.NumberOfElements.Should().Be(numberOfElements);
+        result.Meta.NumberOfPages.Should().Be(numberOfPages);
+        result.Meta.Page.Should().Be(resultPage);
+        result.Meta.PageSize.Should().Be(resultPageSize);
+        result.Content.Should().HaveCount(resultPageSize);
+        result.Content.Should().Contain(x => x.Type == ConnectorTypeId.COMPANY_CONNECTOR);
+    }
     #endregion
 
     #region Create Connector
 
-    [Fact]
-    public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
         // Act
-        var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
@@ -186,6 +230,33 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateConnectorAsync_WithoutSelfDescriptionDocumentAndSdConnectionDisabled_CallsExpected()
+    {
+        // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = true
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
+
+        // Act
+        await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
@@ -196,8 +267,8 @@ public class ConnectorsBusinessLogicTests
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
-        var exception = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_DESCRIPTION.ToString());
+        var exception = await Assert.ThrowsAsync<ConflictException>(Act);
+        exception.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION.ToString());
     }
 
     [Fact]
@@ -248,36 +319,68 @@ public class ConnectorsBusinessLogicTests
 
     #region CreateManagedConnectorAsync
 
-    [Fact]
-    public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
+        SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged();
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
-        _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().And.Satisfy(x =>
+            x.HostId == HostCompanyId &&
+            x.ProviderId == _identity.CompanyId);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
-    [Fact]
-    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            },
+            ClearinghouseConnectDisabled = clearingHouseDisabled
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
 
         SetupTechnicalIdentity();
 
         // Act
-        var result = await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
+        var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
@@ -430,7 +533,7 @@ public class ConnectorsBusinessLogicTests
           x.Value == saId.ToString(),
           y => y.Name == "companyId"
           &&
-          y.Value == _identity.CompanyId.ToString()
+          y.Value == HostCompanyId.ToString()
           );
     }
 
@@ -452,7 +555,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, CompanyUserId, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -510,9 +613,8 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
         var userId = Guid.NewGuid();
-        Identity? identity = null;
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, userId));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, userId, _fixture.Create<DeleteServiceAccountData>()));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
@@ -528,21 +630,14 @@ public class ConnectorsBusinessLogicTests
                 initialize?.Invoke(connector);
                 setOptionalFields.Invoke(connector);
             });
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._))
-            .Invokes((Guid id, Action<Identity>? initialize, Action<Identity> modify) =>
-            {
-                identity = new Identity(id, default, Guid.Empty, default, default);
-                initialize?.Invoke(identity);
-                modify.Invoke(identity);
-            });
+
         // Act
-        await _logic.DeleteConnectorAsync(connectorId);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.AttachAndModifyIdentity(userId, A<Action<Identity>>._, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
-        identity.Should().NotBeNull().And.Match<Identity>(x => x.Id == userId && x.UserStatusId == UserStatusId.INACTIVE);
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _serviceAccountManagement.DeleteServiceAccount(userId, A<DeleteServiceAccountData>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(selfDescriptionDocumentId, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
@@ -564,8 +659,8 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
         var userId = id == null ? default(Guid?) : new Guid(id);
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId, _fixture.Create<DeleteServiceAccountData>()));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
@@ -582,11 +677,11 @@ public class ConnectorsBusinessLogicTests
                 setOptionalFields.Invoke(connector);
             });
         // Act
-        await _logic.DeleteConnectorAsync(connectorId);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         connector.StatusId.Should().Be(ConnectorStatusId.INACTIVE);
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._)).MustNotHaveHappened();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(selfDescriptionDocumentId, A<Action<Document>>._, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, A<Action<Connector>>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
@@ -603,14 +698,14 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
@@ -627,14 +722,14 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.RemoveDocument(selfDescriptionDocumentId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
@@ -648,14 +743,14 @@ public class ConnectorsBusinessLogicTests
         const DocumentStatusId DocumentStatusId = DocumentStatusId.LOCKED;
         var connectorId = Guid.NewGuid();
         var selfDescriptionDocumentId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        await _logic.DeleteConnectorAsync(connectorId);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.RemoveDocument(selfDescriptionDocumentId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
@@ -667,11 +762,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -683,11 +778,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -699,11 +794,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(default(DeleteConnectorData));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -715,11 +810,11 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -739,11 +834,11 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(offerSubscriptionId2, OfferSubscriptionStatusId.ACTIVE),
             new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
         };
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -765,11 +860,11 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(offerSubscriptionId2, OfferSubscriptionStatusId.ACTIVE),
             new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
         };
-        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid()));
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId);
+        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1142,6 +1237,109 @@ public class ConnectorsBusinessLogicTests
 
     #endregion
 
+    #region GetConnectorsWithMissingSdDocument
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSdDocument_WithMoreData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocConnectors(15);
+
+        // Act
+        var result = await _logic.GetConnectorsWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(10);
+    }
+
+    [Fact]
+    public async Task GetConnectorsWithMissingSdDocument_WithLessData_ReturnsExpected()
+    {
+        // Arrange
+        SetupFakesForGetMissingSdDocConnectors(7);
+
+        // Act
+        var result = await _logic.GetConnectorsWithMissingSdDocument(0, 10);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Count().Should().Be(7);
+    }
+
+    #endregion
+
+    #region TriggerSelfDescriptionCreation
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithMissingSdDocsForConnector_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
+
+        // Act
+        await _logic.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().NotBeNull().And.HaveCount(2)
+            .And.Satisfy(
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION,
+                p => p.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION);
+        processSteps.Should().NotBeNull().And.HaveCount(2)
+            .And.Satisfy(
+                p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION,
+        p => p.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>>._, A<Action<Connector>>._))
+            .MustHaveHappenedTwiceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionCreation_WithoutMissingSdDocsForConnector_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
+            })
+            .Returns(new Process(processId, default, default));
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
+            {
+                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
+            .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
+
+        // Act
+        await _logic.TriggerSelfDescriptionCreation();
+
+        // Assert
+        processes.Should().BeEmpty();
+        processSteps.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()
@@ -1158,7 +1356,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _companyRepository.GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(A<Guid>.That.Not.Matches(x => x == ValidCompanyId || x == CompanyIdWithoutSdDocument)))
             .Returns((null, null));
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(_validOfferSubscriptionId, ValidCompanyId))
-            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ValidCompanyId, ValidCompanyBpn));
+            .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), ProviderCompanyId: HostCompanyId, ValidCompanyBpn));
 
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>?>._))
             .Invokes((string name, string location, string connectorUrl, Action<Connector>? setupOptionalFields) =>
@@ -1168,14 +1366,6 @@ public class ConnectorsBusinessLogicTests
                 _connectors.Add(connector);
             })
             .Returns(new Connector(Guid.NewGuid(), null!, null!, null!));
-
-        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(A<Guid>._, A<Action<Connector>?>._, A<Action<Connector>>.That.IsNotNull()))
-            .Invokes((Guid connectorId, Action<Connector>? initialize, Action<Connector> setOptionalParameters) =>
-            {
-                var connector = _connectors.First(x => x.Id == connectorId);
-                initialize?.Invoke(connector);
-                setOptionalParameters.Invoke(connector);
-            });
 
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, _identity.CompanyId))
             .Returns((_fixture.Create<ConnectorInformationData>(), true));
@@ -1194,9 +1384,17 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+    }
+
+    private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
+    {
+        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
+            .Returns(true);
     }
 
     private void SetupIdentity()
@@ -1210,6 +1408,15 @@ public class ConnectorsBusinessLogicTests
     {
         A.CallTo(() => _identity.IdentityId).Returns(ServiceAccountUserId);
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+    }
+
+    private void SetupFakesForGetMissingSdDocConnectors(int count = 5)
+    {
+        var companyMissingSdDocumentData = _fixture.CreateMany<ConnectorMissingSdDocumentData>(count);
+        var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<ConnectorMissingSdDocumentData>(companyMissingSdDocumentData.Count(), companyMissingSdDocumentData.Skip(skip).Take(take)));
+
+        A.CallTo(() => _connectorsRepository.GetConnectorsWithMissingSdDocument())!
+            .Returns(paginationResult);
     }
 
     #endregion

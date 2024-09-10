@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,5 +26,8 @@ public enum ProcessTypeId
     PARTNER_REGISTRATION = 4,
     MAILING = 5,
     INVITATION = 6,
-    DIM_TECHNICAL_USER = 7
+    DIM_TECHNICAL_USER = 7,
+    USER_PROVISIONING = 8,
+    IDENTITYPROVIDER_PROVISIONING = 9,
+    SELF_DESCRIPTION_CREATION = 10
 }

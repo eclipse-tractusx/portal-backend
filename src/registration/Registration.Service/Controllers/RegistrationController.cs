@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Microsoft and BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Microsoft and BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -279,7 +279,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         /// <response code="500">Internal Server Error</response>
         /// <response code="502">Service Unavailable.</response>
         [HttpPost]
-        // [Authorize(Roles = "invite_user")]
+        [Authorize(Roles = "invite_user")]
         [Authorize(Policy = PolicyTypes.ValidCompany)]
         [Authorize(Policy = PolicyTypes.ValidIdentity)]
         [Route("application/{applicationId}/inviteNewUser")]
@@ -490,6 +490,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
         {
             var (fileName, content, mediaType) = await _registrationBusinessLogic.GetRegistrationDocumentAsync(documentId);
             return File(content, mediaType, fileName);
+        }
+
+        /// <summary>
+        /// Declines the registration verification for the application with the given id
+        /// </summary>
+        /// <param name="applicationId">Id of the application that should be declined</param>
+        /// <remarks>
+        /// Example: POST: /api/registration/application/{applicationId}/declineregistration
+        /// </remarks>
+        /// <response code="204">Successfully declined the application</response>
+        /// <response code="404">Application ID not found.</response>
+        [HttpPost]
+        [Authorize(Roles = "view_registration")]
+        [Authorize(Policy = PolicyTypes.CompanyUser)]
+        [Authorize(Policy = PolicyTypes.ValidCompany)]
+        [Route("applications/{applicationId}/declineregistration")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<NoContentResult> DeclineApplicationRegistrationAsync([FromRoute] Guid applicationId)
+        {
+            await _registrationBusinessLogic.DeclineApplicationRegistrationAsync(applicationId).ConfigureAwait(false);
+            return NoContent();
         }
     }
 }

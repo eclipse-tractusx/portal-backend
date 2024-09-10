@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +19,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
@@ -32,8 +34,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
 var VERSION = "v2";
 
-WebAppHelper
-    .BuildAndRunWebApplication<Program>(args, "apps", VERSION, builder =>
+await WebAppHelper
+    .BuildAndRunWebApplicationAsync<Program>(args, "apps", VERSION, builder =>
     {
         builder.Services
             .AddPublicInfos();
@@ -48,6 +50,8 @@ WebAppHelper
             .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
             .AddOfferDocumentServices();
@@ -58,4 +62,4 @@ WebAppHelper
             .AddProvisioningDBAccess(builder.Configuration);
 
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
-    });
+    }).ConfigureAwait(ConfigureAwaitOptions.None);

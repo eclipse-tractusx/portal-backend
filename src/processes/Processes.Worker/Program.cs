@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,17 +30,22 @@ using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
 Log.Information("Building worker");
+var isDevelopment = false;
 try
 {
     var host = Host
@@ -63,7 +68,11 @@ try
                 .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
                 .AddMailingProcessExecutor()
                 .AddInvitationProcessExecutor(hostContext.Configuration)
-                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"));
+                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
+                .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>()
+                .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {
@@ -75,11 +84,14 @@ try
                 {
                     FlurlUntrustedCertExceptionHandler.ConfigureExceptions(urlsToTrust);
                 }
+
+                isDevelopment = true;
             }
         })
         .AddLogging()
         .Build();
     Log.Information("Building worker completed");
+    FlurlErrorHandler.ConfigureErrorHandler(host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>(), isDevelopment);
 
     using var tokenSource = new CancellationTokenSource();
     Console.CancelKeyPress += (s, e) =>
@@ -101,5 +113,5 @@ catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", Str
 finally
 {
     Log.Information("Server Shutting down");
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync().ConfigureAwait(false);
 }

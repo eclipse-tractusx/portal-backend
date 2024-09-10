@@ -23,7 +23,6 @@ updates:
   # NuGet
   -
     package-ecosystem: "nuget"
-    target-branch: dev
     directory: /
     labels:
       - "dependabot"
@@ -33,22 +32,28 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   # Github Actions
   -
     package-ecosystem: "github-actions"
-    target-branch: dev
     directory: /
     labels:
       - "dependabot"
       - "github-actions"
     schedule:
       interval: "weekly"
+    groups:
+      dependencies:
+        dependency-type: "production"
 
   # Docker
   -
     package-ecosystem: "docker"
-    target-branch: dev
     directory: ./docker/
     labels:
       - "dependabot"
@@ -58,3 +63,6 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+    groups:
+      dependencies:
+        dependency-type: "production"

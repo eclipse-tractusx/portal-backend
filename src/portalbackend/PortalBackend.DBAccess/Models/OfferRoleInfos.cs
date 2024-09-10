@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,6 +30,7 @@ public record OfferRoleInfos(
     [property: JsonPropertyName("roles")] IEnumerable<OfferRoleInfo> RoleInfos);
 
 public record ActiveAppRoleDetails(
+    [property: JsonPropertyName("roleId")] Guid RoleId,
     [property: JsonPropertyName("role")] string Role,
     [property: JsonPropertyName("descriptions")] IEnumerable<ActiveAppUserRoleDescription> Descriptions);
 

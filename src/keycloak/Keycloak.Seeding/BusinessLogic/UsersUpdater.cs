@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -131,7 +131,7 @@ public class UsersUpdater : IUsersUpdater
             delete => deleteRoles(delete),
             out var deleteRolesTask))
         {
-            await deleteRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await deleteRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (seedRoles.IfAny(
@@ -143,12 +143,12 @@ public class UsersUpdater : IUsersUpdater
                     add => addRoles(allRoles.IntersectBy(add, x => x.Name)),
                     out var addRolesTask))
                 {
-                    await addRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+                    await addRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             },
             out var updateRolesTask))
         {
-            await updateRolesTask!.ConfigureAwait(ConfigureAwaitOptions.None);
+            await updateRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

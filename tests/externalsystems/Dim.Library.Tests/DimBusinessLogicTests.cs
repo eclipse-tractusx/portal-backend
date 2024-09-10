@@ -259,8 +259,8 @@ public class DimBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Create<DimWalletData>();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(false, default, Enumerable.Empty<Guid>()));
+        A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
+            .Returns(Enumerable.Empty<ValueTuple<Guid, IEnumerable<Guid>>>().ToAsyncEnumerable());
         async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Act
@@ -277,8 +277,8 @@ public class DimBusinessLogicTests
     {
         // Arrange
         var data = _fixture.Create<DimWalletData>();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, default, _fixture.CreateMany<Guid>(2)));
+        A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(default, _fixture.CreateMany<Guid>(2)), 1).ToAsyncEnumerable());
         async Task Act() => await _logic.ProcessDimResponse(BPN, data, CancellationToken.None);
 
         // Act
@@ -304,8 +304,8 @@ public class DimBusinessLogicTests
             .With(x => x.Did, "did:web:test.com:BPNL0000000000XX")
             .Create();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
+        A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
 
@@ -330,8 +330,8 @@ public class DimBusinessLogicTests
         var didDocument = JsonDocument.Parse("{\n  \"@context\": [\n \"abc\" ],\n  \"id\": \"did:web:example.org:did:BPNL0000000000XX\",\n  \"verificationMethod\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"publicKeyJwk\": {\n            \"kty\": \"JsonWebKey2020\",\n            \"crv\": \"Ed25519\",\n            \"x\": \"3534354354353\"\n         }\n     }\n   ],\n   \"services\": [\n     {\n         \"id\": [\"did:web:example.com:did:BPNL0000000000XX#key-0\"],\n         \"serviceEndpoint\": \"test.org:123\"\n     }\n  ]\n}");
         var data = _fixture.Build<DimWalletData>().With(x => x.DidDocument, didDocument).With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX").Create();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
+        A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
 
@@ -390,8 +390,8 @@ public class DimBusinessLogicTests
             .With(x => x.Did, "did:web:example.org:did:BPNL0000000000XX")
             .Create();
         var companyId = Guid.NewGuid();
-        A.CallTo(() => _companyRepository.GetCompanyIdByBpn(BPN))
-            .Returns(new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, companyId, Enumerable.Repeat(ApplicationId, 1)));
+        A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
         byte[]? encrypted = null;

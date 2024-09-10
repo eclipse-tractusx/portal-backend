@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -553,7 +553,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var (sut, _) = await CreateSut();
         var companyId = new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
-        var activeDescription = "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to particiapte as contributer and user.";
+        var activeDescription = "The participant role is covering the data provider, data consumer or app user scenario. As participant you are an active member of the network with enabled services to participate as contributor and user.";
         var serviceDscription = "The Service Provider is able to offer 3rd party services, such as dataspace service offerings to Catena-X Members. Catena-X members can subscribe for those services.";
         var appDescription = "The App Provider is a company which is providing application software via the CX marketplace. As app provider you can participate and use the developer hub, release and offer applications to the network and manage your applications.";
         var onboardingServiceProviderDescription = "The Onboarding service provider is a Catena-X certified role which enables the company to act as onboarding provider inside the network.";
@@ -688,7 +688,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBe(default);
         result.Bpn.Should().Be("BPNL00000003CRHK");
-        result.TechnicalUserRoleIds.Should().HaveCount(12).And.OnlyHaveUniqueItems();
+        result.TechnicalUserRoleIds.Should().HaveCount(13).And.OnlyHaveUniqueItems();
     }
 
     #endregion
@@ -992,10 +992,89 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetWalletServiceUrl(_validCompanyId);
+        var result = await sut.GetDimServiceUrls(_validCompanyId);
 
         // Assert
-        result.Should().Be("https://example.org/auth");
+        result.Bpn.Should().Be("BPNL00000003CRHK");
+        result.Did.Should().Be("did:web:test");
+        result.WalletUrl.Should().Be("https://example.org/auth");
+    }
+
+    #endregion
+
+    #region RemoveProviderCompanyDetails
+
+    [Fact]
+    public async Task RemoveProviderCompanyDetails_ExecutesExpected()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        sut.RemoveProviderCompanyDetails(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        var removedEntity = changedEntries.Single();
+        removedEntity.State.Should().Be(EntityState.Deleted);
+    }
+
+    #endregion
+
+    #region GetCompaniesWithMissingSdDocument
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument_ReturnsExpectedCompanies()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await Pagination.CreateResponseAsync(
+            0,
+            10,
+            15,
+            sut.GetCompaniesWithMissingSdDocument());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().HaveCount(2).And.Satisfy(
+            x => x.Name == "CX-Test-Access",
+            x => x.Name == "Bayerische Motorenwerke AG");
+    }
+
+    #endregion
+
+    #region IsExistingCompany
+
+    [Fact]
+    public async Task IsExistingCompany_WithExistingCompany_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsExistingCompany(_validCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task IsExistingCompany_WithNotExistingCompany_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.IsExistingCompany(Guid.NewGuid()).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        // Assert
+        result.Should().BeFalse();
     }
 
     #endregion

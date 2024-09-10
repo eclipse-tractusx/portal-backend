@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -54,7 +54,7 @@ public interface IProvisioningManager
     Task ResetSharedUserPasswordAsync(string realm, string userId);
     Task<IEnumerable<string>> GetClientRoleMappingsForUserAsync(string userId, string clientId);
     ValueTask<bool> IsCentralIdentityProviderEnabled(string alias);
-    Task<string> GetCentralIdentityProviderDisplayName(string alias);
+    Task<string?> GetCentralIdentityProviderDisplayName(string alias);
     ValueTask<IdentityProviderConfigOidc> GetCentralIdentityProviderDataOIDCAsync(string alias);
     ValueTask SetSharedIdentityProviderStatusAsync(string alias, bool enabled);
     ValueTask SetCentralIdentityProviderStatusAsync(string alias, bool enabled);
@@ -70,4 +70,6 @@ public interface IProvisioningManager
     ValueTask UpdateSharedRealmTheme(string alias, string loginTheme);
     Task<string?> GetUserByUserName(string userName);
     Task<string?> GetIdentityProviderDisplayName(string alias);
+    Task DeleteSharedRealmAsync(string alias);
+    Task DeleteIdpSharedServiceAccount(string alias);
 }

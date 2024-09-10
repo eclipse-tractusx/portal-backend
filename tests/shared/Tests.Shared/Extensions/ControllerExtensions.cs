@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -41,7 +41,7 @@ public static class ControllerExtensions
         var claimsIdentity = new ClaimsIdentity();
         if (identity != null)
         {
-            claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
+            claimsIdentity.AddClaims([new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString())]);
         }
 
         var httpContext = new DefaultHttpContext
@@ -66,7 +66,7 @@ public static class ControllerExtensions
     public static void AddControllerContextWithClaimAndBearer(this ControllerBase controller, string accessToken, IIdentityData identity)
     {
         var claimsIdentity = new ClaimsIdentity();
-        claimsIdentity.AddClaims(new[] { new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString()) });
+        claimsIdentity.AddClaims([new Claim(PortalClaimTypes.PreferredUserName, identity.IdentityId.ToString())]);
 
         var httpContext = new DefaultHttpContext
         {

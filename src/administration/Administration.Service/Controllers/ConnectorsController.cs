@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -39,19 +39,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "[controller]")]
 [ApiController]
 [Produces("application/json")]
-public class ConnectorsController : ControllerBase
+public class ConnectorsController(IConnectorsBusinessLogic logic)
+    : ControllerBase
 {
-    private readonly IConnectorsBusinessLogic _businessLogic;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="connectorsBusinessLogic">Connectors business logic.</param>
-    public ConnectorsController(IConnectorsBusinessLogic connectorsBusinessLogic)
-    {
-        _businessLogic = connectorsBusinessLogic;
-    }
-
     /// <summary>
     /// Retrieves all company registered own connectors and their status.
     /// </summary>
@@ -69,7 +59,7 @@ public class ConnectorsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<ConnectorData>> GetCompanyConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        _businessLogic.GetAllCompanyConnectorDatas(page, size);
+        logic.GetAllCompanyConnectorDatas(page, size);
 
     /// <summary>
     /// Retrieves all registered connectors which are managed connectors of company customers and their status.
@@ -89,7 +79,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
     [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER)]
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        _businessLogic.GetManagedConnectorForCompany(page, size);
+        logic.GetManagedConnectorForCompany(page, size);
 
     /// <summary>
     /// Retrieves connector information for a specific connector by its ID. Note: only company owned connectors can get called.
@@ -107,7 +97,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<ConnectorData> GetCompanyConnectorByIdForCurrentUserAsync([FromRoute] Guid connectorId) =>
-        _businessLogic.GetCompanyConnectorData(connectorId);
+        logic.GetCompanyConnectorData(connectorId);
 
     /// <summary>
     /// Allows to register owned company connectors (self-hosted/-managed) inside the CX dataspace.
@@ -128,7 +118,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<CreatedAtRouteResult> CreateConnectorAsync([FromForm] ConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await _businessLogic.CreateConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var connectorId = await logic.CreateConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
@@ -152,7 +142,7 @@ public class ConnectorsController : ControllerBase
     [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER)]
     public async Task<CreatedAtRouteResult> CreateManagedConnectorAsync([FromForm] ManagedConnectorInputModel connectorInputModel, CancellationToken cancellationToken)
     {
-        var connectorId = await _businessLogic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var connectorId = await logic.CreateManagedConnectorAsync(connectorInputModel, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return CreatedAtRoute(nameof(GetCompanyConnectorByIdForCurrentUserAsync), new { connectorId }, connectorId);
     }
 
@@ -160,7 +150,8 @@ public class ConnectorsController : ControllerBase
     /// Removes a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector to be deleted.</param>
-    /// <remarks>Example: DELETE: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <param name="deleteServiceAccount">if <c>true</c> the linked service account will be deleted, otherwise the connection to the connector will just be removed</param>
+    /// <remarks>Example: DELETE: /api/administration/connectors/{connectorId}?deleteServiceAccount=true</remarks>
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">Record not found.</response>
     /// <response code="409">Connector status does not match a deletion scenario. Deletion declined.</response>
@@ -171,9 +162,9 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
+    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId, [FromQuery] bool deleteServiceAccount = false)
     {
-        await _businessLogic.DeleteConnectorAsync(connectorId);
+        await logic.DeleteConnectorAsync(connectorId, deleteServiceAccount);
         return NoContent();
     }
 
@@ -189,7 +180,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     [PublicUrl(CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.ACTIVE_PARTICIPANT)]
     public IAsyncEnumerable<ConnectorEndPointData> GetCompanyConnectorEndPointAsync([FromBody] IEnumerable<string>? bpns = null) =>
-        _businessLogic.GetCompanyConnectorEndPointAsync(bpns);
+        logic.GetCompanyConnectorEndPointAsync(bpns);
 
     /// <summary>
     /// Asynchron callback endpoint for the clearinghouse provider to submit the connector SD document.
@@ -209,7 +200,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseSelfDescription([FromBody] SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        await _businessLogic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.ProcessClearinghouseSelfDescription(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -236,7 +227,7 @@ public class ConnectorsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
     public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data)
     {
-        await _businessLogic.UpdateConnectorUrl(connectorId, data)
+        await logic.UpdateConnectorUrl(connectorId, data)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
@@ -256,5 +247,64 @@ public class ConnectorsController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(IAsyncEnumerable<ConnectorEndPointData>), StatusCodes.Status200OK)]
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData([FromQuery] bool? connectorIdSet) =>
-        _businessLogic.GetConnectorOfferSubscriptionData(connectorIdSet);
+        logic.GetConnectorOfferSubscriptionData(connectorIdSet);
+
+    /// <summary>
+    /// Retrieves all active connectors with missing sd document.
+    /// </summary>
+    /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
+    /// <param name="size" example="15">Optional query parameter defining the number of connectors listed per page.</param>
+    /// <returns>Paginated result of connector view models.</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/connectors/missing-sd-document <br />
+    /// Example: GET: /api/administration/connectors/missing-sd-document?page=0&amp;size=15
+    /// </remarks>
+    /// <response code="200">Returns a list of all active connectors with missing sd document.</response>
+    [HttpGet]
+    [Route("missing-sd-document")]
+    [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Pagination.Response<ConnectorMissingSdDocumentData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        logic.GetConnectorsWithMissingSdDocument(page, size);
+
+    /// <summary>
+    /// Triggers the process to create the missing self description documents
+    /// </summary>
+    /// <returns>NoContent</returns>
+    /// Example: POST: /api/administration/connectors/trigger-self-description
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("trigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> TriggerSelfDescriptionProcess()
+    {
+        await logic.TriggerSelfDescriptionCreation().ConfigureAwait(false);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retriggers the process to create the missing self description documents
+    /// </summary>
+    /// <returns>NoContent</returns>
+    /// Example: POST: /api/administration/connectors/retrigger-self-description/{processId}
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("retrigger-self-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerSelfDescriptionProcess([FromRoute] Guid processId)
+    {
+        await logic.RetriggerSelfDescriptionCreation(processId).ConfigureAwait(false);
+        return NoContent();
+    }
 }

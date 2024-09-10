@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -28,19 +29,14 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
-public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
+public class SdFactoryBusinessLogic(
+    ISdFactoryService sdFactoryService,
+    IPortalRepositories portalRepositories,
+    IApplicationChecklistService checklistService,
+    IOptions<SdFactorySettings> options)
+    : ISdFactoryBusinessLogic
 {
-    private readonly ISdFactoryService _sdFactoryService;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IApplicationChecklistService _checklistService;
-
-    public SdFactoryBusinessLogic(ISdFactoryService sdFactoryService, IPortalRepositories portalRepositories,
-        IApplicationChecklistService checklistService)
-    {
-        _sdFactoryService = sdFactoryService;
-        _portalRepositories = portalRepositories;
-        _checklistService = checklistService;
-    }
+    private readonly SdFactorySettings _settings = options.Value;
 
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
@@ -48,18 +44,34 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         string selfDescriptionDocumentUrl,
         string businessPartnerNumber,
         CancellationToken cancellationToken) =>
-        _sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
+        sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
+        if (_settings.ClearinghouseConnectDisabled)
+        {
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.SKIPPED,
+                entry =>
+                {
+                    entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.SKIPPED;
+                    entry.Comment = "Self description was skipped due to clearinghouse trigger is disabled";
+                },
+                [ProcessStepTypeId.ACTIVATE_APPLICATION],
+                null,
+                true,
+                "Self description was skipped due to clearinghouse trigger is disabled"
+            );
+        }
+
         await RegisterSelfDescriptionInternalAsync(context.ApplicationId, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS,
-            new[] { ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP },
+            [ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP],
             null,
             true,
             null
@@ -70,7 +82,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         Guid applicationId,
         CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var result = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(applicationId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
@@ -86,31 +98,31 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
                 $"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
-        await _sdFactoryService
+        await sdFactoryService
             .RegisterSelfDescriptionAsync(applicationId, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
-        var context = await _checklistService
+        var confirm = ValidateConfirmationData(data);
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 data.ExternalId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
-                new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
+                [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
-                processStepTypeIds: new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP })
+                processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (confirm)
         {
-            var documentId = await ProcessDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null,
                 c => { c.SelfDescriptionDocumentId = documentId; });
         }
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>
@@ -125,32 +137,39 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
     }
 
     /// <inheritdoc />
-    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, Guid companyUserId, CancellationToken cancellationToken)
+    public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        var confirm = ValidateData(data);
-        Guid? documentId = null;
-        if (confirm)
+        if (ValidateConfirmationData(data))
         {
-            documentId = await ProcessDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
-        _portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
-        {
-            if (documentId != null)
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionDocumentId = documentId;
                 con.StatusId = ConnectorStatusId.ACTIVE;
-            }
-
-            if (!confirm)
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+        }
+        else
+        {
+            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionMessage = data.Message!;
-            }
-
-            con.DateLastChanged = DateTimeOffset.UtcNow;
-        });
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+            });
+        }
     }
 
-    private static bool ValidateData(SelfDescriptionResponseData data)
+    public async Task ProcessFinishSelfDescriptionLpForCompany(SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    {
+        if (data.Status == SelfDescriptionStatus.Confirm)
+        {
+            var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.ExternalId, null,
+                c => { c.SelfDescriptionDocumentId = documentId; });
+        }
+    }
+
+    private static bool ValidateConfirmationData(SelfDescriptionResponseData data)
     {
         var confirm = data.Status == SelfDescriptionStatus.Confirm;
         switch (confirm)
@@ -164,7 +183,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         return confirm;
     }
 
-    private async Task<Guid> ProcessDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
+    private async Task<Guid> ProcessAndCreateDocument(SdFactoryResponseModelTitle title, SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
         using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
@@ -175,7 +194,7 @@ public class SdFactoryBusinessLogic : ISdFactoryBusinessLogic
         var documentContent = ms.ToArray();
         var hash = SHA512.HashData(documentContent);
 
-        var document = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
+        var document = portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(
             $"SelfDescription_{title}.json",
             documentContent,
             hash,

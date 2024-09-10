@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 BMW Group AG
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -79,6 +79,15 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Description = entry.Description;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        await SeedTable<UserRoleDescription>(
+            "user_role_descriptions",
+            x => new { x.UserRoleId, x.LanguageShortName },
+            x => x.dbEntity.Description != x.dataEntity.Description,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Description = entry.Description;
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
         await SeedTable<UserRoleCollectionDescription>(
             "user_role_collection_descriptions",
             x => new { x.UserRoleCollectionId, x.LanguageShortName },
@@ -121,16 +130,6 @@ public class BatchUpdateSeeder : ICustomSeeder
             (dbEntry, entry) =>
             {
                 dbEntry.Value = entry.Value;
-            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        await SeedTable<VerifiedCredentialExternalTypeUseCaseDetailVersion>("verified_credential_external_type_use_case_detail_versions",
-            x => x.Id,
-            x => x.dataEntity.Template != x.dbEntity.Template || x.dataEntity.Expiry != x.dbEntity.Expiry || x.dataEntity.ValidFrom != x.dbEntity.ValidFrom,
-            (dbEntry, entry) =>
-            {
-                dbEntry.Template = entry.Template;
-                dbEntry.Expiry = entry.Expiry;
-                dbEntry.ValidFrom = entry.ValidFrom;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await SeedTable<CompanyServiceAccount>("company_service_accounts",

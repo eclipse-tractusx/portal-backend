@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -64,10 +64,10 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     /// <inheritdoc />
     public Task SetProviderCompanyDetailsAsync(ProviderDetailData data)
     {
-        data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
+        data.Url?.EnsureValidHttpsUrl(() => nameof(data.Url));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
 
-        if (data.Url.Length > 100)
+        if (data.Url is { Length: > 100 })
         {
             throw new ControllerArgumentException(
                 "the maximum allowed length is 100 characters", nameof(data.Url));
@@ -82,29 +82,13 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (providerDetailData == default)
+        var hasChanges = false;
+        if (providerDetailData == default && data.Url != null)
         {
-            var result = await companyRepository
-                .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-            if (!result.IsValidCompanyId)
-            {
-                throw new ConflictException($"Company {companyId} not found");
-            }
-            if (!result.IsCompanyRoleOwner)
-            {
-                throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
-            }
-            companyRepository.CreateProviderCompanyDetail(companyId, data.Url, providerDetails =>
-            {
-                if (data.CallbackUrl != null)
-                {
-                    providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
-                }
-                providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
-            });
+            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository);
+            hasChanges = true;
         }
-        else
+        else if (providerDetailData != default && data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
@@ -114,8 +98,44 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
                     details.AutoSetupUrl = data.Url;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
+            hasChanges = true;
         }
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        else if (providerDetailData != default && data.Url == null)
+        {
+            companyRepository.RemoveProviderCompanyDetails(providerDetailData.ProviderCompanyDetailId);
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task HandleCreateProviderCompanyDetails(ProviderDetailData data, Guid companyId, ICompanyRepository companyRepository)
+    {
+        var result = await companyRepository
+            .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!result.IsValidCompanyId)
+        {
+            throw new ConflictException($"Company {companyId} not found");
+        }
+
+        if (!result.IsCompanyRoleOwner)
+        {
+            throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
+        }
+
+        companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>
+        {
+            if (data.CallbackUrl != null)
+            {
+                providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
+            }
+
+            providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
+        });
     }
 
     /// <inheritdoc />

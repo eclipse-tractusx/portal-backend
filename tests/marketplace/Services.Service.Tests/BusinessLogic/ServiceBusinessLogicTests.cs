@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,7 +21,6 @@ using AutoFixture;
 using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -64,7 +63,6 @@ public class ServiceBusinessLogicTests
     private readonly IOfferSubscriptionService _offerSubscriptionService;
     private readonly IOfferService _offerService;
     private readonly IIdentityService _identityService;
-    private readonly ILogger<ServiceBusinessLogic> _logger;
 
     public ServiceBusinessLogicTests()
     {
@@ -92,7 +90,6 @@ public class ServiceBusinessLogicTests
         _offerService = A.Fake<IOfferService>();
         _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
-        _logger = A.Fake<ILogger<ServiceBusinessLogic>>();
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
@@ -115,7 +112,6 @@ public class ServiceBusinessLogicTests
         };
         var options = Options.Create(serviceSettings);
         _fixture.Inject(options);
-        _fixture.Inject(_logger);
     }
 
     #region Get Active Services
@@ -169,7 +165,7 @@ public class ServiceBusinessLogicTests
             },
             BasePortalAddress = "https://base-portal-address-test.de"
         };
-        var sut = new ServiceBusinessLogic(null!, null!, _offerSubscriptionService, null!, _identityService, Options.Create(serviceSettings), _logger);
+        var sut = new ServiceBusinessLogic(null!, null!, _offerSubscriptionService, null!, _identityService, Options.Create(serviceSettings));
 
         // Act
         var result = await sut.AddServiceSubscription(_existingServiceId, consentData);
@@ -205,7 +201,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
@@ -239,7 +235,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
@@ -266,7 +262,7 @@ public class ServiceBusinessLogicTests
         {
             ApplicationsMaxPageSize = 15
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings), _logger);
+        var sut = new ServiceBusinessLogic(_portalRepositories, null!, null!, null!, _identityService, Options.Create(serviceSettings));
 
         // Act
         var result = await sut.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(0, 10, null, null, offerId, null);
@@ -327,7 +323,7 @@ public class ServiceBusinessLogicTests
         var data = _fixture.CreateMany<AgreementData>(1);
         A.CallTo(() => offerService.GetOfferAgreementsAsync(_existingServiceId, A<OfferTypeId>._))
             .Returns(data.ToAsyncEnumerable());
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceAgreement(_existingServiceId).ToListAsync();
@@ -380,7 +376,7 @@ public class ServiceBusinessLogicTests
         var offerService = A.Fake<IOfferService>();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(_validConsentId, A<OfferTypeId>._))
             .Returns(data);
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
         var result = await sut.GetServiceConsentDetailDataAsync(_validConsentId);
@@ -398,7 +394,7 @@ public class ServiceBusinessLogicTests
         var invalidConsentId = Guid.NewGuid();
         A.CallTo(() => offerService.GetConsentDetailDataAsync(A<Guid>.That.Not.Matches(x => x == _validConsentId), A<OfferTypeId>._))
             .Throws(() => new NotFoundException("Test"));
-        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
+        var sut = new ServiceBusinessLogic(null!, offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
         async Task Action() => await sut.GetServiceConsentDetailDataAsync(invalidConsentId);
@@ -421,12 +417,12 @@ public class ServiceBusinessLogicTests
             "Sales Manager",
             "IT Manager"
         };
-        var responseData = new OfferAutoSetupResponseData(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
+        var responseData = new OfferAutoSetupResponseData(Enumerable.Repeat(new TechnicalUserInfoData(Guid.NewGuid(), userRoleData, "abcSecret", "sa1"), 1), new ClientInfoData(_fixture.Create<string>(), "http://www.google.com"));
         A.CallTo(() => offerSetupService.AutoSetupOfferAsync(A<OfferAutoSetupData>._, A<IEnumerable<UserRoleConfig>>._, A<OfferTypeId>._, A<string>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(responseData);
         var data = new OfferAutoSetupData(Guid.NewGuid(), "https://www.offer.com");
         var settings = _fixture.Create<ServiceSettings>();
-        var sut = new ServiceBusinessLogic(null!, null!, null!, offerSetupService, _identityService, Options.Create(settings), _logger);
+        var sut = new ServiceBusinessLogic(null!, null!, null!, offerSetupService, _identityService, Options.Create(settings));
 
         // Act
         var result = await sut.AutoSetupServiceAsync(data);
@@ -475,7 +471,7 @@ public class ServiceBusinessLogicTests
                 DocumentTypeId.SERVICE_LEADIMAGE
                 }
         };
-        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
+        var sut = new ServiceBusinessLogic(_portalRepositories, _offerService, null!, null!, _identityService, Options.Create(settings));
 
         // Act
         await sut.GetServiceDocumentContentAsync(serviceId, documentId, CancellationToken.None);
@@ -537,7 +533,7 @@ public class ServiceBusinessLogicTests
         };
         A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
 
         // Act
         var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId);
@@ -567,7 +563,7 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _offerService.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(data);
 
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings), _logger);
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
 
         // Act
         var result = await sut.GetSubscriptionDetailForSubscriber(offerId, subscriptionId);
@@ -588,18 +584,18 @@ public class ServiceBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
         var paginationResponse = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._, A<string?>._))
             .Returns(paginationResponse);
 
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10);
+        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, null, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, null, null))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -611,7 +607,7 @@ public class ServiceBusinessLogicTests
     public async Task UnsubscribeOwnCompanyAppSubscriptionAsync_ExpectedCall()
     {
         // Arrange
-        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()), _logger);
+        var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         //  Act
         await sut.UnsubscribeOwnCompanyServiceSubscriptionAsync(_fixture.Create<Guid>());
@@ -670,7 +666,6 @@ public class ServiceBusinessLogicTests
         A.CallTo(() => _agreementRepository.CheckAgreementExistsForSubscriptionAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
             .Returns(false);
 
-        var offerSubscription = _fixture.Create<OfferSubscription>();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailDataForOwnUserAsync(
                 _validSubscriptionId,
                 _identity.CompanyId,
@@ -683,15 +678,15 @@ public class ServiceBusinessLogicTests
             .Returns<SubscriptionDetailData?>(null);
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 _existingServiceId, _identity.IdentityId, A<OfferTypeId>._))
-            .Returns((_identity.CompanyId, offerSubscription));
+            .Returns((_identity.CompanyId, true));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 A<Guid>.That.Not.Matches(x => x == _existingServiceId), _identity.IdentityId,
                 A<OfferTypeId>._))
-            .Returns((_identity.CompanyId, default(OfferSubscription?)));
+            .Returns((_identity.CompanyId, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(
                 _existingServiceId, A<Guid>.That.Not.Matches(x => x == _identity.IdentityId),
                 A<OfferTypeId>._))
-            .Returns<(Guid companyId, OfferSubscription? offerSubscription)>(default);
+            .Returns<(Guid, bool)>(default);
 
         A.CallTo(() => _consentRepository.GetConsentDetailData(_validConsentId, OfferTypeId.SERVICE))
             .Returns(new ConsentDetailData(_validConsentId, "The Company", _companyUser.Id, ConsentStatusId.ACTIVE, "Agreed"));

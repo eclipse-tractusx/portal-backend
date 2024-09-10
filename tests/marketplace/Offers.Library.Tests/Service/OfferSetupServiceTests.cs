@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -37,6 +37,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
+using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 using TechnicalUserData = Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models.TechnicalUserData;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Tests.Service;
@@ -130,7 +131,7 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
+        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
         var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, companyServiceAccount);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
@@ -195,14 +196,14 @@ public class OfferSetupServiceTests
         result.Should().NotBeNull();
         if (!technicalUserRequired || isSingleInstance)
         {
-            result.TechnicalUserInfo.Should().BeNull();
+            result.TechnicalUserInfo.Should().BeEmpty();
             result.ClientInfo.Should().BeNull();
             clients.Should().BeEmpty();
         }
         else
         {
             result.TechnicalUserInfo.Should().NotBeNull();
-            result.TechnicalUserInfo!.Should().Match<TechnicalUserInfoData>(info =>
+            result.TechnicalUserInfo.Should().Satisfy(info =>
                 info.TechnicalUserId == _technicalUserId &&
                 info.TechnicalUserSecret == "katze!1234" &&
                 info.TechnicalUserPermissions.SequenceEqual(new[] { "role1", "role2" })
@@ -255,9 +256,7 @@ public class OfferSetupServiceTests
     public async Task AutoSetup_WithMultipleTechnicalUsers_ThrowsException()
     {
         // Arrange
-        var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN);
-        SetupAutoSetup(OfferTypeId.APP, offerSubscription, false, companyServiceAccount);
+        SetupAutoSetup(OfferTypeId.APP);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         A.CallTo(() => _clientRepository.CreateClient(A<string>._))
@@ -331,7 +330,7 @@ public class OfferSetupServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.TechnicalUserInfo.Should().BeNull();
+        result.TechnicalUserInfo.Should().BeEmpty();
         result.ClientInfo.Should().BeNull();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1043,12 +1042,13 @@ public class OfferSetupServiceTests
     public async Task CreateTechnicalUser_WithNotExistingOfferSubscription_ThrowsNotFoundException()
     {
         // Arrange
+        var processId = Guid.NewGuid();
         var offerSubscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
             .Returns<OfferSubscriptionTechnicalUserCreationData?>(null);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!);
+        async Task Act() => await _sut.CreateTechnicalUser(processId, offerSubscriptionId, null!);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1059,13 +1059,14 @@ public class OfferSetupServiceTests
     public async Task CreateTechnicalUser_WithTechnicalUserNotNeeded_ThrowsConflictException()
     {
         // Arrange
+        var processId = Guid.NewGuid();
         var offerSubscriptionId = Guid.NewGuid();
         var data = new OfferSubscriptionTechnicalUserCreationData(false, "cl1", "Test App", "Stark Industries", CompanyUserCompanyId, Bpn, OfferTypeId.SERVICE);
         A.CallTo(() => _offerSubscriptionsRepository.GetTechnicalUserCreationData(offerSubscriptionId))
             .Returns(data);
 
         // Act
-        async Task Act() => await _sut.CreateTechnicalUser(offerSubscriptionId, null!, null!);
+        async Task Act() => await _sut.CreateTechnicalUser(processId, offerSubscriptionId, null!);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1080,6 +1081,7 @@ public class OfferSetupServiceTests
     public async Task CreateTechnicalUser_WithTechnicalUserNeeded_ReturnsExpected(string? clientId, bool withMatchingDimRoles)
     {
         // Arrange
+        var processId = Guid.NewGuid();
         var offerSubscriptionId = Guid.NewGuid();
         var serviceAccountId = Guid.NewGuid();
         var userRoleId = Guid.NewGuid();
@@ -1099,20 +1101,39 @@ public class OfferSetupServiceTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, CompanyUserCompanyId, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<Action<CompanyServiceAccount>>._))
-            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<CompanyServiceAccount>>._))
+            .Invokes((ServiceAccountCreationInfo _,
+                Guid _,
+                IEnumerable<string> _,
+                CompanyServiceAccountTypeId _,
+                bool _,
+                bool _,
+                ServiceAccountCreationProcessData? _,
+                Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
-                setOptionalParameter?.Invoke(companyServiceAccount);
+                if (companyServiceAccount != null)
+                {
+                    setOptionalParameter?.Invoke(companyServiceAccount);
+                }
             })
             .Returns((
-                clientId ?? $"{data.OfferName}-{data.CompanyName}",
-                serviceAccountData,
-                serviceAccountId,
-                userRoleData));
+                withMatchingDimRoles,
+                withMatchingDimRoles
+                    ? Guid.NewGuid()
+                    : null,
+                [new CreatedServiceAccountData(
+                    serviceAccountId,
+                    "test",
+                    "test description",
+                    withMatchingDimRoles ? UserStatusId.PENDING : UserStatusId.ACTIVE,
+                    clientId ?? $"{data.OfferName}-{data.CompanyName}",
+                    serviceAccountData,
+                    userRoleData)]
+            ));
         var itAdminRoles = Enumerable.Repeat(new UserRoleConfig("Test", ["AdminRoles"]), 1);
 
         // Act
-        var result = await _sut.CreateTechnicalUser(offerSubscriptionId, itAdminRoles, dimUserRoles);
+        var result = await _sut.CreateTechnicalUser(processId, offerSubscriptionId, itAdminRoles);
 
         // Assert
         result.nextStepTypeIds.Should().ContainSingle().And
@@ -1195,7 +1216,7 @@ public class OfferSetupServiceTests
         var result = await _sut.CreateDimTechnicalUser(offerSubscriptionId, CancellationToken.None);
 
         // Assert
-        result.nextStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_DIM_RESPONSE);
+        result.nextStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE);
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
@@ -1264,7 +1285,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>()));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>(), true));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
@@ -1311,9 +1332,11 @@ public class OfferSetupServiceTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("test@email.com")]
-    public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail)
+    [InlineData(null, true)]
+    [InlineData("test@email.com", true)]
+    [InlineData(null, false)]
+    [InlineData("test@email.com", false)]
+    public async Task ActivateMultipleInstancesSubscription_WithValidData_ReturnsExpected(string? requesterEmail, bool hasCallbackUrl)
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), _validOfferId, CompanyUserCompanyId, OfferSubscriptionStatusId.PENDING, _companyUserId, default);
@@ -1326,7 +1349,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(false, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, clientClientId, serviceAccountClientIds, hasCallbackUrl));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
@@ -1347,7 +1370,14 @@ public class OfferSetupServiceTests
         var notificationTypeId = NotificationTypeId.APP_SUBSCRIPTION_ACTIVATION;
         offerSubscription.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.ACTIVE);
 
-        result.nextStepTypeIds.Should().ContainInOrder([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK]);
+        if (hasCallbackUrl)
+        {
+            result.nextStepTypeIds.Should().ContainInOrder([ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK]);
+        }
+        else
+        {
+            result.nextStepTypeIds.Should().BeNull();
+        }
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
         result.processMessage.Should().BeNull();
@@ -1430,26 +1460,28 @@ public class OfferSetupServiceTests
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._, A<bool>._))
             .Returns("cl1");
 
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<Action<CompanyServiceAccount>?>._))
-            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, Action<CompanyServiceAccount>? setOptionalParameter) =>
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData?>._, A<Action<CompanyServiceAccount>?>._))
+            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, ServiceAccountCreationProcessData? _, Action<CompanyServiceAccount>? setOptionalParameter) =>
             {
                 if (companyServiceAccount != null)
                 {
                     setOptionalParameter?.Invoke(companyServiceAccount);
                 }
             })
-            .Returns((
-                "sa2",
-                new ServiceAccountData(Guid.NewGuid().ToString(), "cl1", new ClientAuthData(IamClientAuthMethod.SECRET)
-                {
-                    Secret = "katze!1234"
-                }),
-                _technicalUserId,
-                new UserRoleData[]
-                {
-                    new(Guid.NewGuid(), "client1", "role1"),
-                    new(Guid.NewGuid(), "client1", "role2"),
-                }));
+            .Returns(new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
+                new CreatedServiceAccountData(
+                    _technicalUserId,
+                    "sa2",
+                    "description",
+                    UserStatusId.ACTIVE,
+                    "cl1",
+                    new ServiceAccountData(Guid.NewGuid().ToString(), "cl1",
+                        new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "katze!1234" }),
+                    new UserRoleData[]
+                    {
+                        new(Guid.NewGuid(), "client1", "role1"), new(Guid.NewGuid(), "client1", "role2"),
+                    })
+            ]));
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))

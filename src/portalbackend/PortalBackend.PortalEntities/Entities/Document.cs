@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -89,9 +89,6 @@ public class Document : IAuditableV1, IBaseEntity
     /// Mapping to an optional the connector
     /// </summary>
     public virtual Connector? Connector { get; set; }
-
-    public virtual CompanySsiDetail? CompanySsiDetail { get; set; }
-
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Offer> Offers { get; private set; }

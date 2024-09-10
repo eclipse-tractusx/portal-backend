@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -75,7 +75,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
         return validationErrors.IfAny(
             errors => errors.Select(r => $"DataAnnotation validation failed for members: '{string.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'."),
             out var messages)
-                ? ValidateOptionsResult.Fail(messages!)
+                ? ValidateOptionsResult.Fail(messages)
                 : ValidateOptionsResult.Success;
     }
     private IEnumerable<ValidationResult> GetValidationErrors(Type type, IConfiguration configSection) =>
@@ -100,7 +100,7 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
                 (configSection.GetSection(propertyName).Get(property.PropertyType) as IEnumerable)
                 ?.ToIEnumerable()
                 .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
-                .SelectMany(section => GetValidationErrors(genericType!, section)) ?? Enumerable.Empty<ValidationResult>(),
+                .SelectMany(section => GetValidationErrors(genericType, section)) ?? Enumerable.Empty<ValidationResult>(),
             _ => Enumerable.Empty<ValidationResult>()
         };
 }

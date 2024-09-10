@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,7 +28,9 @@ public record CompanyServiceAccountData(
     [property: JsonPropertyName("clientId")] string? ClientId,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("isOwner")] bool IsOwner,
+    [property: JsonPropertyName("isProvider")] bool IsProvider,
     [property: JsonPropertyName("offerSubscriptionId")] Guid? OfferSubscriptionId,
     [property: JsonPropertyName("connector")] ConnectorResponseData? ConnectorData,
     [property: JsonPropertyName("offer")] OfferResponseData? OfferSubscriptionsData

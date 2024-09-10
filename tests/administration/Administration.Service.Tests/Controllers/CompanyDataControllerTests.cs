@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,10 +21,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
@@ -40,6 +43,9 @@ public class CompanyDataControllerTests
         _fixture = new Fixture();
         _logic = A.Fake<ICompanyDataBusinessLogic>();
         _controller = new CompanyDataController(_logic);
+        var identity = A.Fake<IIdentityData>();
+        A.CallTo(() => identity.IdentityId).Returns(Guid.NewGuid());
+        _controller.AddControllerContextWithClaimAndBearer("ac-token", identity);
     }
 
     [Fact]
@@ -152,139 +158,17 @@ public class CompanyDataControllerTests
     }
 
     [Fact]
-    public async Task GetUseCaseParticipation_WithValidRequest_ReturnsExpected()
-    {
-        // Arrange
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(null))
-            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
-
-        // Act
-        var result = await _controller.GetUseCaseParticipation(null);
-
-        // Assert
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync(null)).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public async Task GetUseCaseParticipation_WithLanguageExplicitlySet_ReturnsExpected()
-    {
-        // Arrange
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync("de"))
-            .Returns(_fixture.CreateMany<UseCaseParticipationData>(5));
-
-        // Act
-        var result = await _controller.GetUseCaseParticipation("de");
-
-        // Assert
-        A.CallTo(() => _logic.GetUseCaseParticipationAsync("de")).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public async Task GetSsiCertificationData_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        A.CallTo(() => _logic.GetSsiCertificatesAsync())
-            .Returns(_fixture.CreateMany<SsiCertificateData>(5));
-
-        // Act
-        var result = await _controller.GetSsiCertificationData();
-
-        // Assert
-        A.CallTo(() => _logic.GetSsiCertificatesAsync()).MustHaveHappenedOnceExactly();
-        result.Should().HaveCount(5);
-    }
-
-    [Fact]
     public async Task CreateUseCaseParticipation_WithValidRequest_ReturnsExpected()
     {
         // Arrange
         var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), VerifiedCredentialTypeId.TRACEABILITY_FRAMEWORK, file);
+        var data = new UseCaseParticipationCreationData(Guid.NewGuid(), "TRACEABILITY_FRAMEWORK", file);
 
         // Act
         await _controller.CreateUseCaseParticipation(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _logic.CreateUseCaseParticipation(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task CreateSsiCertificate_WithValidRequest_ReturnsExpected()
-    {
-        // Arrange
-        var file = FormFileHelper.GetFormFile("test content", "test.pdf", MediaTypeId.PDF.MapToMediaType());
-        var data = new SsiCertificateCreationData(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE, file);
-
-        // Act
-        await _controller.CreateSsiCertificate(data, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _logic.CreateSsiCertificate(data, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task ApproveCredential_WithValidData_CallsExpected()
-    {
-        // Arrange
-        var credentialId = Guid.NewGuid();
-
-        // Act
-        await _controller.ApproveCredential(credentialId, CancellationToken.None);
-
-        // Assert
-        A.CallTo(() => _logic.ApproveCredential(credentialId, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task RejectCredentialWithValidData_CallsExpected()
-    {
-        // Arrange
-        var credentialId = Guid.NewGuid();
-
-        // Act
-        await _controller.RejectCredential(credentialId);
-
-        // Assert
-        A.CallTo(() => _logic.RejectCredential(credentialId))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Fact]
-    public async Task GetCredentials_CallsExpected()
-    {
-        // Arrange
-        var companySsiDetailStatusId = _fixture.Create<CompanySsiDetailStatusId>();
-        var credentialTypeId = _fixture.Create<VerifiedCredentialTypeId>();
-        var companyName = _fixture.Create<string>();
-        var sorting = _fixture.Create<CompanySsiDetailSorting>();
-        var paginationResponse = new Pagination.Response<CredentialDetailData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CredentialDetailData>(5));
-        A.CallTo(() => _logic.GetCredentials(A<int>._, A<int>._, A<CompanySsiDetailStatusId?>._, A<VerifiedCredentialTypeId?>._, A<string?>._, A<CompanySsiDetailSorting?>._))
-            .Returns(paginationResponse);
-
-        //Act
-        var result = await _controller.GetCredentials(companySsiDetailStatusId: companySsiDetailStatusId, credentialTypeId: credentialTypeId, companyName: companyName, sorting: sorting);
-
-        //Assert
-        A.CallTo(() => _logic.GetCredentials(0, 15, companySsiDetailStatusId, credentialTypeId, companyName, sorting)).MustHaveHappenedOnceExactly();
-        Assert.IsType<Pagination.Response<CredentialDetailData>>(result);
-        result.Content.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public async Task GetCredentialTypes()
-    {
-        // Arrange
-        A.CallTo(() => _logic.GetCertificateTypes())
-            .Returns(new[] { VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE }.ToAsyncEnumerable());
-
-        //Act
-        var result = await _controller.GetCertificateTypes().ToListAsync();
-
-        //Assert
-        result.Should().ContainSingle().Which.Should().Be(VerifiedCredentialTypeId.DISMANTLER_CERTIFICATE);
+        A.CallTo(() => _logic.CreateUseCaseParticipation(data, "ac-token", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -294,7 +178,7 @@ public class CompanyDataControllerTests
         var decentralIdentityManagementAuthUrl = "https://example.com/auth";
         var decentralIdentityManagementServiceUrl = "https://example.com/service";
         A.CallTo(() => _logic.GetDimServiceUrls())
-            .Returns(new DimUrlsResponse(decentralIdentityManagementAuthUrl, decentralIdentityManagementServiceUrl));
+            .Returns(new DimUrlsResponse("did:web:issuer:test:12345", "BPNL12345678", "did:web:holder:test:123234", "https://example.org/bdrs", decentralIdentityManagementAuthUrl, decentralIdentityManagementServiceUrl));
 
         //Act
         var result = await _controller.GetDimServiceUrls();
@@ -302,5 +186,45 @@ public class CompanyDataControllerTests
         //Assert
         result.DecentralIdentityManagementAuthUrl.Should().Be(decentralIdentityManagementAuthUrl);
         result.DecentralIdentityManagementServiceUrl.Should().Be(decentralIdentityManagementServiceUrl);
+    }
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument()
+    {
+        // Arrange
+        var paginationResponse = new Pagination.Response<CompanyMissingSdDocumentData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyMissingSdDocumentData>(5));
+        A.CallTo(() => _logic.GetCompaniesWithMissingSdDocument(A<int>._, A<int>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetCompaniesWithMissingSdDocument();
+
+        //Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionProcess_CallsExpected()
+    {
+        // Act
+        var result = await _controller.TriggerSelfDescriptionProcess();
+
+        // Assert
+        A.CallTo(() => _logic.TriggerSelfDescriptionCreation()).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionProcess_CallsExpected()
+    {
+        //Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerSelfDescriptionProcess(processId);
+
+        // Assert
+        A.CallTo(() => _logic.RetriggerSelfDescriptionCreation(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

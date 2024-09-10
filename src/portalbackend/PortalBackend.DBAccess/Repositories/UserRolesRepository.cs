@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -60,6 +60,13 @@ public class UserRolesRepository : IUserRolesRepository
                 companyUserRoleId
 
             )).Entity;
+
+    public void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds) =>
+        _dbContext.IdentityAssignedRoles.AddRange(
+            companyUserRoleIds.Select(x =>
+                new IdentityAssignedRole(
+                    x.CompanyUserId,
+                    x.CompanyUserRoleId)));
 
     public IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
         _dbContext.IdentityAssignedRoles.Remove(
@@ -147,13 +154,16 @@ public class UserRolesRepository : IUserRolesRepository
             .Select(role => new
             {
                 Role = role,
+                IsRequested = userRoles.Contains(role.UserRoleText),
                 IsAssigned = role.IdentityAssignedRoles.Any(iar => iar.IdentityId == identityId),
                 IsAssignable = role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(identity => identity.Id == identityId)))
             })
-            .Where(x =>
-                userRoles.Contains(x.Role.UserRoleText) ||
-                x.IsAssigned ||
-                x.IsAssignable)
+            // x.IsRequested && x.IsAssigned && x.IsAssignable ||   // no change but required to detect duplicates
+            // x.IsRequested && !x.IsAssigned && x.IsAssignable ||  // to be assigned
+            // !x.IsRequested && x.IsAssigned ||                    // to be unassigned
+            // x.IsRequested && !x.IsAssignable                     // invalid
+            // can be simplified to:
+            .Where(x => x.IsRequested || x.IsAssigned)
             .Select(x => new UserRoleModificationData(
                 x.Role.UserRoleText,
                 x.Role.Id,
@@ -292,6 +302,7 @@ public class UserRolesRepository : IUserRolesRepository
                 x.Active
                     ? x.Roles.Select(role =>
                         new ActiveAppRoleDetails(
+                            role.Id,
                             role.UserRoleText,
                             role.UserRoleDescriptions.Where(description =>
                                 (languageShortName != null && description.LanguageShortName == languageShortName) ||
@@ -318,6 +329,7 @@ public class UserRolesRepository : IUserRolesRepository
                 x.Provider
                     ? x.Roles.Select(role =>
                         new ActiveAppRoleDetails(
+                            role.Id,
                             role.UserRoleText,
                             role.UserRoleDescriptions.Where(description =>
                                 (languageShortName != null && description.LanguageShortName == languageShortName) ||

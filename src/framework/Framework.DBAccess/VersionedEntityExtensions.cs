@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,7 +21,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
 public static class VersionedEntityExtensions
 {
-    public static void UpdateVersion(this ILockableEntity entity)
+    public static void UpdateVersion(this IVersionedEntity entity)
     {
         entity.Version = Guid.NewGuid();
     }

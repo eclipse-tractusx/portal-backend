@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,28 +26,21 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 
-public class CustodianBusinessLogic : ICustodianBusinessLogic
+public class CustodianBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService)
+    : ICustodianBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly ICustodianService _custodianService;
-
-    public CustodianBusinessLogic(IPortalRepositories portalRepositories, ICustodianService custodianService)
-    {
-        _portalRepositories = portalRepositories;
-        _custodianService = custodianService;
-    }
-
     /// <inheritdoc />
     public async Task<WalletData?> GetWalletByBpnAsync(Guid applicationId, CancellationToken cancellationToken)
     {
-        var bpn = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var bpn = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetBpnForApplicationIdAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+
         if (string.IsNullOrWhiteSpace(bpn))
         {
             throw new ConflictException("BusinessPartnerNumber is not set");
         }
 
-        var walletData = await _custodianService.GetWalletByBpnAsync(bpn, cancellationToken)
+        var walletData = await custodianService.GetWalletByBpnAsync(bpn, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return walletData;
@@ -88,7 +81,7 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
 
     private async Task<string> CreateWalletInternal(Guid applicationId, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyAndApplicationDetailsForCreateWalletAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
@@ -100,6 +93,6 @@ public class CustodianBusinessLogic : ICustodianBusinessLogic
             throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
 
-        return await _custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return await custodianService.CreateWalletAsync(businessPartnerNumber, companyName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

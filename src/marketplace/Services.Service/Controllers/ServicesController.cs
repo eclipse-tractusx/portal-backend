@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -262,7 +262,7 @@ public class ServicesController : ControllerBase
     /// <response code="403">User's company does not provide the service.</response>
     /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "service_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/provider")]
     [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
@@ -282,7 +282,7 @@ public class ServicesController : ControllerBase
     /// <response code="403">User's company does not provide the service.</response>
     /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "add_service_offering")]
+    [Authorize(Roles = "subscribe_service")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/subscriber")]
     [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
@@ -295,16 +295,20 @@ public class ServicesController : ControllerBase
     /// Retrieves subscription statuses of services.
     /// </summary>
     /// <remarks>Example: GET: /api/services/subscribed/subscription-status</remarks>
+    /// <param name="page">The page that should be displayed</param>
+    /// <param name="size">The size per page of elements that should be returned</param>
+    /// <param name="status">Filter for the offer subscription status. If not set, all elements will be returned</param>
+    /// <param name="name">Optional search query to filter for the name</param>
     /// <response code="200">Returns list of applicable service subscription statuses.</response>
     /// <response code="400">If sub claim is empty/invalid or user does not exist.</response>
     [HttpGet]
     [Route("subscribed/subscription-status")]
-    [Authorize(Roles = "view_subscription")]
+    [Authorize(Roles = "view_service_subscriptions")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(typeof(Pagination.Response<OfferSubscriptionStatusDetailData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
-        _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size);
+    public Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] OfferSubscriptionStatusId? status = null, [FromQuery] string? name = null) =>
+        _serviceBusinessLogic.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(page, size, status, name);
 
     /// <summary>
     /// Unsubscribes an service from the current user's company's subscriptions.

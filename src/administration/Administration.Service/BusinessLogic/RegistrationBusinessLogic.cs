@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,7 +35,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -46,46 +48,24 @@ using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
+public sealed class RegistrationBusinessLogic(
+    IPortalRepositories portalRepositories,
+    IOptions<RegistrationSettings> configuration,
+    IApplicationChecklistService checklistService,
+    IClearinghouseBusinessLogic clearinghouseBusinessLogic,
+    ISdFactoryBusinessLogic sdFactoryBusinessLogic,
+    IDimBusinessLogic dimBusinessLogic,
+    IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
+    IProvisioningManager provisioningManager,
+    IMailingProcessCreation mailingProcessCreation,
+    IIdentityService identityService,
+    ILogger<RegistrationBusinessLogic> logger)
+    : IRegistrationBusinessLogic
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-    private static readonly Regex Company = new(ValidationExpressions.Company, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly RegistrationSettings _settings;
-    private readonly IApplicationChecklistService _checklistService;
-    private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
-    private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly IDimBusinessLogic _dimBusinessLogic;
-    private readonly IIssuerComponentBusinessLogic _issuerComponentBusinessLogic;
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
-    private readonly ILogger<RegistrationBusinessLogic> _logger;
-
-    public RegistrationBusinessLogic(
-        IPortalRepositories portalRepositories,
-        IOptions<RegistrationSettings> configuration,
-        IApplicationChecklistService checklistService,
-        IClearinghouseBusinessLogic clearinghouseBusinessLogic,
-        ISdFactoryBusinessLogic sdFactoryBusinessLogic,
-        IDimBusinessLogic dimBusinessLogic,
-        IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
-        IProvisioningManager provisioningManager,
-        IMailingProcessCreation mailingProcessCreation,
-        ILogger<RegistrationBusinessLogic> logger)
-    {
-        _portalRepositories = portalRepositories;
-        _settings = configuration.Value;
-        _checklistService = checklistService;
-        _clearinghouseBusinessLogic = clearinghouseBusinessLogic;
-        _sdFactoryBusinessLogic = sdFactoryBusinessLogic;
-        _dimBusinessLogic = dimBusinessLogic;
-        _issuerComponentBusinessLogic = issuerComponentBusinessLogic;
-        _provisioningManager = provisioningManager;
-        _mailingProcessCreation = mailingProcessCreation;
-        _logger = logger;
-    }
+    private readonly IIdentityData _identityData = identityService.IdentityData;
+    private readonly RegistrationSettings _settings = configuration.Value;
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
     {
@@ -99,14 +79,14 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task<CompanyWithAddressData> GetCompanyWithAddressAsyncInternal(Guid applicationId)
     {
-        var companyWithAddress = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var companyWithAddress = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWithAddress == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
-        if (!string.IsNullOrEmpty(companyWithAddress.Name) && !Company.IsMatch(companyWithAddress.Name))
+        if (!companyWithAddress.Name.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("OrganisationName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the Organisation name", "organisationName");
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
         }
 
         return new CompanyWithAddressData(
@@ -134,17 +114,20 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                     x.FirstName ?? "",
                     x.LastName ?? "",
                     x.Email ?? "")),
-            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value))
+            companyWithAddress.CompanyIdentifiers.Select(identifier => new CompanyUniqueIdData(identifier.UniqueIdentifierId, identifier.Value)),
+            companyWithAddress.DocumentData.Select(data => new DocumentDetails(data.DocumentId, data.DocumentTypeId)),
+            companyWithAddress.Created,
+            companyWithAddress.LastChanged
         );
     }
 
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null)
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
-        var applications = _portalRepositories.GetInstance<IApplicationRepository>()
+        var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
                 companyName?.Length >= 3 ? companyName : null,
                 GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
@@ -165,9 +148,6 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                         application.ApplicationStatusId,
                         application.DateCreated,
                         application.Company!.Name,
-                        application.Invitations.SelectMany(invitation =>
-                            invitation.CompanyUser!.Documents.Where(document => _settings.DocumentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
-                                new DocumentDetails(document.Id, document.DocumentTypeId))),
                         application.Company!.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
                         application.ApplicationChecklistEntries.Where(x => x.ApplicationChecklistEntryTypeId != ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION).OrderBy(x => x.ApplicationChecklistEntryTypeId).Select(x => new ApplicationChecklistEntryDetails(x.ApplicationChecklistEntryTypeId, x.ApplicationChecklistEntryStatusId)),
                         application.Invitations
@@ -176,17 +156,57 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                                 && companyUser.Email != null)
                             .Select(companyUser => companyUser!.Email)
                             .FirstOrDefault(),
-                        application.Company.BusinessPartnerNumber))
+                        application.Company.BusinessPartnerNumber,
+                        application.CompanyApplicationTypeId))
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null)
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter)
     {
-        if (!string.IsNullOrEmpty(companyName) && !Company.IsMatch(companyName))
+        if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw new ControllerArgumentException("CompanyName length must be 3-40 characters and *+=#%\\s not used as one of the first three characters in the company name", nameof(companyName));
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
         }
-        var applications = _portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
+        var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
+            .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
+                companyName?.Length >= 3 ? companyName : null, externalId,
+                GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+
+        var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
+            ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
+            : applicationsQuery.AsSplitQuery().OrderBy(application => application.DateCreated);
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
+                applicationsQuery.CountAsync(),
+                orderedQuery
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyDetailsOspOnboarding(
+                        application.CompanyId,
+                        application.NetworkRegistration!.ExternalId,
+                        application.Id,
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.Company!.DateCreated,
+                        application.DateLastChanged,
+                        application.Company!.Name,
+                        application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
+                        application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
+                        application.Company.BusinessPartnerNumber,
+                        application.Company.Identities.Count(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)))
+                    .AsAsyncEnumerable()));
+    }
+    public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
+    {
+        if (companyName != null && !companyName.IsValidCompanyName())
+        {
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
+        }
+        var applications = portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 
         return Pagination.CreateResponseAsync(
             page,
@@ -194,19 +214,26 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             _settings.ApplicationsMaxPageSize,
             (skip, take) => new Pagination.AsyncSource<CompanyApplicationWithCompanyUserDetails>(
                 applications.CountAsync(),
-                applications.OrderByDescending(application => application.DateCreated)
+                applications.OrderByDescending(application => application.Company!.DateCreated)
                     .Skip(skip)
                     .Take(take)
                     .Select(application => new
                     {
                         Application = application,
-                        CompanyUser = application.Invitations.Select(invitation => invitation.CompanyUser)
-                    .FirstOrDefault(companyUser =>
-                        companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
-                        && companyUser.Firstname != null
-                        && companyUser.Lastname != null
-                        && companyUser.Email != null
-                    )
+                        CompanyUsers = application.Invitations.Select(invitation => invitation.CompanyUser)
+                    })
+                    .Select(x => new
+                    {
+                        x.Application,
+                        CompanyUser = x.CompanyUsers.FirstOrDefault(companyUser =>
+                                    companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE
+                                    && companyUser!.Firstname != null
+                                    && companyUser.Lastname != null
+                                    && companyUser.Email != null)
+                            ?? x.CompanyUsers.FirstOrDefault(companyUser =>
+                                    companyUser!.Firstname != null
+                                    && companyUser.Lastname != null
+                                    && companyUser.Email != null)
                     })
                     .Select(s => new CompanyApplicationWithCompanyUserDetails(
                         s.Application.Id,
@@ -239,7 +266,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task UpdateCompanyBpnInternal(Guid applicationId, string bpn)
     {
-        var result = await _portalRepositories.GetInstance<IUserRepository>()
+        var result = await portalRepositories.GetInstance<IUserRepository>()
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn.ToUpper()).ToListAsync().ConfigureAwait(false);
         if (!result.Exists(item => item.IsApplicationCompany))
         {
@@ -264,43 +291,43 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
         }
 
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER,
-                new[] {
+                [
                     ApplicationChecklistEntryStatusId.TO_DO,
                     ApplicationChecklistEntryStatusId.IN_PROGRESS,
                     ApplicationChecklistEntryStatusId.FAILED
-                },
+                ],
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL,
-                entryTypeIds: new[] {
+                entryTypeIds: [
                     ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION
-                },
-                processStepTypeIds: new[] {
+                ],
+                processStepTypeIds: [
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
                     ProcessStepTypeId.CREATE_IDENTITY_WALLET
-                })
+                ])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
+        portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(applicationCompanyData.CompanyId, null,
             c => { c.BusinessPartnerNumber = bpn.ToUpper(); });
 
         var registrationValidationFailed = context.Checklist[ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.FAILED, null);
 
-        _checklistService.SkipProcessSteps(
+        checklistService.SkipProcessSteps(
             context,
-            new[] {
+            [
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH,
                 ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                 ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
-            });
+            ]);
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
@@ -308,7 +335,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 ? null
                 : new[] { CreateWalletStep() });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
@@ -316,8 +343,8 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
             throw new NotFoundException($"No companyApplication for BPN {data.BusinessPartnerNumber} is not in status SUBMITTED");
@@ -328,23 +355,23 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
             throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.BusinessPartnerNumber} [{string.Join(", ", result)}]");
         }
 
-        await _clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task ProcessDimResponseAsync(string bpn, DimWalletData data, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Process Dim called with the following data {Data}", data);
+        logger.LogInformation("Process Dim called with the following data {Data}", data.DidDocument.RootElement.GetRawText().Replace(Environment.NewLine, string.Empty));
 
-        await _dimBusinessLogic.ProcessDimResponse(bpn, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await dimBusinessLogic.ProcessDimResponse(bpn, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<ChecklistDetails>> GetChecklistForApplicationAsync(Guid applicationId)
     {
-        var data = await _portalRepositories.GetInstance<IApplicationRepository>()
+        var data = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetApplicationChecklistData(applicationId, Enum.GetValues<ApplicationChecklistEntryTypeId>().GetManualTriggerProcessStepIds())
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
@@ -382,16 +409,16 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
     private async Task TriggerChecklistInternal(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, ProcessStepTypeId processStepTypeId, ProcessStepTypeId nextProcessStepTypeId, ApplicationChecklistEntryStatusId checklistEntryStatusId)
     {
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 entryTypeId,
-                new[] { ApplicationChecklistEntryStatusId.FAILED },
+                [ApplicationChecklistEntryStatusId.FAILED],
                 processStepTypeId,
-                processStepTypeIds: new[] { nextProcessStepTypeId })
+                processStepTypeIds: [nextProcessStepTypeId])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             initial =>
             {
@@ -405,48 +432,57 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 item.ApplicationChecklistEntryStatusId = checklistEntryStatusId;
                 item.Comment = null;
             },
-            new[] { nextProcessStepTypeId });
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+            [nextProcessStepTypeId]);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task ProcessClearinghouseSelfDescription(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Process SelfDescription called with the following data {Data}", data);
+        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
+        var isExistingCompany = await portalRepositories.GetInstance<ICompanyRepository>().IsExistingCompany(data.ExternalId);
 
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>()
-            .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!result.IsValidApplicationId)
+        if (isExistingCompany)
         {
-            throw new NotFoundException($"companyApplication {data.ExternalId} not found");
+            await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForCompany(data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+        else
+        {
+            var result = await portalRepositories.GetInstance<IApplicationRepository>()
+                .GetCompanyIdSubmissionStatusForApplication(data.ExternalId)
+                .ConfigureAwait(ConfigureAwaitOptions.None);
+            if (!result.IsValidApplicationId)
+            {
+                throw new NotFoundException($"companyApplication {data.ExternalId} not found");
+            }
+
+            if (!result.IsSubmitted)
+            {
+                throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
+            }
+
+            await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, result.CompanyId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        if (!result.IsSubmitted)
-        {
-            throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
-        }
-
-        await _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, result.CompanyId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public async Task ApproveRegistrationVerification(Guid applicationId)
     {
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO },
+                [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.VERIFY_REGISTRATION,
-                new[] { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER },
-                new[] { CreateWalletStep() })
+                [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
+                [CreateWalletStep()])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             entry =>
@@ -457,12 +493,17 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 ? new[] { CreateWalletStep() }
                 : null);
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task DeclineRegistrationVerification(Guid applicationId, string comment, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ConflictException("No comment set.");
+        }
+
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
@@ -470,60 +511,64 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
 
         var (companyId, companyName, networkRegistrationProcessId, idps, companyUserIds) = result;
 
-        var context = await _checklistService
+        var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
                 ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
-                new[] { ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE },
+                [ApplicationChecklistEntryStatusId.TO_DO, ApplicationChecklistEntryStatusId.DONE],
                 ProcessStepTypeId.DECLINE_APPLICATION,
                 null,
-                new[] { ProcessStepTypeId.VERIFY_REGISTRATION, })
+                [ProcessStepTypeId.VERIFY_REGISTRATION,])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _checklistService.SkipProcessSteps(context, new[] { ProcessStepTypeId.VERIFY_REGISTRATION });
+        checklistService.SkipProcessSteps(context, [ProcessStepTypeId.VERIFY_REGISTRATION]);
 
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var userRepository = _portalRepositories.GetInstance<IUserRepository>();
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var userRepository = portalRepositories.GetInstance<IUserRepository>();
         foreach (var (idpId, idpAlias, idpType, linkedUserIds) in idps)
         {
             if (idpType == IdentityProviderTypeId.SHARED)
             {
-                await _provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
+                await provisioningManager.DeleteSharedIdpRealmAsync(idpAlias).ConfigureAwait(false);
             }
 
-            identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
             if (idpType is IdentityProviderTypeId.OWN or IdentityProviderTypeId.SHARED)
             {
-                await _provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+                await provisioningManager.DeleteCentralIdentityProviderAsync(idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
                 identityProviderRepository.DeleteIamIdentityProvider(idpAlias);
                 identityProviderRepository.DeleteIdentityProvider(idpId);
             }
-            userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            else
+            {
+                // a managed identityprovider is just unlinked from company and users
+                identityProviderRepository.DeleteCompanyIdentityProvider(companyId, idpId);
+                userRepository.RemoveCompanyUserAssignedIdentityProviders(linkedUserIds.Select(userId => (userId, idpId)));
+            }
         }
 
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
+        portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
         {
             application.ApplicationStatusId = CompanyApplicationStatusId.DECLINED;
             application.DateLastChanged = DateTimeOffset.UtcNow;
         });
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, company =>
+        portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, company =>
         {
             company.CompanyStatusId = CompanyStatusId.REJECTED;
         });
 
         foreach (var userId in companyUserIds)
         {
-            var iamUserId = await _provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
+            var iamUserId = await provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
             if (iamUserId != null)
             {
-                await _provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
+                await provisioningManager.DeleteCentralRealmUserAsync(iamUserId).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         }
 
-        var emailData = await _portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var emailData = await portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).ToListAsync(cancellationToken).ConfigureAwait(false);
         userRepository.AttachAndModifyIdentities(companyUserIds.Select(userId => new ValueTuple<Guid, Action<Identity>?, Action<Identity>>(userId, null, identity => { identity.UserStatusId = UserStatusId.DELETED; })));
 
-        _checklistService.FinalizeChecklistEntryAndProcessSteps(
+        checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             entry =>
@@ -536,16 +581,11 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 : new[] { ProcessStepTypeId.TRIGGER_CALLBACK_OSP_DECLINED });
 
         PostRegistrationCancelEmailAsync(emailData, companyName, comment);
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private void PostRegistrationCancelEmailAsync(ICollection<EmailData> emailData, string companyName, string comment)
     {
-        if (string.IsNullOrWhiteSpace(comment))
-        {
-            throw new ConflictException("No comment set.");
-        }
-
         foreach (var user in emailData)
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
@@ -562,25 +602,25 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
                 KeyValuePair.Create("declineComment", comment),
                 KeyValuePair.Create("helpUrl", _settings.HelpAddress)
             });
-            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
+            mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
         }
     }
 
-    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter = null)
+    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter)
     {
         switch (companyApplicationStatusFilter)
         {
             case CompanyApplicationStatusFilter.Closed:
                 {
-                    return new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
             case CompanyApplicationStatusFilter.InReview:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED };
+                    return [CompanyApplicationStatusId.SUBMITTED];
                 }
             default:
                 {
-                    return new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED };
+                    return [CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
                 }
         }
     }
@@ -588,7 +628,7 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     /// <inheritdoc />
     public async Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId)
     {
-        var document = await _portalRepositories.GetInstance<IDocumentRepository>()
+        var document = await portalRepositories.GetInstance<IDocumentRepository>()
             .GetDocumentByIdAsync(documentId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
@@ -604,21 +644,21 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
     {
         var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
 
-        await _issuerComponentBusinessLogic.StoreBpnlCredentialResponse(applicationId, data).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await issuerComponentBusinessLogic.StoreBpnlCredentialResponse(applicationId, data).ConfigureAwait(false);
+        await portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken)
     {
         var applicationId = await GetApplicationIdByBpn(data, cancellationToken);
-        await _issuerComponentBusinessLogic.StoreMembershipCredentialResponse(applicationId, data).ConfigureAwait(false);
-        await _portalRepositories.SaveAsync().ConfigureAwait(false);
+        await issuerComponentBusinessLogic.StoreMembershipCredentialResponse(applicationId, data).ConfigureAwait(false);
+        await portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 
     private async Task<Guid> GetApplicationIdByBpn(IssuerResponseData data, CancellationToken cancellationToken)
     {
-        var result = await _portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.Bpn.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.Bpn.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
             throw new NotFoundException($"No companyApplication for BPN {data.Bpn} is not in status SUBMITTED");
@@ -630,5 +670,39 @@ public sealed class RegistrationBusinessLogic : IRegistrationBusinessLogic
         }
 
         return result.Single();
+    }
+
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT);
+
+    /// <inheritdoc />
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER);
+
+    public Task RetriggerDeleteCentralUser(Guid processId) => RetriggerProcessStepInternal(processId, ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER);
+
+    private async Task RetriggerProcessStepInternal(Guid processId, ProcessStepTypeId stepToTrigger)
+    {
+        var (processType, nextStep) = stepToTrigger switch
+        {
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_REALM),
+            ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER),
+            ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER => (ProcessTypeId.USER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_USER),
+            _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
+        };
+
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(false);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(stepToTrigger, portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(false);
     }
 }

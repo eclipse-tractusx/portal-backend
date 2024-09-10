@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,7 +42,9 @@ public interface ICompanyCertificateRepository
     /// <param name="docId">id of the document</param>
     /// <param name="setOptionalFields">Action to set optional fields</param>   
     /// <returns>The created entity</returns>
-    CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
+    CompanyCertificate CreateCompanyCertificate(Guid companyId, CompanyCertificateTypeId companyCertificateTypeId, CompanyCertificateStatusId companyCertificateStatusId, Guid docId, Action<CompanyCertificate>? setOptionalFields = null);
+
+    void CreateCompanyCertificateAssignedSites(Guid companyCertificateId, IEnumerable<string> sites);
 
     /// <summary>
     /// Get companyId against businessPartnerNumber

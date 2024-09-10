@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,10 +45,10 @@ public class NetworkRepository : INetworkRepository
 
     /// <inheritdoc />
     public Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId) =>
-        _context.Processes
+        _context.NetworkRegistrations
             .AsNoTracking()
-            .Where(process => process.Id == processId)
-            .Select(process => process.NetworkRegistration!.Id)
+            .Where(nr => nr.ProcessId == processId)
+            .Select(nr => nr.Id)
             .SingleOrDefaultAsync();
 
     public Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>

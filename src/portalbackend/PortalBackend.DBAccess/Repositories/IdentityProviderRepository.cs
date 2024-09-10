@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -65,6 +66,9 @@ public class IdentityProviderRepository : IIdentityProviderRepository
 
     public void DeleteCompanyIdentityProvider(Guid companyId, Guid identityProviderId) =>
         _context.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
+
+    public void DeleteCompanyIdentityProviderRange(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdentityProviderIds) =>
+        _context.RemoveRange(companyIdentityProviderIds.Select(x => new CompanyIdentityProvider(x.CompanyId, x.IdentityProviderId)));
 
     public void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds) =>
         _context.CompanyIdentityProviders
@@ -192,10 +196,13 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 ))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId) =>
+    public IAsyncEnumerable<(Guid IdentityProviderId, IdentityProviderCategoryId CategoryId, string? Alias, IdentityProviderTypeId TypeId, string? MetadataUrl)> GetCompanyIdentityProviderCategoryDataUntracked(Guid companyId, string? alias) =>
         _context.IdentityProviders
             .AsNoTracking()
-            .Where(identityProvider => identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId))
+            .Where(identityProvider =>
+                (identityProvider.OwnerId == companyId || identityProvider.Companies.Any(company => company.Id == companyId)) &&
+                (alias == null || EF.Functions.ILike(identityProvider.IamIdentityProvider!.IamIdpAlias, $"{alias.EscapeForILike()}%"))
+                )
             .Select(identityProvider => new ValueTuple<Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?>(
                 identityProvider.Id,
                 identityProvider.IdentityProviderCategoryId,
@@ -343,4 +350,18 @@ public class IdentityProviderRepository : IIdentityProviderRepository
                 x.Email != null)
             .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
             .ToAsyncEnumerable();
+
+    /// <inheritdoc />           
+    public Task<IdpData?> GetIdentityProviderDataForProcessIdAsync(Guid processId) =>
+        _context.IdentityProviderAssignedProcesses
+            .AsNoTracking()
+            .Where(ipap => ipap.ProcessId == processId)
+            .Select(ipap => new IdpData(
+                ipap.IdentityProviderId,
+                ipap.IdentityProvider!.IamIdentityProvider!.IamIdpAlias,
+                ipap.IdentityProvider.IdentityProviderTypeId))
+            .SingleOrDefaultAsync();
+
+    public void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds) =>
+        _context.AddRange(identityProviderProcessIds.Select(x => new IdentityProviderAssignedProcess(x.IdentityProviderId, x.ProcessId)));
 }

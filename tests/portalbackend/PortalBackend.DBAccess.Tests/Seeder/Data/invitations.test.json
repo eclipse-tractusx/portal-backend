@@ -26,5 +26,12 @@
     "invitation_status_id": 1,
     "company_application_id": "6b2d1263-c073-4a48-bfaf-704dc154ca9e",
     "company_user_id": "1dceacb8-c5a5-4573-a77d-e2487ac4a8aa"
+  },
+  {
+    "id": "e92b54ed-fbbe-4259-9747-efd8613ce61f",
+    "date_created": "2022-03-24 18:01:33.439000 +00:00",
+    "invitation_status_id": 1,
+    "company_application_id": "4f0146c6-32aa-4bb1-b844-df7e8babdcb2",
+    "company_user_id": "8b42e6de-7b59-4217-a63c-198e83d93776"
   }
 ]

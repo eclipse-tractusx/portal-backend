@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -199,8 +199,49 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         _serviceProviderDetails.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithNotExistingAndUrlNull_DoesNothing()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData(null, null);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((Guid.Empty, null!));
+
+        // Act
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(A<Guid>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithProviderDetailsAndNoUrl_RemovesProviderDetails()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerCompanyId = Guid.NewGuid();
+        var providerDetailData = new ProviderDetailData(null, null);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((providerCompanyId, null!));
+
+        // Act
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(providerCompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        _serviceProviderDetails.Should().BeEmpty();
     }
 
     [Fact]
@@ -234,7 +275,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Assert
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened(1, Times.OrMore);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         initialDetail.Should().NotBeNull();
         initialDetail!.AutoSetupUrl.Should().Be(existingUrl);
         modifyDetail.Should().NotBeNull();
@@ -280,14 +321,13 @@ public class SubscriptionConfigurationBusinessLogicTests
     [Theory]
     [InlineData("foo")]
     [InlineData("")]
-    [InlineData(null)]
     [InlineData("http://www.service-url.com")]
     [InlineData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com")]
-    public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrl_ThrowsException(string? url)
+    public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrl_ThrowsException(string url)
     {
         //Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData(url!, null);
+        var providerDetailData = new ProviderDetailData(url, null);
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);

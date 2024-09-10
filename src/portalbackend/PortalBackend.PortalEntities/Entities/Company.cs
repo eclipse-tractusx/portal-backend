@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,6 +28,7 @@ public class Company : IBaseEntity
     private Company()
     {
         Name = null!;
+        DidDocumentLocation = null!;
         Agreements = new HashSet<Agreement>();
         BoughtOffers = new HashSet<Offer>();
         ProvidedOffers = new HashSet<Offer>();
@@ -41,7 +42,6 @@ public class Company : IBaseEntity
         HostedConnectors = new HashSet<Connector>();
         CompanyIdentifiers = new HashSet<CompanyIdentifier>();
         CompanyAssignedUseCase = new HashSet<CompanyAssignedUseCase>();
-        CompanySsiDetails = new HashSet<CompanySsiDetail>();
         OwnedIdentityProviders = new HashSet<IdentityProvider>();
         ProvidedApplications = new HashSet<CompanyApplication>();
         OnboardedNetworkRegistrations = new HashSet<NetworkRegistration>();
@@ -77,6 +77,8 @@ public class Company : IBaseEntity
 
     public string? DidDocumentLocation { get; set; }
 
+    public Guid? SdCreationProcessId { get; set; }
+
     // Navigation properties
     public virtual Address? Address { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
@@ -85,6 +87,7 @@ public class Company : IBaseEntity
     public virtual CompanyStatus? CompanyStatus { get; set; }
     public virtual Document? SelfDescriptionDocument { get; set; }
     public virtual CompanyWalletData? CompanyWalletData { get; set; }
+    public virtual Process? SdCreationProcess { get; set; }
     public virtual ICollection<Agreement> Agreements { get; private set; }
     public virtual ICollection<Offer> BoughtOffers { get; private set; }
     public virtual ICollection<CompanyApplication> CompanyApplications { get; private set; }
@@ -98,7 +101,6 @@ public class Company : IBaseEntity
     public virtual ICollection<Connector> ProvidedConnectors { get; private set; }
     public virtual ICollection<CompanyIdentifier> CompanyIdentifiers { get; private set; }
     public virtual ICollection<CompanyAssignedUseCase> CompanyAssignedUseCase { get; private set; }
-    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
     public virtual ICollection<IdentityProvider> OwnedIdentityProviders { get; private set; }
     public virtual ICollection<CompanyApplication> ProvidedApplications { get; private set; }
     public virtual ICollection<NetworkRegistration> OnboardedNetworkRegistrations { get; private set; }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -154,7 +154,7 @@ public class ConnectorsControllerTests
         await _controller.DeleteConnectorAsync(connectorId);
 
         //Assert
-        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.DeleteConnectorAsync(connectorId, false)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -240,5 +240,45 @@ public class ConnectorsControllerTests
         // Assert
         result.Should().HaveSameCount(offerSubscriptionData)
             .And.ContainInOrder(offerSubscriptionData);
+    }
+
+    [Fact]
+    public async Task GetCompaniesWithMissingSdDocument()
+    {
+        // Arrange
+        var paginationResponse = new Pagination.Response<ConnectorMissingSdDocumentData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<ConnectorMissingSdDocumentData>(5));
+        A.CallTo(() => _logic.GetConnectorsWithMissingSdDocument(A<int>._, A<int>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetConnectorsWithMissingSdDocument();
+
+        //Assert
+        result.Content.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task TriggerSelfDescriptionProcess_CallsExpected()
+    {
+        // Act
+        var result = await _controller.TriggerSelfDescriptionProcess();
+
+        // Assert
+        A.CallTo(() => _logic.TriggerSelfDescriptionCreation()).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionProcess_CallsExpected()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+
+        // Act
+        var result = await _controller.RetriggerSelfDescriptionProcess(processId);
+
+        // Assert
+        A.CallTo(() => _logic.RetriggerSelfDescriptionCreation(processId)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
     }
 }

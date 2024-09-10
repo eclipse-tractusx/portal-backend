@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -802,10 +802,9 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("other-alias")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>.That.Matches(x => x.Count() == 3)))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
     }
@@ -841,9 +840,8 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid CompanyUserId, Guid IdentityProviderId)>>.That.Matches(x => x.Count() == 3)))
-            .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(_companyId, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.RemoveCompanyUserAssignedIdentityProviders(A<IEnumerable<(Guid, Guid)>>._)).MustNotHaveHappened();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
     }
@@ -901,7 +899,7 @@ public class IdentityProviderBusinessLogicTests
         A.CallTo(() => _provisioningManager.DeleteSharedIdpRealmAsync("test")).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.DeleteCentralIdentityProviderAsync("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.DeleteCompanyIdentityProvider(company.Id, identityProviderId)).MustNotHaveHappened();
         A.CallTo(() => _identityProviderRepository.DeleteIamIdentityProvider("test")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.DeleteIdentityProvider(identityProviderId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess("test@example.org", "DeleteManagedIdp", A<IReadOnlyDictionary<string, string>>._))
@@ -941,7 +939,7 @@ public class IdentityProviderBusinessLogicTests
         var samlGuid = Guid.NewGuid();
         var oidc = (oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, "oidc-alias", IdentityProviderTypeId.OWN, "http://metadata");
         var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN, default(string?));
-        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._))
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._, A<string?>._))
             .Returns(new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)[] { oidc, saml }.ToAsyncEnumerable());
         A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("oidc-alias"))
             .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
@@ -953,12 +951,84 @@ public class IdentityProviderBusinessLogicTests
             .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
 
         // Act
-        var result = await sut.GetOwnCompanyIdentityProvidersAsync().ToListAsync();
+        var result = await sut.GetOwnCompanyIdentityProvidersAsync(null, null).ToListAsync();
 
         // Assert
-        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, null)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(2).And.Satisfy(
             x => x.DisplayName == "dis-oidc" && x.Mappers != null && x.Mappers.Count() == 3,
+            x => x.DisplayName == "dis-saml" && x.Mappers != null && x.Mappers.Count() == 2
+        );
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyIdentityProvidersAsync_WithValidIdAndDisplayNameFilter_ReturnsExpected()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _logger);
+        var oidcGuid = Guid.NewGuid();
+        var samlGuid = Guid.NewGuid();
+        var oidc = (oidcGuid, IdentityProviderCategoryId.KEYCLOAK_OIDC, "oidc-alias", IdentityProviderTypeId.OWN, "http://metadata");
+        var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN, default(string?));
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._, A<string?>._))
+            .Returns(new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)[] { oidc, saml }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("oidc-alias"))
+            .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("oidc-alias"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
+            .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("saml-alias"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
+
+        // Act
+        var result = await sut.GetOwnCompanyIdentityProvidersAsync("oidc", null).ToListAsync();
+
+        // Assert
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, null)).MustHaveHappenedOnceExactly();
+        result.Should().ContainSingle().And.Satisfy(
+            x => x.DisplayName == "dis-oidc" && x.Mappers != null && x.Mappers.Count() == 3
+        );
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyIdentityProvidersAsync_WithValidIdAndAliasFilter_ReturnsExpected()
+    {
+        // Arrange
+        var sut = new IdentityProviderBusinessLogic(
+            _portalRepositories,
+            _provisioningManager,
+            _identityService,
+            _errorMessageService,
+            _mailingProcessCreation,
+            _options,
+            _logger);
+        var samlGuid = Guid.NewGuid();
+        var saml = (samlGuid, IdentityProviderCategoryId.KEYCLOAK_SAML, "saml-alias", IdentityProviderTypeId.OWN, default(string?));
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>._, A<string?>._))
+            .Returns(new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)[] { saml }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataOIDCAsync("oidc-alias"))
+            .Returns(_fixture.Build<IdentityProviderConfigOidc>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-oidc").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("oidc-alias"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(3).ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetCentralIdentityProviderDataSAMLAsync("saml-alias"))
+            .Returns(_fixture.Build<IdentityProviderConfigSaml>().With(x => x.Enabled, true).With(x => x.DisplayName, "dis-saml").Create());
+        A.CallTo(() => _provisioningManager.GetIdentityProviderMappers("saml-alias"))
+            .Returns(_fixture.CreateMany<IdentityProviderMapperModel>(2).ToAsyncEnumerable());
+
+        // Act
+        var result = await sut.GetOwnCompanyIdentityProvidersAsync(null, "saml").ToListAsync();
+
+        // Assert
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, "saml")).MustHaveHappenedOnceExactly();
+        result.Should().ContainSingle().And.Satisfy(
             x => x.DisplayName == "dis-saml" && x.Mappers != null && x.Mappers.Count() == 2
         );
     }
@@ -1706,7 +1776,7 @@ public class IdentityProviderBusinessLogicTests
         var result = await sut.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.singleSignOnServiceUrl == "https://sso.com" && x.alias == "cl1")))
+        A.CallTo(() => _provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(A<IdentityProviderEditableConfigSaml>.That.Matches(x => x.SingleSignOnServiceUrl == "https://sso.com" && x.Alias == "cl1")))
             .MustHaveHappenedOnceExactly();
         result.Mappers.Should().HaveCount(2);
         result.DisplayName.Should().Be("dis-saml");
@@ -2503,9 +2573,9 @@ public class IdentityProviderBusinessLogicTests
             (Guid companyUserId, Guid _) => _existingUserId == companyUserId ?
                 (true, _userProviderId, _username) :
                 default((bool, string, string)));
-        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId))).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.Not.IsEqualTo(_companyId), A<string?>._)).Returns(
             Enumerable.Empty<(Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)>().ToAsyncEnumerable());
-        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId))).Returns(
+        A.CallTo(() => _identityProviderRepository.GetCompanyIdentityProviderCategoryDataUntracked(A<Guid>.That.IsEqualTo(_companyId), A<string?>._)).Returns(
             new (Guid, IdentityProviderCategoryId, string?, IdentityProviderTypeId, string?)[] {
                 (_sharedIdentityProviderId, IdentityProviderCategoryId.KEYCLOAK_OIDC, _sharedIdpAlias, IdentityProviderTypeId.SHARED, null),
                 (_otherIdentityProviderId, IdentityProviderCategoryId.KEYCLOAK_OIDC, _otherIdpAlias, IdentityProviderTypeId.OWN, "http://metadata"),

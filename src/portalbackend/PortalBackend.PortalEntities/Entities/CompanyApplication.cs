@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class CompanyApplication : IAuditableV1, IBaseEntity
     public virtual Process? ChecklistProcess { get; set; }
     public virtual CompanyApplicationType? CompanyApplicationType { get; set; }
     public virtual Company? OnboardingServiceProvider { get; set; }
-    public virtual NetworkRegistration? NetworkRegistration { get; private set; }
+    public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual Identity? LastEditor { get; private set; }
     public virtual CompanyInvitation? CompanyInvitation { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }

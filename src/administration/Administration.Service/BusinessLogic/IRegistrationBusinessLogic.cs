@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,8 +31,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public interface IRegistrationBusinessLogic
 {
     Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
-    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, string? companyName = null);
-    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName = null);
+    Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName);
+    Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter);
+    Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName);
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
 
     /// <summary>
@@ -107,4 +107,28 @@ public interface IRegistrationBusinessLogic
     /// <param name="data">the response data</param>
     /// <param name="cancellationToken">cancellation token</param>
     Task ProcessIssuerMembershipResponseAsync(IssuerResponseData data, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrigger the DeleteIdpSharedRealm ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedRealm(Guid processId);
+
+    /// <summary>
+    /// Retrigger the DeleteIdpSharedServiceAccount ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteIdpSharedServiceAccount(Guid processId);
+
+    /// <summary>
+    /// Retrigger the DeleteCentralIdentityProvider ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteCentralIdentityProvider(Guid processId);
+
+    /// <summary>
+    /// Retrigger the DeleteCentralUser ProcessStepType
+    /// </summary>
+    /// <param name="processId">Id of the Process</param>
+    Task RetriggerDeleteCentralUser(Guid processId);
 }

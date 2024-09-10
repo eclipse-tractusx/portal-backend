@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,5 +25,6 @@ public enum UserStatusId
     ACTIVE = 1,
     INACTIVE = 2,
     DELETED = 3,
-    PENDING = 4
+    PENDING = 4,
+    PENDING_DELETION = 5
 }

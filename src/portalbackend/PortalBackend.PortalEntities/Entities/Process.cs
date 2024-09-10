@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -55,5 +55,9 @@ public class Process : IBaseEntity, ILockableEntity
     public virtual MailingInformation? MailingInformation { get; set; }
     public virtual CompanyInvitation? CompanyInvitation { get; set; }
     public virtual DimUserCreationData? DimUserCreationData { get; set; }
+    public virtual CompanyUserAssignedProcess? CompanyUserAssignedProcess { get; set; }
+    public virtual IdentityProviderAssignedProcess? IdentityProviderAssignedProcess { get; set; }
+    public virtual Company? SdCreationCompany { get; set; }
+    public virtual Connector? SdCreationConnector { get; set; }
     public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

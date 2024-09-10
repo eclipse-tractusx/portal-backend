@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -46,7 +46,7 @@ public class CompanyIdpViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.CompanyIdpView.ToListAsync();
-        result.Should().HaveCount(6);
+        result.Should().HaveCount(7);
     }
 
     [Fact]

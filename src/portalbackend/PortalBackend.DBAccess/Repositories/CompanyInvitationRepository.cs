@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,9 +38,10 @@ public class CompanyInvitationRepository : ICompanyInvitationRepository
     }
 
     public Task<Guid> GetCompanyInvitationForProcessId(Guid processId) =>
-        _context.Processes
-            .Where(process => process.Id == processId)
-            .Select(process => process.CompanyInvitation!.Id)
+        _context.CompanyInvitations
+            .AsNoTracking()
+            .Where(i => i.ProcessId == processId)
+            .Select(i => i.Id)
             .SingleOrDefaultAsync();
 
     public Task<string?> GetOrganisationNameForInvitation(Guid invitationId) =>

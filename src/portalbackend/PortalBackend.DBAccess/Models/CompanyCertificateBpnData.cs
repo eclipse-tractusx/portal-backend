@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,10 @@ public record CompanyCertificateBpnData(
     CompanyCertificateTypeId CompanyCertificateType,
     CompanyCertificateStatusId CompanyCertificateStatus,
     Guid DocumentId,
-    DateTimeOffset ValidFrom,
-    DateTimeOffset? ValidTill
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTill,
+    string? ExternalCertificateNumber,
+    IEnumerable<string>? Sites,
+    string? Issuer,
+    string? Validator
 );

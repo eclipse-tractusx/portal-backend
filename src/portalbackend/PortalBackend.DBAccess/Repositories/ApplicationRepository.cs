@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -128,13 +128,22 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ))
             .SingleOrDefaultAsync();
 
-    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName = null, IEnumerable<CompanyApplicationStatusId>? applicationStatusIds = null) =>
+    public IQueryable<CompanyApplication> GetCompanyApplicationsFilteredQuery(string? companyName, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
         portalDbContext.CompanyApplications.AsNoTracking()
             .Where(application =>
                 (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
                 (applicationStatusIds == null || applicationStatusIds.Contains(application.ApplicationStatusId)));
 
-    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId = null) =>
+    public IQueryable<CompanyApplication> GetExternalCompanyApplicationsFilteredQuery(Guid onboardingServiceProviderId, string? companyName, string? externalId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
+        portalDbContext.CompanyApplications.AsNoTracking()
+            .Where(application =>
+                application.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL &&
+                application.OnboardingServiceProviderId == onboardingServiceProviderId &&
+                (companyName == null || EF.Functions.ILike(application.Company!.Name, $"{companyName.EscapeForILike()}%")) &&
+                (externalId == null || application.NetworkRegistration!.ExternalId == externalId) &&
+                applicationStatusIds.Contains(application.ApplicationStatusId));
+
+    public Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId) =>
         portalDbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId &&
@@ -197,7 +206,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> IamIdpAliasse, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> SharedIdpAliase, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
@@ -205,7 +214,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Select(x => x.IamIdentityProvider!.IamIdpAlias),
+                ca.Company.IdentityProviders.Where(x => x.IdentityProviderTypeId == IdentityProviderTypeId.SHARED && x.IamIdentityProvider != null).Select(x => x.IamIdentityProvider!.IamIdpAlias),
                 ca.CompanyApplicationTypeId,
                 ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
                     ca.Company.NetworkRegistration!.ProcessId :
@@ -264,7 +273,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .AsNoTracking()
             .Where(application => companyName == null || EF.Functions.ILike(application.Company!.Name, $"%{companyName.EscapeForILike()}%"));
 
-    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId) =>
+    public Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         portalDbContext.CompanyApplications
             .AsSplitQuery()
             .Where(companyApplication => companyApplication.Id == companyApplicationId)
@@ -294,7 +303,12 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                             x.CompanyUser!.Firstname,
                             x.CompanyUser.Lastname,
                             x.CompanyUser.Email)),
-                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value))))
+                    companyApplication.Company.CompanyIdentifiers.Select(identifier => new ValueTuple<UniqueIdentifierId, string>(identifier.UniqueIdentifierId, identifier.Value)),
+                    companyApplication.Invitations.SelectMany(invitation =>
+                            invitation.CompanyUser!.Documents.Where(document => documentTypeIds.Contains(document.DocumentTypeId)).Select(document =>
+                                new ValueTuple<Guid, DocumentTypeId>(document.Id, document.DocumentTypeId))),
+                    companyApplication.DateCreated,
+                    companyApplication.DateLastChanged))
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
@@ -505,22 +519,68 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                     )))
             .SingleOrDefaultAsync();
 
-    public Task<(bool Exists, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId)> GetCompanyIdForSubmittedApplication(Guid applicationId) =>
-        portalDbContext.CompanyApplications
-            .Where(a => a.Id == applicationId)
-            .Select(a => new ValueTuple<bool, Guid, CompanyApplicationStatusId>(
-                true,
-                a.CompanyId,
-                a.ApplicationStatusId))
-            .SingleOrDefaultAsync();
-
     public Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId) =>
         portalDbContext.CompanyApplications
             .Where(ca => ca.Id == applicationId)
             .Select(ca => new ValueTuple<bool, string?, string?>(
                 true,
                 ca.Company!.CompanyWalletData!.Did,
-                ca.Company.BusinessPartnerNumber
-            ))
+                ca.Company.BusinessPartnerNumber))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool Exists, string? Did)> GetDidForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => new ValueTuple<bool, string?>(
+                true,
+                ca.Company!.CompanyWalletData!.Did))
+            .SingleOrDefaultAsync();
+
+    public Task<(bool IsValidApplicationId, bool IsValidCompany, ApplicationDeclineData? ApplicationDeclineData)> GetDeclineApplicationDataForApplicationId(Guid applicationId, Guid companyId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds) =>
+        portalDbContext.CompanyApplications
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(application => application.Id == applicationId && companyApplicationStatusIds.Contains(application.ApplicationStatusId))
+            .Select(application => new
+            {
+                IsValidCompany = application.CompanyId == companyId,
+                Application = application,
+                application.Company,
+                application.Company!.Identities
+            })
+            .Select(x => new ValueTuple<bool, bool, ApplicationDeclineData?>(
+                true,
+                x.IsValidCompany,
+                x.IsValidCompany
+                    ? new ApplicationDeclineData(
+                        x.Company!.IdentityProviders
+                            .Select(x => new IdentityProviderStatusData(
+                                x.Id,
+                                x.IdentityProviderTypeId)),
+                        x.Company.Name,
+                        x.Application.ApplicationStatusId,
+                        x.Application.Invitations
+                            .Where(invitation => invitation.InvitationStatusId != InvitationStatusId.DECLINED)
+                            .Select(invitation => new InvitationsStatusData(
+                                invitation.Id,
+                                invitation.InvitationStatusId)),
+                        x.Identities
+                            .Where(identity =>
+                                identity.IdentityTypeId == IdentityTypeId.COMPANY_USER &&
+                                identity.UserStatusId != UserStatusId.DELETED)
+                            .Select(identity => new CompanyUserStatusData(
+                                identity.Id,
+                                identity.CompanyUser!.Firstname,
+                                identity.CompanyUser.Lastname,
+                                identity.CompanyUser.Email,
+                                identity.UserStatusId,
+                                identity.IdentityAssignedRoles.Select(iar => iar.UserRoleId))),
+                        x.Identities.SelectMany(identity =>
+                            identity.CompanyUser!.Documents
+                                .Where(document => document.DocumentStatusId != DocumentStatusId.INACTIVE)
+                                .Select(document => new DocumentStatusData(
+                                    document.Id,
+                                    document.DocumentStatusId))))
+                    : null))
             .SingleOrDefaultAsync();
 }

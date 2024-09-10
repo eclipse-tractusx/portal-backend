@@ -2,86 +2,229 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## 2.0.0-RC4
+## 2.2.0-RC4
 
-### Changes
-* **Administration Service**
-* adjusted GET: api/administration/adjust response of companydata/decentralidentity/urls to response the correct urls
+### Bugfixes
 
-### Feature
-* **Backend Logic**
-* added auditing for certificate management
-* **Apps Service**
-* added GET: /api/apps/AppChange/{appId}/roles to receive the roles for a specific app
+* **Connectors**
+  * add filter for COMPANY_CONNECTOR [#972](https://github.com/eclipse-tractusx/portal-backend/pull/972)
+  * adjust connector deletion process [#968](https://github.com/eclipse-tractusx/portal-backend/pull/968)
+* **Idp**
+  * add search functionality to idp endpoint [#982](https://github.com/eclipse-tractusx/portal-backend/pull/982)
+* **Offer Management**
+  * adjust status query param for subscription-status [#969](https://github.com/eclipse-tractusx/portal-backend/pull/969)
+  
+## 2.2.0-RC3
 
-### Bugfix
-* **Process Worker**
-* set the correct state for IDENTITY_WALLET application step after all steps are done
+### Bugfixes
 
-## 2.0.0-RC3
-
-### Changes
-* **Administration Service**
-* adjust endpoint api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to return the secrets of a dim technical user as well
-
-### Feature
-* **Backend Logic**
-* adjusted offer autosetup process to create dim technical users
-* **Administration Service**
-* added GET: api/administration/companydata/decentralidentity/urls endpoint to receive wallet information
-
-### Bugfix
-* adjusted base url registration for http client setups
-* adjusted the did schema validation
-* added support for DUNS_ID for the BPDM gat endpoints
-* adjusted saving of mailing process steps
-
-## 2.0.0-RC2
+* **Registration Process**
+  * removed DIM authentication details from logs [#951](https://github.com/eclipse-tractusx/portal-backend/pull/951)
+  * adjust retrigger process for sd creation [#938](https://github.com/eclipse-tractusx/portal-backend/pull/938)
+* **Connector creation**
+  * adjusted the host and provider company for managed connectors [#948](https://github.com/eclipse-tractusx/portal-backend/pull/948)
+* **Technical Users**
+  * adjusted logic to delete external technical users [#956](https://github.com/eclipse-tractusx/portal-backend/pull/956)
+  
+## 2.2.0-RC2
 
 ### Change
-* moved api paths from BPDM out of code into config / helm chart
-* merged all migrations since 2.0.0-alpha into one 2.0.0-rc2
+
+* **Network Registration (Administration Service)**
+  * enhanced endpoint `GET /api/administration/registration/network/companies` with additional fields and filter possibilities [#916](https://github.com/eclipse-tractusx/portal-backend/pull/916)
+
+### Bugfixes
+
+* **Application Activation**
+  * adjusted the set of the theme only for shared idps [#852](https://github.com/eclipse-tractusx/portal-backend/pull/852)
+* **App Roles**
+  * added a duplication check for roles before adding them [#877](https://github.com/eclipse-tractusx/portal-backend/pull/877)
+* **BPDM**
+  * adjusted the structure of the bpdm request for the `input/business-partners` request [#928](https://github.com/eclipse-tractusx/portal-backend/pull/928)
+
+## 2.2.0-RC1
+
+### Change
+
+* **Certificate Management (Administration Service)**
+  * enhanced attributes in database and endpoint details [#823](https://github.com/eclipse-tractusx/portal-backend/pull/823)
+* **Onboarding Service Provider**
+  * added endpoint to OSP companies details [#866](https://github.com/eclipse-tractusx/portal-backend/pull/866)
+* **Technical Users**
+  * adjusted logic for technical users to delete DIM users [#804](https://github.com/eclipse-tractusx/portal-backend/pull/804)
+* **Connector Management and toggle to deactivate the GX compliance service interface**
+  * added endpoints to get companies and connectors with missing self description  documents [#854](https://github.com/eclipse-tractusx/portal-backend/pull/854)
+  * added process for self description document creation [#854](https://github.com/eclipse-tractusx/portal-backend/pull/854)
+* **Registration Process and toggle to deactivate the GX compliance service interface**
+  * enhanced application checklist with a comment of the skipped self description step [#847](https://github.com/eclipse-tractusx/portal-backend/pull/847)
+  * adjusted selfDescription retriever to check if clearinghouseConnect is disabled [#847](https://github.com/eclipse-tractusx/portal-backend/pull/847)
+* **Registration Process (Administration Service)**
+  * added type to applications endpoint [#900](https://github.com/eclipse-tractusx/portal-backend/pull/900)
+
+### Technical Support
+
+* changed licensing and legal docs [#795](https://github.com/eclipse-tractusx/portal-backend/pull/795)
+* dev-flow: maintain latest changes in main branch [#198](https://github.com/eclipse-tractusx/portal-frontend-registration/pull/198)
+* code-quality: fixed imports [#869](https://github.com/eclipse-tractusx/portal-backend/pull/869)
+* merged migrations into one since 2.1.0-rc1 [#908](https://github.com/eclipse-tractusx/portal-backend/pull/908)
+
+### Bugfixes
+
+* **Business Partner Data Management**
+  * allowed null values for geographic coordinate altitude [#882](https://github.com/eclipse-tractusx/portal-backend/pull/882)
+* **Onboarding Service Provider**
+  * added companyUsers to invitation for OSP process [#892](https://github.com/eclipse-tractusx/portal-backend/pull/892)
+* **Connector Management and toggle to deactivate the GX compliance service interface**
+  * adjusted self description document validation for connector creation [#894](https://github.com/eclipse-tractusx/portal-backend/pull/894)
+* **Registration Process**
+  * removed active flag to get the name in case of declined registration [#873](https://github.com/eclipse-tractusx/portal-backend/pull/873)
+* **Service Release**
+  * fixed returning of the correct lead picture [#904](https://github.com/eclipse-tractusx/portal-backend/pull/904)
+
+## 2.1.0
+
+### Change
+
+* **Offer Autosetup**
+  * enhanced subscription/provider endpoint with external service data [#867](https://github.com/eclipse-tractusx/portal-backend/pull/867)
+* App Services [#827](https://github.com/eclipse-tractusx/portal-backend/pull/827)
+  * updated endpoint authorization rule setting of `GET /api/apps/AppChange/{appId}/roles` => new permission validation to `edit_apps`
+  * updated endpoint authorization rule setting of `GET /api/apps/AppReleaseProcess/{appId}/roles` => new permission validation to `add_apps`
+* Process Worker
+  * moved email validation in decline application process api from child method to parent method [#822](https://github.com/eclipse-tractusx/portal-backend/pull/822)
+  * removed mail process creation of the decline registration mail if the user self-triggered the decline [#806](https://github.com/eclipse-tractusx/portal-backend/pull/806)
 
 ### Feature
-* added DID to DID BPN resolver
-* added new checklist steps
 
-### Bugfix
-* fixed company invite: changed invitation processStepType order and removed disposal of mimeMessage for mailing
-* fixed mail not being set at new user invite
+* **Registration Process (Administration Service)**
+  * added configuration toggle to deactivate the GX compliance service interface dependency incl. SD factory connectivity to enable registration and connector creation without external dependency [#793](https://github.com/eclipse-tractusx/portal-backend/pull/793)
 
-## 2.0.0-RC1
+### Technical Support
+
+* bumped efcore to 8.0.7 [#857](https://github.com/eclipse-tractusx/portal-backend/pull/857)
+* upgraded  implicit dependencies on System.Text.Json [#875](https://github.com/eclipse-tractusx/portal-backend/pull/875)
+* bumped MimeKit from 4.3.0 to 4.7.1 [#833](https://github.com/eclipse-tractusx/portal-backend/pull/833)
+* changed from emulation to cross-compile for building multi-platform images [#803](https://github.com/eclipse-tractusx/portal-backend/pull/803)
+* improved dockerfiles by removing unnecessary base stage and aligning environment variables [#803](https://github.com/eclipse-tractusx/portal-backend/pull/803)
+* running the app from top-level program has been changed from synchronous to asynchronous execution [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+* changed querying db-sequences from synchronous to asynchronous execution [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+* added exception-handling to the crypto helper to properly map the system exceptions that are thrown by the Aes-classes to configuration respective conflict exceptions [#790](https://github.com/eclipse-tractusx/portal-backend/pull/790)
+* updated GitHub actions [#785](https://github.com/eclipse-tractusx/portal-backend/pull/785)/[#777](https://github.com/eclipse-tractusx/portal-backend/pull/777)
+* **Clean-up unused Code** [#783](https://github.com/eclipse-tractusx/portal-backend/pull/783)
+  * removed all company credential (SSI) related endpoints
+  * removed all company credential (SSI) related database tables
+
+### Bugfixes
+
+* **Offer Autosetup**
+  * removed leading '/' from the activate subscription endpoint [#861](https://github.com/eclipse-tractusx/portal-backend/pull/861)
+  * suppressed activation of external service accounts on activation of offer subscription [#864](https://github.com/eclipse-tractusx/portal-backend/pull/864)
+  * skipped optional autosetup provider callback if it is not configured [#865](https://github.com/eclipse-tractusx/portal-backend/pull/865)
+  * added default clientPrefix to appsettings.json [#870](https://github.com/eclipse-tractusx/portal-backend/pull/870)
+* **Decentral Identity Management (DIM) Integration**
+  * fixed callback logic for dim requests in case of multiple company applications with same bpn (some declined, one in status submitted) [#863](https://github.com/eclipse-tractusx/portal-backend/pull/863)
+* **Registration Process (Administration Service)**
+  * fixed typos [#883](https://github.com/eclipse-tractusx/portal-backend/pull/883)
+  * fixed nullability-issue in IdentityProviderBusinessLogic [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+  * fixed ambiguity in IfAny nullable return type declaration [#786](https://github.com/eclipse-tractusx/portal-backend/pull/786)
+  * added locking for the `invite process` process worker [#788](https://github.com/eclipse-tractusx/portal-backend/pull/788)
+  * fixed support of null setting of the attribute `url` for offer provider autosetup url configuration endpoint `PUT /api/administration/SubscriptionConfiguration/owncompany` [#783](https://github.com/eclipse-tractusx/portal-backend/pull/783)
+
+### Known Knowns
+
+The following are known issues identified in the current release:
+
+* **Initial Wallet Setup**
+  * When initially setting up the portal the operator wallet setup needs manual interventions on db level. More on how to handle it can be found in the [documentation](https://github.com/eclipse-tractusx/portal-assets/blob/v2.1.0/docs/developer/Technical%20Documentation/Operator%20Wallet%20Setup/Initial%20Setup.md)
+* **Connector Registration:**
+  * The connector registration currently fails if a company has been onboarded without a self description document, e.g. if the clearinghouseConnectDisabled is enabled during the onboarding. [#887](https://github.com/eclipse-tractusx/portal-backend/issues/887)
+* **Missing notifications:**
+  * There are currently no notifications created for the following UseCases [#878](https://github.com/eclipse-tractusx/portal-backend/issues/878):
+    * Welcome - Notification to new user
+    * App Subscription - Info email to provider
+    * Service Release - Info email to requesting user
+* **Deletion Support Deficiencies:**
+  * The deletion of technical users from external providers is currently not supported.
+  * Removal of BDRS (BPN-DID Resolver Service) entries is currently not supported.
+  * Deletion of wallet tenants has not been implemented.
+* **Validation Limitations:**
+  * Pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
+* **Validation of File Upload Limitation:**
+  * It is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+* **In Memory Storage Limitation**:
+  * Sensitive information (such as passwords) is read in an unencrypted manner in memory.
+
+## 2.0.0
 
 ### Change
 * **Backend Logic**
-  * Save the error details of the clearinghouse service inside the portal db of application checklist/process worker
+  * saved the error details of the clearinghouse service inside the portal db of application checklist/process worker
 * **Apps Services**
   * updated backend logic of `PUT /api/apps/AppReleaseProcess/{appId}/submit` to allow the submission without defined/configured technical user profile
 * **Administration Service**
-  * remove obsolete endpoint `GET /api/user/app/{appId}/roles`
-  * remove obsolete endpoint `PUT /api/user/app/{appId}/roles`
-  * added connector url inside the response body of `GET /api/administration/Connectors`
-  * added connector url inside the response body of `GET /api/administration/Connectors/managed`
-  * added connector url inside the response body of `GET /api/administration/Connectors/{connectorID}`
-* upgraded all services and jobs to .net 8
-* upgraded nuget packages
-* merged all migrations since v1.8.0-rc6 into one 2.0.0-alpha
+  * removed obsolete endpoints
+    * `GET /api/user/app/{appId}/roles` ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+    * `PUT /api/user/app/{appId}/roles` ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * included connector URL in responses for connector-related endpoints (GET /api/administration/Connectors, GET /api/administration/Connectors/managed, GET /api/administration/Connectors/{connectorID})
+  * modified POST: api/administration/companydata/useCaseParticipation logic to create framework credentials via the SSI credential issuer interface
+  * improved GET /serviceAccounts/{serviceAccountID} and GET /serviceAccounts to return service accounts regardless of state (excluding DELETE) and included userStatus in the payload
+  * updated PUT /api/administration/SubscriptionConfiguration/owncompany to allow URL deletion by submitting an empty URL
+  * enhanced GET /api/administration/registration/application/{applicationId}/companyDetailsWithAddress payload with "created", "lastChanged", "documents" details
+  * removed "documents" from GET /api/administration/registration/application/{applicationId}/companyDetailsWithAddress payload (Breaking Change) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+* **Services Service**
+  * updated permission validation for api endpoints
+    * GET /api/services/subscribed/subscription-status ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+    * GET /api/services/{serviceId}/subscription/{subscriptionId}/subscriber ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+    * GET /api/services/{serviceId}/subscription/{subscriptionId}/provider ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
 * updated swagger (endpoint documentation, payload examples and allowed values)
 * changed the CompanyInvitationData to class instead of record
-* updated seeding:
-  * removed service account sa-cl5-custodian-1
-  * removed the following roles: BPDM Gate Read, BPDM Gate Read & Write, BPDM Partner Gate, BPDM Management, BPDM Pool
-  * added the following roles: BPDM Sharing Admin, BPDM Sharing Input Manager, BPDM Sharing Input Consumer, BPDM Sharing Output Consumer, BPDM Pool Admin, BPDM Pool Consumer
+* **Seeding**
+  * removed service account sa-cl5-custodian-1 ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added missing service accounts and improved descriptions
+  * removed the following roles: BPDM Gate Read, BPDM Gate Read & Write, BPDM Partner Gate, BPDM Management, BPDM Pool ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added the following roles: BPDM Sharing Admin, BPDM Sharing Input Manager, BPDM Sharing Input Consumer, BPDM Sharing Output Consumer, BPDM Pool Admin, BPDM Pool Consumer, Business Partner Data Manager, BPDM Pool Sharing Consumer
+  * added self description document to release company record (operator)
 
 ### Feature
 * **Certificate Management (Administration Service)**
   * released new endpoint to delete company owned company certificates `DELETE /api/administration/companydata/companyCertificate/document/{documentId}`
   * released new endpoint to view other companies certificates via the document ID `GET /api/administration/companydata/companyCertificates/documents/{documentId}`
   * released specific document endpoint to fetch owned company certificates by documentID `GET /api/administration/companydata/companyCertificates/{documentId}`
-* **Registration Process Worker**
-  * implemented new backend logic for the process step "IDENTITY_WALLET_CREATION" by separating the step logic (bpm credential creation separated and payload changed) ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
-  * added retrigger endpoint to restarted a failed dim wallet setup step
-  * added postback endpoint to receive the did document and authentication information ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * added auditing
+    * Certificate Uploads: Capture the event when a new certificate is uploaded to the system
+    * Certificate Deletions: Capture the event when an existing certificate is deleted from the system
+    * User Identification: Log the identity of the user who performed the action
+    * Timestamp Recording: Log the exact date and time when the action was performed
+* **Process Worker**
+  * released new process step "SEND_MAIL" and integrated the step for all mail jobs
+* **Self-Soverein-Identity Next (Support Central (MIW) and Decentral (DIM) Identity Management Systems)** ![Tag](https://img.shields.io/static/v1?label=&message=BreakingChange&color=yellow&style=flat)
+  * implemented a configuration switch to facilitate seamless transitions between centralized (Support Central, MIW) and decentralized (Identity Management Systems, DIM) wallet flows
+  * **Registration Process Worker**
+    * refined the "IDENTITY_WALLET_CREATION" process step with new backend logic to uncouple BPM credential creation from the main flow and modify the associated payload
+    * enriched the registration workflow with additional application checklist and process steps, such as "BPNL_CREDENTIAL", "MEMBERSHIP_CREDENTIAL" and "VALIDATE_DID_DOCUMENT"
+    * established a retrigger endpoint to resume a failed DIM setup step, enhancing robustness in the registration process
+    * introduced a postback endpoint for receiving DID documents and authentication details, with accompanying schema validation to ensure data integrity
+    * added didDocument schema validation for postback endpoint
+    * added didDocument publication flow and validation of the successful publication
+    * added process worker step and backend logic to register didDocument received from integrated wallet inside the BDRS (BPN-DID Resolver) service
+  * **Multi Provider Technical User**
+    * enabled feature to allow technical user creation for multiple providers
+    * enhanced response data of technical user related endpoints to include user status, addressing the need for comprehensive user management:
+      * POST /api/apps/autoSetup
+      * GET /api/apps/{appId}/subscription/{subscriptionId}/provider
+      * GET /api/apps/{appId}/subscription/{subscriptionId}/subscriber
+      * GET /api/services/{serviceId}/subscription/{subscriptionId}/provider
+      * GET /api/services/{serviceId}/subscription/{subscriptionId}/subscriber
+  * **Service Account Secret Retrieval**
+    * modified GET api/administration/serviceaccount/owncompany/serviceaccounts/{serviceAccountId} to differentiate secret retrieval based on the service account provider (database vs integrated identity provider
+  * **Clearinghouse Data Interface Adjustment**
+    * altered the interface to retrieve a company's DID directly from the database when the DIM wallet feature is active, as opposed to sourcing it from MIW, simplifying the data retrieval process and reducing dependencies on external services
+* **Registration Decline**
+  * released function to decline as customer the registration process and delete user accounts
+  * added registration decline process worker steps
+  * enabled decline feature via url inside the email template "invite"
+* **Autosetup Process Worker**
+  * adjusted offer autosetup process to create dim technical users
 * **Agreement Status**
   * updated logic of POST and GET agreement endpoint (apps service) to only consider active agreements
   * updated logic of POST and GET agreement endpoint (services service) to only consider active agreements
@@ -91,17 +234,26 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Business Process Worker**
   * added new backend worker for invitations to run the invitation steps asynchronously
   * added mailing worker and moved all backend functions for sending emails into the worker
-* Email Templates
-  * Enabled email service for create user account under owned IdP as well as for migration of an user account from any IdP to a ownedIdP
+* **Email Templates**
+  * enabled email service for create user account under owned IdP as well as for migration of an user account from any IdP to a ownedIdP
+* **Others**
+  * released GET: api/administration/companydata/decentralidentity/urls endpoint to provide connector registration relevant information
+  * added GET /api/apps/AppChange/{appId}/roles to retrieve app configured roles for owned apps
+  * added GET /api/apps/AppReleaseProcess/{appId}/roles to retrieve app uploaded roles
 
 ### Technical Support
-* adjusted the get_current_version script for nuget packages to only return the tag name
-* introduced codeql scan
-* removed veracode workflow
+* upgraded all services and jobs to .Net 8
+* Token lifetime: set ClockSkew (security configuration jwtBearerOptions) to 5 minutes for token expiration
+* moved api paths from BPDM out of code into config / helm chart
+* upgraded nuget packages
 * removed unused deprecated packages
+* adjusted the get_current_version script for nuget packages to only return the tag name
+* introduced CodeQL scan
+* removed Veracode workflow
 * improved workflows and documentation
 * upgraded gh actions and change to pinned actions full length commit sha
-* add dependabot.yml file
+* add dependabot.yml file and introduced grouping of pull request for version updates
+* reworked year in file header
 
 ### Bugfix
 * adjusted endpoint `GET api/administration/serviceaccount/owncompany/serviceaccounts` to filter for active service accounts by default
@@ -112,9 +264,40 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * use identifier.Value instead of repeating its type
   * use CompanyUniqueIdData instead of UniqueIdentifierData
 * fixed sonar findings
-* fixed codeql findings
+* fixed CodeQL findings
 * CONTRIBUTING.md: linked to contribution details
 * updated eclipse dash tool for dependencies check
+* Core role assignment - fixed query for core offer to prevent role assignment triggering cascading role assignments
+* fixed endpoint GET /api/apps/active short description returning error
+* in BpdmService.FetchInputLegalEntity map bpdm-identifier-types to string instead of BpdmIdentifierTypeId
+* fixed isOwner filter for GET api/administration/serviceaccount/owncompany/serviceaccounts
+
+### Known Knowns
+The following are known issues identified in the current release:
+* **Email Template Issues:**
+  * The `verified_credential_approved.html` email template does not populate the "wallet" value as expected.
+  * The `decline_registration.html` email template is triggered when a customer utilizes the self-decline feature.
+* **Autosetup Feature Limitation:**
+  * The autosetup feature lacks support for service providers and app providers to automatically retrieve customer connector configuration details such as `authURL`, `WalletURL`, etc.
+* **Deletion Support Deficiencies:**
+  * The deletion of technical users from external providers is currently not supported.
+  * Removal of BDRS (BPN-DID Resolver Service) entries is currently not supported.
+  * Deletion of wallet tenants has not been implemented.
+* **Obsolete Code:**
+  * Redundant backend code from a previous version of the SSI implementation remains in the codebase and has not been purged.
+* **Code quality Finding:**
+  * A potential null reference for 'identityProviderLinks' has been identified, indicating that it could be null on at least one execution path. [#694](https://github.com/eclipse-tractusx/portal-backend/issues/694)
+* **Validation Limitations:**
+  * Pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
+* **Validation of File Upload Limitation:**
+  * It is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+* **In Memory Storage Limitation**:
+  * Sensitive information (such as passwords) is read in an unencrypted manner in memory.
+
+## 1.8.1
+
+### Bugfix
+* fixed roles for Registration, Portal and technical_roles_management not being retrieved by endpoints [(718)](https://github.com/eclipse-tractusx/portal-backend/issues/718): added clients to base seeding of the app_instances table; the clients were accidentally maintained in consortia test data seeding
 
 ## 1.8.0
 

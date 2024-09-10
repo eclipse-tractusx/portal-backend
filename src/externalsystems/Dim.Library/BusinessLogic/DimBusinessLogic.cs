@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -103,20 +103,22 @@ public class DimBusinessLogic : IDimBusinessLogic
 
     public async Task ProcessDimResponse(string bpn, DimWalletData data, CancellationToken cancellationToken)
     {
-        var (exists, companyId, companyApplicationStatusIds) = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanyIdByBpn(bpn).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!exists)
+        var companySubmittedApplicationIds = await _portalRepositories.GetInstance<ICompanyRepository>().GetCompanySubmittedApplicationIdsByBpn(bpn).ToListAsync(cancellationToken).ConfigureAwait(false);
+        if (companySubmittedApplicationIds.Count == 0)
         {
             throw new NotFoundException($"No company found for bpn {bpn}");
         }
 
-        if (companyApplicationStatusIds.Count() != 1)
+        var companyApplicationIds = companySubmittedApplicationIds.SelectMany(x => x.SubmittedApplicationIds.Select(applicationId => (x.CompanyId, ApplicationId: applicationId)));
+        if (companyApplicationIds.Count() != 1)
         {
             throw new ConflictException($"There must be exactly one company application in state {CompanyApplicationStatusId.SUBMITTED}");
         }
 
+        var (companyId, applicationId) = companyApplicationIds.First();
         var context = await _checklistService
             .VerifyChecklistEntryAndProcessSteps(
-                companyApplicationStatusIds.Single(),
+                applicationId,
                 ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
                 ProcessStepTypeId.AWAIT_DIM_RESPONSE,

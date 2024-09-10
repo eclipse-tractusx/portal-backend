@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -51,14 +51,4 @@ public class IdentityRepository : IIdentityRepository
                 x.IdentityTypeId,
                 x.CompanyId))
             .SingleOrDefaultAsync();
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdentityIdsWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, IEnumerable<Guid> identityIds) =>
-        _context.CompanyUsers
-            .Where(x =>
-                identityIds.Contains(x.Id) &&
-                x.Identity!.IdentityAssignedRoles.Select(u => u.UserRoleId).Any(u => userRoleIds.Any(ur => ur == u)) &&
-                x.Email != null)
-            .Select(x => new ValueTuple<string, string?, string?>(x.Email!, x.Firstname, x.Lastname))
-            .ToAsyncEnumerable();
 }

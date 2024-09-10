@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,7 +40,6 @@ public class CompanyUser : IBaseEntity, IAuditableV1
         CompanyUserAssignedBusinessPartners = new HashSet<CompanyUserAssignedBusinessPartner>();
         Notifications = new HashSet<Notification>();
         RequestedSubscriptions = new HashSet<OfferSubscription>();
-        CompanySsiDetails = new HashSet<CompanySsiDetail>();
         CompanyUserAssignedIdentityProviders = new HashSet<CompanyUserAssignedIdentityProvider>();
     }
 
@@ -66,6 +65,7 @@ public class CompanyUser : IBaseEntity, IAuditableV1
 
     public virtual Identity? Identity { get; set; }
     public virtual Identity? LastEditor { get; private set; }
+    public virtual CompanyUserAssignedProcess? CompanyUserAssignedProcess { get; set; }
     public virtual ICollection<Consent> Consents { get; private set; }
     public virtual ICollection<Document> Documents { get; private set; }
     public virtual ICollection<Invitation> Invitations { get; private set; }
@@ -75,5 +75,4 @@ public class CompanyUser : IBaseEntity, IAuditableV1
     public virtual ICollection<CompanyUserAssignedIdentityProvider> CompanyUserAssignedIdentityProviders { get; private set; }
     public virtual ICollection<Notification> Notifications { get; private set; }
     public virtual ICollection<OfferSubscription> RequestedSubscriptions { get; private set; }
-    public virtual ICollection<CompanySsiDetail> CompanySsiDetails { get; private set; }
 }

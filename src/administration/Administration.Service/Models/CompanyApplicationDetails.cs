@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,16 +28,12 @@ public record CompanyApplicationDetails(
     [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
     [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
     [property: JsonPropertyName("companyName")] string CompanyName,
-    [property: JsonPropertyName("documents")] IEnumerable<DocumentDetails> Documents,
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
     [property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist,
     [property: JsonPropertyName("email")] string? Email,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber
-);
+    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
+    [property: JsonPropertyName("type")] CompanyApplicationTypeId CompanyApplicationTypeId
 
-public record DocumentDetails(
-    [property: JsonPropertyName("documentId")] Guid DocumentId,
-    [property: JsonPropertyName("documentType")] DocumentTypeId? DocumentTypeId
 );
 
 public record ApplicationChecklistEntryDetails(

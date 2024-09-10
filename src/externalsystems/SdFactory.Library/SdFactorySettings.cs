@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,6 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 /// </summary>
 public class SdFactorySettings : KeyVaultAuthSettings
 {
+    /// <summary>
+    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
+    /// </summary>
+    public bool ClearinghouseConnectDisabled { get; set; }
+
     /// <summary>
     /// SD Factory endpoint for registering connectors.
     /// </summary>

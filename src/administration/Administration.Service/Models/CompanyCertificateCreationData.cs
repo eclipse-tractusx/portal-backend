@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,5 +25,9 @@ public record CompanyCertificateCreationData
 (
     CompanyCertificateTypeId CertificateType,
     IFormFile Document,
-    DateTimeOffset? ExpiryDate
+    string? ExternalCertificateNumber,
+    IEnumerable<string>? Sites,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTill,
+    string? Issuer
 );

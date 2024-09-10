@@ -29,14 +29,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class CompanyCertificateRepositoryTests
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
 
     public CompanyCertificateRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -69,17 +70,32 @@ public class CompanyCertificateRepositoryTests
         // Arrange
         var (sut, context) = await CreateSutWithContext();
 
+        var now = _fixture.Create<DateTimeOffset>();
+        var companyId = Guid.NewGuid();
+        var docId = Guid.NewGuid();
+
         // Act
-        sut.CreateCompanyCertificate(new("9f5b9934-4014-4099-91e9-7b1aee696b03"), CompanyCertificateTypeId.IATF, new Guid("00000000-0000-0000-0000-000000000001"), x =>
+        sut.CreateCompanyCertificate(
+            companyId,
+            CompanyCertificateTypeId.IATF,
+            CompanyCertificateStatusId.INACTIVE,
+            docId,
+            x =>
         {
-            x.ValidTill = DateTime.UtcNow;
+            x.ValidFrom = now;
         });
 
         // Assert
         context.ChangeTracker.HasChanges().Should().BeTrue();
         context.ChangeTracker.Entries().Should().ContainSingle()
             .Which.Entity.Should().BeOfType<CompanyCertificate>()
-            .Which.CompanyCertificateStatusId.Should().Be(CompanyCertificateStatusId.ACTIVE);
+            .Which.Should().Match<CompanyCertificate>(x =>
+                x.CompanyId == companyId &&
+                x.CompanyCertificateStatusId == CompanyCertificateStatusId.INACTIVE &&
+                x.ValidFrom == now &&
+                x.ValidTill == null &&
+                x.DocumentId == docId
+            );
     }
 
     #endregion

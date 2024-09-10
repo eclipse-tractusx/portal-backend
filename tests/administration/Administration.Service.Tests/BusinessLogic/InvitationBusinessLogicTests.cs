@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -72,23 +73,6 @@ public class InvitationBusinessLogicTests
     }
 
     [Fact]
-    public async Task ExecuteInvitation_WithoutOrganisationName_ThrowsControllerArgumentException()
-    {
-        var invitationData = _fixture.Build<CompanyInvitationData>()
-            .With(x => x.OrganisationName, (string?)null)
-            .WithNamePattern(x => x.FirstName)
-            .WithNamePattern(x => x.LastName)
-            .WithEmailPattern(x => x.Email)
-            .Create();
-
-        async Task Act() => await _sut.ExecuteInvitation(invitationData);
-
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("organisationName must not be empty (Parameter 'organisationName')");
-        ex.ParamName.Should().Be("organisationName");
-    }
-
-    [Fact]
     public async Task ExecuteInvitation_WithValidData_CreatesExpected()
     {
         var processes = new List<Process>();
@@ -112,6 +96,48 @@ public class InvitationBusinessLogicTests
         invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName");
     }
 
+    [Theory]
+    [InlineData("ValidOrganisationName123")]
+    [InlineData("Organisation Name")]
+    [InlineData("Organisation$Name")]
+    [InlineData("Organisation\\Name")]
+    [InlineData("Organisation/Name")]
+    [InlineData("Organisation<Name>")]
+    [InlineData("Organisation Name!")]
+    [InlineData("7-ELEVEN INTERNATIONAL LLC")]
+    [InlineData("C")]
+    [InlineData("+SEN Inc.")]
+    [InlineData("Double \"Quote\" Company S.A.")]
+    [InlineData("Special Characters ^&%#@*/_-\\")]
+    [InlineData("German: ÄÖÜß")]
+    [InlineData("Icelandic: ÆÐÞ")]
+    public async Task ExecuteInvitation_WithValidOrganisationName_DoesNotThrowException(string validName)
+    {
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.OrganisationName, validName)
+            .Create();
+
+        Func<Task> Act = async () => await _sut.ExecuteInvitation(invitationData);
+
+        await Act.Should().NotThrowAsync<ControllerArgumentException>();
+    }
+
+    [Theory]
+    [InlineData(null)] // null value
+    [InlineData("Organisation Name ")] // Ends with whitespace
+    [InlineData("1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWX")] // Exceeds 160 characters
+    public async Task ExecuteInvitation_WithInvalidOrganisationName_ThrowsControllerArgumentException(string? invalidName)
+    {
+        var invitationData = _fixture.Build<CompanyInvitationData>()
+            .With(x => x.OrganisationName, invalidName)
+            .Create();
+
+        async Task Act() => await _sut.ExecuteInvitation(invitationData);
+
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(ValidationExpressionErrors.INCORRECT_COMPANY_NAME.ToString());
+    }
+
     #endregion
 
     #region RetriggerCreateCentralIdp
@@ -123,7 +149,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -168,7 +194,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -213,7 +239,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS;
         var processStepTypeId = ProcessStepTypeId.INVITATION_UPDATE_CENTRAL_IDP_URLS;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -258,7 +284,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -303,7 +329,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_SHARED_REALM;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_SHARED_REALM;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -348,7 +374,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_ENABLE_CENTRAL_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -393,7 +419,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_DATABASE_IDP;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_DATABASE_IDP;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
@@ -438,7 +464,7 @@ public class InvitationBusinessLogicTests
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_USER;
         var processStepTypeId = ProcessStepTypeId.INVITATION_CREATE_USER;
         var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, (DateTimeOffset?)null).Create();
+        var process = _fixture.Build<Process>().With<DateTimeOffset?>(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
         var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));

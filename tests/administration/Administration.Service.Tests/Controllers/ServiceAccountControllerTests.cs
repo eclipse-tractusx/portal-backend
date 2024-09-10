@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
@@ -27,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -60,7 +60,7 @@ public class ServiceAccountControllerTests
         var serviceAccountId = Guid.NewGuid();
         var responseData = _fixture.Build<ServiceAccountDetails>()
             .With(x => x.ServiceAccountId, serviceAccountId)
-            .Create();
+            .CreateMany(1);
         var data = _fixture.Create<ServiceAccountCreationInfo>();
         A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<ServiceAccountCreationInfo>._))
             .Returns(responseData);
@@ -71,11 +71,7 @@ public class ServiceAccountControllerTests
         // Assert
         A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data)).MustHaveHappenedOnceExactly();
 
-        result.Should().NotBeNull();
-        result.Should().BeOfType<CreatedAtRouteResult>();
-        result.Value.Should().NotBeNull();
-        result.Value.Should().BeOfType<ServiceAccountDetails>();
-        (result.Value as ServiceAccountDetails)?.ServiceAccountId.Should().Be(serviceAccountId);
+        result.Should().ContainSingle(x => x.ServiceAccountId == responseData.First().ServiceAccountId);
     }
 
     [Fact]
@@ -110,19 +106,26 @@ public class ServiceAccountControllerTests
 
     }
 
-    [Fact]
-    public async Task GetServiceAccountsData_CallsExpected()
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task GetServiceAccountsData_CallsExpected(bool filterInactive, bool withStatusIds)
     {
         //Arrange
         var paginationResponse = new Pagination.Response<CompanyServiceAccountData>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyServiceAccountData>(5));
-        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true))
+        IEnumerable<UserStatusId>? userStatusIds = withStatusIds
+            ? _fixture.CreateMany<UserStatusId>().ToImmutableArray()
+            : null;
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, filterInactive, userStatusIds))
                   .Returns(paginationResponse);
 
         //Act
-        var result = await _controller.GetServiceAccountsData(0, 15, null, null, true);
+        var result = await _controller.GetServiceAccountsData(0, 15, null, null, filterInactive, userStatusIds);
 
         //Assert
-        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, true)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetOwnCompanyServiceAccountsDataAsync(0, 15, null, null, filterInactive, userStatusIds)).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyServiceAccountData>>(result);
         result.Content.Should().HaveCount(5);
     }

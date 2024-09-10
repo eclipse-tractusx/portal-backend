@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 BMW Group AG
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -68,7 +67,8 @@ public interface IConnectorsBusinessLogic
     /// Remove a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId">ID of the connector to be deleted.</param>
-    Task DeleteConnectorAsync(Guid connectorId);
+    /// <param name="deleteServiceAccount">if <c>true</c> the linked service account will be deleted, otherwise the connection to the connector will just be removed</param>
+    Task DeleteConnectorAsync(Guid connectorId, bool deleteServiceAccount);
 
     /// <summary>
     /// Retrieve connector end point along with bpns
@@ -100,4 +100,8 @@ public interface IConnectorsBusinessLogic
     /// </param>
     /// <returns>Returns an IAsyncEnumerable of <see cref="OfferSubscriptionConnectorData"/></returns>
     IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet);
+
+    Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size);
+    Task TriggerSelfDescriptionCreation();
+    Task RetriggerSelfDescriptionCreation(Guid processId);
 }

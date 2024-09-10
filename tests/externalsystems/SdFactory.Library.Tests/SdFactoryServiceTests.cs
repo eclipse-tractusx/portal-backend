@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,7 +35,7 @@ public class SdFactoryServiceTests
 
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
     {
-        new (UniqueIdentifierId.VAT_ID, "JUSTATEST")
+        new(UniqueIdentifierId.VAT_ID, "JUSTATEST")
     };
 
     private readonly IPortalRepositories _portalRepositories;

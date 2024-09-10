@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -41,7 +41,6 @@ public class PortalRepositories : IPortalRepositories
         CreateTypeEntry<IClientRepository>(context => new ClientRepository(context)),
         CreateTypeEntry<ICompanyRepository>(context => new CompanyRepository(context)),
         CreateTypeEntry<ICompanyInvitationRepository>(context => new CompanyInvitationRepository(context)),
-        CreateTypeEntry<ICompanySsiDetailsRepository>(context => new CompanySsiDetailsRepository(context)),
         CreateTypeEntry<ICompanyRolesRepository>(context => new CompanyRolesRepository(context)),
         CreateTypeEntry<IConsentAssignedOfferSubscriptionRepository>(context => new ConsentAssignedOfferSubscriptionRepository(context)),
         CreateTypeEntry<IConnectorsRepository>(context => new ConnectorsRepository(context)),
