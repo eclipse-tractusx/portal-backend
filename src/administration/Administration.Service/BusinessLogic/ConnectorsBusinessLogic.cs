@@ -185,7 +185,7 @@ public class ConnectorsBusinessLogic(
         if (await portalRepositories.GetInstance<IConnectorsRepository>()
              .CheckConnectorExists(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_DUPLICATE, new ErrorParameter[] { new("name", name), new("connectorUrl", connectorUrl) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_DUPLICATE, [new("name", name), new("connectorUrl", connectorUrl)]);
         }
     }
 
