@@ -242,9 +242,7 @@ public interface IOfferService
     /// <param name="statusId"></param>
     /// <param name="name"></param>
     /// <returns>Returns the details of the subscription status for user by OfferType</returns>
-    Task<Pagination.Response<OfferSubscriptionStatusDetailData>>
-        GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, OfferTypeId offerTypeId,
-            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId, string? name);
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(int page, int size, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId, string? name);
 
     /// <summary>
     /// Gets the information for the subscription for the provider
