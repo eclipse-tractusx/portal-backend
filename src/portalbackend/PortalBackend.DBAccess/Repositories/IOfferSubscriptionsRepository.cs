@@ -141,10 +141,11 @@ public interface IOfferSubscriptionsRepository
     /// <param name="offerTypeId">Id of the offer type</param>
     /// <param name="documentTypeId">Id of the document type</param>
     /// <param name="statusId"></param>
+    /// <param name="name"></param>
     /// <returns>Returns a func with skip, take and the pagination of the source</returns>
     Func<int, int, Task<Pagination.Source<OfferSubscriptionStatusData>?>>
         GetOwnCompanySubscribedOfferSubscriptionStatusAsync(Guid userCompanyId, OfferTypeId offerTypeId,
-            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId);
+            DocumentTypeId documentTypeId, OfferSubscriptionStatusId? statusId, string? name);
 
     /// <summary>
     /// 

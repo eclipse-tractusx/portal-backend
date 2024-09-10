@@ -134,7 +134,7 @@ public interface IServiceBusinessLogic
     /// <param name ="size">size</param>
     /// <param name="statusId"></param>
     /// <returns>Returns the details of the subscription status for Service user</returns>
-    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, OfferSubscriptionStatusId? statusId);
+    Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, OfferSubscriptionStatusId? statusId, string? name);
 
     /// <summary>
     /// Starts the auto setup process.

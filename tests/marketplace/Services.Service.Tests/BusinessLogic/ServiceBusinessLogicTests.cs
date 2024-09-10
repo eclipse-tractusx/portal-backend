@@ -584,18 +584,18 @@ public class ServiceBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusDetailData>(5).ToImmutableArray();
         var paginationResponse = new Pagination.Response<OfferSubscriptionStatusDetailData>(new Pagination.Metadata(data.Length, 1, 0, data.Length), data);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(A<int>._, A<int>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._, A<string?>._))
             .Returns(paginationResponse);
 
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(new ServiceSettings()));
 
         // Act
-        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, null);
+        var result = await sut.GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(0, 10, null, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, null))
+        A.CallTo(() => _offerService.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, null, null))
             .MustHaveHappenedOnceExactly();
     }
 

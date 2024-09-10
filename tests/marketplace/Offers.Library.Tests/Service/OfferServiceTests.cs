@@ -2442,11 +2442,11 @@ public class OfferServiceTests
     {
         // Arrange
         var data = _fixture.CreateMany<OfferSubscriptionStatusData>(5).ToImmutableArray();
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._, A<string?>._))
             .Returns((skip, take) => Task.FromResult(new Pagination.Source<OfferSubscriptionStatusData>(data.Length, data.Skip(skip).Take(take)))!);
 
         // Act
-        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId, null);
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId, null, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(5);
@@ -2457,7 +2457,7 @@ public class OfferServiceTests
             x => x.OfferId == data[3].OfferId && x.OfferName == data[3].OfferName && x.Provider == data[3].Provider && x.OfferSubscriptionStatusId == data[3].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[3].OfferSubscriptionId && x.DocumentId == data[3].DocumentId,
             x => x.OfferId == data[4].OfferId && x.OfferName == data[4].OfferName && x.Provider == data[4].Provider && x.OfferSubscriptionStatusId == data[4].OfferSubscriptionStatusId && x.OfferSubscriptionId == data[4].OfferSubscriptionId && x.DocumentId == data[4].DocumentId
         );
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(_companyId, offerTypeId, documentTypeId, null))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(_companyId, offerTypeId, documentTypeId, null, null))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -2467,16 +2467,16 @@ public class OfferServiceTests
     public async Task GetCompanySubscribedOfferSubscriptionStatusesForUserAsync_WithQueryNullResult_ReturnsExpected(OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
     {
         // Arrange
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, A<OfferSubscriptionStatusId?>._, A<string?>._))
             .Returns((skip, take) => Task.FromResult<Pagination.Source<OfferSubscriptionStatusData>?>(null));
 
         // Act
-        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId, null);
+        var result = await _sut.GetCompanySubscribedOfferSubscriptionStatusesForUserAsync(0, 10, offerTypeId, documentTypeId, null, null);
 
         // Assert
         result.Meta.NumberOfElements.Should().Be(0);
         result.Content.Should().BeEmpty();
-        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(_companyId, offerTypeId, documentTypeId, null))
+        A.CallTo(() => _offerSubscriptionsRepository.GetOwnCompanySubscribedOfferSubscriptionStatusAsync(_companyId, offerTypeId, documentTypeId, null, null))
             .MustHaveHappenedOnceExactly();
     }
 
