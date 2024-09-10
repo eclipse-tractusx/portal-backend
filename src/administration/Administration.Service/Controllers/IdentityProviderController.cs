@@ -34,21 +34,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 /// </summary>
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "identityprovider")]
 [ApiController]
-public class IdentityProviderController : ControllerBase
+public class IdentityProviderController(IIdentityProviderBusinessLogic businessLogic) : ControllerBase
 {
-    private readonly IIdentityProviderBusinessLogic _businessLogic;
-
     /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="identityProviderBusinessLogic">IdentityProvider business logic.</param>
-    public IdentityProviderController(IIdentityProviderBusinessLogic identityProviderBusinessLogic)
-    {
-        _businessLogic = identityProviderBusinessLogic;
-    }
-
-    /// <summary>
-    /// 
     /// Gets the details of the own company identity provider
     /// </summary>
     /// <returns>Returns the details of the own company identity provider</returns>
@@ -63,8 +51,8 @@ public class IdentityProviderController : ControllerBase
     [Route("owncompany/identityproviders")]
     [ProducesResponseType(typeof(List<IdentityProviderDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails() =>
-        _businessLogic.GetOwnCompanyIdentityProvidersAsync().ToListAsync();
+    public ValueTask<List<IdentityProviderDetails>> GetOwnCompanyIdentityProviderDetails(string? displayName = null, string? alias = null) =>
+        businessLogic.GetOwnCompanyIdentityProvidersAsync(displayName, alias).ToListAsync();
 
     /// <summary>
     /// Create an identity provider
@@ -88,7 +76,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public async ValueTask<ActionResult<IdentityProviderDetails>> CreateOwnCompanyIdentityProvider([FromQuery] IamIdentityProviderProtocol protocol, [FromQuery] IdentityProviderTypeId typeId, [FromQuery] string? displayName = null)
     {
-        var details = await _businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, displayName).ConfigureAwait(false);
+        var details = await businessLogic.CreateOwnCompanyIdentityProviderAsync(protocol, typeId, displayName).ConfigureAwait(false);
         return (ActionResult<IdentityProviderDetails>)CreatedAtRoute(nameof(GetOwnCompanyIdentityProvider), new { identityProviderId = details.IdentityProviderId }, details);
     }
 
@@ -113,7 +101,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetailsWithConnectedCompanies> GetOwnIdentityProviderWithConnectedCompanies([FromRoute] Guid identityProviderId) =>
-        _businessLogic.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
+        businessLogic.GetOwnIdentityProviderWithConnectedCompanies(identityProviderId);
 
     /// <summary>
     /// Gets a specific identity provider
@@ -136,7 +124,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId) =>
-        _businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId);
+        businessLogic.GetOwnCompanyIdentityProviderAsync(identityProviderId);
 
     /// <summary>
     /// Sets the status of the given Identity Provider
@@ -164,7 +152,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatus([FromRoute] Guid identityProviderId, [FromQuery] bool enabled) =>
-        _businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled);
+        businessLogic.SetOwnCompanyIdentityProviderStatusAsync(identityProviderId, enabled);
 
     /// <summary>
     /// Updates the details of the identity provider
@@ -193,7 +181,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderDetails> UpdateOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId, [FromBody] IdentityProviderEditableDetails details, CancellationToken cancellationToken) =>
-        _businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, cancellationToken);
+        businessLogic.UpdateOwnCompanyIdentityProviderAsync(identityProviderId, details, cancellationToken);
 
     /// <summary>
     /// Deletes the identity provider with the given id
@@ -221,7 +209,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public async Task<NoContentResult> DeleteOwnCompanyIdentityProvider([FromRoute] Guid identityProviderId)
     {
-        await _businessLogic.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
+        await businessLogic.DeleteCompanyIdentityProviderAsync(identityProviderId).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -245,7 +233,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public IAsyncEnumerable<UserIdentityProviderData> GetOwnCompanyUsersIdentityProviderDataAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false) =>
-        _businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, unlinkedUsersOnly);
+        businessLogic.GetOwnCompanyUsersIdentityProviderDataAsync(identityProviderIds, unlinkedUsersOnly);
 
     /// <summary>
     /// Gets the company users for the identity providers as a file
@@ -268,7 +256,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public IActionResult GetOwnCompanyUsersIdentityProviderFileAsync([FromQuery] IEnumerable<Guid> identityProviderIds, [FromQuery] bool unlinkedUsersOnly = false)
     {
-        var (stream, contentType, fileName, encoding) = _businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, unlinkedUsersOnly);
+        var (stream, contentType, fileName, encoding) = businessLogic.GetOwnCompanyUsersIdentityProviderLinkDataStream(identityProviderIds, unlinkedUsersOnly);
         return File(stream, string.Join("; ", contentType, encoding.WebName), fileName);
     }
 
@@ -297,7 +285,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
-        _businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, cancellationToken);
+        businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, cancellationToken);
 
     /// <summary>
     /// Updates the given user for the given identity provider
@@ -326,7 +314,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserIdentityProviderLinkData> CreateOrUpdateOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId, [FromBody] UserLinkData userLinkData) =>
-        _businessLogic.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData);
+        businessLogic.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, userLinkData);
 
     /// <summary>
     /// Gets the given user for the given identity provider
@@ -354,7 +342,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public ValueTask<UserIdentityProviderLinkData> GetOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId) =>
-        _businessLogic.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
+        businessLogic.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
     /// <summary>
     /// Deletes the given user on the given identity provider
@@ -383,7 +371,7 @@ public class IdentityProviderController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public async ValueTask<ActionResult> DeleteOwnCompanyUserIdentityProviderDataAsync([FromRoute] Guid companyUserId, [FromRoute] Guid identityProviderId)
     {
-        await _businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
+        await businessLogic.DeleteOwnCompanyUserIdentityProviderDataAsync(companyUserId, identityProviderId).ConfigureAwait(false);
         return NoContent();
     }
 }

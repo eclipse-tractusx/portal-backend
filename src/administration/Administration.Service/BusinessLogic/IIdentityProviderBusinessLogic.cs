@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 
 public interface IIdentityProviderBusinessLogic
 {
-    IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync();
+    IAsyncEnumerable<IdentityProviderDetails> GetOwnCompanyIdentityProvidersAsync(string? displayName, string? alias);
     ValueTask<IdentityProviderDetails> CreateOwnCompanyIdentityProviderAsync(IamIdentityProviderProtocol protocol, IdentityProviderTypeId typeId, string? displayName);
     ValueTask<IdentityProviderDetails> GetOwnCompanyIdentityProviderAsync(Guid identityProviderId);
     ValueTask<IdentityProviderDetails> SetOwnCompanyIdentityProviderStatusAsync(Guid identityProviderId, bool enabled);

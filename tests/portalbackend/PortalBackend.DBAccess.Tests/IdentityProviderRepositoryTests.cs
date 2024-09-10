@@ -222,7 +222,7 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var sut = await CreateSut();
 
-        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId).ToListAsync();
+        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, null).ToListAsync();
 
         // Assert
         results.Should().HaveCount(3)
@@ -230,6 +230,19 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED,
             x => x.Alias == "Shared-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.SHARED,
             x => x.Alias == "Managed-Alias" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
+    }
+
+    [Fact]
+    public async Task GetCompanyIdentityProviderCategoryDataUntracked_WithValidAndAlias_ReturnsExpected()
+    {
+        var sut = await CreateSut();
+
+        var results = await sut.GetCompanyIdentityProviderCategoryDataUntracked(_companyId, "idp").ToListAsync();
+
+        // Assert
+        results.Should().ContainSingle()
+            .And.Satisfy(
+                x => x.Alias == "Idp-123" && x.CategoryId == IdentityProviderCategoryId.KEYCLOAK_OIDC && x.TypeId == IdentityProviderTypeId.MANAGED);
     }
 
     #endregion
