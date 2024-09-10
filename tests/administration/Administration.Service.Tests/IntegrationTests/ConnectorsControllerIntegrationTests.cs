@@ -18,7 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EnpointSetup;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.EndpointSetup;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.IntegrationTests.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;

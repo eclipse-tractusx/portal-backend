@@ -17,18 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OwnServiceAccountData(
+public record DeleteServiceAccountData(
     IEnumerable<Guid> UserRoleIds,
-    Guid ServiceAccountId,
-    Guid ServiceAccountVersion,
-    Guid? ConnectorId,
     string? ClientClientId,
-    ConnectorStatusId? StatusId,
-    OfferSubscriptionStatusId? OfferStatusId,
     bool IsDimServiceAccount,
     bool CreationProcessInProgress,
     Guid? ProcessId

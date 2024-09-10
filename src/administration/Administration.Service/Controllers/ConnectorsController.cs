@@ -150,7 +150,8 @@ public class ConnectorsController(IConnectorsBusinessLogic logic)
     /// Removes a connector from persistence layer by id.
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">ID of the connector to be deleted.</param>
-    /// <remarks>Example: DELETE: /api/administration/connectors/5636F9B9-C3DE-4BA5-8027-00D17A2FECFB</remarks>
+    /// <param name="deleteServiceAccount">if <c>true</c> the linked service account will be deleted, otherwise the connection to the connector will just be removed</param>
+    /// <remarks>Example: DELETE: /api/administration/connectors/{connectorId}?deleteServiceAccount=true</remarks>
     /// <response code="204">Empty response on success.</response>
     /// <response code="404">Record not found.</response>
     /// <response code="409">Connector status does not match a deletion scenario. Deletion declined.</response>
@@ -161,9 +162,9 @@ public class ConnectorsController(IConnectorsBusinessLogic logic)
     [ProducesResponseType(typeof(IActionResult), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId)
+    public async Task<IActionResult> DeleteConnectorAsync([FromRoute] Guid connectorId, [FromQuery] bool deleteServiceAccount = false)
     {
-        await logic.DeleteConnectorAsync(connectorId);
+        await logic.DeleteConnectorAsync(connectorId, deleteServiceAccount);
         return NoContent();
     }
 
