@@ -596,6 +596,36 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region CheckConnectorExists
+
+    [Fact]
+    public async Task CheckConnectorExists_WithExisting_ReturnsTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.CheckConnectorExists("Test Connector 6", "www.google.de").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckConnectorExists_WithoutExisting_ReturnsFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.CheckConnectorExists("not existing", "www.google.de").ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    #endregion
+
     private async Task<(ConnectorsRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();

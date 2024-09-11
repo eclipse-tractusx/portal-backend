@@ -232,4 +232,9 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
             .Where(c => c.SdCreationProcessId == processId)
             .Select(c => new ValueTuple<Guid, string?, Guid>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId!.Value))
             .SingleOrDefaultAsync();
+
+    public Task<bool> CheckConnectorExists(string name, string connectorUrl) =>
+        dbContext.Connectors.AnyAsync(x =>
+            x.Name == name &&
+            x.ConnectorUrl == connectorUrl);
 }

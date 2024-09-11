@@ -109,4 +109,5 @@ public interface IConnectorsRepository
     Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument();
     IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription();
     Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
+    Task<bool> CheckConnectorExists(string name, string connectorUrl);
 }

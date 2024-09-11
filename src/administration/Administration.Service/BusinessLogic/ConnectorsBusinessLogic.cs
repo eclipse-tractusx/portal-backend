@@ -97,6 +97,7 @@ public class ConnectorsBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, technicalUserId) = connectorInputModel;
+        await CheckDuplicateConnector(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None);
         await CheckLocationExists(location);
 
         var result = await portalRepositories
@@ -125,6 +126,7 @@ public class ConnectorsBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var (name, connectorUrl, location, subscriptionId, technicalUserId) = connectorInputModel;
+        await CheckDuplicateConnector(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None);
         await CheckLocationExists(location).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var result = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
@@ -175,6 +177,15 @@ public class ConnectorsBusinessLogic(
                 .CheckCountryExistsByAlpha2CodeAsync(location.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None))
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_LOCATION_NOT_EXIST, new ErrorParameter[] { new("location", location) });
+        }
+    }
+
+    private async Task CheckDuplicateConnector(string name, string connectorUrl)
+    {
+        if (await portalRepositories.GetInstance<IConnectorsRepository>()
+             .CheckConnectorExists(name, connectorUrl).ConfigureAwait(ConfigureAwaitOptions.None))
+        {
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_DUPLICATE, [new("name", name), new("connectorUrl", connectorUrl)]);
         }
     }
 
