@@ -159,6 +159,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
     /// <inheritdoc />
     public Task<DeleteConnectorData?> GetConnectorDeleteDataAsync(Guid connectorId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
         dbContext.Connectors
+            .AsSplitQuery()
             .Where(x => x.Id == connectorId)
             .Select(connector => new DeleteConnectorData(
                 connector.ProviderId == companyId || connector.HostId == companyId,
