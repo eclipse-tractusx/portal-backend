@@ -86,7 +86,7 @@ public sealed class RegistrationBusinessLogic(
         }
         if (!companyWithAddress.Name.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "OrganisationName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "OrganisationName")]);
         }
 
         return new CompanyWithAddressData(
@@ -125,7 +125,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
@@ -165,7 +165,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
         }
         var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
@@ -204,7 +204,7 @@ public sealed class RegistrationBusinessLogic(
     {
         if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", "CompanyName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
         }
         var applications = portalRepositories.GetInstance<IApplicationRepository>().GetAllCompanyApplicationsDetailsQuery(companyName);
 

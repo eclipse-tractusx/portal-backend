@@ -50,7 +50,7 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
 
         if (invitationData.OrganisationName == null || !invitationData.OrganisationName.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(invitationData.OrganisationName))]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", nameof(invitationData.OrganisationName))]);
         }
 
         return ExecuteInvitationInternalAsync(invitationData);

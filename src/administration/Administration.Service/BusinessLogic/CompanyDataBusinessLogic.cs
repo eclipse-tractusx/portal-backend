@@ -273,7 +273,7 @@ public class CompanyDataBusinessLogic(
 
         if (data.Issuer != null && !data.Issuer.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new("name", nameof(data.Issuer))]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", nameof(data.Issuer))]);
         }
 
         var documentContentType = data.Document.ContentType.ParseMediaTypeId();

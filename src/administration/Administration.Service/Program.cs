@@ -20,6 +20,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInjection;
@@ -100,4 +102,5 @@ await WebAppHelper
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);
