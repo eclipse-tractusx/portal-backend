@@ -234,7 +234,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
             .SingleOrDefaultAsync();
 
     public Task<bool> CheckConnectorExists(string name, string connectorUrl) =>
-        _context.Connectors.AnyAsync(x =>
+        dbContext.Connectors.AnyAsync(x =>
             x.Name == name &&
             x.ConnectorUrl == connectorUrl);
 }
