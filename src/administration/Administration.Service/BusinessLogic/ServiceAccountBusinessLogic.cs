@@ -305,7 +305,7 @@ public class ServiceAccountBusinessLogic(
         }
         else
         {
-            filterUserStatusIds = filterForInactive ? [UserStatusId.INACTIVE] : [UserStatusId.ACTIVE, UserStatusId.PENDING];
+            filterUserStatusIds = filterForInactive ? [UserStatusId.INACTIVE] : [UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION];
         }
 
         return Pagination.CreateResponseAsync(
