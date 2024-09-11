@@ -101,5 +101,5 @@ await WebAppHelper
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
-        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BPN_Address"));
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);

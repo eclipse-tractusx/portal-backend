@@ -48,6 +48,6 @@ await WebAppHelper
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 
         builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
-        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BPN_Address"));
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);
