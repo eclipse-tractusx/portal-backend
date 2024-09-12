@@ -27,7 +27,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
+/// <summary>
 /// Implementation of <see cref="IOfferRepository"/> accessing database with EF Core.
+/// </summary>
+/// <param name="dbContext"></param>
 public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
 {
     ///<inheritdoc/>
