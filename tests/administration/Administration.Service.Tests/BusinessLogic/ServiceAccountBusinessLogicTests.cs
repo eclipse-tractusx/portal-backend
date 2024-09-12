@@ -474,9 +474,9 @@ public class ServiceAccountBusinessLogicTests
     [Theory]
     [InlineData(new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE }, false, new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE })]
     [InlineData(new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE }, true, new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE })]
-    [InlineData(new UserStatusId[] { }, false, new UserStatusId[] { UserStatusId.ACTIVE, UserStatusId.PENDING })]
+    [InlineData(new UserStatusId[] { }, false, new UserStatusId[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
     [InlineData(new UserStatusId[] { }, true, new UserStatusId[] { UserStatusId.INACTIVE })]
-    [InlineData(null, false, new[] { UserStatusId.ACTIVE, UserStatusId.PENDING })]
+    [InlineData(null, false, new[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
     [InlineData(null, true, new[] { UserStatusId.INACTIVE })]
     public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
     {
