@@ -208,20 +208,13 @@ public class OfferService(
         {
             throw new ControllerArgumentException("Title should be at least three character long", nameof(data.Title));
         }
-
-        var result = await portalRepositories.GetInstance<ICompanyRepository>().GetCompanyNameUntrackedAsync(_identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!result.IsValidCompany)
-        {
-            throw new ControllerArgumentException($"No company {_identityData.CompanyId} found");
-        }
-
         if (data.SalesManager.HasValue && _identityData.IdentityId != data.SalesManager.Value)
             throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var offerRepository = portalRepositories.GetInstance<IOfferRepository>();
-        var service = offerRepository.CreateOffer(offerTypeId, service =>
+        var service = offerRepository.CreateOffer(offerTypeId, _identityData.CompanyId, service =>
         {
             service.ContactEmail = data.ContactEmail;
             service.Name = data.Title;
@@ -412,7 +405,6 @@ public class OfferService(
     private static void GetAndValidateOfferDetails(OfferReleaseData offerDetails)
     {
         if (offerDetails.Name is not null &&
-            offerDetails.ProviderCompanyId is not null &&
             offerDetails is { IsDescriptionLongNotSet: false, IsDescriptionShortNotSet: false })
         {
             return;
@@ -422,11 +414,6 @@ public class OfferService(
         if (offerDetails.Name is null)
         {
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.Name)}");
-        }
-
-        if (offerDetails.ProviderCompanyId is null)
-        {
-            nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.ProviderCompanyId)}");
         }
 
         if (offerDetails.IsDescriptionLongNotSet)

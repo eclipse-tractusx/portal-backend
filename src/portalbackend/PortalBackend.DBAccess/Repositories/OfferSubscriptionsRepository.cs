@@ -272,7 +272,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId)
             .Select(os => new OfferUpdateUrlData(
                 os.Offer!.Name,
-                (os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance),
+                os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance,
                 os.Offer.ProviderCompanyId == userCompanyId,
                 os.RequesterId,
                 os.CompanyId,

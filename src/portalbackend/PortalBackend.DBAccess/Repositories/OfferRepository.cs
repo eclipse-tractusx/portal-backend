@@ -45,16 +45,16 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
         )).SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Offer CreateOffer(OfferTypeId offerType, Action<Offer>? setOptionalParameters = null)
+    public Offer CreateOffer(OfferTypeId offerType, Guid providerCompanyId, Action<Offer>? setOptionalParameters = null)
     {
-        var app = dbContext.Offers.Add(new Offer(Guid.NewGuid(), DateTimeOffset.UtcNow, offerType)).Entity;
+        var app = dbContext.Offers.Add(new Offer(Guid.NewGuid(), providerCompanyId, DateTimeOffset.UtcNow, offerType)).Entity;
         setOptionalParameters?.Invoke(app);
         return app;
     }
 
     public void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null)
     {
-        var entity = new Offer(offerId, default, default);
+        var entity = new Offer(offerId, Guid.Empty, default, default);
         initializeParemeters?.Invoke(entity);
         var offer = dbContext.Attach(entity).Entity;
         setOptionalParameters.Invoke(offer);
@@ -235,7 +235,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
             },
             service => new ServiceOverviewData(
                 service.Id,
-                service.Name!,
+                service.Name,
                 service.ProviderCompany!.Name,
                 service.ContactEmail,
                 service.OfferDescriptions.SingleOrDefault(ln => ln.LanguageShortName == languageShortName)!.DescriptionShort,
@@ -317,7 +317,6 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
             .Where(o => o.Id == offerId && o.OfferStatusId == OfferStatusId.CREATED && o.OfferTypeId == offerTypeId)
             .Select(o => new OfferReleaseData(
                 o.Name,
-                o.ProviderCompanyId,
                 o.ProviderCompany!.Name,
                 o.OfferDescriptions.Any(description => description.DescriptionLong == ""),
                 o.OfferDescriptions.Any(description => description.DescriptionShort == ""),
@@ -639,7 +638,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
 
     ///<inheritdoc/>
     public void RemoveOffer(Guid offerId) =>
-        dbContext.Offers.Remove(new Offer(offerId, default, default));
+        dbContext.Offers.Remove(new Offer(offerId, Guid.Empty, default, default));
 
     ///<inheritdoc/>
     public Task<(bool IsStatusActive, bool IsUserOfProvider, IEnumerable<DocumentStatusData> documentStatusDatas)> GetOfferAssignedAppLeadImageDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId) =>

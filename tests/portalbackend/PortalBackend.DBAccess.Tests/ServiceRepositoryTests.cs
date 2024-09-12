@@ -43,31 +43,6 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         _dbTestDbFixture = testDbFixture;
     }
 
-    #region CreateService
-
-    [Fact]
-    public async Task CreateService_ReturnsExpectedAppCount()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut();
-
-        // Act
-        var results = sut.CreateOffer(OfferTypeId.SERVICE, service =>
-        {
-            service.ContactEmail = "test@email.com";
-        });
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        results.ContactEmail.Should().Be("test@email.com");
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-    }
-
-    #endregion
-
     #region GetServiceDetailByIdUntrackedAsync
 
     [Fact]

@@ -83,12 +83,6 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             (entity, initial) => entity.Value = initial.Value,
             (entity, modified) => entity.Value = modified.Value);
 
-    public Task<(bool IsValidCompany, string CompanyName)> GetCompanyNameUntrackedAsync(Guid companyId) =>
-        context.Companies
-            .Where(x => x.Id == companyId)
-            .Select(company => new ValueTuple<bool, string>(true, company.Name))
-            .SingleOrDefaultAsync();
-
     public Task<(string? Bpn, IEnumerable<Guid> TechnicalUserRoleIds)> GetBpnAndTechnicalUserRoleIds(Guid companyId, string technicalUserClientId) =>
         context.Companies
             .AsNoTracking()

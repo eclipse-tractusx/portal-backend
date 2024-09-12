@@ -187,17 +187,15 @@ public class AppReleaseBusinessLogic(
 
     private async Task<Guid> CreateAppAsync(AppRequestModel appRequestModel)
     {
-        var companyId = _identityData.CompanyId;
         if (appRequestModel.SalesManagerId.HasValue)
         {
             await offerService.ValidateSalesManager(appRequestModel.SalesManagerId.Value, _settings.SalesManagerRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         var appRepository = portalRepositories.GetInstance<IOfferRepository>();
-        var appId = appRepository.CreateOffer(OfferTypeId.APP, app =>
+        var appId = appRepository.CreateOffer(OfferTypeId.APP, _identityData.CompanyId, app =>
         {
             app.Name = appRequestModel.Title;
-            app.ProviderCompanyId = companyId;
             app.OfferStatusId = OfferStatusId.CREATED;
             if (appRequestModel.SalesManagerId.HasValue)
             {

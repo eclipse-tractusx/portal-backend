@@ -343,10 +343,10 @@ public class AppReleaseBusinessLogicTest
         var offerId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
 
-        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer>?>._))
-            .ReturnsLazily((OfferTypeId offerTypeId, Action<Offer>? modify) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
+            .ReturnsLazily((OfferTypeId offerTypeId, Guid providerCompanyId, Action<Offer>? modify) =>
             {
-                created = new Offer(offerId, now, offerTypeId);
+                created = new Offer(offerId, providerCompanyId, now, offerTypeId);
                 modify?.Invoke(created);
                 return created;
             });
@@ -363,7 +363,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>.That.Matches(x => x.All(y => y.appId == offerId))))
             .MustHaveHappenedOnceExactly();
@@ -412,10 +412,10 @@ public class AppReleaseBusinessLogicTest
         var offerId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
 
-        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer>?>._))
-            .ReturnsLazily((OfferTypeId offerTypeId, Action<Offer>? modify) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
+            .ReturnsLazily((OfferTypeId offerTypeId, Guid providerCompanyId, Action<Offer>? modify) =>
             {
-                created = new Offer(offerId, now, offerTypeId);
+                created = new Offer(offerId, providerCompanyId, now, offerTypeId);
                 modify?.Invoke(created);
                 return created;
             });
@@ -425,7 +425,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<IEnumerable<UserRoleConfig>>._)).MustNotHaveHappened();
-        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
             .MustHaveHappenedOnceExactly();
@@ -549,8 +549,8 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .Invokes((Guid offerId, Action<Offer> modify, Action<Offer>? initialize) =>
             {
-                initial = new Offer(offerId, default, default);
-                modified = new Offer(offerId, default, default);
+                initial = new Offer(offerId, Guid.Empty, default, default);
+                modified = new Offer(offerId, Guid.Empty, default, default);
                 initialize?.Invoke(initial);
                 modify.Invoke(modified);
             });
