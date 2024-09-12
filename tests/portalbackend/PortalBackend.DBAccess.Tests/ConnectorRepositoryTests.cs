@@ -36,12 +36,11 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _userCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
-    private readonly IEnumerable<ProcessStepTypeId> _processStepsToFilter = new[]
-    {
-        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER,
-        ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE,
-        ProcessStepTypeId.RETRIGGER_AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
-    };
+    private readonly IEnumerable<ProcessStepTypeId> _processStepsToFilter = [
+        ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER,
+        ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER,
+        ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
+    ];
 
     public ConnectorRepositoryTests(TestDbFixture testDbFixture)
     {
