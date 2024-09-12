@@ -62,7 +62,7 @@ public class InvitationController : ControllerBase
     /// <response code="409">user is not associated with  company.</response>
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
-    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
