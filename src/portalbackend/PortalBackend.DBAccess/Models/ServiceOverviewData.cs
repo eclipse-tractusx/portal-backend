@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -36,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 public record ServiceOverviewData(
     Guid Id,
-    string Title,
+    string? Title,
     string Provider,
     string? ContactEmail,
     string? Description,

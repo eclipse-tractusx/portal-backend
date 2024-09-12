@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
@@ -119,16 +118,13 @@ public class OfferServiceTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer?>>._))
+            .ReturnsLazily((OfferTypeId offerType, Guid providerCompanyId, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, providerCompanyId, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
-            })
-            .Returns(new Offer(serviceId, null!, default, default)
-            {
-                OfferTypeId = OfferTypeId.SERVICE
+                return app;
             });
 
         // Act
@@ -146,16 +142,13 @@ public class OfferServiceTests
         var serviceId = Guid.NewGuid();
 
         var apps = new List<Offer>();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer?>>._))
-            .Invokes((string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer?>>._))
+            .ReturnsLazily((OfferTypeId offerType, Guid providerCompanyId, Action<Offer>? setOptionalParameters) =>
             {
-                var app = new Offer(serviceId, provider, DateTimeOffset.UtcNow, offerType);
+                var app = new Offer(serviceId, providerCompanyId, DateTimeOffset.UtcNow, offerType);
                 setOptionalParameters?.Invoke(app);
                 apps.Add(app);
-            })
-            .Returns(new Offer(serviceId, null!, default, default)
-            {
-                OfferTypeId = OfferTypeId.SERVICE
+                return app;
             });
 
         // Act
@@ -163,10 +156,9 @@ public class OfferServiceTests
         {
             new ("en", "That's a description with a valid language code", "Short description")
         },
-        new[]
-        {
+        [
             ServiceTypeId.DATASPACE_SERVICE
-        }, "http://google.com");
+        ], "http://google.com");
         var result = await _sut.CreateServiceOfferingAsync(serviceOfferingData, OfferTypeId.SERVICE);
 
         // Assert
@@ -621,15 +613,14 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(null, "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, false, true)]
-    [InlineData("name", null, false, false, true)]
-    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", true, false, true)]
-    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, true, true)]
-    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", true, true, false)]
-    public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
+    [InlineData(null, false, false, true)]
+    [InlineData("name", true, false, true)]
+    [InlineData("name", false, true, true)]
+    [InlineData("name", true, true, false)]
+    public async Task SubmitOffer_WithInvalidOffer_ThrowsConflictException(string? name, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
         async Task Act() => await _sut.SubmitOfferAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>(), new[] { DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS });
@@ -653,7 +644,7 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
+            .With(x => x.DocumentDatas, [(Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS)])
             .Create();
         var submitAppDocumentTypeIds = new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_LEADIMAGE, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS };
         var missingAppDocumentTypeIds = new[] { DocumentTypeId.APP_IMAGE, DocumentTypeId.APP_LEADIMAGE };
@@ -675,7 +666,7 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasUserRoles, false)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
+            .With(x => x.DocumentDatas, [(Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS)])
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
@@ -700,10 +691,10 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasPrivacyPolicies, true)
-            .With(x => x.DocumentDatas, new[] {
+            .With(x => x.DocumentDatas, [
                 (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
                 (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.APP_LEADIMAGE),
-                (Guid.NewGuid(), DocumentStatusId.LOCKED, DocumentTypeId.APP_IMAGE) })
+                (Guid.NewGuid(), DocumentStatusId.LOCKED, DocumentTypeId.APP_IMAGE)])
             .With(x => x.HasUserRoles, true)
             .Create();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
@@ -760,7 +751,7 @@ public class OfferServiceTests
             .With(x => x.IsDescriptionShortNotSet, false)
             .With(x => x.HasUserRoles, true)
             .With(x => x.HasPrivacyPolicies, false)
-            .With(x => x.DocumentDatas, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
+            .With(x => x.DocumentDatas, [(Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS)])
             .Create();
 
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(data);
@@ -951,14 +942,13 @@ public class OfferServiceTests
     }
 
     [Theory]
-    [InlineData(null, "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, false, true)]
-    [InlineData("name", null, false, false, true)]
-    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", true, false, true)]
-    [InlineData("name", "c8d4d854-8ac6-425f-bc5a-dbf457670732", false, true, true)]
-    public async Task SubmitService_WithInvalidOffer_ThrowsConflictException(string? name, string? providerCompanyId, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
+    [InlineData(null, false, false, true)]
+    [InlineData("name", true, false, true)]
+    [InlineData("name", false, true, true)]
+    public async Task SubmitService_WithInvalidOffer_ThrowsConflictException(string? name, bool isDescriptionLongNotSet, bool isDescriptionShortNotSet, bool hasUserRoles)
     {
         // Arrange
-        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, providerCompanyId == null ? null : new Guid(providerCompanyId), _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
+        A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(A<Guid>._, A<OfferTypeId>._)).Returns(new OfferReleaseData(name, _fixture.Create<string>(), isDescriptionLongNotSet, isDescriptionShortNotSet, hasUserRoles, true, new[] { (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) }));
 
         // Act
         async Task Act() => await _sut.SubmitServiceAsync(Guid.NewGuid(), _fixture.Create<OfferTypeId>(), _fixture.CreateMany<NotificationTypeId>(1), _fixture.CreateMany<UserRoleConfig>());
@@ -978,9 +968,9 @@ public class OfferServiceTests
         var data = _fixture.Build<OfferReleaseData>()
             .With(x => x.IsDescriptionLongNotSet, false)
             .With(x => x.IsDescriptionShortNotSet, false)
-            .With(x => x.DocumentDatas, new[]{
+            .With(x => x.DocumentDatas, [
                 (Guid.NewGuid(), DocumentStatusId.PENDING, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS),
-                (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS) })
+                (Guid.NewGuid(), DocumentStatusId.INACTIVE, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS)])
             .Create();
         A.CallTo(() => _offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerType)).Returns(data);
 
@@ -2655,11 +2645,6 @@ public class OfferServiceTests
             .Returns<ConsentDetailData?>(null);
         A.CallTo(() => _consentRepository.GetConsentDetailData(A<Guid>._, A<OfferTypeId>.That.Not.Matches(x => x == OfferTypeId.SERVICE)))
             .Returns<ConsentDetailData?>(null);
-
-        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(_companyId))
-            .Returns((true, "the company"));
-        A.CallTo(() => _companyRepository.GetCompanyNameUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _companyId)))
-            .Returns<(bool, string)>(default);
 
         A.CallTo(() => _consentAssignedOfferSubscriptionRepository.GetConsentAssignedOfferSubscriptionsForSubscriptionAsync(A<Guid>._, A<IEnumerable<Guid>>.That.Not.Matches(x => x.Any(y => y == _existingAgreementForSubscriptionId))))
             .Returns(Enumerable.Empty<(Guid ConsentId, Guid AgreementId, ConsentStatusId ConsentStatusId)>().ToAsyncEnumerable());

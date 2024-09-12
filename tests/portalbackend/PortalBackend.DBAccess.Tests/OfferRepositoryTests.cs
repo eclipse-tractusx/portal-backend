@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -36,16 +37,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
+    private readonly IFixture _fixture;
     private const string UserCompanyId = "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87";
     private readonly Guid _userCompanyId = new(UserCompanyId);
 
     public OfferRepositoryTests(TestDbFixture testDbFixture)
     {
-        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => fixture.Behaviors.Remove(b));
+        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
 
-        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
 
@@ -151,21 +153,28 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var (sut, context) = await CreateSutWithContext();
+        var offerTypeId = _fixture.Create<OfferTypeId>();
+        var companyId = Guid.NewGuid();
+        var email = _fixture.Create<string>();
 
         // Act
-        var results = sut.CreateOffer("Catena-X", OfferTypeId.APP, offer =>
+        var results = sut.CreateOffer(offerTypeId, companyId, offer =>
         {
-            offer.Name = "Test App";
+            offer.ContactEmail = email;
         });
 
         // Assert
         var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        results.Name.Should().Be("Test App");
+        results.ContactEmail.Should().Be(email);
+        results.ProviderCompanyId.Should().Be(companyId);
         changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test App");
+        changeTracker.Entries().Should().ContainSingle()
+            .Which.Should().Match<EntityEntry>(x =>
+                x.State == EntityState.Added &&
+                x.Entity is Offer &&
+                ((Offer)x.Entity).OfferTypeId == OfferTypeId.APP &&
+                ((Offer)x.Entity).ProviderCompanyId == companyId &&
+                ((Offer)x.Entity).ContactEmail == email);
     }
 
     #endregion
@@ -197,7 +206,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region Create Offer
+    #region CreateOfferLicense
 
     [Fact]
     public async Task CreateOfferLicense_ReturnsExpectedResult()
@@ -821,9 +830,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOfferReleaseDataById
 
     [Theory]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", false)]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", true)]
-    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, Guid companyId, bool hasPrivacyPolicies)
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", true)]
+    public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, bool hasPrivacyPolicies)
     {
         // Arrange
         var sut = await CreateSut();
@@ -836,7 +845,6 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Name.Should().Be(name);
         result!.CompanyName.Should().Be(companyName);
-        result!.ProviderCompanyId.Should().Be(companyId);
         result.HasPrivacyPolicies.Should().Be(hasPrivacyPolicies);
     }
 

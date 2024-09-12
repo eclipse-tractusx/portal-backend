@@ -328,7 +328,6 @@ public class AppReleaseBusinessLogicTest
     {
         var data = new AppRequestModel(
             "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
-            "ProviderXYZ",
             _companyUser.Id,
             Enumerable.Repeat(Guid.NewGuid(), 1),
             Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
@@ -344,10 +343,10 @@ public class AppReleaseBusinessLogicTest
         var offerId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
 
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
-            .ReturnsLazily((string provider, OfferTypeId offerTypeId, Action<Offer>? modify) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
+            .ReturnsLazily((OfferTypeId offerTypeId, Guid providerCompanyId, Action<Offer>? modify) =>
             {
-                created = new Offer(offerId, provider, now, offerTypeId);
+                created = new Offer(offerId, providerCompanyId, now, offerTypeId);
                 modify?.Invoke(created);
                 return created;
             });
@@ -364,7 +363,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(_companyUser.Id, A<IEnumerable<UserRoleConfig>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>.That.Matches(x => x.All(y => y.appId == offerId))))
             .MustHaveHappenedOnceExactly();
@@ -398,7 +397,6 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var data = new AppRequestModel(
             "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
-            "ProviderXYZ",
             null,
             Enumerable.Repeat(Guid.NewGuid(), 1),
             Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
@@ -414,10 +412,10 @@ public class AppReleaseBusinessLogicTest
         var offerId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
 
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
-            .ReturnsLazily((string provider, OfferTypeId offerTypeId, Action<Offer>? modify) =>
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
+            .ReturnsLazily((OfferTypeId offerTypeId, Guid providerCompanyId, Action<Offer>? modify) =>
             {
-                created = new Offer(offerId, provider, now, offerTypeId);
+                created = new Offer(offerId, providerCompanyId, now, offerTypeId);
                 modify?.Invoke(created);
                 return created;
             });
@@ -427,7 +425,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         A.CallTo(() => _offerService.ValidateSalesManager(A<Guid>._, A<IEnumerable<UserRoleConfig>>._)).MustNotHaveHappened();
-        A.CallTo(() => _offerRepository.CreateOffer(A<string>._, A<OfferTypeId>._, A<Action<Offer>?>._))
+        A.CallTo(() => _offerRepository.CreateOffer(A<OfferTypeId>._, A<Guid>._, A<Action<Offer>?>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AddOfferDescriptions(A<IEnumerable<(Guid appId, string languageShortName, string descriptionLong, string descriptionShort)>>._))
             .MustHaveHappenedOnceExactly();
@@ -509,7 +507,6 @@ public class AppReleaseBusinessLogicTest
         SetupUpdateApp();
         var data = new AppRequestModel(
         "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
-        "ProviderXYZ",
         _companyUser.Id,
         Enumerable.Repeat(Guid.NewGuid(), 1),
         Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
@@ -536,7 +533,6 @@ public class AppReleaseBusinessLogicTest
         SetupUpdateApp();
         var data = new AppRequestModel(
         "Titlebfd7fa50-cb36-4940-96f7-0442bbc41b70",
-        "ProviderXYZ",
         _companyUser.Id,
         Enumerable.Repeat(Guid.NewGuid(), 1),
         Enumerable.Repeat(new LocalizedDescription("en", "ProviderXyz", "XYZ"), 1),
@@ -553,8 +549,8 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>>._))
             .Invokes((Guid offerId, Action<Offer> modify, Action<Offer>? initialize) =>
             {
-                initial = new Offer(offerId, null!, default, default);
-                modified = new Offer(offerId, null!, default, default);
+                initial = new Offer(offerId, Guid.Empty, default, default);
+                modified = new Offer(offerId, Guid.Empty, default, default);
                 initialize?.Invoke(initial);
                 modify.Invoke(modified);
             });
@@ -578,7 +574,6 @@ public class AppReleaseBusinessLogicTest
         initial.Should().NotBeNull()
             .And.Match<Offer>(
                 x => x.Name == _appUpdateData.Name &&
-                x.Provider == _appUpdateData.Provider &&
                 x.SalesManagerId == _appUpdateData.SalesManagerId &&
                 x.ContactEmail == _appUpdateData.ContactEmail &&
                 x.ContactNumber == _appUpdateData.ContactNumber &&
@@ -588,7 +583,6 @@ public class AppReleaseBusinessLogicTest
         modified.Should().NotBeNull()
             .And.Match<Offer>(
                 x => x.Name == data.Title &&
-                x.Provider == data.Provider &&
                 x.SalesManagerId == data.SalesManagerId &&
                 x.ContactEmail == data.ContactEmail &&
                 x.ContactNumber == data.ContactNumber &&

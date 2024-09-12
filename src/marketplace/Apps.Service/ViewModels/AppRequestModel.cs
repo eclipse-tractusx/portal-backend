@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -28,7 +27,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// Request Model for App Creation.
 /// </summary>
 /// <param name="Title">Title</param>
-/// <param name="Provider">Provider</param>
 /// <param name="SalesManagerId">SalesManagerId</param>
 /// <param name="UseCaseIds">UseCaseIds</param>
 /// <param name="Descriptions">Descriptions</param>
@@ -40,7 +38,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ContactNumber">Price</param>
 public record AppRequestModel(
     string? Title,
-    string Provider,
     Guid? SalesManagerId,
     IEnumerable<Guid> UseCaseIds,
     IEnumerable<LocalizedDescription> Descriptions,

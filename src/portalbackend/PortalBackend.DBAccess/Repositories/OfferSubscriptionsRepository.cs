@@ -24,34 +24,25 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Linq.Expressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
+/// <summary>
 /// Implementation of <see cref="IOfferSubscriptionsRepository"/> accessing database with EF Core.
-public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
+/// </summary>
+/// <param name="dbContext"></param>
+public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSubscriptionsRepository
 {
-    private readonly PortalDbContext _context;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="portalDbContext">PortalDb context.</param>
-    public OfferSubscriptionsRepository(PortalDbContext portalDbContext)
-    {
-        _context = portalDbContext;
-    }
-
     /// <inheritdoc />
     public OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
-        _context.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
+        dbContext.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId, string? companyName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
-                _context.Offers
+                dbContext.Offers
                     .AsNoTracking()
                     .Where(offer =>
                         offer.OfferTypeId == offerTypeId &&
@@ -100,7 +91,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<(OfferSubscriptionStatusId OfferSubscriptionStatusId, bool IsSubscribingCompany, bool IsValidSubscriptionId, IEnumerable<Guid> ConnectorIds, IEnumerable<Guid> ServiceAccounts)> GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(Guid subscriptionId, Guid userCompanyId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(os =>
                 os.Id == subscriptionId
             )
@@ -116,7 +107,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     public Task<(Guid CompanyId, bool IsValidOfferSubscription)> GetCompanyIdWithAssignedOfferForCompanyUserAndSubscriptionAsync(Guid subscriptionId, Guid userId, OfferTypeId offerTypeId) =>
-        _context.CompanyUsers
+        dbContext.CompanyUsers
             .Where(user => user.Id == userId)
             .Select(user => user.Identity!.Company)
             .Select(company => new ValueTuple<Guid, bool>(
@@ -127,14 +118,14 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<SubscriptionDetailData?> GetSubscriptionDetailDataForOwnUserAsync(Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(os => os.Id == subscriptionId && os.Offer!.OfferTypeId == offerTypeId && os.CompanyId == userCompanyId)
             .Select(os => new SubscriptionDetailData(os.OfferId, os.Offer!.Name!, os.OfferSubscriptionStatusId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckProviderCompany(Guid offerSubscriptionId, Guid providerCompanyId, OfferTypeId offerTypeId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId && x.Offer!.OfferTypeId == offerTypeId)
             .Select(x => new OfferSubscriptionTransferData(
                 x.OfferSubscriptionStatusId,
@@ -157,7 +148,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<bool> CheckPendingOrActiveSubscriptionExists(Guid offerId, Guid companyId, OfferTypeId offerTypeId) =>
-        _context.OfferSubscriptions.AsNoTracking()
+        dbContext.OfferSubscriptions.AsNoTracking()
             .AnyAsync(x =>
                 x.OfferId == offerId &&
                 x.CompanyId == companyId &&
@@ -167,14 +158,14 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     /// <inheritdoc />
     public OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters)
     {
-        var offerSubscription = _context.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, default)).Entity;
+        var offerSubscription = dbContext.Attach(new OfferSubscription(offerSubscriptionId, Guid.Empty, Guid.Empty, default, Guid.Empty, default)).Entity;
         setOptionalParameters.Invoke(offerSubscription);
         return offerSubscription;
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
-        _context.CompanyUsers.AsNoTracking()
+        dbContext.CompanyUsers.AsNoTracking()
             .Where(user => user.Id == userId)
             .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
                 subscription.Offer!.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(cu => cu.IdentityId == user.Id && cu.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)) &&
@@ -186,12 +177,12 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
                 offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                offerSubscription.Offer!.Provider
+                offerSubscription.Offer!.ProviderCompany!.Name
             )).ToAsyncEnumerable();
 
     /// <inheritdoc />
     public Task<(bool Exists, bool IsUserOfCompany, ProviderSubscriptionDetailData? Details)> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsSplitQuery()
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
             .Select(os => new
@@ -216,7 +207,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     public Task<(bool Exists, bool IsUserOfCompany, AppProviderSubscriptionDetail? Details)> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsSplitQuery()
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
             .Select(os => new
@@ -251,7 +242,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     public Task<(bool Exists, bool IsUserOfCompany, SubscriberSubscriptionDetailData? Details)> GetSubscriptionDetailsForSubscriberAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsSplitQuery()
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId && os.Offer!.OfferTypeId == offerTypeId)
             .Select(os => new
@@ -280,11 +271,11 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<OfferUpdateUrlData?> GetUpdateUrlDataAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(os => os.Id == subscriptionId && os.OfferId == offerId)
             .Select(os => new OfferUpdateUrlData(
                 os.Offer!.Name,
-                (os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance),
+                os.Offer.AppInstanceSetup != null && os.Offer.AppInstanceSetup!.IsSingleInstance,
                 os.Offer.ProviderCompanyId == userCompanyId,
                 os.RequesterId,
                 os.CompanyId,
@@ -303,7 +294,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
     {
         var appSubscriptionDetail = new AppSubscriptionDetail(detailId, subscriptionId);
         initialize?.Invoke(appSubscriptionDetail);
-        _context.Attach(appSubscriptionDetail);
+        dbContext.Attach(appSubscriptionDetail);
         setParameters.Invoke(appSubscriptionDetail);
     }
 
@@ -314,7 +305,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,
                 take,
-                _context.OfferSubscriptions
+                dbContext.OfferSubscriptions
                     .AsNoTracking()
                     .Where(os =>
                         os.Offer!.OfferTypeId == offerTypeId &&
@@ -326,7 +317,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
                 os => new OfferSubscriptionStatusData(
                     os.OfferId,
                     os.Offer!.Name,
-                    os.Offer.Provider,
+                    os.Offer.ProviderCompany!.Name,
                     os.OfferSubscriptionStatusId,
                     os.Id,
                     os.Offer.Documents
@@ -338,7 +329,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<Guid> GetOfferSubscriptionDataForProcessIdAsync(Guid processId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.ProcessId == processId)
             .Select(os => os.Id)
@@ -346,7 +337,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new
             {
@@ -380,7 +371,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsSplitQuery()
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new SubscriptionActivationData(
@@ -408,7 +399,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .SingleOrDefaultAsync();
 
     public Task<(bool IsValidSubscriptionId, bool IsActive)> IsActiveOfferSubscription(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
             .Select(os => new ValueTuple<bool, bool>(
@@ -419,7 +410,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
             .Select(x => new VerifyProcessData(
@@ -432,7 +423,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new OfferSubscriptionClientCreationData(
                 x.Offer!.Id,
@@ -444,7 +435,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new OfferSubscriptionTechnicalUserCreationData(
                 x.Offer!.OfferTypeId == OfferTypeId.APP || x.Offer.TechnicalUserProfiles.Any(),
@@ -459,7 +450,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, CompanyServiceAccountKindId CompanyServiceAccountKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new ValueTuple<IEnumerable<(Guid, string?, CompanyServiceAccountKindId)>, string?, string?, OfferSubscriptionStatusId>(
                     x.CompanyServiceAccounts.Select(sa => new ValueTuple<Guid, string?, CompanyServiceAccountKindId>(sa.Id, sa.ClientClientId, sa.CompanyServiceAccountKindId)),
@@ -471,15 +462,15 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl) =>
-        _context.OfferSubscriptionsProcessDatas.Add(new OfferSubscriptionProcessData(Guid.NewGuid(), offerSubscriptionId, offerUrl)).Entity;
+        dbContext.OfferSubscriptionsProcessDatas.Add(new OfferSubscriptionProcessData(Guid.NewGuid(), offerSubscriptionId, offerUrl)).Entity;
 
     /// <inheritdoc />
     public void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionProcessDataId) =>
-        _context.Remove(new OfferSubscriptionProcessData(offerSubscriptionProcessDataId, Guid.Empty, null!));
+        dbContext.Remove(new OfferSubscriptionProcessData(offerSubscriptionProcessDataId, Guid.Empty, null!));
 
     /// <inheritdoc />
     public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os => os.Id == offerSubscriptionId)
             .SelectMany(x => x.Process!.ProcessSteps)
@@ -491,7 +482,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<(bool Exists, bool IsOfferProvider, bool OfferSubscriptionAlreadyLinked, OfferSubscriptionStatusId OfferSubscriptionStatus, Guid? SelfDescriptionDocumentId, Guid CompanyId, string? ProviderBpn)> CheckOfferSubscriptionWithOfferProvider(Guid subscriptionId, Guid offerProvidingCompanyId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == subscriptionId)
             .Select(os => new ValueTuple<bool, bool, bool, OfferSubscriptionStatusId, Guid?, Guid, string?>(
                 true,
@@ -506,7 +497,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(os =>
                 os.Offer!.ProviderCompanyId == companyId &&
                 (os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE || os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING) &&
@@ -521,7 +512,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<ActiveOfferSubscriptionStatusData> GetOwnCompanyActiveSubscribedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os =>
                 os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
@@ -529,7 +520,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
             .Select(os => new ActiveOfferSubscriptionStatusData(
                 os.OfferId,
                 os.Offer!.Name,
-                os.Offer.Provider,
+                os.Offer.ProviderCompany!.Name,
                 os.Offer.Documents
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId
@@ -540,7 +531,7 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<OfferSubscriptionData> GetOwnCompanySubscribedOfferSubscriptionUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .AsNoTracking()
             .Where(os =>
                 os.Offer!.OfferTypeId == offerTypeId && os.OfferSubscriptionStatusId != OfferSubscriptionStatusId.INACTIVE &&
@@ -552,14 +543,14 @@ public class OfferSubscriptionsRepository : IOfferSubscriptionsRepository
 
     /// <inheritdoc />
     public Task<bool> CheckOfferSubscriptionForProvider(Guid offerSubscriptionId, Guid providerCompanyId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x =>
                 x.Id == offerSubscriptionId &&
                 x.Offer!.ProviderCompanyId == providerCompanyId)
             .AnyAsync();
 
     public Task<(string? Bpn, string? OfferName, Guid? ProcessId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId) =>
-        _context.OfferSubscriptions
+        dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new ValueTuple<string?, string?, Guid?>(
                 x.Company!.BusinessPartnerNumber,

@@ -1110,7 +1110,7 @@ public class AppChangeBusinessLogicTest
                 initialize?.Invoke(initialDocument);
                 modify(modifiedDocument);
             });
-        var existingOffer = new Offer(Guid.Empty, null!, default, default);
+        var existingOffer = new Offer(Guid.Empty, Guid.Empty, default, default);
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(A<Guid>._, A<Action<Offer>>._, A<Action<Offer>?>._))
             .Invokes((Guid appId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
             {

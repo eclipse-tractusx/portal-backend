@@ -40,10 +40,10 @@ public interface IOfferRepository
     /// <summary>
     /// Adds an app to the database
     /// </summary>
-    /// <param name="provider">Provider of the app</param>
     /// <param name="offerType">Type of the app</param>
+    /// <param name="providerCompanyId">the offer providers CompanyId</param>
     /// <param name="setOptionalParameters">Action to set the optional parameters</param>
-    Offer CreateOffer(string provider, OfferTypeId offerType, Action<Offer>? setOptionalParameters = null);
+    Offer CreateOffer(OfferTypeId offerType, Guid providerCompanyId, Action<Offer>? setOptionalParameters = null);
 
     void AttachAndModifyOffer(Guid offerId, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters = null);
 

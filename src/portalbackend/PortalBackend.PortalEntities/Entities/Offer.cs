@@ -26,12 +26,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20231115))]
+[AuditEntityV1(typeof(AuditOffer20240911))]
 public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
     {
-        Provider = null!;
         OfferType = null!;
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         OfferDescriptions = new HashSet<OfferDescription>();
@@ -51,10 +50,10 @@ public class Offer : IAuditableV1, IBaseEntity
         TechnicalUserProfiles = new HashSet<TechnicalUserProfile>();
     }
 
-    public Offer(Guid id, string provider, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
+    public Offer(Guid id, Guid providerCompanyId, DateTimeOffset dateCreated, OfferTypeId offerTypeId) : this()
     {
         Id = id;
-        Provider = provider;
+        ProviderCompanyId = providerCompanyId;
         DateCreated = dateCreated;
         OfferTypeId = offerTypeId;
     }
@@ -77,14 +76,11 @@ public class Offer : IAuditableV1, IBaseEntity
     [MaxLength(255)]
     public string? ContactNumber { get; set; }
 
-    [MaxLength(255)]
-    public string Provider { get; set; }
-
     public OfferTypeId OfferTypeId { get; set; }
 
     public Guid? SalesManagerId { get; set; }
 
-    public Guid? ProviderCompanyId { get; set; }
+    public Guid ProviderCompanyId { get; set; }
 
     public OfferStatusId OfferStatusId { get; set; }
 

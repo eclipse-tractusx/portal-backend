@@ -219,7 +219,6 @@ public class AppReleaseProcessControllerTest
         var appId = new Guid("5cf74ef8-e0b7-4984-a872-474828beb5d2");
         var data = new AppRequestModel(
             "Test",
-            "Test Provider",
             Guid.NewGuid(),
             new[]
             {

@@ -20,7 +20,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -43,33 +42,6 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _dbTestDbFixture = testDbFixture;
     }
-
-    #region CreateService
-
-    [Fact]
-    public async Task CreateService_ReturnsExpectedAppCount()
-    {
-        // Arrange
-        var (sut, context) = await CreateSut();
-
-        // Act
-        var results = sut.CreateOffer("Catena X", OfferTypeId.SERVICE, service =>
-        {
-            service.Name = "Test Service";
-            service.ContactEmail = "test@email.com";
-        });
-
-        // Assert
-        var changeTracker = context.ChangeTracker;
-        var changedEntries = changeTracker.Entries().ToList();
-        results.Name.Should().Be("Test Service");
-        changeTracker.HasChanges().Should().BeTrue();
-        changedEntries.Should().NotBeEmpty();
-        changedEntries.Should().HaveCount(1);
-        changedEntries.Single().Entity.Should().BeOfType<Offer>().Which.Name.Should().Be("Test Service");
-    }
-
-    #endregion
 
     #region GetServiceDetailByIdUntrackedAsync
 
