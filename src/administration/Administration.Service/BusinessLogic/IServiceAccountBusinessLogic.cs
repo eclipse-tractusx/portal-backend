@@ -37,4 +37,5 @@ public interface IServiceAccountBusinessLogic
     IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName);
     Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData);
     Task HandleServiceAccountDeletionCallback(Guid processId);
+    Task RetriggerDimTechnicalUser(Guid processId, ProcessStepTypeId processStepTypeId);
 }

@@ -147,7 +147,7 @@ public class SdFactoryBusinessLogicTests
         result.ModifyChecklistEntry!.Invoke(entry);
         result.ProcessMessage.Should().Be(clearinghouseConnectDisabled ? "Self description was skipped due to clearinghouse trigger is disabled" : null);
         entry.ApplicationChecklistEntryStatusId.Should().Be(clearinghouseConnectDisabled ? ApplicationChecklistEntryStatusId.SKIPPED : ApplicationChecklistEntryStatusId.IN_PROGRESS);
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ACTIVATE_APPLICATION : x.Single() == ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP);
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ACTIVATE_APPLICATION : x.Single() == ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
         result.StepStatusId.Should().Be(clearinghouseConnectDisabled ? ProcessStepStatusId.SKIPPED : ProcessStepStatusId.DONE);
@@ -540,7 +540,7 @@ public class SdFactoryBusinessLogicTests
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId,
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 new[] { ApplicationChecklistEntryStatusId.IN_PROGRESS },
-                ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP,
+                ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE,
                 null,
                 new[] { ProcessStepTypeId.START_SELF_DESCRIPTION_LP }))
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),

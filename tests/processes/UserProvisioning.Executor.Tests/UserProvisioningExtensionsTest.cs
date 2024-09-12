@@ -40,9 +40,9 @@ public class UserProvisioningExtensionsTest
     public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
     {
         // Act
-        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetUserProvisioningRetriggerStep());
+        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.AWAIT_START_AUTOSETUP.GetUserProvisioningRetriggerStep());
 
         // Assert
-        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process UserProvisioning");
+        ex.Message.Should().Be($"ProcessStepTypeId {ProcessStepTypeId.AWAIT_START_AUTOSETUP} is not supported for Process UserProvisioning");
     }
 }

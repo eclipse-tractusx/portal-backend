@@ -42,6 +42,7 @@ public static class OfferSubscriptionExtensions
             ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION => ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION,
             ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION => ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION,
             ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK => ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK,
+            ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER => ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER,
             _ => throw new ConflictException($"Step {retriggerProcessStep} is not retriggerable")
         };
 }

@@ -247,7 +247,7 @@ public class DimBusinessLogicTests
             .MustHaveHappenedOnceExactly();
         company.DidDocumentLocation.Should().NotBeNull();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
-        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.AWAIT_DIM_RESPONSE);
+        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE);
     }
 
     #endregion
@@ -306,7 +306,7 @@ public class DimBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
-        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
 
         // Act
@@ -332,7 +332,7 @@ public class DimBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
-        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
 
         // Act
@@ -392,7 +392,7 @@ public class DimBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _companyRepository.GetCompanySubmittedApplicationIdsByBpn(BPN))
             .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(companyId, Enumerable.Repeat(ApplicationId, 1)), 1).ToAsyncEnumerable());
-        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(ApplicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
             .Returns(context);
         byte[]? encrypted = null;
         byte[]? iv = null;

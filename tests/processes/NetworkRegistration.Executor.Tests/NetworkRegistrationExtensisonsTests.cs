@@ -44,9 +44,9 @@ public class NetworkRegistrationExtensisonsTests
     public void GetRetriggerStep_WithInvalidStep_ReturnsNull()
     {
         // Act
-        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.START_AUTOSETUP.GetNetworkRetriggerStep());
+        var ex = Assert.Throws<UnexpectedConditionException>(() => ProcessStepTypeId.AWAIT_START_AUTOSETUP.GetNetworkRetriggerStep());
 
         // Assert
-        ex.Message.Should().Be("ProcessStepTypeId START_AUTOSETUP is not supported for Process NetworkRegistration");
+        ex.Message.Should().Be($"ProcessStepTypeId {ProcessStepTypeId.AWAIT_START_AUTOSETUP} is not supported for Process NetworkRegistration");
     }
 }

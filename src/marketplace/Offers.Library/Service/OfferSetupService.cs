@@ -435,7 +435,7 @@ public class OfferSetupService : IOfferSetupService
         }
 
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(data.RequestId,
-            ProcessStepTypeId.START_AUTOSETUP, null, true).ConfigureAwait(ConfigureAwaitOptions.None);
+            ProcessStepTypeId.AWAIT_START_AUTOSETUP, null, true).ConfigureAwait(ConfigureAwaitOptions.None);
 
         offerSubscriptionRepository.CreateOfferSubscriptionProcessData(data.RequestId, data.OfferUrl);
 
@@ -518,7 +518,7 @@ public class OfferSetupService : IOfferSetupService
             [
                 clientCreationData.IsTechnicalUserNeeded
                     ? ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
-                    : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+                    : ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION
             ],
             ProcessStepStatusId.DONE,
             true,
@@ -563,7 +563,7 @@ public class OfferSetupService : IOfferSetupService
             [
                 hasExternalServiceAccount
                     ? ProcessStepTypeId.OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
-                    : ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION
+                    : ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION
             ],
             ProcessStepStatusId.DONE,
             true,
@@ -603,7 +603,7 @@ public class OfferSetupService : IOfferSetupService
     /// <inheritdoc />
     public async Task TriggerActivateSubscription(Guid offerSubscriptionId)
     {
-        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.TRIGGER_ACTIVATE_SUBSCRIPTION, null, true).ConfigureAwait(ConfigureAwaitOptions.None);
+        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION, null, true).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {

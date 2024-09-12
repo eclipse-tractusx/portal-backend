@@ -155,6 +155,10 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, false);
 
     /// <inheritdoc />
+    public Task RetriggerCreateDimTechnicalUser(Guid offerSubscriptionId) =>
+        TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER, true);
+
+    /// <inheritdoc />
     private async Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
     {
         var nextStep = stepToTrigger.GetOfferSubscriptionStepToRetrigger();

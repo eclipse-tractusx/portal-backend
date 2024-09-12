@@ -211,6 +211,38 @@ public class ServiceAccountController : ControllerBase
     }
 
     /// <summary>
+    /// Retriggers the create dim technical user
+    /// </summary>
+    /// <param name="processId">The processId of the dim technical user creation.</param>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}/retrigger-create-dim-technical-user</remarks>
+    /// <response code="200">Ok</response>
+    [HttpPost]
+    [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}/retrigger-create-dim-technical-user")]
+    public async Task<OkResult> RetriggerCreateDimTechnicalUser([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Retriggers the delete dim technical user
+    /// </summary>
+    /// <param name="processId">The processId of the dim technical user deletion.</param>
+    /// <remarks>Example: POST: api/administration/serviceaccount/callback/{externalId}/retrigger-delete-dim-technical-user</remarks>
+    /// <response code="200">Ok</response>
+    [HttpPost]
+    [Authorize(Roles = "technical_roles_management")]
+    [Authorize(Policy = PolicyTypes.ServiceAccount)]
+    [Route("callback/{processId}/retrigger-delete-dim-technical-user")]
+    public async Task<OkResult> RetriggerDeleteDimTechnicalUser([FromRoute] Guid processId)
+    {
+        await _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
+        return Ok();
+    }
+
+    /// <summary>
     /// Callback for the successful service account deletion
     /// </summary>
     /// <param name="processId">The processId that was passed as externalId with the request for deletion of the technical user.</param>

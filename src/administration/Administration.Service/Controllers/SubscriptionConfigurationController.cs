@@ -198,4 +198,25 @@ public class SubscriptionConfigurationController : ControllerBase
         await _businessLogic.RetriggerProviderCallback(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retriggers the dim technical user creation for the given offer subscription id
+    /// </summary>
+    /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/subscriptionconfiguration/process/offer-subscription/{offerSubscriptionId}/retrigger-create-dim-technical-user
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="400">Either the OfferSubscription is not in status PENDING or the next step can't automatically retriggered.</response>
+    /// <response code="404">No OfferSubscription found for the offerSubscriptionId.</response>
+    [HttpPost]
+    [Authorize(Roles = "retrigger_subscription")]
+    [Route("process/offer-subscription/{offerSubscriptionId}/retrigger-create-dim-technical-user")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerCreateDimTechnicalUser([FromRoute] Guid offerSubscriptionId)
+    {
+        await _businessLogic.RetriggerCreateDimTechnicalUser(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
 }

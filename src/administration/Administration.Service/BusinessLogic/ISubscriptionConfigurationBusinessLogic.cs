@@ -48,6 +48,12 @@ public interface ISubscriptionConfigurationBusinessLogic
     Task RetriggerProviderCallback(Guid offerSubscriptionId);
 
     /// <summary>
+    /// Retriggers the process step
+    /// </summary>
+    /// <param name="offerSubscriptionId">Id of the offer subscription</param>
+    Task RetriggerCreateDimTechnicalUser(Guid offerSubscriptionId);
+
+    /// <summary>
     /// Gets the process steps for the given offer subscription id
     /// </summary>
     /// <param name="offerSubscriptionId">Id of the offer subscription</param>

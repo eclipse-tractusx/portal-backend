@@ -145,4 +145,25 @@ public class NetworkController : ControllerBase
         await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="externalId" example="">Id of the externalId that should be triggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/administration/registration/network/{externalId}/retrigger-remove-keycloak-user
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No registration found for the externalId.</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{externalId}/retrigger-remove-keycloak-user")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerRemoveKeycloakUser([FromRoute] string externalId)
+    {
+        await _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_REMOVE_KEYCLOAK_USERS).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
 }

@@ -85,7 +85,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             [
                 data.IsSingleInstance ?
                     ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION :
-                    ProcessStepTypeId.START_AUTOSETUP
+                    ProcessStepTypeId.AWAIT_START_AUTOSETUP
             ],
             triggerProvider ? ProcessStepStatusId.DONE : ProcessStepStatusId.SKIPPED,
             true,

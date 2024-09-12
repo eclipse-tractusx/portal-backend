@@ -134,15 +134,15 @@ public class OnboardingServiceProviderBusinessLogicTests
         var secret = Encoding.UTF8.GetBytes(_fixture.Create<string>());
         const string Bpn = "BPNL00000001TEST";
         var details = new OspDetails("https://callback.url", "https://auth.url", "test1", secret, null, 0);
-        A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP))
+        A.CallTo(() => _networkRepository.GetCallbackData(networkRegistrationId, ProcessStepTypeId.AWAIT_START_AUTOSETUP))
             .Returns((details, Guid.NewGuid().ToString(), Bpn, Guid.NewGuid(), Enumerable.Empty<string>()));
 
         // Act
-        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.START_AUTOSETUP, CancellationToken.None);
+        async Task Act() => await _sut.TriggerProviderCallback(networkRegistrationId, ProcessStepTypeId.AWAIT_START_AUTOSETUP, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
-        ex.Message.Should().Be($"{ProcessStepTypeId.START_AUTOSETUP} is not supported");
+        ex.Message.Should().Be($"{ProcessStepTypeId.AWAIT_START_AUTOSETUP} is not supported");
     }
 
     [Theory]

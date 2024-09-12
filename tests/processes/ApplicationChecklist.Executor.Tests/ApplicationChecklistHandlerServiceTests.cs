@@ -193,19 +193,18 @@ public class ChecklistHandlerServiceTests
     }
 
     [Theory]
-    [InlineData(ProcessStepTypeId.VERIFY_REGISTRATION)]
+    [InlineData(ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION)]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL)]
     [InlineData(ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)]
     [InlineData(ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)]
-    [InlineData(ProcessStepTypeId.END_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
-    [InlineData(ProcessStepTypeId.OVERRIDE_BUSINESS_PARTNER_NUMBER)]
-    [InlineData(ProcessStepTypeId.TRIGGER_OVERRIDE_CLEARING_HOUSE)]
-    [InlineData(ProcessStepTypeId.FINISH_SELF_DESCRIPTION_LP)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE)]
     public void GetProcessStepExecution_InvalidStep_Throws(ProcessStepTypeId stepTypeId)
     {
         // Arrange

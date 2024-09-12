@@ -594,7 +594,7 @@ public class RegistrationBusinessLogicTest
         application.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.DECLINED);
         A.CallTo(() => _checklistService.SkipProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,
-                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.VERIFY_REGISTRATION)))
+                A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Single() == ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._,

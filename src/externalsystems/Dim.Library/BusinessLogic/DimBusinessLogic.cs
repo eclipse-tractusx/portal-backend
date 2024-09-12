@@ -74,7 +74,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                     {
                         checklist.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
                     },
-                [ProcessStepTypeId.AWAIT_DIM_RESPONSE],
+                [ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE],
                 null,
                 true,
                 null);
@@ -121,7 +121,7 @@ public class DimBusinessLogic : IDimBusinessLogic
                 applicationId,
                 ApplicationChecklistEntryTypeId.IDENTITY_WALLET,
                 [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                ProcessStepTypeId.AWAIT_DIM_RESPONSE,
+                ProcessStepTypeId.AWAIT_DIM_RESPONSE_RESPONSE,
                 processStepTypeIds: [ProcessStepTypeId.VALIDATE_DID_DOCUMENT])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 

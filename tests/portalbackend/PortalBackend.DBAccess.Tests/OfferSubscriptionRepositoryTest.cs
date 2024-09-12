@@ -319,7 +319,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
             x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com" &&
             x.ProcessSteps.Count() == 3 &&
-            x.ProcessSteps.Count(y => y.ProcessStepTypeId == ProcessStepTypeId.START_AUTOSETUP && y.ProcessStepStatusId == ProcessStepStatusId.TODO) == 1);
+            x.ProcessSteps.Count(y => y.ProcessStepTypeId == ProcessStepTypeId.AWAIT_START_AUTOSETUP && y.ProcessStepStatusId == ProcessStepStatusId.TODO) == 1);
     }
 
     [Fact]
@@ -519,7 +519,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         // Act
         var result = await sut.GetProcessStepData(new Guid("e8886159-9258-44a5-88d8-f5735a197a09"), new[]
         {
-            ProcessStepTypeId.START_AUTOSETUP
+            ProcessStepTypeId.AWAIT_START_AUTOSETUP
         });
 
         // Assert
@@ -534,7 +534,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.START_AUTOSETUP });
+        var result = await sut.GetProcessStepData(Guid.NewGuid(), new[] { ProcessStepTypeId.AWAIT_START_AUTOSETUP });
 
         // Assert
         result.Should().BeNull();
