@@ -143,21 +143,18 @@ public class ClearinghouseBusinessLogic(
     {
         var applicationIds = await portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetApplicationsForClearinghouseRetrigger(dateTimeProvider.OffsetNow.AddDays(-_settings.RetriggerEndClearinghouseIntervalInDays))
-            .ToListAsync(stoppingToken).ConfigureAwait(false);
+            .ToListAsync(stoppingToken)
+            .ConfigureAwait(false);
 
         var hasChanges = false;
-        foreach (var applicationId in applicationIds)
+        foreach (var context in applicationIds.Select(applicationId => checklistService.VerifyChecklistEntryAndProcessSteps(
+                         applicationId,
+                         ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                         [ApplicationChecklistEntryStatusId.IN_PROGRESS],
+                         ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)))
         {
-            var context = await checklistService
-                .VerifyChecklistEntryAndProcessSteps(
-                    applicationId,
-                    ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
-                    [ApplicationChecklistEntryStatusId.IN_PROGRESS],
-                    ProcessStepTypeId.END_CLEARING_HOUSE)
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-
             checklistService.FinalizeChecklistEntryAndProcessSteps(
-                context,
+                await context.ConfigureAwait(ConfigureAwaitOptions.None),
                 null,
                 item =>
                 {
