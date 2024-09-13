@@ -97,12 +97,12 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
     public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
         portalDbContext.CompanyServiceAccounts
             .Where(serviceAccount =>
-                serviceAccount.Id == serviceAccountId &&
-                serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                (serviceAccount.CompaniesLinkedServiceAccount!.Owners == companyId || serviceAccount.CompaniesLinkedServiceAccount!.Provider == companyId))
+                serviceAccount.Id == serviceAccountId)
             .Select(sa => new OwnServiceAccountData(
                 sa.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
                 sa.Id,
+                sa.Identity!.UserStatusId,
+                sa.CompaniesLinkedServiceAccount!.Owners == companyId || sa.CompaniesLinkedServiceAccount!.Provider == companyId,
                 sa.Version,
                 sa.Connector!.Id,
                 sa.ClientClientId,
