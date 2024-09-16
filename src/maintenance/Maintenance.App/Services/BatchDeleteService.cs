@@ -42,9 +42,11 @@ public class BatchDeleteService(
         {
             logger.LogInformation("Getting documents and assignments older {Days} days", _settings.DeleteIntervalInDays);
             var documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
+
             var documentData = await documentRepository
                 .GetDocumentDataForCleanup(dateTimeProvider.OffsetNow.AddDays(-_settings.DeleteIntervalInDays))
-                .ConfigureAwait(ConfigureAwaitOptions.None);
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
             if (documentData.Count == 0)
             {
                 logger.LogInformation("No documents to cleanup");
@@ -53,11 +55,19 @@ public class BatchDeleteService(
 
             logger.LogInformation("Cleaning up {DocumentCount} Documents and {OfferIdCount} OfferAssignedDocuments", documentData.Count, documentData.SelectMany(x => x.OfferIds).Count());
 
-            var agreementsToDeleteDocumentId = documentData.SelectMany(data => data.AgreementIds.Select(agreementId => new Agreement(agreementId, default, null!, default, default, default) { DocumentId = data.DocumentId })).ToList();
-            portalRepositories.AttachRange(agreementsToDeleteDocumentId);
-            agreementsToDeleteDocumentId.ForEach(agreement => agreement.DocumentId = null);
-            documentRepository.RemoveOfferAssignedDocuments(documentData.SelectMany(data => data.OfferIds.Select(offerId => new OfferAssignedDocument(offerId, data.DocumentId))));
+            portalRepositories.GetInstance<IAgreementRepository>().AttachAndModifyAgreements(
+                documentData.SelectMany(data => data.AgreementIds.Select<Guid, (Guid, Action<Agreement>?, Action<Agreement>)>(agreementId => (
+                    agreementId,
+                    agreement => agreement.DocumentId = data.DocumentId,
+                    agreement => agreement.DocumentId = null))));
+
+            portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocuments(
+                documentData.SelectMany(data => data.OfferIds.Select(offerId => (
+                    offerId,
+                    data.DocumentId))));
+
             documentRepository.RemoveDocuments(documentData.Select(x => x.DocumentId));
+
             await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
             logger.LogInformation("Documents older than {Days} days and depending consents successfully cleaned up", _settings.DeleteIntervalInDays);
         }

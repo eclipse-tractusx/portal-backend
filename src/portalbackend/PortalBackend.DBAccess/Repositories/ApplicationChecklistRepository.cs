@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -106,7 +105,7 @@ public class ApplicationChecklistRepository(PortalDbContext dbContext)
                     ce.DateCreated < dateCreatedThreshold) &&
                 ca.ChecklistProcess!.ProcessTypeId == ProcessTypeId.APPLICATION_CHECKLIST &&
                 ca.ChecklistProcess!.ProcessSteps.Any(ps =>
-                    ps.ProcessStepTypeId == ProcessStepTypeId.END_CLEARING_HOUSE &&
+                    ps.ProcessStepTypeId == ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE &&
                     ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
                     ps.DateCreated < dateCreatedThreshold))
             .Select(x => x.Id)

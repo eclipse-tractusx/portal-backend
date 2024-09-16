@@ -20,6 +20,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
@@ -130,7 +131,7 @@ public sealed class RegistrationBusinessLogic(
         var applications = portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyApplicationsFilteredQuery(
                 companyName?.Length >= 3 ? companyName : null,
-                GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+                companyApplicationStatusFilter.GetCompanyApplicationStatusIds());
 
         return Pagination.CreateResponseAsync(
             page,
@@ -170,7 +171,7 @@ public sealed class RegistrationBusinessLogic(
         var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
             .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
                 companyName?.Length >= 3 ? companyName : null, externalId,
-                GetCompanyApplicationStatusIds(companyApplicationStatusFilter));
+                companyApplicationStatusFilter.GetCompanyApplicationStatusIds());
 
         var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
             ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
@@ -603,25 +604,6 @@ public sealed class RegistrationBusinessLogic(
                 KeyValuePair.Create("helpUrl", _settings.HelpAddress)
             });
             mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationDeclineTemplate", mailParameters);
-        }
-    }
-
-    private static IEnumerable<CompanyApplicationStatusId> GetCompanyApplicationStatusIds(CompanyApplicationStatusFilter? companyApplicationStatusFilter)
-    {
-        switch (companyApplicationStatusFilter)
-        {
-            case CompanyApplicationStatusFilter.Closed:
-                {
-                    return [CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
-                }
-            case CompanyApplicationStatusFilter.InReview:
-                {
-                    return [CompanyApplicationStatusId.SUBMITTED];
-                }
-            default:
-                {
-                    return [CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED];
-                }
         }
     }
 

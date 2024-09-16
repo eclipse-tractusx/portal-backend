@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,14 +17,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using System.Runtime.CompilerServices;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
-public interface IClearinghouseBusinessLogic
+public static class ToAsyncEnumerableExtensions
 {
-    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
-    Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken);
-    Task CheckEndClearinghouseProcesses(CancellationToken cancellationToken);
+    public static async IAsyncEnumerable<T> TasksToAsyncEnumerable<T>(this IEnumerable<Task<T>> tasks, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var task in tasks)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return await task.ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
 }

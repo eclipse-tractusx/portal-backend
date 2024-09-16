@@ -21,6 +21,7 @@
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -129,4 +130,16 @@ public class AgreementRepository : IAgreementRepository
             .Where(assigned => assigned.OfferId == offerId)
             .Select(assigned => new AgreementStatusData(assigned.AgreementId, assigned.Agreement!.AgreementStatusId))
             .AsAsyncEnumerable();
+
+    public void AttachAndModifyAgreements(IEnumerable<(Guid AgreementId, Action<Agreement>? Initialize, Action<Agreement> Modify)> agreementModificationIds)
+    {
+        var items = agreementModificationIds.Select(agreementModificationId =>
+        {
+            var agreement = new Agreement(agreementModificationId.AgreementId, default, null!, default, default, default);
+            agreementModificationId.Initialize?.Invoke(agreement);
+            return (Agreement: agreement, agreementModificationId.Modify);
+        }).ToList();
+        _context.AttachRange(items.Select(item => item.Agreement));
+        items.ForEach(item => item.Modify(item.Agreement));
+    }
 }

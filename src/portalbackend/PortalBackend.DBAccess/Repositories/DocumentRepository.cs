@@ -231,17 +231,16 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
     public void RemoveDocuments(IEnumerable<Guid> documentIds) =>
         dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
 
-    public void RemoveOfferAssignedDocuments(IEnumerable<OfferAssignedDocument> offerAssignedDocuments) =>
-        dbContext.OfferAssignedDocuments.RemoveRange(offerAssignedDocuments);
-
     public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<byte[], string, bool, MediaTypeId>(x.DocumentContent, x.DocumentName, documentTypeIds.Contains(x.DocumentTypeId), x.MediaTypeId))
             .SingleOrDefaultAsync();
 
-    public Task<List<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)>> GetDocumentDataForCleanup(DateTimeOffset dateCreated) =>
-        dbContext.Documents.Where(x =>
+    public IAsyncEnumerable<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> GetDocumentDataForCleanup(DateTimeOffset dateCreated) =>
+        dbContext.Documents
+            .AsSplitQuery()
+            .Where(x =>
                 x.DateCreated < dateCreated &&
                 !x.Companies.Any() &&
                 x.Connector == null &&
@@ -252,5 +251,5 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
                 doc.Agreements.Select(x => x.Id),
                 doc.Offers.Select(x => x.Id)
             ))
-            .ToListAsync();
+            .AsAsyncEnumerable();
 }
