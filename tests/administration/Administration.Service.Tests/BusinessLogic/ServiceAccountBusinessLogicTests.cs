@@ -849,7 +849,7 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnComapnyServiceAccountInternalType()
     {
-        var data = _fixture.Build<CompanyServiceAccountDetailedData>()
+        _fixture.Build<CompanyServiceAccountDetailedData>()
             .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.INTERNAL)
             .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
@@ -859,7 +859,7 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnComapnyServiceAccountExternalType()
     {
-        var data = _fixture.Build<CompanyServiceAccountDetailedData>()
+        _fixture.Build<CompanyServiceAccountDetailedData>()
             .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.EXTERNAL)
             .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
