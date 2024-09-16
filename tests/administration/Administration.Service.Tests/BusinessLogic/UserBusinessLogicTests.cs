@@ -76,7 +76,7 @@ public class UserBusinessLogicTests
     private readonly IIdentityData _identity;
     private readonly ICollection<IdentityAssignedRole> _addedRoles = new HashSet<IdentityAssignedRole>();
     private readonly ICollection<IdentityAssignedRole> _removedRoles = new HashSet<IdentityAssignedRole>();
-    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Func<CompanyNameIdpAliasData, UserCreationRoleDataIdpInfo, Action<UserCreationCallbackData>?, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Func<CompanyUserAccountData, CompanyUserAccountData> _companyUserSelectFunction;
     private readonly Exception _error;
     private readonly UserSettings _settings;
@@ -122,7 +122,7 @@ public class UserBusinessLogicTests
         _createdCentralCompanyId = Guid.NewGuid();
         _displayName = _fixture.Create<string>();
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine = A.Fake<Func<CompanyNameIdpAliasData, UserCreationRoleDataIdpInfo, Action<UserCreationCallbackData>?, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
         _companyUserSelectFunction = A.Fake<Func<CompanyUserAccountData, CompanyUserAccountData>>();
 
         _identity = A.Fake<IIdentityData>();
@@ -276,12 +276,15 @@ public class UserBusinessLogicTests
             CreateUserCreationInfo()
         };
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
-            u.FirstName == userCreationInfo.firstName &&
-            u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail
-        ))).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
+                u.FirstName == userCreationInfo.firstName &&
+                u.LastName == userCreationInfo.lastName &&
+                u.Email == userCreationInfo.eMail),
+            A<Action<UserCreationCallbackData>>._)
+        ).ReturnsLazily((CompanyNameIdpAliasData _, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? _) =>
+            _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, error)
                 .Create());
@@ -299,11 +302,14 @@ public class UserBusinessLogicTests
 
         var result = await sut.CreateOwnCompanyUsersAsync(userList).ToListAsync();
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
-            u.FirstName == userCreationInfo.firstName &&
-            u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail
-        ))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
+                u.FirstName == userCreationInfo.firstName &&
+                u.LastName == userCreationInfo.lastName &&
+                u.Email == userCreationInfo.eMail),
+            A<Action<UserCreationCallbackData>>._)
+        ).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
 
@@ -331,11 +337,14 @@ public class UserBusinessLogicTests
             CreateUserCreationInfo()
         };
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
-            u.FirstName == userCreationInfo.firstName &&
-            u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail
-        ))).Throws(() => expected);
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
+                u.FirstName == userCreationInfo.firstName &&
+                u.LastName == userCreationInfo.lastName &&
+                u.Email == userCreationInfo.eMail),
+            A<Action<UserCreationCallbackData>>._)
+        ).Throws(() => expected);
 
         var sut = new UserBusinessLogic(
             null!,
@@ -352,11 +361,14 @@ public class UserBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<TestException>(Act);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u =>
             u.FirstName == userCreationInfo.firstName &&
             u.LastName == userCreationInfo.lastName &&
-            u.Email == userCreationInfo.eMail
-        ))).MustHaveHappenedOnceExactly();
+            u.Email == userCreationInfo.eMail),
+            A<Action<UserCreationCallbackData>>._)
+        ).MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
@@ -433,8 +445,12 @@ public class UserBusinessLogicTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName),
+            A<Action<UserCreationCallbackData>>._)
+        ).ReturnsLazily((CompanyNameIdpAliasData _, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? onSuccess) =>
+            _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                 .With(x => x.UserName, creationInfo.UserName)
                 .With(x => x.Error, _error)
                 .Create());
@@ -465,7 +481,11 @@ public class UserBusinessLogicTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp();
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName))).Throws(_error);
+        A.CallTo(() => _processLine(
+            A<CompanyNameIdpAliasData>._,
+            A<UserCreationRoleDataIdpInfo>.That.Matches(u => u.FirstName == userCreationInfoIdp.FirstName),
+            A<Action<UserCreationCallbackData>>._)
+        ).Throws(_error);
 
         var sut = new UserBusinessLogic(
             null!,
@@ -1153,7 +1173,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
-            .Returns((skip, take) => Task.FromResult(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1178,7 +1198,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _identity.IdentityId).Returns(userId);
 
         A.CallTo(() => _userRepository.GetOwnCompanyAppUsersPaginationSourceAsync(A<Guid>._, A<Guid>._, A<IEnumerable<OfferSubscriptionStatusId>>._, A<IEnumerable<UserStatusId>>._, A<CompanyUserFilter>._))
-            .Returns((skip, take) => Task.FromResult(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<CompanyAppUserDetails>?>(new Pagination.Source<CompanyAppUserDetails>(companyUsers.Count(), companyUsers.Skip(skip).Take(take))));
         var sut = new UserBusinessLogic(null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
 
         // Act
@@ -1541,16 +1561,22 @@ public class UserBusinessLogicTests
         }
 
         A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Action<UserCreationCallbackData> _, CancellationToken _) =>
-                userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
+            .ReturnsLazily((CompanyNameIdpAliasData idpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Action<UserCreationCallbackData>? onSuccess, CancellationToken _) =>
+                userCreationInfos.Select(userCreationInfo => _processLine(idpAliasData, userCreationInfo, onSuccess)));
 
         A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-                .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, default(Exception?))
-                .Create());
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>._, A<Action<UserCreationCallbackData>>._))
+            .ReturnsLazily((CompanyNameIdpAliasData aliasData, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? onSucess) =>
+                {
+                    var password = aliasData.IsSharedIdp ? _fixture.Create<string>() : null;
+                    onSucess?.Invoke(new(creationInfo, password));
+                    return _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                        .With(x => x.UserName, creationInfo.UserName)
+                        .With(x => x.Password, password)
+                        .With(x => x.Error, default(Exception?))
+                        .Create();
+                });
     }
 
     private void SetupFakesForUserDeletion()

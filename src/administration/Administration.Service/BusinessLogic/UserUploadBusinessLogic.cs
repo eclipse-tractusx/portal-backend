@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
@@ -41,7 +40,6 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     private readonly UserSettings _settings;
     private readonly IIdentityData _identityData;
     private readonly IErrorMessageService _errorMessageService;
-    private readonly IPortalRepositories _portalRepositories;
 
     /// <summary>
     /// Constructor.
@@ -51,21 +49,18 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     /// <param name="identityService">Access to the identity Service</param>
     /// <param name="errorMessageService">ErrorMessage Service</param>
     /// <param name="settings">Settings</param>
-    /// <param name="portalRepositories">Portal Repositories</param>
     public UserUploadBusinessLogic(
         IUserProvisioningService userProvisioningService,
         IMailingProcessCreation mailingProcessCreation,
         IIdentityService identityService,
         IErrorMessageService errorMessageService,
-        IOptions<UserSettings> settings,
-        IPortalRepositories portalRepositories)
+        IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
         _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
         _settings = settings.Value;
-        _portalRepositories = portalRepositories;
     }
 
     public ValueTask<UserCreationStats> UploadOwnCompanyIdpUsersAsync(Guid identityProviderId, IFormFile document, CancellationToken cancellationToken)
