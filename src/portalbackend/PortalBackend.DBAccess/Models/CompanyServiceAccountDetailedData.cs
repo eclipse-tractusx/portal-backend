@@ -30,7 +30,6 @@ public record CompanyServiceAccountDetailedData(
     UserStatusId Status,
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
-    Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
     OfferResponseData? OfferSubscriptionData,
     CompanyLastEditorData? CompanyLastEditorData,
