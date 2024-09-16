@@ -688,7 +688,7 @@ public class InvitationProcessServiceTests
             .Returns((true, applicationId, companyId, "testCorp", Enumerable.Repeat((Guid.NewGuid(), "idp"), 1), new UserInvitationInformation("tony", "stark", "tony@stark.com", "ironman")));
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(Guid.NewGuid(), "cl1", "ur 1"), 1).ToAsyncEnumerable());
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._))
             .Returns(Enumerable.Repeat<ValueTuple<Guid, string, string?, Exception?>>((companyUserId, "ironman", "testPw", null), 1).ToAsyncEnumerable());
         A.CallTo(() => _companyInvitationRepository.AttachAndModifyCompanyInvitation(companyInvitation.Id, A<Action<CompanyInvitation>>._, A<Action<CompanyInvitation>>._))
             .Invokes((Guid _, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify) =>
@@ -718,7 +718,7 @@ public class InvitationProcessServiceTests
             .Returns((true, applicationId, companyId, "testCorp", Enumerable.Repeat((Guid.NewGuid(), "idp"), 1), new UserInvitationInformation("tony", "stark", "tony@stark.com", "ironman")));
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Returns(Enumerable.Repeat(new UserRoleData(Guid.NewGuid(), "cl1", "ur 1"), 1).ToAsyncEnumerable());
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._))
             .Returns(Enumerable.Repeat<ValueTuple<Guid, string, string?, Exception?>>((companyId, "ironman", "testPw", new ConflictException("test")), 1).ToAsyncEnumerable());
 
         // Act

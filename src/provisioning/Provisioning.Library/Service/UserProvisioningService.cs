@@ -53,6 +53,7 @@ public class UserProvisioningService : IUserProvisioningService
     public async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersAsync(
         CompanyNameIdpAliasData companyNameIdpAliasData,
         IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos,
+        Action<UserCreationCallbackData>? onSuccessfulCreation = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var userRepository = _portalRepositories.GetInstance<IUserRepository>();
@@ -76,6 +77,7 @@ public class UserProvisioningService : IUserProvisioningService
 
                 var providerUserId = await CreateSharedIdpUserOrReturnUserId(user, alias, nextPassword, isSharedIdp).ConfigureAwait(ConfigureAwaitOptions.None);
                 await HandleCentralKeycloakCreation(user, companyUserId, companyName, businessPartnerNumber, identity, Enumerable.Repeat(new IdentityProviderLink(alias, providerUserId, user.UserName), 1), userRepository, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
+                onSuccessfulCreation?.Invoke(new(user, nextPassword));
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {

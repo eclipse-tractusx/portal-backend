@@ -340,7 +340,7 @@ public class InvitationProcessService : IInvitationProcessService
             true
         )}.ToAsyncEnumerable();
 
-        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps, cancellationToken).SingleAsync(cancellationToken).ConfigureAwait(false);
+        var (companyUserId, _, password, error) = await _userProvisioningService.CreateOwnCompanyIdpUsersAsync(companyNameIdpAliasData, userCreationInfoIdps, cancellationToken: cancellationToken).SingleAsync(cancellationToken).ConfigureAwait(false);
 
         if (error is not null)
         {

@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests;
 
@@ -90,9 +91,16 @@ public class UserProvisioningServiceCreateUsersTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp,
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -102,6 +110,10 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustNotHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, null, A<Action<Identity>>._)).MustNotHaveHappened();
+
+        onSuccessArguments.ToImmutable()
+            .Should().HaveCount(_numUsers)
+            .And.AllSatisfy(x => x.Password.Should().BeNull());
     }
 
     [Fact]
@@ -111,9 +123,16 @@ public class UserProvisioningServiceCreateUsersTests
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToAsyncEnumerable();
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasDataSharedIdp,
             userCreationInfoIdp,
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -123,6 +142,10 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustHaveHappened();
         A.CallTo(() => _provisioningManager.CreateSharedRealmUserAsync(A<string>._, A<UserProfile>._)).MustHaveHappened();
         A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, null, A<Action<Identity>>._)).MustNotHaveHappened();
+
+        onSuccessArguments.ToImmutable()
+            .Should().HaveCount(_numUsers)
+            .And.AllSatisfy(x => x.Password.Should().NotBeNullOrEmpty());
     }
 
     [Fact]
@@ -131,16 +154,23 @@ public class UserProvisioningServiceCreateUsersTests
         var sut = new UserProvisioningService(_provisioningManager, _portalRepositories);
 
         var userCreationInfoIdp = CreateUserCreationInfoIdp().ToList();
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
 
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
         result.Should().HaveCount(_numUsers);
-        result.Select(r => r.UserName).Should().ContainInOrder(userCreationInfoIdp.Select(u => u.UserName));
+        result.Select(r => r.UserName).Should().ContainInConsecutiveOrder(userCreationInfoIdp.Select(u => u.UserName));
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+        onSuccessArguments.ToImmutable().Select(x => x.UserCreationInfo).Should().ContainInConsecutiveOrder(userCreationInfoIdp);
     }
 
     [Fact]
@@ -164,9 +194,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(iamUserId, A<IDictionary<string, IEnumerable<string>>>._))
             .Returns(new (string, IEnumerable<string>, Exception?)[] { (_clientId, Enumerable.Empty<string>(), new Exception("some error")) }.ToAsyncEnumerable());
 
+        var onSuccessArgumentsBuilder = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArgumentsBuilder.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -177,6 +214,8 @@ public class UserProvisioningServiceCreateUsersTests
         error.Should().NotBeNull();
         error.Should().BeOfType(typeof(ConflictException));
         error!.Message.Should().Be($"invalid role data [{string.Join(", ", specialUser.RoleDatas.Select(roleData => $"clientId: {roleData.ClientClientId}, role: {roleData.UserRoleText}, error: some error"))}] has not been assigned in keycloak");
+
+        onSuccessArgumentsBuilder.ToImmutable().Should().HaveCount(_numUsers - 1);
     }
 
     [Fact]
@@ -197,9 +236,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(p => p.UserName == centralUserName), A<IEnumerable<(string, IEnumerable<string>)>>._))
             .Returns(iamUserId);
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -208,6 +254,7 @@ public class UserProvisioningServiceCreateUsersTests
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+        onSuccessArguments.ToImmutable().Should().HaveCount(_numUsers);
     }
 
     [Fact]
@@ -230,9 +277,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(iamUserId))
             .Returns(new[] { new IdentityProviderLink(_companyNameIdpAliasData.IdpAlias, userInfo.UserId, userInfo.UserName) }.ToAsyncEnumerable());
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -267,9 +321,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(iamUserId))
             .Returns(_fixture.CreateMany<IdentityProviderLink>(3).ToAsyncEnumerable());
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -277,6 +338,8 @@ public class UserProvisioningServiceCreateUsersTests
 
         result.Should().HaveCount(_numUsers)
             .And.AllSatisfy(r => r.Error.Should().BeNull());
+
+        onSuccessArguments.ToImmutable().Should().HaveCount(_numUsers);
     }
 
     [Fact]
@@ -291,9 +354,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(x => x.FirstName == userInfo.FirstName), A<IEnumerable<(string Name, IEnumerable<string> Values)>>._))
             .Throws(ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") }));
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -308,6 +378,8 @@ public class UserProvisioningServiceCreateUsersTests
                 x.Parameters.Count() == 2 &&
                 x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
                 x.Parameters.First(p => p.Name == "realm").Value == "bar");
+
+        onSuccessArguments.ToImmutable().Should().HaveCount(_numUsers - 1);
     }
 
     [Fact]
@@ -337,9 +409,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
             .Returns(centralUserId);
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -356,6 +435,8 @@ public class UserProvisioningServiceCreateUsersTests
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        onSuccessArguments.ToImmutable().Should().HaveCount(_numUsers);
     }
 
     [Fact]
@@ -376,9 +457,16 @@ public class UserProvisioningServiceCreateUsersTests
         A.CallTo(() => _provisioningManager.CreateCentralUserAsync(A<UserProfile>.That.Matches(u => u.FirstName == userInfo.FirstName), A<IEnumerable<(string, IEnumerable<string>)>>._))
             .Returns(centralUserId);
 
+        var onSuccessArguments = ImmutableList.CreateBuilder<UserCreationCallbackData>();
+        void OnSuccess(UserCreationCallbackData data)
+        {
+            onSuccessArguments.Add(data);
+        }
+
         var result = await sut.CreateOwnCompanyIdpUsersAsync(
             _companyNameIdpAliasData,
             userCreationInfoIdp.ToAsyncEnumerable(),
+            OnSuccess,
             _cancellationTokenSource.Token
         ).ToListAsync();
 
@@ -393,6 +481,8 @@ public class UserProvisioningServiceCreateUsersTests
 
         result.Should().HaveCount(_numUsers);
         result.Should().AllSatisfy(r => r.Error.Should().BeNull());
+
+        onSuccessArguments.ToImmutable().Should().HaveCount(_numUsers);
     }
 
     #endregion

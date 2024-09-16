@@ -30,7 +30,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -78,6 +77,10 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         var validRoleData = new List<UserRoleData>();
 
+        var displayName = companyNameIdpAliasData.IsSharedIdp
+            ? null
+            : await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
+
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
             line =>
@@ -99,17 +102,23 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     UserStatusId.ACTIVE,
                     true);
             },
-            lines => (companyNameIdpAliasData.IsSharedIdp
-                ? _userProvisioningService
+            lines =>
+                _userProvisioningService
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         lines,
+                        creationData =>
+                        {
+                            if (companyNameIdpAliasData.IsSharedIdp)
+                                return;
+                            var mailParameters = ImmutableDictionary.CreateRange<string, string>([
+                                new("nameCreatedBy", nameCreatedBy),
+                                new("url", _settings.Portal.BasePortalAddress),
+                                new("idpAlias", displayName ?? throw new UnexpectedConditionException("displayname should never be null here"))
+                            ]);
+                            _mailingProcessCreation.CreateMailProcess(creationData.UserCreationInfo.Email, "NewUserExternalIdpTemplate", mailParameters);
+                        },
                         cancellationToken)
-                : CreateOwnCompanyIdpUsersWithEmailAsync(
-                        nameCreatedBy,
-                        companyNameIdpAliasData,
-                        lines,
-                        cancellationToken))
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
@@ -118,53 +127,6 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
             errors.Count(),
             numLines,
             errors.Select(error => CreateUserCreationError(error.Line, error.Error)));
-    }
-
-    private async IAsyncEnumerable<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)> CreateOwnCompanyIdpUsersWithEmailAsync(string nameCreatedBy, CompanyNameIdpAliasData companyNameIdpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        if (companyNameIdpAliasData.IsSharedIdp)
-        {
-            throw new UnexpectedConditionException($"unexpected call to {nameof(CreateOwnCompanyIdpUsersWithEmailAsync)} for shared-idp");
-        }
-
-        UserCreationRoleDataIdpInfo? userCreationInfo = null;
-
-        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
-
-        await foreach (var result in
-            _userProvisioningService
-                .CreateOwnCompanyIdpUsersAsync(
-                    companyNameIdpAliasData,
-                    userCreationInfos
-                        .Select(info =>
-                        {
-                            userCreationInfo = info;
-                            return info;
-                        }),
-                    cancellationToken)
-                .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
-        {
-            if (userCreationInfo == null)
-            {
-                throw new UnexpectedConditionException("userCreationInfo should never be null here");
-            }
-            if (result.Error != null || result.CompanyUserId == Guid.Empty || string.IsNullOrEmpty(userCreationInfo.Email))
-            {
-                yield return result;
-                continue;
-            }
-
-            var mailParameters = ImmutableDictionary.CreateRange(new[]
-            {
-                KeyValuePair.Create("nameCreatedBy", nameCreatedBy),
-                KeyValuePair.Create("url", _settings.Portal.BasePortalAddress),
-                KeyValuePair.Create("idpAlias", displayName)
-            });
-            _mailingProcessCreation.CreateMailProcess(userCreationInfo.Email, "NewUserExternalIdpTemplate", mailParameters);
-
-            yield return (result.CompanyUserId, result.UserName, result.Password, null);
-        }
     }
 
     private static void ValidateUserCreationRoles(IEnumerable<string> roles)
@@ -199,7 +161,8 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
     {
         using var stream = document.OpenReadStream();
 
-        var (companyNameIdpAliasData, _) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var displayName = await _userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
 
         var validRoleData = new List<UserRoleData>();
 
@@ -229,6 +192,18 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                     .CreateOwnCompanyIdpUsersAsync(
                         companyNameIdpAliasData,
                         lines,
+                        creationData =>
+                        {
+                            var mailParameters = ImmutableDictionary.CreateRange<string, string>([
+                                new("password", creationData.Password ?? ""),
+                                new("companyName", displayName),
+                                new("nameCreatedBy", nameCreatedBy),
+                                new("url", _settings.Portal.BasePortalAddress),
+                                new("passwordResendUrl", _settings.Portal.PasswordResendAddress),
+                            ]);
+                            _mailingProcessCreation.CreateMailProcess(creationData.UserCreationInfo.Email, "NewUserTemplate", mailParameters);
+                            _mailingProcessCreation.CreateMailProcess(creationData.UserCreationInfo.Email, "NewUserPasswordTemplate", mailParameters);
+                        },
                         cancellationToken)
                     .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
             cancellationToken).ConfigureAwait(false);

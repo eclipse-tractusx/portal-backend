@@ -46,7 +46,7 @@ public class UserUploadBusinessLogicTests
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly UserSettings _settings;
     private readonly Encoding _encoding;
-    private readonly Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
+    private readonly Func<CompanyNameIdpAliasData, UserCreationRoleDataIdpInfo, Action<UserCreationCallbackData>?, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)> _processLine;
     private readonly Exception _error;
     private readonly Random _random;
     private readonly IIdentityService _identityService;
@@ -82,7 +82,7 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() => _errorMessageService.GetMessage(typeof(ProvisioningServiceErrors), A<int>._))
             .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {Enum.GetName(type, code)} userName: {{userName}} realm: {{realm}}");
 
-        _processLine = A.Fake<Func<UserCreationRoleDataIdpInfo, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
+        _processLine = A.Fake<Func<CompanyNameIdpAliasData, UserCreationRoleDataIdpInfo, Action<UserCreationCallbackData>?, (Guid CompanyUserId, string UserName, string? Password, Exception? Error)>>();
 
         _error = _fixture.Create<TestException>();
     }
@@ -92,7 +92,7 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async Task TestSetup()
     {
-        SetupFakes(new[] { HeaderLine() });
+        SetupFakes([HeaderLine()]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -111,14 +111,14 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async Task TestUserCreationAllSuccess()
     {
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLine(),
             NextLine(),
             NextLine(),
             NextLine(),
             NextLine(),
             NextLine()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -129,7 +129,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(5);
         result.Errors.Should().BeEmpty();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserExternalIdpTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(5, Times.Exactly);
     }
 
@@ -138,14 +138,14 @@ public class UserUploadBusinessLogicTests
     {
         var invalidHeader = _fixture.Create<string>();
 
-        SetupFakes(new[] {
+        SetupFakes([
             invalidHeader,
             NextLine(),
             NextLine(),
             NextLine(),
             NextLine(),
             NextLine()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -153,6 +153,8 @@ public class UserUploadBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"invalid format: expected 'FirstName', got '{invalidHeader}' (Parameter 'document')");
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -161,18 +163,18 @@ public class UserUploadBusinessLogicTests
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
         var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_CONFLICT, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") });
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLine(),
             NextLine(),
             NextLine(),
             NextLine(creationInfo),
             NextLine(),
             NextLine()
-        });
+        ]);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo))))
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .ReturnsLazily(
-                (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                (CompanyNameIdpAliasData _, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData> _) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                     .With(x => x.CompanyUserId, Guid.Empty)
                     .With(x => x.UserName, creationInfo.UserName)
                     .With(x => x.Error, detailError)
@@ -182,7 +184,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -200,7 +202,7 @@ public class UserUploadBusinessLogicTests
                 x.Parameters.Count() == 2 &&
                 x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
                 x.Parameters.First(p => p.Name == "realm").Value == "bar");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserExternalIdpTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
@@ -211,42 +213,42 @@ public class UserUploadBusinessLogicTests
             .With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>())
             .Create();
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLine(),
             NextLine(),
             NextLine(),
             NextLine(creationInfo),
             NextLine(),
             NextLine()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustNotHaveHappened();
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened(4, Times.Exactly);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "at least one role must be specified");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserExternalIdpTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
     [Fact]
     public async Task TestUserCreationParsingError()
     {
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLine(),
             NextLine(),
             NextLine(),
             _fixture.Create<string>(),
             NextLine(),
             NextLine()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -257,7 +259,7 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(1);
         result.Total.Should().Be(5);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "value for LastName type string expected (Parameter 'document')");
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserExternalIdpTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(4, Times.Exactly);
     }
 
@@ -266,30 +268,30 @@ public class UserUploadBusinessLogicTests
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLine(),
             NextLine(),
             NextLine(),
             NextLine(creationInfo),
             NextLine(),
             NextLine()
-        });
+        ]);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo))))
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .Throws(_error);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(2);
         result.Error.Should().Be(1);
         result.Total.Should().Be(3);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == _error.Message);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserExternalIdpTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(2, Times.Exactly);
     }
 
@@ -300,7 +302,7 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async Task TestSetupSharedIdp()
     {
-        SetupFakes(new[] { HeaderLineSharedIdp() });
+        SetupFakes([HeaderLineSharedIdp()]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -317,14 +319,14 @@ public class UserUploadBusinessLogicTests
     [Fact]
     public async Task TestUserCreationSharedIdpAllSuccess()
     {
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -335,8 +337,10 @@ public class UserUploadBusinessLogicTests
         result.Error.Should().Be(0);
         result.Total.Should().Be(5);
         result.Errors.Should().BeEmpty();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(5, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(5, Times.Exactly);
     }
 
     [Fact]
@@ -344,14 +348,14 @@ public class UserUploadBusinessLogicTests
     {
         var invalidHeader = _fixture.Create<string>();
 
-        SetupFakes(new[] {
+        SetupFakes([
             invalidHeader,
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -359,6 +363,8 @@ public class UserUploadBusinessLogicTests
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         error.Message.Should().Be($"invalid format: expected 'FirstName', got '{invalidHeader}' (Parameter 'document')");
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
     }
 
     [Fact]
@@ -368,21 +374,21 @@ public class UserUploadBusinessLogicTests
             .With(x => x.RoleDatas, Enumerable.Empty<UserRoleData>())
             .Create();
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(creationInfo),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustNotHaveHappened();
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustNotHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Not.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened(4, Times.Exactly);
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -390,26 +396,30 @@ public class UserUploadBusinessLogicTests
         result.Total.Should().Be(5);
         result.Errors.Should().HaveCount(1);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "at least one role must be specified");
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
     }
 
     [Fact]
     public async Task TestUserCreationSharedIdpCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
-        var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, new ErrorParameter[] { new("userName", "foo"), new("realm", "bar") });
+        var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, [new("userName", "foo"), new("realm", "bar")]);
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(creationInfo),
             NextLineSharedIdp(),
             NextLineSharedIdp()
-        });
+        ]);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo))))
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .ReturnsLazily(
-                (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                (CompanyNameIdpAliasData _, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? _) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
                     .With(x => x.CompanyUserId, Guid.Empty)
                     .With(x => x.UserName, creationInfo.UserName)
                     .With(x => x.Error, detailError)
@@ -419,7 +429,7 @@ public class UserUploadBusinessLogicTests
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(4);
@@ -437,19 +447,23 @@ public class UserUploadBusinessLogicTests
                 x.Parameters.Count() == 2 &&
                 x.Parameters.First(p => p.Name == "userName").Value == "foo" &&
                 x.Parameters.First(p => p.Name == "realm").Value == "bar");
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
     }
 
     [Fact]
     public async Task TestUserCreationSharedIdpParsingError()
     {
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             _fixture.Create<string>(),
             NextLineSharedIdp(),
             NextLineSharedIdp()
-        });
+        ]);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
@@ -461,6 +475,10 @@ public class UserUploadBusinessLogicTests
         result.Total.Should().Be(5);
         result.Errors.Should().HaveCount(1);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == "value for LastName type string expected (Parameter 'document')");
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(4, Times.Exactly);
     }
 
     [Fact]
@@ -468,29 +486,33 @@ public class UserUploadBusinessLogicTests
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
 
-        SetupFakes(new[] {
+        SetupFakes([
             HeaderLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(),
             NextLineSharedIdp(creationInfo),
             NextLineSharedIdp(),
             NextLineSharedIdp()
-        });
+        ]);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo))))
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .Throws(_error);
 
         var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)))).MustHaveHappened();
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened();
 
         result.Should().NotBeNull();
         result.Created.Should().Be(2);
         result.Error.Should().Be(1);
         result.Total.Should().Be(3);
         result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 3 && x.Message == _error.Message);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(2, Times.Exactly);
     }
 
     #endregion
@@ -514,15 +536,21 @@ public class UserUploadBusinessLogicTests
             .ReturnsLazily((string clientId, IEnumerable<string> roles, Guid _) =>
                 roles.Select(role => _fixture.Build<UserRoleData>().With(x => x.ClientClientId, clientId).With(x => x.UserRoleText, role).Create()));
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
-                userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData idpAliasData, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Action<UserCreationCallbackData>? onSuccess, CancellationToken _) =>
+                userCreationInfos.Select(userCreationInfo => _processLine(idpAliasData, userCreationInfo, onSuccess)));
 
-        A.CallTo(() => _processLine(A<UserCreationRoleDataIdpInfo>._)).ReturnsLazily(
-            (UserCreationRoleDataIdpInfo creationInfo) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
-                .With(x => x.UserName, creationInfo.UserName)
-                .With(x => x.Error, default(Exception?))
-                .Create());
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>._, A<Action<UserCreationCallbackData>>._)).ReturnsLazily(
+            (CompanyNameIdpAliasData aliasData, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? onSucess) =>
+            {
+                var password = aliasData.IsSharedIdp ? _fixture.Create<string>() : null;
+                onSucess?.Invoke(new(creationInfo, password));
+                return _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                    .With(x => x.UserName, creationInfo.UserName)
+                    .With(x => x.Password, password)
+                    .With(x => x.Error, default(Exception?))
+                    .Create();
+            });
     }
 
     private static string HeaderLine() =>
