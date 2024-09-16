@@ -33,3 +33,8 @@ public record UserCreationRoleDataIdpInfo(
     UserStatusId UserStatusId,
     bool Enabled
 );
+
+public record UserCreationCallbackData(
+    UserCreationRoleDataIdpInfo UserCreationInfo,
+    string? Password
+);

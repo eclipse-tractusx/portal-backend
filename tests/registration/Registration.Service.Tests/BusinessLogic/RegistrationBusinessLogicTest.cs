@@ -1554,7 +1554,7 @@ public class RegistrationBusinessLogicTest
 
         await sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.AttachAndModifyCompanyApplication(_existingApplicationId, A<Action<CompanyApplication>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappened();
@@ -1655,7 +1655,7 @@ public class RegistrationBusinessLogicTest
         var error = await Assert.ThrowsAsync<TestException>(Act);
         error.Message.Should().Be(_error.Message);
 
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._)).MustHaveHappened();
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._)).MustHaveHappened();
         A.CallTo(() => _applicationRepository.CreateInvitation(A<Guid>.That.IsEqualTo(_existingApplicationId), A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>.That.IsEqualTo(userCreationInfo.eMail), A<string>._, A<IReadOnlyDictionary<string, string>>._))
@@ -3258,8 +3258,8 @@ public class RegistrationBusinessLogicTest
 
     private void SetupFakesForInvitation()
     {
-        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<CancellationToken>._))
-            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, CancellationToken _) =>
+        A.CallTo(() => _userProvisioningService.CreateOwnCompanyIdpUsersAsync(A<CompanyNameIdpAliasData>._, A<IAsyncEnumerable<UserCreationRoleDataIdpInfo>>._, A<Action<UserCreationCallbackData>>._, A<CancellationToken>._))
+            .ReturnsLazily((CompanyNameIdpAliasData _, IAsyncEnumerable<UserCreationRoleDataIdpInfo> userCreationInfos, Action<UserCreationCallbackData>? onSuccess, CancellationToken _) =>
                 userCreationInfos.Select(userCreationInfo => _processLine(userCreationInfo)));
 
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
