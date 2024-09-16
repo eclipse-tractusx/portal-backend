@@ -30,6 +30,8 @@ public record CompanyServiceAccountDetailedData(
     UserStatusId Status,
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    CompanyServiceAccountKindId CompanyServiceAccountKindId,
+    Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
     OfferResponseData? OfferSubscriptionData,
     CompanyLastEditorData? CompanyLastEditorData,
@@ -42,6 +44,7 @@ public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? S
 public record CompanyLastEditorData(string? Name, string CompanyName);
 
 public record DimServiceAccountData(
+    string AuthenticationServiceUrl,
     byte[] ClientSecret,
     byte[]? InitializationVector,
     int EncryptionMode

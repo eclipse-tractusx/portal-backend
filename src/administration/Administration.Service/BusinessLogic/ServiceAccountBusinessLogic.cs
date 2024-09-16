@@ -192,6 +192,8 @@ public class ServiceAccountBusinessLogic(
             iamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
+            result.CompanyServiceAccountKindId,
+            result.DimServiceAccountData!.AuthenticationServiceUrl,
             result.Status,
             secret,
             result.ConnectorData,

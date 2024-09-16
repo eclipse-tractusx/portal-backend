@@ -146,6 +146,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                         userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
                         userRole.UserRoleText)),
                 x.ServiceAccount.CompanyServiceAccountTypeId,
+                x.ServiceAccount.CompanyServiceAccountKindId,
+                x.ServiceAccount.OfferSubscriptionId,
                 x.Connector == null
                     ? null
                     : new ConnectorResponseData(
@@ -168,6 +170,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 x.ServiceAccount.DimCompanyServiceAccount == null
                     ? null
                     : new DimServiceAccountData(
+                        x.DimCompanyServiceAccount!.AuthenticationServiceUrl,
                         x.DimCompanyServiceAccount!.ClientSecret,
                         x.DimCompanyServiceAccount.InitializationVector,
                         x.DimCompanyServiceAccount.EncryptionMode)))
