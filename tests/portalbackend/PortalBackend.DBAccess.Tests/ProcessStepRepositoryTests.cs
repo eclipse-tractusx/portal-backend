@@ -263,7 +263,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
             ProcessStepTypeId.START_CLEARING_HOUSE,
             ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE,
             ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
-            ProcessStepTypeId.ACTIVATE_APPLICATION,
+            ProcessStepTypeId.ASSIGN_INITIAL_ROLES,
         };
 
         var sut = await CreateSut();
@@ -288,7 +288,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
             ProcessStepTypeId.START_CLEARING_HOUSE,
             ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE,
             ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
-            ProcessStepTypeId.ACTIVATE_APPLICATION,
+            ProcessStepTypeId.ASSIGN_INITIAL_ROLES,
         };
 
         var sut = await CreateSut();

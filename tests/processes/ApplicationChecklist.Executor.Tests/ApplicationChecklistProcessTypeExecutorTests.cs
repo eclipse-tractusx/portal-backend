@@ -63,7 +63,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
         _errorFunc = A.Fake<Func<Exception, IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
         _firstExecution = new IApplicationChecklistHandlerService.ProcessStepExecution(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, true, _firstProcessFunc, _errorFunc);
 
-        _secondStepTypeId = ProcessStepTypeId.ACTIVATE_APPLICATION;
+        _secondStepTypeId = ProcessStepTypeId.ASSIGN_INITIAL_ROLES;
         _secondProcessFunc = A.Fake<Func<IApplicationChecklistService.WorkerChecklistProcessStepData, CancellationToken, Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult>>>();
         _secondExecution = new IApplicationChecklistHandlerService.ProcessStepExecution(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, false, _secondProcessFunc, null);
 
@@ -712,7 +712,7 @@ public class ApplicationChecklistProcessTypeExecutorTests
 
     [Theory]
     [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, true)]
-    [InlineData(ProcessStepTypeId.ACTIVATE_APPLICATION, false)]
+    [InlineData(ProcessStepTypeId.ASSIGN_INITIAL_ROLES, false)]
 
     public async Task IsLockRequested_ReturnsExpected(ProcessStepTypeId stepTypeId, bool isLocked)
     {

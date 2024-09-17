@@ -58,7 +58,7 @@ public class SdFactoryBusinessLogic(
                     entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.SKIPPED;
                     entry.Comment = "Self description was skipped due to clearinghouse trigger is disabled";
                 },
-                [ProcessStepTypeId.ACTIVATE_APPLICATION],
+                [ProcessStepTypeId.ASSIGN_INITIAL_ROLES],
                 null,
                 true,
                 "Self description was skipped due to clearinghouse trigger is disabled"
@@ -133,7 +133,7 @@ public class SdFactoryBusinessLogic(
                         : ApplicationChecklistEntryStatusId.FAILED;
                 item.Comment = data.Message;
             },
-            confirm ? new[] { ProcessStepTypeId.ACTIVATE_APPLICATION } : null);
+            confirm ? new[] { ProcessStepTypeId.ASSIGN_INITIAL_ROLES } : null);
     }
 
     /// <inheritdoc />
