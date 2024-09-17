@@ -24,10 +24,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
@@ -37,35 +35,19 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 
-public class ApplicationActivationService : IApplicationActivationService
+public class ApplicationActivationService(
+    IPortalRepositories portalRepositories,
+    INotificationService notificationService,
+    IProvisioningManager provisioningManager,
+    IDateTimeProvider dateTime,
+    ICustodianService custodianService,
+    IMailingProcessCreation mailingProcessCreation,
+    IOptions<ApplicationActivationSettings> options)
+    : IApplicationActivationService
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly INotificationService _notificationService;
-    private readonly IProvisioningManager _provisioningManager;
-    private readonly IDateTimeProvider _dateTime;
-    private readonly ICustodianService _custodianService;
-    private readonly IMailingProcessCreation _mailingProcessCreation;
-    private readonly ApplicationActivationSettings _settings;
+    private readonly ApplicationActivationSettings _settings = options.Value;
 
-    public ApplicationActivationService(
-        IPortalRepositories portalRepositories,
-        INotificationService notificationService,
-        IProvisioningManager provisioningManager,
-        IDateTimeProvider dateTime,
-        ICustodianService custodianService,
-        IMailingProcessCreation mailingProcessCreation,
-        IOptions<ApplicationActivationSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _notificationService = notificationService;
-        _provisioningManager = provisioningManager;
-        _dateTime = dateTime;
-        _custodianService = custodianService;
-        _mailingProcessCreation = mailingProcessCreation;
-        _settings = options.Value;
-    }
-
-    public Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    public Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         if (!InProcessingTime())
         {
@@ -78,87 +60,16 @@ public class ApplicationActivationService : IApplicationActivationService
             throw new ConflictException($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: {string.Join(",", prerequisiteEntries)}");
         }
 
-        return HandleApplicationActivationInternal(context, cancellationToken);
-    }
-
-    private async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivationInternal(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
-    {
-        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
-        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
-        if (result == default)
-        {
-            throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
-        }
-
-        var (companyId, companyName, businessPartnerNumber, sharedIdpAliase, applicationTypeId, networkRegistrationProcessId) = result;
-        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
-        {
-            throw new ConflictException($"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
-        }
-
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
-        var assignedRoles = await AssignRolesAndBpn(context.ApplicationId, userRolesRepository, applicationRepository, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
-        await RemoveRegistrationRoles(context.ApplicationId, userRolesRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SetTheme(sharedIdpAliase).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
-        {
-            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
-            ca.DateLastChanged = DateTimeOffset.UtcNow;
-        });
-
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
-        {
-            c.CompanyStatusId = CompanyStatusId.ACTIVE;
-        });
-
-        if (applicationTypeId == CompanyApplicationTypeId.EXTERNAL)
-        {
-            if (networkRegistrationProcessId == null)
-            {
-                throw new ConflictException("ProcessId should be set for external applications");
-            }
-
-            _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(Enumerable.Repeat(new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepStatusId.TODO, networkRegistrationProcessId.Value), 1));
-        }
-
-        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
-        await _notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId).AwaitAll(cancellationToken).ConfigureAwait(false);
-
-        string? resultMessage = null;
-        if (!_settings.UseDimWallet)
-        {
-            resultMessage = await _custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
-
-        await PostRegistrationWelcomeEmailAsync(applicationRepository, context.ApplicationId, companyName, businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (assignedRoles != null)
-        {
-            _settings.ApplicationApprovalInitialRoles
-                .Select(initialClientRoles => (
-                    Initial: initialClientRoles,
-                    AssignedRoles: assignedRoles[initialClientRoles.ClientId]))
-                .Select(x => (
-                    x.Initial.ClientId,
-                    Unassigned: x.Initial.UserRoleNames.Except(x.AssignedRoles.Roles),
-                    x.AssignedRoles.Error))
-                .Where(clientRoles => clientRoles.Unassigned.Any())
-                .IfAny(unassigned =>
-                    throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Unassigned)}], error: {clientRoles.Error}"))}"));
-        }
-
-        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+        return Task.FromResult(new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry =>
             {
-                entry.Comment = resultMessage;
-                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.IN_PROGRESS;
             },
-            null,
-            Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.ACTIVATE_APPLICATION }),
+            Enumerable.Repeat(ProcessStepTypeId.ASSIGN_INITIAL_ROLES, 1),
+            Enum.GetValues<ProcessStepTypeId>().Except(new[] { ProcessStepTypeId.START_APPLICATION_ACTIVATION }),
             true,
-            null);
+            null));
     }
 
     private bool InProcessingTime()
@@ -170,69 +81,149 @@ public class ApplicationActivationService : IApplicationActivationService
             return true;
         }
 
-        var now = _dateTime.Now.TimeOfDay;
+        var now = dateTime.Now.TimeOfDay;
         return startTime > endTime ?
             now >= startTime || now <= endTime :
             now >= startTime && now <= endTime;
     }
 
-    private async Task<IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>?> AssignRolesAndBpn(Guid applicationId, IUserRolesRepository userRolesRepository, IApplicationRepository applicationRepository, string businessPartnerNumber)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> AssignRoles(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var userBusinessPartnersRepository = _portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
         var approvalInitialRoles = _settings.ApplicationApprovalInitialRoles;
-        var initialRolesData = await GetRoleData(userRolesRepository, approvalInitialRoles).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        IDictionary<string, (IEnumerable<string> Roles, Exception? Error)>? assignedRoles = null;
-        var invitedUsersData = applicationRepository
-            .GetInvitedUsersDataByApplicationIdUntrackedAsync(applicationId);
-        await foreach (var userData in invitedUsersData.ConfigureAwait(false))
+        var initialRoles = await userRolesRepository
+            .GetUserRoleDataUntrackedAsync(approvalInitialRoles)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (initialRoles.Count < approvalInitialRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", approvalInitialRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+        }
 
-            assignedRoles = await _provisioningManager
+        var invitedUsersData = portalRepositories.GetInstance<IApplicationRepository>()
+            .GetInvitedUsersWithoutInitialRoles(context.ApplicationId, initialRoles.Select(x => x.UserRoleId));
+        await using var enumerator = invitedUsersData.GetAsyncEnumerator(cancellationToken);
+        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        {
+            var userData = enumerator.Current;
+            var iamUserId = await provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+
+            var assignedRoles = await provisioningManager
                 .AssignClientRolesToCentralUserAsync(iamUserId, approvalInitialRoles.ToDictionary(x => x.ClientId, x => x.UserRoleNames))
-                .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error))
+                .ToDictionaryAsync(assigned => assigned.Client, assigned => (assigned.Roles, assigned.Error), cancellationToken)
                 .ConfigureAwait(false);
 
-            foreach (var roleData in initialRolesData.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
-                                                                        assignedRoles[roleData.ClientClientId].Roles.Contains(roleData.UserRoleText)))
+            _settings.ApplicationApprovalInitialRoles
+                .Select(initialClientRoles => (
+                    Initial: initialClientRoles,
+                    AssignedRoles: assignedRoles[initialClientRoles.ClientId]))
+                .Select(x => (
+                    x.Initial.ClientId,
+                    Unassigned: x.Initial.UserRoleNames.Except(x.AssignedRoles.Roles),
+                    x.AssignedRoles.Error))
+                .Where(clientRoles => clientRoles.Unassigned.Any())
+                .IfAny(unassigned =>
+                    throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Unassigned)}], error: {clientRoles.Error}"))}"));
+
+            foreach (var roleData in initialRoles.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
+                                                                    assignedRoles[roleData.ClientClientId].Roles.Contains(roleData.UserRoleText)))
             {
                 userRolesRepository.CreateIdentityAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
             }
 
-            if (userData.BusinessPartnerNumbers.Contains(businessPartnerNumber))
-                continue;
-
-            userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(userData.CompanyUserId, businessPartnerNumber);
-            await _provisioningManager
-                .AddBpnAttributetoUserAsync(iamUserId, Enumerable.Repeat(businessPartnerNumber, 1))
-                .ConfigureAwait(ConfigureAwaitOptions.None);
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? ProcessStepTypeId.ASSIGN_INITIAL_ROLES // in case there are further users eligible to add initial roles the same step is created again
+                : ProcessStepTypeId.ASSIGN_BPN_TO_USERS;
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                null,
+                Enumerable.Repeat(nextStepTypeIds, 1),
+                null,
+                true,
+                null);
         }
 
-        return assignedRoles;
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            null,
+            Enumerable.Repeat(ProcessStepTypeId.ASSIGN_BPN_TO_USERS, 1),
+            null,
+            true,
+            null);
     }
 
-    private async Task RemoveRegistrationRoles(Guid applicationId, IUserRolesRepository userRolesRepository)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> AssignBpn(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        var userBusinessPartnersRepository = portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
+        var applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
+        var businessPartnerNumber = await applicationRepository
+            .GetBpnForApplicationIdAsync(context.ApplicationId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (businessPartnerNumber is null)
+        {
+            throw new ConflictException("BusinessPartnerNumber must be set");
+        }
+
+        var invitedUsersData = applicationRepository
+            .GetInvitedUserDataByApplicationWithoutBpn(context.ApplicationId);
+        await using var enumerator = invitedUsersData.GetAsyncEnumerator(cancellationToken);
+        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        {
+            var companyUserId = enumerator.Current;
+            var iamUserId = await provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {companyUserId} not found in keycloak");
+
+            userBusinessPartnersRepository.CreateCompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
+            await provisioningManager
+                .AddBpnAttributetoUserAsync(iamUserId, Enumerable.Repeat(businessPartnerNumber, 1))
+                .ConfigureAwait(ConfigureAwaitOptions.None);
+
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? ProcessStepTypeId.ASSIGN_BPN_TO_USERS // in case there are further users eligible to add the bpn the same step is created again
+                : ProcessStepTypeId.REMOVE_REGISTRATION_ROLES;
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                null,
+                Enumerable.Repeat(nextStepTypeIds, 1),
+                null,
+                true,
+                null);
+        }
+
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            null,
+            Enumerable.Repeat(ProcessStepTypeId.REMOVE_REGISTRATION_ROLES, 1),
+            null,
+            true,
+            null);
+    }
+
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> RemoveRegistrationRoles(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
         var iamClientIds = _settings.ClientToRemoveRolesOnActivation;
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
         var clientRoleData = await userRolesRepository
             .GetUserRolesByClientId(iamClientIds)
-            .ToListAsync()
+            .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
         var invitedUsersData = userRolesRepository
-            .GetUserWithUserRolesForApplicationId(applicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
+            .GetUserWithUserRolesForApplicationId(context.ApplicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
 
         var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
+        await using var enumerator = invitedUsersData.GetAsyncEnumerator(cancellationToken);
 
-        await foreach (var userData in invitedUsersData.ConfigureAwait(false))
+        if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
+            var userData = enumerator.Current;
             if (!userData.UserRoleIds.Any())
             {
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
-            var iamUserId = await _provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+            var iamUserId =
+                await provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString())
+                    .ConfigureAwait(ConfigureAwaitOptions.None) ??
+                throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
 
             var roleNamesToDelete = userData.UserRoleIds
                 .Select(roleId => userRoles[roleId])
@@ -241,24 +232,138 @@ public class ApplicationActivationService : IApplicationActivationService
                     clientRoleDataGroup => clientRoleDataGroup.Key,
                     clientRoleData => clientRoleData.Select(y => y.UserRoleText));
 
-            await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
+            await provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
-            userRolesRepository.DeleteCompanyUserAssignedRoles(userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+            userRolesRepository.DeleteCompanyUserAssignedRoles(
+                userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+
+            var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
+                ? ProcessStepTypeId.REMOVE_REGISTRATION_ROLES // in case there are further users eligible to remove roles from the same step is created again
+                : ProcessStepTypeId.SET_THEME;
+            return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+                ProcessStepStatusId.DONE,
+                null,
+                Enumerable.Repeat(nextStepTypeIds, 1),
+                null,
+                true,
+                null);
         }
+
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            null,
+            Enumerable.Repeat(ProcessStepTypeId.SET_THEME, 1),
+            null,
+            true,
+            null);
     }
 
-    private async Task SetTheme(IEnumerable<string> iamIdpAliasse)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SetTheme(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
+        var iamIdpAliasse = await portalRepositories.GetInstance<IApplicationRepository>()
+            .GetSharedIdpAliasseForApplicationId(context.ApplicationId)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
         foreach (var alias in iamIdpAliasse)
         {
-            await _provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
+            await provisioningManager.UpdateSharedRealmTheme(alias, _settings.LoginTheme).ConfigureAwait(false);
         }
+
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            null,
+            Enumerable.Repeat(_settings.UseDimWallet ? ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION : ProcessStepTypeId.SET_MEMBERSHIP, 1),
+            null,
+            true,
+            null);
     }
 
-    private async Task PostRegistrationWelcomeEmailAsync(IApplicationRepository applicationRepository, Guid applicationId, string companyName, string businessPartnerNumber)
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SetMembership(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        var businessPartnerNumber = await portalRepositories.GetInstance<IApplicationRepository>()
+            .GetBpnForApplicationIdAsync(context.ApplicationId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (businessPartnerNumber is null)
+        {
+            throw new ConflictException("BusinessPartnerNumber must be set");
+        }
+
+        var resultMessage = await custodianService.SetMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            entry =>
+            {
+                entry.Comment = resultMessage;
+            },
+            Enumerable.Repeat(ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION, 1),
+            null,
+            true,
+            null);
+    }
+
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SaveApplicationActivationToDatabase(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        var applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
+        var result = await applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(context.ApplicationId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (result == default)
+        {
+            throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
+        }
+
+        var (companyId, companyName, businessPartnerNumber, applicationTypeId, networkRegistrationProcessId) = result;
+        if (string.IsNullOrWhiteSpace(businessPartnerNumber))
+        {
+            throw new ConflictException(
+                $"BusinessPartnerNumber (bpn) for CompanyApplications {context.ApplicationId} company {companyId} is empty");
+        }
+
+        applicationRepository.AttachAndModifyCompanyApplication(context.ApplicationId, ca =>
+        {
+            ca.ApplicationStatusId = CompanyApplicationStatusId.CONFIRMED;
+            ca.DateLastChanged = DateTimeOffset.UtcNow;
+        });
+
+        portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(companyId, null, c =>
+        {
+            c.CompanyStatusId = CompanyStatusId.ACTIVE;
+        });
+
+        if (applicationTypeId == CompanyApplicationTypeId.EXTERNAL)
+        {
+            if (networkRegistrationProcessId == null)
+            {
+                throw new ConflictException("ProcessId should be set for external applications");
+            }
+
+            portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(
+                Enumerable.Repeat(
+                    new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(
+                        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepStatusId.TODO,
+                        networkRegistrationProcessId.Value), 1));
+        }
+
+        var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
+        await notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId)
+            .AwaitAll(cancellationToken).ConfigureAwait(false);
+        var failedUserNames = await PostRegistrationWelcomeEmailAsync(context.ApplicationId, companyName, businessPartnerNumber, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            entry =>
+            {
+                entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
+            },
+            null,
+            null,
+            true,
+            failedUserNames.Count == 0 ? null : $"user(s) {string.Join(",", failedUserNames)} had no assigned email");
+    }
+
+    private async Task<List<string>> PostRegistrationWelcomeEmailAsync(Guid applicationId, string companyName, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var failedUserNames = new List<string>();
-        await foreach (var user in applicationRepository.GetEmailDataUntrackedAsync(applicationId).ConfigureAwait(false))
+        await foreach (var user in portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
             if (string.IsNullOrWhiteSpace(user.Email))
@@ -277,24 +382,9 @@ public class ApplicationActivationService : IApplicationActivationService
                 KeyValuePair.Create("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
                 KeyValuePair.Create("dataspaceUrl", _settings.DataspaceAddress)
             });
-            _mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
+            mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
 
-        if (failedUserNames.Any())
-            throw new ConflictException($"user(s) {string.Join(",", failedUserNames)} has no assigned email");
-    }
-
-    private static async Task<IEnumerable<UserRoleData>> GetRoleData(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleConfig> roles)
-    {
-        var roleData = await userRolesRepository
-            .GetUserRoleDataUntrackedAsync(roles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        if (roleData.Count < roles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
-        {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", roles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
-        }
-
-        return roleData;
+        return failedUserNames;
     }
 }

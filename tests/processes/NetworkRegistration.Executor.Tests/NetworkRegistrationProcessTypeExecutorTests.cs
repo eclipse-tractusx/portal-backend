@@ -77,7 +77,7 @@ public class NetworkRegistrationProcessTypeExecutorTests
     [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP)]
     [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
-    [InlineData(ProcessStepTypeId.ACTIVATE_APPLICATION)]
+    [InlineData(ProcessStepTypeId.ASSIGN_INITIAL_ROLES)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
     [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
     [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE)]

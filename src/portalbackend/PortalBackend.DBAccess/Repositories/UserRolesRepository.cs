@@ -277,6 +277,7 @@ public class UserRolesRepository : IUserRolesRepository
             .Select(user => new ValueTuple<Guid, IEnumerable<Guid>>(
                 user.Id,
                 user.IdentityAssignedRoles.Where(assigned => userRoleIds.Contains(assigned.UserRoleId)).Select(assigned => assigned.UserRoleId)))
+            .Take(2)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

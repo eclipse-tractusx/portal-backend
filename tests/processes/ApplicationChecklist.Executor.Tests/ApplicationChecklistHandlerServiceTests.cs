@@ -74,7 +74,10 @@ public class ChecklistHandlerServiceTests
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryTypeId.CLEARING_HOUSE)]
     [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP, ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP)]
-    [InlineData(ProcessStepTypeId.ACTIVATE_APPLICATION, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)]
+    [InlineData(ProcessStepTypeId.START_APPLICATION_ACTIVATION, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)]
+    [InlineData(ProcessStepTypeId.ASSIGN_INITIAL_ROLES, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)]
+    [InlineData(ProcessStepTypeId.ASSIGN_BPN_TO_USERS, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)]
+    [InlineData(ProcessStepTypeId.REMOVE_REGISTRATION_ROLES, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION)]
     public void GetProcessStepExecution_ExecutableStep_Success(ProcessStepTypeId stepTypeId, ApplicationChecklistEntryTypeId entryTypeId)
     {
         // Arrange
@@ -133,8 +136,26 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.START_SELF_DESCRIPTION_LP:
                 A.CallTo(() => _sdFactoryBusinessLogic.StartSelfDescriptionRegistration(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
-            case ProcessStepTypeId.ACTIVATE_APPLICATION:
-                A.CallTo(() => _applicationActivationService.HandleApplicationActivation(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            case ProcessStepTypeId.START_APPLICATION_ACTIVATION:
+                A.CallTo(() => _applicationActivationService.StartApplicationActivation(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.ASSIGN_INITIAL_ROLES:
+                A.CallTo(() => _applicationActivationService.AssignRoles(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.ASSIGN_BPN_TO_USERS:
+                A.CallTo(() => _applicationActivationService.AssignBpn(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.REMOVE_REGISTRATION_ROLES:
+                A.CallTo(() => _applicationActivationService.RemoveRegistrationRoles(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.SET_THEME:
+                A.CallTo(() => _applicationActivationService.SetTheme(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.SET_MEMBERSHIP:
+                A.CallTo(() => _applicationActivationService.SetMembership(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION:
+                A.CallTo(() => _applicationActivationService.SaveApplicationActivationToDatabase(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
             default:
                 true.Should().BeFalse($"unexpected ProcessStepTypeId: {stepTypeId}");
@@ -183,8 +204,33 @@ public class ChecklistHandlerServiceTests
                 execution.ErrorFunc.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)).MustHaveHappenedOnceExactly();
                 break;
-            case ProcessStepTypeId.ACTIVATE_APPLICATION:
+            case ProcessStepTypeId.START_APPLICATION_ACTIVATION:
                 execution.ErrorFunc.Should().BeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(A<Exception>._, A<ProcessStepTypeId>._)).MustNotHaveHappened();
+                break;
+            case ProcessStepTypeId.ASSIGN_INITIAL_ROLES:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.ASSIGN_BPN_TO_USERS:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.REMOVE_REGISTRATION_ROLES:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.SET_THEME:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_THEME)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.SET_MEMBERSHIP:
+                execution.ErrorFunc.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION:
+                execution.ErrorFunc.Should().BeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(A<Exception>._, A<ProcessStepTypeId>._)).MustNotHaveHappened();
                 break;
             default:
                 true.Should().BeFalse($"unexpected ProcessStepTypeId: {stepTypeId}");

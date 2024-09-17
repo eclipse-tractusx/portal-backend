@@ -4097,6 +4097,166 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+  '/api/administration/registration/application/{applicationId}/retrigger-assign-initial-roles':
+    post:
+      tags:
+        - Registration
+      summary: 'Retriggers the last failed step (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the applicationId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/registration/application/{applicationId}/retrigger-assign-bpn':
+    post:
+      tags:
+        - Registration
+      summary: 'Retriggers the last failed step (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the applicationId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/registration/application/{applicationId}/retrigger-remove-roles':
+    post:
+      tags:
+        - Registration
+      summary: 'Retriggers the last failed step (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the applicationId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/registration/application/{applicationId}/retrigger-set-theme':
+    post:
+      tags:
+        - Registration
+      summary: 'Retriggers the last failed step (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the applicationId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/registration/application/{applicationId}/retrigger-set-membership':
+    post:
+      tags:
+        - Registration
+      summary: 'Retriggers the last failed step (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Either the CompanyApplication is not in status SUBMITTED or the next step can't automatically retriggered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No application found for the applicationId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   /api/administration/RegistrationStatus/callback:
     get:
       tags:
@@ -7338,7 +7498,7 @@ components:
         - AWAIT_CLEARING_HOUSE_RESPONSE
         - START_SELF_DESCRIPTION_LP
         - RETRIGGER_SELF_DESCRIPTION_LP
-        - ACTIVATE_APPLICATION
+        - START_APPLICATION_ACTIVATION
         - RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
         - RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL
         - MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE
@@ -7358,6 +7518,17 @@ components:
         - RETRIGGER_TRANSMIT_DID_BPN
         - RETRIGGER_REQUEST_BPN_CREDENTIAL
         - RETRIGGER_REQUEST_MEMBERSHIP_CREDENTIAL
+        - ASSIGN_INITIAL_ROLES
+        - ASSIGN_BPN_TO_USERS
+        - REMOVE_REGISTRATION_ROLES
+        - SET_THEME
+        - SET_MEMBERSHIP
+        - FINISH_APPLICATION_ACTIVATION
+        - RETRIGGER_ASSIGN_INITIAL_ROLES
+        - RETRIGGER_ASSIGN_BPN_TO_USERS
+        - RETRIGGER_REMOVE_REGISTRATION_ROLES
+        - RETRIGGER_SET_THEME
+        - RETRIGGER_SET_MEMBERSHIP
         - TRIGGER_PROVIDER
         - AWAIT_START_AUTOSETUP
         - OFFERSUBSCRIPTION_CLIENT_CREATION

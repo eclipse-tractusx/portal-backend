@@ -39,8 +39,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Test
 
 public class ApplicationActivationTests
 {
+    # region Initialization
+
     private const string BusinessPartnerNumber = "CAXLSHAREDIDPZZ";
-    private const string IdpAlias = "idp5";
     private const string ClientId = "catenax-portal";
     private const string CompanyName = "Shared Idp Test";
     private static readonly Guid Id = new("d90995fe-1241-4b8d-9f5c-f3909acc6383");
@@ -57,8 +58,17 @@ public class ApplicationActivationTests
     private static readonly string CentralUserId3 = "6bc51706-9a30-4eb9-9e60-77fdd6d9cd71";
     private static readonly Guid ProcessId = new("db9d99cd-51a3-4933-a1cf-dc1b836b53bb");
 
+    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> Checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+        {
+            { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+            { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+            { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+            { ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE },
+            { ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE }
+        }
+        .ToImmutableDictionary();
+
     private readonly IFixture _fixture;
-    private readonly IPortalRepositories _portalRepositories;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
     private readonly ICompanyRepository _companyRepository;
@@ -80,7 +90,7 @@ public class ApplicationActivationTests
         _fixture.ConfigureFixture();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
-        _portalRepositories = A.Fake<IPortalRepositories>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
         _applicationRepository = A.Fake<IApplicationRepository>();
         _businessPartnerRepository = A.Fake<IUserBusinessPartnerRepository>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
@@ -107,178 +117,168 @@ public class ApplicationActivationTests
         {
             "remove-id"
         };
-        A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IApplicationRepository>()).Returns(_applicationRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
+        A.CallTo(() => portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _mailingProcessCreation, options);
+        _sut = new ApplicationActivationService(portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _mailingProcessCreation, options);
     }
 
-    #region HandleApplicationActivation
+    #endregion
+
+    #region START_APPLICATION_ACTIVATION
 
     [Fact]
-    public async Task HandleApplicationActivation_OutsideConfiguredTime_DoesntActivateApplication()
+    public async Task StartApplicationActivation_OutsideConfiguredTime_DoesntActivateApplication()
     {
         //Arrange
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 12, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(4);
         _settings.EndTime = TimeSpan.FromHours(8);
-        SetupFakes(Enumerable.Empty<UserRoleConfig>(), Enumerable.Empty<UserRoleData>(), companyUserAssignedRole, companyUserAssignedBusinessPartner);
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
             new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
+                { ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO }
             }.ToImmutableDictionary(),
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        var result = await _sut.StartApplicationActivation(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustNotHaveHappened();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId3, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        _notifications.Should().BeEmpty();
-        _notifiedUserIds.Should().BeEmpty();
+        result.Modified.Should().BeFalse();
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.ProcessMessage.Should().BeNull();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.TODO);
+        result.ScheduleStepTypeIds.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithNotAllStepsInDone_ThrowsConflictException()
+    public async Task StartApplicationActivation_WithNotAllStepsInDone_ThrowsConflictException()
     {
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
-
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
         var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
             {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO},
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO }
             }
             .ToImmutableDictionary();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
         A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 0, 0, 0));
         _settings.StartTime = TimeSpan.FromHours(22);
         _settings.EndTime = TimeSpan.FromHours(8);
+        Task Act() => _sut.StartApplicationActivation(context, CancellationToken.None);
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
-
-        //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: [REGISTRATION_VERIFICATION, DONE],[BUSINESS_PARTNER_NUMBER, DONE],[IDENTITY_WALLET, DONE],[CLEARING_HOUSE, DONE],[SELF_DESCRIPTION_LP, TO_DO]");
-    }
-
-    [Fact]
-    public async Task HandleApplicationActivation_WithMidnightRun_ApprovesRequestAndCreatesNotifications()
-    {
-        //Arrange
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
-
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .Create();
-        var company = _fixture.Build<Company>()
-            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
-            .Create();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
-        A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 0, 0, 0));
-        _settings.StartTime = TimeSpan.FromHours(22);
-        _settings.EndTime = TimeSpan.FromHours(8);
-        A.CallTo(() =>
-                _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(companyApplication);
-            });
-        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
-            .Invokes((Guid _, Action<Company>? _, Action<Company> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(company);
-            });
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-            Id,
-            default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
-            Enumerable.Empty<ProcessStepTypeId>());
-
-        //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
-            .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        _notifications.Should().HaveCount(5);
-        _notifiedUserIds.Should().HaveCount(3)
-            .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
-        companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
-        company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
-        var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
-        result.ModifyChecklistEntry!.Invoke(entry);
-        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        entry.Comment.Should().Be("Membership Credential successfully created");
-        result.ScheduleStepTypeIds.Should().BeNull();
-        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
-        result.Modified.Should().BeTrue();
+        ex.Message.Should().Be($"cannot activate application {context.ApplicationId}. Checklist entries that are not in status DONE: [REGISTRATION_VERIFICATION, DONE],[BUSINESS_PARTNER_NUMBER, DONE],[IDENTITY_WALLET, DONE],[CLEARING_HOUSE, DONE],[SELF_DESCRIPTION_LP, TO_DO]");
     }
 
     [Theory]
     [InlineData(ApplicationChecklistEntryStatusId.DONE)]
     [InlineData(ApplicationChecklistEntryStatusId.SKIPPED)]
-    public async Task HandleApplicationActivation_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications(ApplicationChecklistEntryStatusId sdFactoryStatusId)
+    public async Task StartApplicationActivation_WithApplicationActivationPossible_SetsChecklistToActive(ApplicationChecklistEntryStatusId sdFactoryStatusId)
+    {
+        var applicationChecklistEntry = new ApplicationChecklistEntry(Id, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, sdFactoryStatusId }
+            }
+            .ToImmutableDictionary(), Enumerable.Empty<ProcessStepTypeId>());
+        A.CallTo(() => _dateTimeProvider.Now).Returns(new DateTime(2022, 01, 01, 0, 0, 0));
+        _settings.StartTime = TimeSpan.FromHours(22);
+        _settings.EndTime = TimeSpan.FromHours(8);
+
+        //Act
+        var result = await _sut.StartApplicationActivation(context, CancellationToken.None);
+
+        //Assert
+        result.Modified.Should().BeTrue();
+        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1).And.NotContain(ProcessStepTypeId.START_APPLICATION_ACTIVATION);
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_INITIAL_ROLES);
+        result.ProcessMessage.Should().BeNull();
+        result.ModifyChecklistEntry?.Invoke(applicationChecklistEntry);
+        applicationChecklistEntry.ApplicationChecklistEntryStatusId.Should()
+            .Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
+    }
+
+    #endregion
+
+    #region ASSIGN_INITIAL_ROLES
+
+    [Fact]
+    public async Task AssignRoles_WithWrongRoleConfiguration_ThrowsConfigurationException()
+    {
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
+
+        _settings.ApplicationApprovalInitialRoles = new[]
+        {
+            new UserRoleConfig(ClientId, new[] { "Company Admin", "notexistingrole" })
+        };
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
+        Task Act() => _sut.AssignRoles(context, CancellationToken.None);
+
+        //Act
+        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
+
+        //Assert
+        ex.Message.Should().Be("invalid configuration, at least one of the configured roles does not exist in the database: client: catenax-portal, roles: [Company Admin, notexistingrole]");
+    }
+
+    [Fact]
+    public async Task AssignRoles_WithUnassignedRoles_ThrowsUnexpectedConditionException()
+    {
+        //Arrange
+        var roles = new[] { "Company Admin" };
+        var clientRoleNames = new[]
+        {
+            new UserRoleConfig(ClientId, roles.AsEnumerable())
+        };
+        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin"), new(Guid.NewGuid(), ClientId, "IT Admin") };
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(userRoleData.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
+        A.CallTo(() => _applicationRepository.GetInvitedUsersWithoutInitialRoles(Id, A<IEnumerable<Guid>>._))
+            .Returns(Enumerable.Repeat(new CompanyInvitedUserData(CompanyUserId1, Enumerable.Empty<Guid>()), 1).ToAsyncEnumerable());
+        _settings.ApplicationApprovalInitialRoles = new[]
+        {
+            new UserRoleConfig(ClientId, new[] { "Company Admin", "IT Admin" })
+        };
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+        Task Act() => _sut.AssignRoles(context, CancellationToken.None);
+
+        //Act
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+
+        //Assert
+        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin], error: ");
+    }
+
+    [Fact]
+    public async Task AssignRoles_WithMultipleRoles_AssignsRoles()
     {
         //Arrange
         var roles = new[] { "Company Admin" };
@@ -288,16 +288,359 @@ public class ApplicationActivationTests
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(userRoleData.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
+            .Returns(_fixture.Create<IdentityAssignedRole>());
+        var companyInvitedUsers = new CompanyInvitedUserData[]
+        {
+            new(CompanyUserId1, Enumerable.Empty<Guid>()),
+            new(CompanyUserId2, Enumerable.Empty<Guid>())
+        }.ToAsyncEnumerable();
+        A.CallTo(() => _applicationRepository.GetInvitedUsersWithoutInitialRoles(Id, A<IEnumerable<Guid>>._))
+            .Returns(companyInvitedUsers);
+
+        _settings.ApplicationApprovalInitialRoles = clientRoleNames;
+        _settings.CompanyAdminRoles = new[]
+        {
+            new UserRoleConfig(ClientId, new[] { "Company Admin" }.AsEnumerable())
+        };
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.AssignRoles(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_INITIAL_ROLES);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.ProcessMessage.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AssignRoles_WithValid_AssignsRoles()
+    {
+        //Arrange
+        var clientRoleNames = new[]
+        {
+            new UserRoleConfig(ClientId, new[] { "Company Admin" })
+        };
+        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._))
+            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._))
+            .Returns(_fixture.Create<IdentityAssignedRole>());
+        A.CallTo(() => _applicationRepository.GetInvitedUsersWithoutInitialRoles(Id, A<IEnumerable<Guid>>._))
+            .Returns(Enumerable.Repeat(new CompanyInvitedUserData(CompanyUserId1, Enumerable.Empty<Guid>()), 1).ToAsyncEnumerable());
+
+        _settings.ApplicationApprovalInitialRoles = clientRoleNames;
+        _settings.CompanyAdminRoles = new[]
+        {
+            new UserRoleConfig(ClientId, new[] { "Company Admin" }.AsEnumerable())
+        };
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.AssignRoles(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_BPN_TO_USERS);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.ProcessMessage.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region ASSIGN_BPN
+
+    [Fact]
+    public async Task AssignBpn_WithMissingBpn_ThrowsConflictException()
+    {
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id)).Returns<string?>(null);
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
+        Task Act() => _sut.AssignBpn(context, CancellationToken.None);
+
+        //Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        //Assert
+        ex.Message.Should().Be("BusinessPartnerNumber must be set");
+    }
+
+    [Fact]
+    public async Task AssignBpn_WithValid_AssignsBpnToUser()
+    {
+        //Arrange
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id)).Returns(BusinessPartnerNumber);
+        A.CallTo(() => _applicationRepository.GetInvitedUserDataByApplicationWithoutBpn(Id))
+            .Returns(Enumerable.Repeat(CompanyUserId1, 1).ToAsyncEnumerable());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.AssignBpn(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(A<string>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.REMOVE_REGISTRATION_ROLES);
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.ProcessMessage.Should().BeNull();
+        result.Modified.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AssignBpn_WithMultipleUsers_AssignsBpnToUser()
+    {
+        //Arrange
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id)).Returns(BusinessPartnerNumber);
+        A.CallTo(() => _applicationRepository.GetInvitedUserDataByApplicationWithoutBpn(Id))
+            .Returns(new[] { CompanyUserId1, CompanyUserId3 }.ToAsyncEnumerable());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.AssignBpn(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(A<string>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_BPN_TO_USERS);
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.ProcessMessage.Should().BeNull();
+        result.Modified.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region REMOVE_REGISTRATION_ROLES
+
+    [Fact]
+    public async Task RemoveRegistrationRoles_WithMissingRoles_ThrowsUnexpectedConditionException()
+    {
+        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
+            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
+        };
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
+            .Returns(userRoles.ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(Id, A<IEnumerable<Guid>>._))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(Guid.NewGuid(), Enumerable.Empty<Guid>()), 1).ToAsyncEnumerable());
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
+        Task Act() => _sut.RemoveRegistrationRoles(context, CancellationToken.None);
+
+        //Act
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+
+        //Assert
+        ex.Message.Should().Be("userRoleIds should never be empty here");
+    }
+
+    [Fact]
+    public async Task RemoveRegistrationRoles_WithMultipleUsers_ReturnsExpected()
+    {
+        //Arrange
+        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
+        {
+            new(CompanyUserId1, new[] { CompanyUserRoleId }),
+            new(CompanyUserId2, new[] { CompanyUserRoleId })
+        };
+        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
+            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
+        };
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
+            .Returns(userRoles.ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
+            .Returns(userData.ToAsyncEnumerable());
+        SetupGetUserByUserName();
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.RemoveRegistrationRoles(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == ProcessStepTypeId.REMOVE_REGISTRATION_ROLES);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ProcessMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RemoveRegistrationRoles_WithValid_ReturnsExpected()
+    {
+        //Arrange
+        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
+        {
+            new(CompanyUserId1, new[] { CompanyUserRoleId })
+        };
+        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
+            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
+        };
+        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
+            .Returns(userRoles.ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
+            .Returns(userData.ToAsyncEnumerable());
+        SetupGetUserByUserName();
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+
+        //Act
+        var result = await _sut.RemoveRegistrationRoles(context, CancellationToken.None);
+
+        //Assert
+        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == ProcessStepTypeId.SET_THEME);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ProcessMessage.Should().BeNull();
+    }
+
+    #endregion
+
+    #region SET_THEME
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SetTheme_WithValid_ReturnsExpected(bool useDimWallet)
+    {
+        //Arrange
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+        A.CallTo(() => _applicationRepository.GetSharedIdpAliasseForApplicationId(Id))
+            .Returns(Enumerable.Repeat("idp1", 1).ToAsyncEnumerable());
+        _settings.UseDimWallet = useDimWallet;
+
+        //Act
+        var result = await _sut.SetTheme(context, CancellationToken.None);
+
+        //Assert
+        var expectedProcessStepTypeId =
+            useDimWallet ? ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION : ProcessStepTypeId.SET_MEMBERSHIP;
+        A.CallTo(() => _provisioningManager.UpdateSharedRealmTheme("idp1", _settings.LoginTheme)).MustHaveHappenedOnceExactly();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == expectedProcessStepTypeId);
+        result.ModifyChecklistEntry.Should().BeNull();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ProcessMessage.Should().BeNull();
+    }
+
+    #endregion
+
+    #region SET_MEMBERSHIP
+
+    [Fact]
+    public async Task SetMembership_WithMissingBpn_ThrowsConflictException()
+    {
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id)).Returns<string?>(null);
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
+        Task Act() => _sut.SetMembership(context, CancellationToken.None);
+
+        //Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        //Assert
+        ex.Message.Should().Be("BusinessPartnerNumber must be set");
+    }
+
+    [Fact]
+    public async Task SetMembership_WithValid_ReturnsExpected()
+    {
+        //Arrange
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+        var applicationChecklistEntry = new ApplicationChecklistEntry(Id, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id))
+            .Returns(BusinessPartnerNumber);
+        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns("testMessage");
+
+        //Act
+        var result = await _sut.SetMembership(context, CancellationToken.None);
+
+        //Assert
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION);
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry?.Invoke(applicationChecklistEntry);
+        applicationChecklistEntry.Comment.Should()
+            .Be("testMessage");
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ProcessMessage.Should().BeNull();
+    }
+
+    #endregion
+
+    #region FINISH_APPLICATION_ACTIVATION
+
+    [Fact]
+    public async Task SaveApplicationActivationToDatabase_WithCompanyAdminUser_ApprovesRequestAndCreatesNotifications()
+    {
+        //Arrange
         var companyApplication = _fixture.Build<CompanyApplication>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
             .Create();
         var company = _fixture.Build<Company>()
             .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
             .Create();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.INTERNAL, null));
         A.CallTo(() =>
                 _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
@@ -309,43 +652,27 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
+        var welcomeEmailData = new EmailData[]
+        {
+            new(CompanyUserId1, "Stan", "Lee", "stan@lee.com"),
+            new(CompanyUserId2, "Tony", "Stark", "tony@stark.com"),
+            new(CompanyUserId3, "Peter", "Parker", "peter@parker.com")
+        };
+        A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(Id))
+            .Returns(welcomeEmailData.ToAsyncEnumerable());
+        SetupNotifications();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             Id,
             default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, sdFactoryStatusId},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
+            Checklist,
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        var result = await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
             .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         _notifications.Should().HaveCount(5);
         _notifiedUserIds.Should().HaveCount(3)
             .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
@@ -354,47 +681,26 @@ public class ApplicationActivationTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
         result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        entry.Comment.Should().Be("Membership Credential successfully created");
         result.ScheduleStepTypeIds.Should().BeNull();
-        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithoutNetworkRegistrationId_ThrowsConflictException()
+    public async Task SaveApplicationActivationToDatabase_WithoutNetworkRegistrationId_ThrowsConflictException()
     {
         //Arrange
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
-
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
-
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternalWithoutProcess)))
+            .Returns((Guid.NewGuid(), CompanyName, BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, null));
 
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             IdWithTypeExternalWithoutProcess,
             default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
+            Checklist,
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        async Task Act() => await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -402,27 +708,18 @@ public class ApplicationActivationTests
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithExternalApplication_ApprovesRequestAndCreatesNotifications()
+    public async Task SaveApplicationActivationToDatabase_WithExternalApplication_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
-
         var processSteps = new List<ProcessStep>();
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
         var companyApplication = _fixture.Build<CompanyApplication>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
             .Create();
         var company = _fixture.Build<Company>()
             .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
             .Create();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, ProcessId));
         A.CallTo(() =>
                 _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
@@ -434,8 +731,6 @@ public class ApplicationActivationTests
             {
                 setOptionalParameters.Invoke(company);
             });
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x =>
                 x.Count() == 1 &&
                 x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)))
@@ -443,36 +738,17 @@ public class ApplicationActivationTests
             {
                 processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
             });
-
+        SetupNotifications();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             IdWithTypeExternal,
             default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
+            Checklist,
             Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        var result = await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        var result = await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(IdWithTypeExternal)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         processSteps.Should().ContainSingle().And.Satisfy(
             x => x.ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED &&
                  x.ProcessStepStatusId == ProcessStepStatusId.TODO);
@@ -484,191 +760,19 @@ public class ApplicationActivationTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, default);
         result.ModifyChecklistEntry!.Invoke(entry);
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
-        entry.Comment.Should().Be("Membership Credential successfully created");
         result.ScheduleStepTypeIds.Should().BeNull();
-        result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1);
+        result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithNotExistingRoles_ThrowsConfigurationException()
-    {
-        //Arrange
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
-
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .Create();
-        var company = _fixture.Build<Company>()
-            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
-            .Create();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
-
-        _settings.ApplicationApprovalInitialRoles = new[]
-        {
-            new UserRoleConfig(ClientId, new []{ "Company Admin", "notexistingrole"})
-        };
-        ;
-        A.CallTo(() =>
-                _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(companyApplication);
-            });
-        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
-            .Invokes((Guid _, Action<Company>? _, Action<Company> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(company);
-            });
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-            Id,
-            default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
-            Enumerable.Empty<ProcessStepTypeId>());
-
-        //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
-        ex.Message.Should().Be("invalid configuration, at least one of the configured roles does not exist in the database: client: catenax-portal, roles: [Company Admin, notexistingrole]");
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(A<Guid>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>._)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>._)).MustNotHaveHappened();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(A<string>._, A<IDictionary<string, IEnumerable<string>>>._)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustNotHaveHappened();
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
-            .MustNotHaveHappened();
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustNotHaveHappened();
-        _notifications.Should().BeEmpty();
-        _notifiedUserIds.Should().BeEmpty();
-        companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.SUBMITTED);
-        company.CompanyStatusId.Should().Be(CompanyStatusId.PENDING);
-    }
-
-    [Fact]
-    public async Task HandleApplicationActivation_WithUnassignedRoles_ThrowsUnexpectedConditionException()
-    {
-        //Arrange
-        var roles = new[] { "Company Admin" };
-        var clientRoleNames = new[]
-        {
-            new UserRoleConfig(ClientId, roles.AsEnumerable())
-        };
-        var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin"), new(Guid.NewGuid(), ClientId, "IT Admin") };
-
-        var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
-        var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
-        var companyApplication = _fixture.Build<CompanyApplication>()
-            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .Create();
-        var company = _fixture.Build<Company>()
-            .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
-            .Create();
-        SetupFakes(clientRoleNames, userRoleData, companyUserAssignedRole, companyUserAssignedBusinessPartner);
-        SetupForDelete();
-
-        _settings.ApplicationApprovalInitialRoles = new[]
-        {
-            new UserRoleConfig(ClientId, new []{ "Company Admin", "IT Admin"})
-        };
-        ;
-        A.CallTo(() =>
-                _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
-            .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(companyApplication);
-            });
-        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, null, A<Action<Company>>._))
-            .Invokes((Guid _, Action<Company>? _, Action<Company> setOptionalParameters) =>
-            {
-                setOptionalParameters.Invoke(company);
-            });
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._))
-            .Returns("Membership Credential successfully created");
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
-            Id,
-            default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
-            Enumerable.Empty<ProcessStepTypeId>());
-
-        //Act
-        async Task Act() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
-
-        //Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be("inconsistent data, roles not assigned in keycloak: client: catenax-portal, roles: [IT Admin], error: ");
-
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId2, BusinessPartnerNumber)).MustNotHaveHappened();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId3, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId }))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.DeleteClientRolesFromCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.DeleteCompanyUserAssignedRoles(A<IEnumerable<(Guid CompanyUserId, Guid UserRoleId)>>._)).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "EmailRegistrationWelcomeTemplate", A<IReadOnlyDictionary<string, string>>._))
-            .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _custodianService.SetMembership(BusinessPartnerNumber, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        _notifications.Should().HaveCount(5);
-        _notifiedUserIds.Should().HaveCount(3)
-            .And.ContainInOrder(CompanyUserId1, CompanyUserId2, CompanyUserId3);
-        companyApplication.ApplicationStatusId.Should().Be(CompanyApplicationStatusId.CONFIRMED);
-        company.CompanyStatusId.Should().Be(CompanyStatusId.ACTIVE);
-    }
-
-    [Fact]
-    public async Task HandleApplicationActivation_WithDefaultApplicationId_ThrowsConflictException()
+    public async Task SaveApplicationActivationToDatabase_WithDefaultApplicationId_ThrowsConflictException()
     {
         // Arrange
-        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-            }
-            .ToImmutableDictionary();
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.Empty, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        async Task Action() => await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -676,29 +780,21 @@ public class ApplicationActivationTests
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithoutCompanyApplication_ThrowsConflictException()
+    public async Task SaveApplicationActivationToDatabase_WithoutCompanyApplication_ThrowsConflictException()
     {
         // Arrange
         var applicationId = Guid.NewGuid();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             applicationId,
             default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
+            Checklist,
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns<(Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?)>(default);
+            .Returns<(Guid, string, string?, CompanyApplicationTypeId, Guid?)>(default);
 
         //Act
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        async Task Action() => await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -706,24 +802,16 @@ public class ApplicationActivationTests
     }
 
     [Fact]
-    public async Task HandleApplicationActivation_WithCompanyWithoutBPN_ThrowsConflictException()
+    public async Task SaveApplicationActivationToDatabase_WithCompanyWithoutBPN_ThrowsConflictException()
     {
         //Act
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
             IdWithoutBpn,
             default,
-            new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO}
-            }.ToImmutableDictionary(),
+            Checklist,
             Enumerable.Empty<ProcessStepTypeId>());
 
-        async Task Action() => await _sut.HandleApplicationActivation(context, CancellationToken.None);
+        async Task Action() => await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
@@ -919,102 +1007,8 @@ public class ApplicationActivationTests
 
     #region Setup
 
-    private void SetupFakes(
-        IEnumerable<UserRoleConfig> clientRoleNames,
-        IEnumerable<UserRoleData> userRoleData,
-        IdentityAssignedRole companyUserAssignedRole,
-        CompanyUserAssignedBusinessPartner companyUserAssignedBusinessPartner)
+    private void SetupNotifications()
     {
-        var company = _fixture.Build<Company>()
-            .With(u => u.BusinessPartnerNumber, BusinessPartnerNumber)
-            .With(u => u.Name, CompanyName)
-            .Create();
-
-        var companyInvitedUsers = new CompanyInvitedUserData[]
-        {
-            new(CompanyUserId1, Enumerable.Empty<string>(), Enumerable.Empty<Guid>()),
-            new(CompanyUserId2, Enumerable.Repeat(BusinessPartnerNumber, 1), Enumerable.Repeat(UserRoleId, 1)),
-            new(CompanyUserId3, Enumerable.Empty<string>(), Enumerable.Empty<Guid>())
-        }.ToAsyncEnumerable();
-        var businessPartnerNumbers = new[] { BusinessPartnerNumber }.AsEnumerable();
-
-        _settings.ApplicationApprovalInitialRoles = clientRoleNames;
-        _settings.CompanyAdminRoles = new[]
-        {
-            new UserRoleConfig(ClientId, new[] { "Company Admin" }.AsEnumerable())
-        };
-
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.INTERNAL, null));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, ProcessId));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternalWithoutProcess)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, new[] { IdpAlias }, CompanyApplicationTypeId.EXTERNAL, null));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .Returns((IdWithoutBpn, null!, null, Enumerable.Empty<string>(), CompanyApplicationTypeId.INTERNAL, null));
-
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == Id)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber));
-        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForCreateWalletAsync(A<Guid>.That.Matches(x => x == IdWithoutBpn)))
-            .Returns((IdWithoutBpn, company.Name, null));
-
-        var welcomeEmailData = new EmailData[]
-        {
-            new (CompanyUserId1, "Stan", "Lee", "stan@lee.com"),
-            new (CompanyUserId2, "Tony", "Stark", "tony@stark.com"),
-            new (CompanyUserId3, "Peter", "Parker", "peter@parker.com")
-        };
-        A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(Id))
-            .Returns(welcomeEmailData.ToAsyncEnumerable());
-        A.CallTo(() => _applicationRepository.GetEmailDataUntrackedAsync(A<Guid>.That.Not.Matches(x => x == Id)))
-            .Returns(Enumerable.Empty<EmailData>().ToAsyncEnumerable());
-
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(userRoleData.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.First() == _settings.CompanyAdminRoles.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") }.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.Matches(x => x.First(y => y.ClientId == ClientId).UserRoleNames.Count() > 1)))
-            .Returns(userRoleData.ToAsyncEnumerable());
-
-        A.CallTo(() => _applicationRepository.GetInvitedUsersDataByApplicationIdUntrackedAsync(Id))
-            .Returns(companyInvitedUsers);
-
-        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId1.ToString()))
-            .Returns(CentralUserId1);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId2.ToString()))
-            .Returns(CentralUserId2);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId3.ToString()))
-            .Returns(CentralUserId3);
-
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId1, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId2, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.AssignClientRolesToCentralUserAsync(CentralUserId3, A<IDictionary<string, IEnumerable<string>>>.That.Matches(x => x[ClientId].First() == clientRoleNames.First(x => x.ClientId == ClientId).UserRoleNames.First())))
-            .Returns(clientRoleNames.Select(x => (x.ClientId, x.UserRoleNames, default(Exception?))).ToAsyncEnumerable());
-
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId1, businessPartnerNumbers))
-            .Returns(Task.CompletedTask);
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId2, businessPartnerNumbers))
-            .Returns(Task.CompletedTask);
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(CentralUserId3, businessPartnerNumbers))
-            .Returns(Task.CompletedTask);
-
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, CompanyUserRoleId))
-            .Returns(companyUserAssignedRole);
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId3, CompanyUserRoleId))
-            .Returns(companyUserAssignedRole);
-
-        A.CallTo(() =>
-                _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId1, BusinessPartnerNumber))
-            .Returns(companyUserAssignedBusinessPartner);
-        A.CallTo(() =>
-                _businessPartnerRepository.CreateCompanyUserAssignedBusinessPartner(CompanyUserId3, BusinessPartnerNumber))
-            .Returns(companyUserAssignedBusinessPartner);
-
-        A.CallTo(() => _portalRepositories.SaveAsync())
-            .Returns(1);
-
         async IAsyncEnumerable<Guid> CreateNotificationsUserIds(IEnumerable<Guid> userIds)
         {
             foreach (var userId in userIds)
@@ -1051,23 +1045,14 @@ public class ApplicationActivationTests
             });
     }
 
-    private void SetupForDelete()
+    private void SetupGetUserByUserName()
     {
-        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
-        {
-            new (CompanyUserId1, new [] {CompanyUserRoleId}),
-            new (CompanyUserId2, new [] {CompanyUserRoleId}),
-            new (CompanyUserId3, new [] {CompanyUserRoleId}),
-        };
-        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
-            ( "remove-id", new [] { ( CompanyUserRoleId, "Company Admin" ) } )
-        };
-
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
-            .Returns(userRoles.ToAsyncEnumerable());
-
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
-            .Returns(userData.ToAsyncEnumerable());
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId1.ToString()))
+            .Returns(CentralUserId1);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId2.ToString()))
+            .Returns(CentralUserId2);
+        A.CallTo(() => _provisioningManager.GetUserByUserName(CompanyUserId3.ToString()))
+            .Returns(CentralUserId3);
     }
 
     #endregion
