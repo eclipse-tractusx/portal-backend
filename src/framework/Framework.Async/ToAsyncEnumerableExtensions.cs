@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,24 +17,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
-/// <summary>
-/// Settings used in business logic concerning connectors.
-/// </summary>
-public class ClearinghouseSettings : KeyVaultAuthSettings
+public static class ToAsyncEnumerableExtensions
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string CallbackUrl { get; set; } = null!;
-
-    public bool UseDimWallet { get; set; }
-
-    [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+    public static async IAsyncEnumerable<T> TasksToAsyncEnumerable<T>(this IEnumerable<Task<T>> tasks, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var task in tasks)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return await task.ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
 }

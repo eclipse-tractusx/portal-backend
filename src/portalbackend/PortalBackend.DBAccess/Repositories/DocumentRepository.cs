@@ -25,20 +25,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
+/// <summary>
 /// Implementation of <see cref="IDocumentRepository"/> accessing database with EF Core.
-public class DocumentRepository : IDocumentRepository
+/// </summary>
+public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 {
-    private readonly PortalDbContext _dbContext;
-
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    /// <param name="dbContext">PortalDb context.</param>
-    public DocumentRepository(PortalDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     /// <inheritdoc />
     public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields)
     {
@@ -53,12 +44,12 @@ public class DocumentRepository : IDocumentRepository
             documentTypeId);
 
         setupOptionalFields?.Invoke(document);
-        return _dbContext.Documents.Add(document).Entity;
+        return dbContext.Documents.Add(document).Entity;
     }
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId) =>
-        _dbContext.Documents
+        dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
             .Select(document =>
@@ -70,7 +61,7 @@ public class DocumentRepository : IDocumentRepository
             .SingleOrDefaultAsync();
 
     public Task<(bool IsApplicationAssignedUser, IEnumerable<UploadDocuments> Documents)> GetUploadedDocumentsAsync(Guid applicationId, DocumentTypeId documentTypeId, Guid companyUserId) =>
-        _dbContext.CompanyApplications
+        dbContext.CompanyApplications
             .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .Select(application => new
@@ -92,14 +83,14 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, bool IsSameUser)> GetDocumentIdWithCompanyUserCheckAsync(Guid documentId, Guid companyUserId) =>
-        _dbContext.Documents
+        dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<Guid, bool>(x.Id, x.CompanyUserId == companyUserId))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(byte[]? Content, string FileName, MediaTypeId MediaTypeId, bool IsUserInCompany)> GetDocumentDataAndIsCompanyUserAsync(Guid documentId, Guid userCompanyId) =>
-        _dbContext.Documents
+        dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new
             {
@@ -115,22 +106,22 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId) =>
-        _dbContext.Documents
+        dbContext.Documents
         .Where(x => x.Id == documentId && x.DocumentTypeId == documentTypeId)
         .Select(x => new ValueTuple<byte[], string, MediaTypeId>(x.DocumentContent, x.DocumentName, x.MediaTypeId))
         .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public void RemoveDocument(Guid documentId) =>
-        _dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
+        dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
-        _dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+        dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
-        _dbContext.Documents
+        dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
             .Select(document => new
@@ -152,7 +143,7 @@ public class DocumentRepository : IDocumentRepository
     {
         var document = new Document(documentId, null!, null!, null!, default, default, default, default);
         initialize?.Invoke(document);
-        _dbContext.Attach(document);
+        dbContext.Attach(document);
         modify(document);
     }
 
@@ -165,13 +156,13 @@ public class DocumentRepository : IDocumentRepository
                 return (Document: document, x.Modify);
             }
         ).ToList();
-        _dbContext.AttachRange(initial.Select(x => x.Document));
+        dbContext.AttachRange(initial.Select(x => x.Document));
         initial.ForEach(x => x.Modify(x.Document));
     }
 
     /// <inheritdoc />
     public Task<DocumentSeedData?> GetDocumentSeedDataByIdAsync(Guid documentId) =>
-        _dbContext.Documents
+        dbContext.Documents
             .AsNoTracking()
             .Where(x => x.Id == documentId)
             .Select(doc => new DocumentSeedData(
@@ -187,7 +178,7 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<OfferDocumentContentData?> GetOfferDocumentContentAsync(Guid offerId, Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId, CancellationToken cancellationToken) =>
-        _dbContext.Documents
+        dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new
             {
@@ -215,7 +206,7 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public Task<(IEnumerable<(OfferStatusId OfferStatusId, Guid OfferId, bool IsOfferType)> OfferData, bool IsDocumentTypeMatch, DocumentStatusId DocumentStatusId, bool IsProviderCompanyUser)> GetOfferDocumentsAsync(Guid documentId, Guid userCompanyId, IEnumerable<DocumentTypeId> documentTypeIds, OfferTypeId offerTypeId) =>
-        _dbContext.Documents
+        dbContext.Documents
             .Where(document => document.Id == documentId)
             .Select(document => new
             {
@@ -240,12 +231,27 @@ public class DocumentRepository : IDocumentRepository
 
     /// <inheritdoc />
     public void RemoveDocuments(IEnumerable<Guid> documentIds) =>
-        _dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
+        dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
 
     public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
-        _dbContext.Documents
+        dbContext.Documents
             .Where(x => x.Id == documentId)
             .Select(x => new ValueTuple<byte[], string, bool, MediaTypeId>(x.DocumentContent, x.DocumentName, documentTypeIds.Contains(x.DocumentTypeId), x.MediaTypeId))
             .SingleOrDefaultAsync();
 
+    public IAsyncEnumerable<(Guid DocumentId, IEnumerable<Guid> AgreementIds, IEnumerable<Guid> OfferIds)> GetDocumentDataForCleanup(DateTimeOffset dateCreated) =>
+        dbContext.Documents
+            .AsSplitQuery()
+            .Where(x =>
+                x.DateCreated < dateCreated &&
+                !x.Companies.Any() &&
+                x.Connector == null &&
+                !x.Consents.Any() &&
+                x.DocumentStatusId == DocumentStatusId.INACTIVE)
+            .Select(doc => new ValueTuple<Guid, IEnumerable<Guid>, IEnumerable<Guid>>(
+                doc.Id,
+                doc.Agreements.Select(x => x.Id),
+                doc.Offers.Select(x => x.Id)
+            ))
+            .AsAsyncEnumerable();
 }

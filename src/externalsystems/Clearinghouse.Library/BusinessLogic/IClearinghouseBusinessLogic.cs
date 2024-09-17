@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 Microsoft and BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -27,4 +26,5 @@ public interface IClearinghouseBusinessLogic
 {
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken);
+    Task CheckEndClearinghouseProcesses(CancellationToken cancellationToken);
 }

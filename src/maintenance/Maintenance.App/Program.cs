@@ -20,8 +20,10 @@
 
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
-using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App;
+using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
@@ -31,22 +33,36 @@ LoggingExtensions.EnsureInitialized();
 Log.Information("Building service");
 try
 {
-    var host = Host.CreateDefaultBuilder(args)
-        .UseSystemd()
+    var host = Host
+        .CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
             services
+                .AddMaintenanceService()
                 .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
+                .AddBatchDelete(hostContext.Configuration.GetSection("BatchDelete"))
+                .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"))
                 .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"))
-                     .UsePostgreSqlTriggers());
-            services.AddHostedService<BatchDeleteService>();
+                        .UsePostgreSqlTriggers());
         })
         .AddLogging()
         .Build();
+    Log.Information("Building worker completed");
 
-    await host.RunAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    using var tokenSource = new CancellationTokenSource();
+    Console.CancelKeyPress += (s, e) =>
+    {
+        Log.Information("Canceling...");
+        tokenSource.Cancel();
+        e.Cancel = true;
+    };
+
+    Log.Information("Start processing");
+    var workerInstance = host.Services.GetRequiredService<MaintenanceService>();
+    await workerInstance.ExecuteAsync(tokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.None);
+    Log.Information("Execution finished shutting down");
 }
 catch (Exception ex) when (!ex.GetType().Name.Equals("StopTheHostException", StringComparison.Ordinal))
 {

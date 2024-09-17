@@ -205,7 +205,7 @@ public class RegistrationBusinessLogicTest
     public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter, DateCreatedOrderFilter? dateCreatedOrderFilter)
     {
         // Arrange
-        var companyName = _fixture.Create<string>();
+        var companyName = "TestCompany";
         var externalId = _fixture.Create<string>();
         var data = _fixture.CreateMany<(Guid Id, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId, DateTimeOffset Created)>(10)
             .Select(x => new CompanyApplication(x.Id, x.CompanyId, x.CompanyApplicationStatusId, CompanyApplicationTypeId.EXTERNAL, x.Created)

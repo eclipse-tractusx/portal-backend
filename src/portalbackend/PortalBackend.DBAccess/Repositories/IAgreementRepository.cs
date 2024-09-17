@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -92,4 +93,6 @@ public interface IAgreementRepository
     /// <param name="offerId">Id of the offer the agreement must be associated with</param>
     /// <returns></returns>
     IAsyncEnumerable<AgreementStatusData> GetAgreementIdsForOfferAsync(Guid offerId);
+
+    void AttachAndModifyAgreements(IEnumerable<(Guid AgreementId, Action<Agreement>? Initialize, Action<Agreement> Modify)> agreementModificationIds);
 }

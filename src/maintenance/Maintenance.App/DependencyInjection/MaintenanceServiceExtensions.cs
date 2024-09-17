@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,24 +17,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.DependencyInjection;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Extension methods to register the necessary services for the maintenance job
 /// </summary>
-public class ClearinghouseSettings : KeyVaultAuthSettings
+public static class MaintenanceServiceExtensions
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string CallbackUrl { get; set; } = null!;
-
-    public bool UseDimWallet { get; set; }
-
-    [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+    /// <summary>
+    /// Adds the dependencies for the maintenance service
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <returns>The enhanced service collection</returns>
+    public static IServiceCollection AddMaintenanceService(this IServiceCollection services) =>
+        services
+            .AddTransient<MaintenanceService>()
+            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
 }
