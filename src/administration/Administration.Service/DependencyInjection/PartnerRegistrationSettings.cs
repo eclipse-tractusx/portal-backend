@@ -28,8 +28,6 @@ public class PartnerRegistrationSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
-
-    public int ApplicationsMaxPageSize { get; set; }
 }
 
 public static class PartnerRegistrationSettingsExtensions

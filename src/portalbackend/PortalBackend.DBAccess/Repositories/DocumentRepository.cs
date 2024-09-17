@@ -25,7 +25,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
+/// <summary>
 /// Implementation of <see cref="IDocumentRepository"/> accessing database with EF Core.
+/// </summary>
 public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 {
     /// <inheritdoc />
