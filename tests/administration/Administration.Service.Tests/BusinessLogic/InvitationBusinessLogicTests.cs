@@ -102,7 +102,7 @@ public class InvitationBusinessLogicTests
         processes.Should().ContainSingle().And.Satisfy(x => x.ProcessTypeId == ProcessTypeId.INVITATION);
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         invitations.Should().ContainSingle().And.Satisfy(x => x.ProcessId == processes.Single().Id && x.UserName == "testUserName" && x.ApplicationId == ApplicationId);
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateCompany(invitationData.OrganisationName, null)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null)).MustHaveHappenedOnceExactly();
     }
 
@@ -513,33 +513,44 @@ public class InvitationBusinessLogicTests
 
     private void SetupFakesForInvite(List<Process> processes, List<ProcessStep> processSteps, List<CompanyInvitation> invitations)
     {
-        var company = new Company(CompanyId, "testOrg", CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
         var createdProcessId = Guid.NewGuid();
-        A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.INVITATION))
-            .Invokes((ProcessTypeId processTypeId) =>
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
                 var process = new Process(createdProcessId, processTypeId, Guid.NewGuid());
                 processes.Add(process);
-            })
-            .Returns(new Process(createdProcessId, ProcessTypeId.INVITATION, Guid.NewGuid()));
-        A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, createdProcessId))
-            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+                return process;
+            });
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
+            .ReturnsLazily((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
             {
                 var processStep = new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId,
                     DateTimeOffset.UtcNow);
                 processSteps.Add(processStep);
+                return processStep;
             });
-
-        A.CallTo(() => _companyInvitationRepository.CreateCompanyInvitation(A<Guid>._, A<string>._, A<string>._, A<string>._, createdProcessId, A<Action<CompanyInvitation>>._))
-            .Invokes((Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields) =>
+        A.CallTo(() => _companyInvitationRepository.CreateCompanyInvitation(A<Guid>._, A<string>._, A<string>._, A<string>._, A<Guid>._, A<Action<CompanyInvitation>>._))
+            .ReturnsLazily((Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields) =>
             {
-                var entity = new CompanyInvitation(Guid.NewGuid(), applicationId, firstName, lastName, email, processId);
-                setOptionalFields?.Invoke(entity);
-                invitations.Add(entity);
+                var companyInvitation = new CompanyInvitation(Guid.NewGuid(), applicationId, firstName, lastName, email, processId);
+                setOptionalFields?.Invoke(companyInvitation);
+                invitations.Add(companyInvitation);
+                return companyInvitation;
             });
-        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._)).Returns(company);
-        A.CallTo(() => _applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, null))
-            .Returns(new CompanyApplication(ApplicationId, company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL, DateTimeOffset.UtcNow));
+        A.CallTo(() => _companyRepository.CreateCompany(A<string>._, A<Action<Company>>._))
+            .ReturnsLazily((string companyName, Action<Company>? setOptionalFields) =>
+            {
+                var company = new Company(CompanyId, companyName, CompanyStatusId.PENDING, DateTimeOffset.UtcNow);
+                setOptionalFields?.Invoke(company);
+                return company;
+            });
+        A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
+            .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId companyApplicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
+            {
+                var companyApplication = new CompanyApplication(ApplicationId, companyId, companyApplicationStatusId, companyApplicationTypeId, DateTimeOffset.UtcNow);
+                setOptionalFields?.Invoke(companyApplication);
+                return companyApplication;
+            });
     }
 
     private void SetupFakesForRetrigger(List<ProcessStep> processSteps)

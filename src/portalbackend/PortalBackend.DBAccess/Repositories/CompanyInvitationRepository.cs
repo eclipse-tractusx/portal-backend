@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public class CompanyInvitationRepository(PortalDbContext context)
     : ICompanyInvitationRepository
 {
-    public CompanyInvitation CreateCompanyInvitation(Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields)
+    CompanyInvitation ICompanyInvitationRepository.CreateCompanyInvitation(Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields)
     {
         var entity = new CompanyInvitation(Guid.NewGuid(), applicationId, firstName, lastName, email, processId);
         setOptionalFields?.Invoke(entity);
@@ -82,7 +82,7 @@ public class CompanyInvitationRepository(PortalDbContext context)
 
     public void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify)
     {
-        var entity = new CompanyInvitation(invitationId, default, null!, null!, null!, Guid.Empty);
+        var entity = new CompanyInvitation(invitationId, Guid.Empty, null!, null!, null!, Guid.Empty);
         initialize?.Invoke(entity);
         context.Attach(entity);
         modify(entity);

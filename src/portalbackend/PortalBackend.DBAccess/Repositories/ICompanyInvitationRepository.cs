@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface ICompanyInvitationRepository
 {
-    CompanyInvitation CreateCompanyInvitation(Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields);
+    CompanyInvitation CreateCompanyInvitation(Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields = null);
     Task<Guid> GetCompanyInvitationForProcessId(Guid processId);
     Task<string?> GetOrganisationNameForInvitation(Guid invitationId);
     Task<(bool Exists, Guid? ApplicationId, Guid? CompanyId, string CompanyName, IEnumerable<(Guid IdpId, string IdpName)> IdpInformation, UserInvitationInformation UserInformation)> GetInvitationUserData(Guid companyInvitationId);

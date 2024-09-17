@@ -625,21 +625,25 @@ public class InvitationProcessServiceTests
 
         A.CallTo(() => _companyInvitationRepository.GetIdpAndCompanyId(companyInvitation.Id))
             .Returns((true, companyId, "cl1-testCorp"));
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null))
-            .Returns(new IdentityProvider(idpId, IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, DateTimeOffset.UtcNow));
+        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._, A<Guid>._, A<Action<IdentityProvider>>._))
+            .ReturnsLazily((IdentityProviderCategoryId identityProviderCategoryId, IdentityProviderTypeId identityProviderTypeId, Guid ownerId, Action<IdentityProvider>? setOptionalFields) =>
+            {
+                var identityProvider = new IdentityProvider(idpId, identityProviderCategoryId, identityProviderTypeId, ownerId, DateTimeOffset.UtcNow);
+                setOptionalFields?.Invoke(identityProvider);
+                return identityProvider;
+            });
         A.CallTo(() => _identityProviderRepository.CreateCompanyIdentityProvider(A<Guid>._, A<Guid>._))
-            .Invokes((Guid cId, Guid identityProviderId) =>
+            .ReturnsLazily((Guid cId, Guid identityProviderId) =>
             {
                 var companyIdp = new CompanyIdentityProvider(cId, identityProviderId);
                 companyIdentityProviders.Add(companyIdp);
+                return companyIdp;
             });
 
         // Act
         var result = await _sut.CreateIdpDatabase(companyInvitation.Id);
 
         // Assert
-        A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null))
-            .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateIdentityProvider(IdentityProviderCategoryId.KEYCLOAK_OIDC, IdentityProviderTypeId.SHARED, companyId, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _identityProviderRepository.CreateIamIdentityProvider(idpId, "cl1-testCorp"))

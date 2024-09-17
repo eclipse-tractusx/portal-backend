@@ -49,8 +49,9 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var (sut, context) = await CreateSutWithContext();
         var processId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
 
-        var invitation = sut.CreateCompanyInvitation(Guid.NewGuid(), "tony", "stark", "tony@stark.com", processId, x =>
+        var invitation = sut.CreateCompanyInvitation(applicationId, "tony", "stark", "tony@stark.com", processId, x =>
             {
                 x.UserName = "ironman";
             });
@@ -61,7 +62,14 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
             .Which.Entity.Should().BeOfType<CompanyInvitation>()
-            .Which.UserName.Should().Be("ironman");
+            .Which.Should().Match<CompanyInvitation>(x =>
+                x.ApplicationId == applicationId &&
+                x.FirstName == "tony" &&
+                x.LastName == "stark" &&
+                x.Email == "tony@stark.com" &&
+                x.ProcessId == processId &&
+                x.UserName == "ironman"
+            );
     }
 
     #endregion
