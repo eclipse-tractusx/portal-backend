@@ -41,7 +41,7 @@ public class SeedDataHandler : ISeedDataHandler
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
         _keycloakRealm = (await realmSettings.DataPathes
-            .AggregateAsync(
+            .AggregateAwait(
                 new KeycloakRealm(),
                 async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))

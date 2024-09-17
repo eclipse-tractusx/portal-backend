@@ -21,43 +21,43 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class AsyncAggregateExtensions
 {
-    public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
+    public static Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
     {
         using var enumerator = source.GetEnumerator();
-        return AggregateAsync(enumerator, seed, accumulate, cancellationToken);
+        return AggregateAwait(enumerator, seed, accumulate, cancellationToken);
     }
 
-    public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
+    public static Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
     {
         using var enumerator = source.GetEnumerator();
-        return AggregateAsync(enumerator, seed, accumulate, cancellationToken);
+        return AggregateAwait(enumerator, seed, accumulate, cancellationToken);
     }
 
-    public static async Task<TResult> AggregateAsync<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
-        result(await AggregateAsync(source, seed, accumulate, cancellationToken));
+    public static async Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
+        result(await AggregateAwait(source, seed, accumulate, cancellationToken));
 
-    public static async Task<TResult> AggregateAsync<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
-        result(await AggregateAsync(source, seed, accumulate, cancellationToken));
+    public static async Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
+        result(await AggregateAwait(source, seed, accumulate, cancellationToken));
 
-    public static Task<TSource> AggregateAsync<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, CancellationToken, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
-    {
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            throw new InvalidOperationException("source must not be empty");
-
-        return AggregateAsync(enumerator, enumerator.Current, accumulate, cancellationToken);
-    }
-
-    public static Task<TSource> AggregateAsync<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
+    public static Task<TSource> AggregateAwait<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, CancellationToken, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
     {
         using var enumerator = source.GetEnumerator();
         if (!enumerator.MoveNext())
             throw new InvalidOperationException("source must not be empty");
 
-        return AggregateAsync(enumerator, enumerator.Current, accumulate, cancellationToken);
+        return AggregateAwait(enumerator, enumerator.Current, accumulate, cancellationToken);
     }
 
-    private static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
+    public static Task<TSource> AggregateAwait<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
+    {
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            throw new InvalidOperationException("source must not be empty");
+
+        return AggregateAwait(enumerator, enumerator.Current, accumulate, cancellationToken);
+    }
+
+    private static async Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
     {
         var accumulator = seed;
         while (enumerator.MoveNext())
@@ -68,7 +68,7 @@ public static class AsyncAggregateExtensions
         return accumulator;
     }
 
-    private static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
+    private static async Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
     {
         var accumulator = seed;
         while (enumerator.MoveNext())
