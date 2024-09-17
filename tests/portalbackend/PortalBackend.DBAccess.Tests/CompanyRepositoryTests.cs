@@ -688,7 +688,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBe(default);
         result.Bpn.Should().Be("BPNL00000003CRHK");
-        result.TechnicalUserRoleIds.Should().HaveCount(13).And.OnlyHaveUniqueItems();
+        result.TechnicalUserRoleIds.Should().HaveCount(14).And.OnlyHaveUniqueItems();
     }
 
     #endregion
