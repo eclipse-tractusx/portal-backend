@@ -24,11 +24,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface ICompanyInvitationRepository
 {
-    CompanyInvitation CreateCompanyInvitation(string firstName, string lastName, string email, string organisationName, Guid processId, Action<CompanyInvitation>? setOptionalFields);
+    CompanyInvitation CreateCompanyInvitation(Guid applicationId, string firstName, string lastName, string email, Guid processId, Action<CompanyInvitation>? setOptionalFields = null);
     Task<Guid> GetCompanyInvitationForProcessId(Guid processId);
     Task<string?> GetOrganisationNameForInvitation(Guid invitationId);
     Task<(bool Exists, Guid? ApplicationId, Guid? CompanyId, string CompanyName, IEnumerable<(Guid IdpId, string IdpName)> IdpInformation, UserInvitationInformation UserInformation)> GetInvitationUserData(Guid companyInvitationId);
     Task<(bool Exists, string OrgName, string? IdpName)> GetIdpAndOrgName(Guid invitationId);
+    Task<(bool Exists, Guid CompanyId, string? IdpName)> GetIdpAndCompanyId(Guid invitationId);
     void AttachAndModifyCompanyInvitation(Guid invitationId, Action<CompanyInvitation>? initialize, Action<CompanyInvitation> modify);
     Task<string?> GetIdpNameForInvitationId(Guid invitationId);
     Task<(string OrgName, string? IdpName, string? ClientId, byte[]? ClientSecret, byte[]? InitializationVector, int? EncryptionMode)> GetUpdateCentralIdpUrlData(Guid invitationId);

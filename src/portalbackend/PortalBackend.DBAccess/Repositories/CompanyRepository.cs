@@ -51,7 +51,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         modify(company);
     }
 
-    public Address CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters = null)
+    Address ICompanyRepository.CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters)
     {
         var address = new Address(
             Guid.NewGuid(),

@@ -28,21 +28,22 @@ public class CompanyInvitation : IBaseEntity
         FirstName = null!;
         LastName = null!;
         Email = null!;
-        OrganisationName = null!;
     }
 
-    public CompanyInvitation(Guid id, string firstName, string lastName, string email, string organisationName, Guid processId)
+    public CompanyInvitation(Guid id, Guid applicationId, string firstName, string lastName, string email, Guid processId)
         : this()
     {
         Id = id;
+        ApplicationId = applicationId;
         FirstName = firstName;
         LastName = lastName;
         Email = email;
-        OrganisationName = organisationName;
         ProcessId = processId;
     }
 
     public Guid Id { get; set; }
+
+    public Guid ApplicationId { get; set; }
 
     public string? UserName { get; set; }
 
@@ -52,11 +53,7 @@ public class CompanyInvitation : IBaseEntity
 
     public string Email { get; set; }
 
-    public string OrganisationName { get; set; }
-
     public Guid ProcessId { get; set; }
-
-    public Guid? ApplicationId { get; set; }
 
     public string? IdpName { get; set; }
 

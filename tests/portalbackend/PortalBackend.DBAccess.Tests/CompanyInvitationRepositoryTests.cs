@@ -49,8 +49,9 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         var (sut, context) = await CreateSutWithContext();
         var processId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
 
-        var invitation = sut.CreateCompanyInvitation("tony", "stark", "tony@stark.com", "stark industry", processId, x =>
+        var invitation = sut.CreateCompanyInvitation(applicationId, "tony", "stark", "tony@stark.com", processId, x =>
             {
                 x.UserName = "ironman";
             });
@@ -61,7 +62,14 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
             .Which.Entity.Should().BeOfType<CompanyInvitation>()
-            .Which.UserName.Should().Be("ironman");
+            .Which.Should().Match<CompanyInvitation>(x =>
+                x.ApplicationId == applicationId &&
+                x.FirstName == "tony" &&
+                x.LastName == "stark" &&
+                x.Email == "tony@stark.com" &&
+                x.ProcessId == processId &&
+                x.UserName == "ironman"
+            );
     }
 
     #endregion
@@ -108,7 +116,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetOrganisationNameForInvitation(_invitationId);
 
         // Assert
-        data.Should().Be("stark industry");
+        data.Should().Be("Bayerische Motorenwerke AG");
     }
 
     [Fact]
@@ -223,17 +231,17 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetUpdateCentralIdpUrlData(_invitationId);
 
         // Assert
-        data.OrgName.Should().Be("stark industry");
+        data.OrgName.Should().Be("Bayerische Motorenwerke AG");
         data.IdpName.Should().Be("test idp");
         data.ClientId.Should().Be("cl1");
     }
 
     #endregion
 
-    #region GetIdpAndOrgName
+    #region
 
     [Fact]
-    public async Task GetIdpAndOrgNameAsync_WithExistingForProcessId_ReturnsExpected()
+    public async Task GetIdpAndOrgName_WithExisting_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
@@ -243,18 +251,50 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Exists.Should().BeTrue();
-        data.OrgName.Should().Be("stark industry");
+        data.OrgName.Should().Be("Bayerische Motorenwerke AG");
         data.IdpName.Should().Be("test idp");
     }
 
     [Fact]
-    public async Task GetInvitationIdpCreationData_WithoutExistingForProcessId_ReturnsExpected()
+    public async Task GetIdpAndOrgName_WithoutExisting_ReturnsExpected()
     {
         // Arrange
         var sut = await CreateSut();
 
         // Act
         var data = await sut.GetIdpAndOrgName(Guid.NewGuid());
+
+        // Assert
+        data.Exists.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region GetIdpAndCompanyId
+
+    [Fact]
+    public async Task GetIdpAndCompanyId_WithExisting_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetIdpAndCompanyId(_invitationId);
+
+        // Assert
+        data.Exists.Should().BeTrue();
+        data.CompanyId.Should().Be("ac861325-bc54-4583-bcdc-9e9f2a38ff84");
+        data.IdpName.Should().Be("test idp");
+    }
+
+    [Fact]
+    public async Task GetIdpAndCompanyId_WithoutExisting_ReturnsExpected()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetIdpAndCompanyId(Guid.NewGuid());
 
         // Assert
         data.Exists.Should().BeFalse();

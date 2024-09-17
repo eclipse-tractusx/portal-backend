@@ -42,14 +42,14 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         _portalRepositories = portalRepositories;
     }
 
-    public Task ExecuteInvitation(CompanyInvitationData invitationData)
+    public Task<CompanyInvitationResponse> ExecuteInvitation(CompanyInvitationData invitationData)
     {
         if (string.IsNullOrWhiteSpace(invitationData.Email))
         {
             throw new ControllerArgumentException("email must not be empty", "email");
         }
 
-        if (invitationData.OrganisationName == null || !invitationData.OrganisationName.IsValidCompanyName())
+        if (!invitationData.OrganisationName.IsValidCompanyName())
         {
             throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", nameof(invitationData.OrganisationName))]);
         }
@@ -57,20 +57,27 @@ public class InvitationBusinessLogic : IInvitationBusinessLogic
         return ExecuteInvitationInternalAsync(invitationData);
     }
 
-    private async Task ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
+    private async Task<CompanyInvitationResponse> ExecuteInvitationInternalAsync(CompanyInvitationData invitationData)
     {
         var (userName, firstName, lastName, email, organisationName) = invitationData;
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.INVITATION).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP, ProcessStepStatusId.TODO, processId);
-        _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(firstName, lastName, email, organisationName, processId, ci =>
+
+        var company = _portalRepositories.GetInstance<ICompanyRepository>().CreateCompany(organisationName);
+
+        var applicationRepository = _portalRepositories.GetInstance<IApplicationRepository>();
+        var applicationId = applicationRepository.CreateCompanyApplication(company.Id, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.INTERNAL).Id;
+        _portalRepositories.GetInstance<ICompanyInvitationRepository>().CreateCompanyInvitation(applicationId, firstName, lastName, email, processId, ci =>
+        {
+            if (!string.IsNullOrWhiteSpace(userName))
             {
-                if (!string.IsNullOrWhiteSpace(userName))
-                {
-                    ci.UserName = userName;
-                }
-            });
+                ci.UserName = userName;
+            }
+        });
+
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return new CompanyInvitationResponse(applicationId, company.Id);
     }
 
     public Task RetriggerCreateCentralIdp(Guid processId) => ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP.TriggerProcessStep(processId, _portalRepositories);
