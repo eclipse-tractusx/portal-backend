@@ -258,5 +258,15 @@
     "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53267",
     "language_short_name": "en",
     "description": "BPDM Pool Sharing Consumer"
+  },
+  {
+    "user_role_id": "34c42896-a003-4653-af8f-ba06ca595754",
+    "language_short_name": "de",
+    "description": "Technischer User für die Invitation API zur Integration von Drittanbieter-Software."
+  },
+  {
+    "user_role_id": "34c42896-a003-4653-af8f-ba06ca595754",
+    "language_short_name": "en",
+    "description": "Technical user enabling the invitation API to integrate 3rd party software."
   }
 ]
