@@ -73,7 +73,7 @@ public class BatchDeleteService(
         }
         catch (Exception ex)
         {
-            logger.LogError("Database clean up failed with error: {Errors}", ex.Message);
+            logger.LogError(ex, "Database clean up failed with error: {Errors}", ex.Message);
         }
     }
 }
