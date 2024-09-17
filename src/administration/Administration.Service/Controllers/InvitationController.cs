@@ -63,12 +63,12 @@ public class InvitationController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "invite_new_partner")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyInvitationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
+    public Task<CompanyInvitationResponse> ExecuteInvitation([FromBody] CompanyInvitationData invitationData) =>
         _logic.ExecuteInvitation(invitationData);
 
     /// <summary>

@@ -50,7 +50,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSutWithContext();
         var processId = Guid.NewGuid();
 
-        var invitation = sut.CreateCompanyInvitation("tony", "stark", "tony@stark.com", "stark industry", processId, x =>
+        var invitation = sut.CreateCompanyInvitation(Guid.NewGuid(), "tony", "stark", "tony@stark.com", processId, x =>
             {
                 x.UserName = "ironman";
             });
@@ -108,7 +108,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetOrganisationNameForInvitation(_invitationId);
 
         // Assert
-        data.Should().Be("stark industry");
+        data.Should().Be("Bayerische Motorenwerke AG");
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetUpdateCentralIdpUrlData(_invitationId);
 
         // Assert
-        data.OrgName.Should().Be("stark industry");
+        data.OrgName.Should().Be("Bayerische Motorenwerke AG");
         data.IdpName.Should().Be("test idp");
         data.ClientId.Should().Be("cl1");
     }
@@ -243,7 +243,7 @@ public class CompanyInvitationRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Exists.Should().BeTrue();
-        data.OrgName.Should().Be("stark industry");
+        data.OrgName.Should().Be("Bayerische Motorenwerke AG");
         data.IdpName.Should().Be("test idp");
     }
 
