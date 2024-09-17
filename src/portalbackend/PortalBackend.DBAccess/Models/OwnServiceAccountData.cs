@@ -24,6 +24,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record OwnServiceAccountData(
     IEnumerable<Guid> UserRoleIds,
     Guid ServiceAccountId,
+    UserStatusId ServiceAccountStatus,
+    bool IsOwnerOrProvider,
     Guid ServiceAccountVersion,
     Guid? ConnectorId,
     string? ClientClientId,

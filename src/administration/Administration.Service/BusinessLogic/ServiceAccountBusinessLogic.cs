@@ -95,7 +95,7 @@ public class ServiceAccountBusinessLogic(
             sa.ServiceAccountData?.AuthData.Secret));
     }
 
-    public async Task<int> DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId)
+    public async Task DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId)
     {
         var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
         var companyId = _identityData.CompanyId;
@@ -105,7 +105,17 @@ public class ServiceAccountBusinessLogic(
             ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
         };
         var result = await serviceAccountRepository.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(serviceAccountId, companyId, technicalUserCreationSteps).ConfigureAwait(ConfigureAwaitOptions.None)
-                ?? throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString()), new(CompanyId, companyId.ToString())]);
+                ?? throw NotFoundException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, [new("serviceAccountId", serviceAccountId.ToString())]);
+
+        if (result.ServiceAccountStatus != UserStatusId.ACTIVE)
+        {
+            throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_ACTIVE, [new("serviceAccountId", serviceAccountId.ToString())]);
+        }
+
+        if (!result.IsOwnerOrProvider)
+        {
+            throw ForbiddenException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER);
+        }
 
         if (result.StatusId is ConnectorStatusId.ACTIVE or ConnectorStatusId.PENDING)
         {
@@ -121,7 +131,7 @@ public class ServiceAccountBusinessLogic(
         await serviceAccountManagement.DeleteServiceAccount(serviceAccountId, new DeleteServiceAccountData(result.UserRoleIds, result.ClientClientId, result.IsDimServiceAccount, result.CreationProcessInProgress, result.ProcessId)).ConfigureAwait(ConfigureAwaitOptions.None);
         ModifyConnectorForDeleteServiceAccount(serviceAccountId, result);
 
-        return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private void ModifyConnectorForDeleteServiceAccount(Guid serviceAccountId, OwnServiceAccountData result)

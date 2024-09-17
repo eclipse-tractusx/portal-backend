@@ -26,20 +26,22 @@ public class AdministrationServiceAccountErrorMessageContainer : IErrorMessageCo
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationServiceAccountErrors, string> {
                 { AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, "other authenticationType values than SECRET are not supported yet , {authenticationType}" },
-                { AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, "name must not be empty, {name}"},
-                { AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, "company {companyId} does not exist"},
-                { AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, "bpn not set for company {companyId}"},
-                { AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, "The roles {unassignable} are not assignable to a service account, {userRoleIds}"},
-                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, "serviceAccount {serviceAccountId} not found for company {companyId}"},
-                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT, "Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user."},
-                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT, "Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user."},
-                { AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, "undefined clientId for serviceAccount {serviceAccountId}"},
-                { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, "serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}"},
-                { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT, "serviceAccount {serviceAccountId} is already INACTIVE"},
-                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, "clientClientId of serviceAccount {serviceAccountId} should not be null"},
+                { AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, "name must not be empty, {name}" },
+                { AdministrationServiceAccountErrors.SERVICE_COMPANY_NOT_EXIST_CONFLICT, "company {companyId} does not exist" },
+                { AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, "bpn not set for company {companyId}" },
+                { AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, "The roles {unassignable} are not assignable to a service account, {userRoleIds}" },
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_FOUND, "serviceAccount {serviceAccountId} does not exist" },
+                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_PENDING_CONFLICT, "Technical User is linked to an active connector. Change the link or deactivate the connector to delete the technical user." },
+                { AdministrationServiceAccountErrors.SERVICE_USERID_ACTIVATION_ACTIVE_CONFLICT, "Technical User is linked to an active subscription. Deactivate the subscription to delete the technical user." },
+                { AdministrationServiceAccountErrors.SERVICE_UNDEFINED_CLIENTID_CONFLICT, "undefined clientId for serviceAccount {serviceAccountId}" },
+                { AdministrationServiceAccountErrors.SERVICE_ID_PATH_NOT_MATCH_ARGUMENT, "serviceAccountId {serviceAccountId} from path does not match the one in body {serviceAccountDetailsServiceAccountId}" },
+                { AdministrationServiceAccountErrors.SERVICE_INACTIVE_CONFLICT, "serviceAccount {serviceAccountId} is already INACTIVE" },
+                { AdministrationServiceAccountErrors.SERVICE_CLIENTID_NOT_NULL_CONFLICT, "clientClientId of serviceAccount {serviceAccountId} should not be null" },
                 { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS, "Service Account {serviceAccountId} is not linked to a process" },
-                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, "Service Account {serviceAccountId} has pending process steps {processStepTypeIds}"},
-                { AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS, "Technical user can't be deleted because the creation progress is still running"}
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_PENDING_PROCESS_STEPS, "Service Account {serviceAccountId} has pending process steps {processStepTypeIds}" },
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NOT_ACTIVE, "Service Account {serviceAccountId} is not status active" },
+                { AdministrationServiceAccountErrors.SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER, "Only provider or owner of the service account are allowed to delete it" },
+                { AdministrationServiceAccountErrors.TECHNICAL_USER_CREATION_IN_PROGRESS, "Technical user can't be deleted because the creation progress is still running" }
             }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(AdministrationServiceAccountErrors); }
@@ -62,5 +64,7 @@ public enum AdministrationServiceAccountErrors
     SERVICE_CLIENTID_NOT_NULL_CONFLICT,
     SERVICE_ACCOUNT_NOT_LINKED_TO_PROCESS,
     SERVICE_ACCOUNT_PENDING_PROCESS_STEPS,
-    TECHNICAL_USER_CREATION_IN_PROGRESS
+    TECHNICAL_USER_CREATION_IN_PROGRESS,
+    SERVICE_ACCOUNT_NOT_ACTIVE,
+    SERVICE_ACCOUNT_NO_PROVIDER_OR_OWNER
 }
