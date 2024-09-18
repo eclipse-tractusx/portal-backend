@@ -100,7 +100,7 @@ public class ServiceAccountBusinessLogicTests
 
         _options = Options.Create(new ServiceAccountSettings
         {
-            AuthServiceUrl = "https://testcentralidp.int.testcatena-x.net/auth",
+            AuthServiceUrl = "https://auth.test/auth",
             ClientId = ClientId,
             EncryptionConfigIndex = 1,
             EncryptionConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
@@ -255,7 +255,7 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
-        result.AuthenticationServiceUrl.Should().Be("https://testcentralidp.int.testcatena-x.net/auth");
+        result.AuthenticationServiceUrl.Should().Be("https://auth.test/auth");
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.CompanyServiceAccountKindId.Should().NotBe(CompanyServiceAccountKindId.INTERNAL);
-        result.AuthenticationServiceUrl.Should().NotBe("https://testcentralidp.int.testcatena-x.net/auth");
+        result.AuthenticationServiceUrl.Should().NotBe("https://auth.test/auth");
     }
 
     [Fact]
