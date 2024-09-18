@@ -147,7 +147,6 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                         userRole.UserRoleText)),
                 x.ServiceAccount.CompanyServiceAccountTypeId,
                 x.ServiceAccount.CompanyServiceAccountKindId,
-                x.ServiceAccount.OfferSubscriptionId,
                 x.Connector == null
                     ? null
                     : new ConnectorResponseData(

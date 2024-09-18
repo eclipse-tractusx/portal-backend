@@ -31,7 +31,6 @@ public record CompanyServiceAccountDetailedData(
     IEnumerable<UserRoleData> UserRoleDatas,
     CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     CompanyServiceAccountKindId CompanyServiceAccountKindId,
-    Guid? SubscriptionId,
     ConnectorResponseData? ConnectorData,
     OfferResponseData? OfferSubscriptionData,
     CompanyLastEditorData? CompanyLastEditorData,

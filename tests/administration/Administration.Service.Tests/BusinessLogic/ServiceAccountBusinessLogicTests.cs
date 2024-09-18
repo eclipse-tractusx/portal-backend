@@ -210,7 +210,6 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidInput_GetsAllData()
     {
         // Arrange
-        SetupGetOwnComapnyServiceAccountInternalType();
         SetupGetOwnCompanyServiceAccountDetails();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
@@ -226,7 +225,6 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidInputAndDimCompanyData_GetsAllData()
     {
         // Arrange
-        SetupGetOwnComapnyServiceAccountInternalType();
         SetupGetOwnCompanyServiceAccountDetails();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
@@ -244,9 +242,8 @@ public class ServiceAccountBusinessLogicTests
     [Fact]
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidUserTypeInternal_AuthenticationUrl()
     {
-        // Arrange
+        // Arrange        
         SetupGetOwnComapnyServiceAccountInternalType();
-        SetupGetOwnCompanyServiceAccountDetails();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
         // Act
@@ -261,8 +258,7 @@ public class ServiceAccountBusinessLogicTests
     [Fact]
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidUserTypeExternal_AuthenticationUrl()
     {
-        // Arrange        
-        SetupGetOwnCompanyServiceAccountDetails();
+        // Arrange  
         SetupGetOwnComapnyServiceAccountExternalType();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
@@ -272,7 +268,7 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.EXTERNAL);
-        result.AuthenticationServiceUrl.Should().Be("https://example.org/auth");
+        result.AuthenticationServiceUrl.Should().Be("https://test.org/auth");
     }
 
     [Fact]
@@ -280,7 +276,6 @@ public class ServiceAccountBusinessLogicTests
     {
         // Arrange       
         SetupGetOwnCompanyServiceAccountDetails();
-        SetupGetOwnComapnyServiceAccountExternalType();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
         // Act
@@ -296,7 +291,6 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidCompany_NotFoundException()
     {
         // Arrange
-        SetupGetOwnComapnyServiceAccountInternalType();
         SetupGetOwnCompanyServiceAccountDetails();
         var invalidCompanyId = Guid.NewGuid();
         A.CallTo(() => _identity.CompanyId).Returns(invalidCompanyId);
@@ -314,7 +308,6 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInvalidServiceAccount_NotFoundException()
     {
         // Arrange
-        SetupGetOwnComapnyServiceAccountInternalType();
         SetupGetOwnCompanyServiceAccountDetails();
         var invalidServiceAccountId = Guid.NewGuid();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
@@ -867,21 +860,31 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnComapnyServiceAccountInternalType()
     {
-        _fixture.Build<CompanyServiceAccountDetailedData>()
+        var data = _fixture.Build<CompanyServiceAccountDetailedData>()
             .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.INTERNAL)
             .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
             .Create();
 
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, ValidCompanyId))
+        .Returns(data);
     }
 
     private void SetupGetOwnComapnyServiceAccountExternalType()
     {
-        _fixture.Build<CompanyServiceAccountDetailedData>()
+        var cryptoConfig = _options.Value.EncryptionConfigs.Single(x => x.Index == _options.Value.EncryptionConfigIndex);
+        var (secret, initializationVector) = CryptoHelper.Encrypt("test", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        var dimServiceAccountData = new DimServiceAccountData("https://test.org/auth", secret, initializationVector, _options.Value.EncryptionConfigIndex);
+
+        var externalData = _fixture.Build<CompanyServiceAccountDetailedData>()
             .With(x => x.Status, UserStatusId.ACTIVE)
             .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.EXTERNAL)
-            .With(x => x.DimServiceAccountData, default(DimServiceAccountData?))
+            .With(x => x.DimServiceAccountData, dimServiceAccountData)
             .Create();
+
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, ValidCompanyId))
+        .Returns(externalData);
 
     }
 
