@@ -162,6 +162,7 @@ public class ServiceAccountBusinessLogic(
 
         IamClientAuthMethod? iamClientAuthMethod;
         string? secret;
+        var AuthServiceUrl = (result.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL) ? _settings.AuthServiceUrl : result.DimServiceAccountData!.AuthenticationServiceUrl;
 
         if (result.DimServiceAccountData != null)
         {
@@ -193,7 +194,7 @@ public class ServiceAccountBusinessLogic(
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
             result.CompanyServiceAccountKindId,
-            result.DimServiceAccountData!.AuthenticationServiceUrl,
+            AuthServiceUrl,
             result.Status,
             secret,
             result.ConnectorData,

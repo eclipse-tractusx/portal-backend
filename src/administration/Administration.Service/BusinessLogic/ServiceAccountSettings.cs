@@ -40,6 +40,9 @@ public class ServiceAccountSettings
     [Required]
     [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    [Required]
+    public string AuthServiceUrl { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions

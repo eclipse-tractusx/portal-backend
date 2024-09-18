@@ -100,6 +100,7 @@ public class ServiceAccountBusinessLogicTests
 
         _options = Options.Create(new ServiceAccountSettings
         {
+            AuthServiceUrl = "https://testcentralidp.int.testcatena-x.net/auth",
             ClientId = ClientId,
             EncryptionConfigIndex = 1,
             EncryptionConfigs = new[] { new EncryptionModeConfig() { Index = 1, EncryptionKey = Convert.ToHexString(encryptionKey), CipherMode = System.Security.Cryptography.CipherMode.CBC, PaddingMode = System.Security.Cryptography.PaddingMode.PKCS7 } },
@@ -254,7 +255,7 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.INTERNAL);
-        result.AuthenticationServiceUrl.Should().Be("https://example.org/auth");
+        result.AuthenticationServiceUrl.Should().Be("https://testcentralidp.int.testcatena-x.net/auth");
     }
 
     [Fact]
@@ -272,6 +273,23 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.CompanyServiceAccountKindId.Should().Be(CompanyServiceAccountKindId.EXTERNAL);
         result.AuthenticationServiceUrl.Should().Be("https://example.org/auth");
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithInValidUserTypeInternal_AuthenticationUrl()
+    {
+        // Arrange       
+        SetupGetOwnCompanyServiceAccountDetails();
+        SetupGetOwnComapnyServiceAccountExternalType();
+        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.CompanyServiceAccountKindId.Should().NotBe(CompanyServiceAccountKindId.INTERNAL);
+        result.AuthenticationServiceUrl.Should().NotBe("https://testcentralidp.int.testcatena-x.net/auth");
     }
 
     [Fact]
