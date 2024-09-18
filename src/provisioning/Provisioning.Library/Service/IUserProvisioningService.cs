@@ -36,4 +36,5 @@ public interface IUserProvisioningService
     Task<IEnumerable<UserRoleData>> GetOwnCompanyPortalRoleDatas(string clientId, IEnumerable<string> roles, Guid companyId);
     Task<(Identity? Identity, Guid CompanyUserId)> GetOrCreateCompanyUser(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId, Guid identityProviderId, string? businessPartnerNumber);
     Task AssignRolesToNewUserAsync(IUserRolesRepository userRolesRepository, IEnumerable<UserRoleData> roleDatas, (string IamUserId, Guid CompanyUserId) userdata);
+    Task UpdateCompanyNameInIdentityProvider(Guid identityId, string companyName);
 }

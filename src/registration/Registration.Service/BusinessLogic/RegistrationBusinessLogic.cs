@@ -249,7 +249,7 @@ public class RegistrationBusinessLogic(
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
 
         var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, applicationRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-
+        var existingCompanyName = companyApplicationData.Name;
         var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
 
         ModifyCompany(addressId, companyApplicationData, companyDetails, companyRepository);
@@ -257,7 +257,10 @@ public class RegistrationBusinessLogic(
         companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
 
         UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository, dateTimeProvider);
-
+        if (existingCompanyName != companyDetails.Name)
+        {
+            await userProvisioningService.UpdateCompanyNameInIdentityProvider(_identityData.IdentityId, companyDetails.Name);
+        }
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
