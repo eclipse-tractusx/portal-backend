@@ -27,11 +27,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor.Tests;
+namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationChecklist.Executor.Tests;
 
 public class ChecklistHandlerServiceTests
 {
@@ -169,67 +170,67 @@ public class ChecklistHandlerServiceTests
         switch (stepTypeId)
         {
             case ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.CREATE_IDENTITY_WALLET:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.CREATE_DIM_WALLET:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.VALIDATE_DID_DOCUMENT:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.TRANSMIT_BPN_DID:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_TRANSMIT_DID_BPN)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.START_CLEARING_HOUSE:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.START_SELF_DESCRIPTION_LP:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.START_APPLICATION_ACTIVATION:
-                execution.ErrorFunc.Should().BeNull();
+                execution.ErrorFunc?.Should().BeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(A<Exception>._, A<ProcessStepTypeId>._)).MustNotHaveHappened();
                 break;
             case ProcessStepTypeId.ASSIGN_INITIAL_ROLES:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.ASSIGN_BPN_TO_USERS:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.REMOVE_REGISTRATION_ROLES:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.SET_THEME:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_THEME)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.SET_MEMBERSHIP:
-                execution.ErrorFunc.Should().NotBeNull();
+                execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION:
-                execution.ErrorFunc.Should().BeNull();
+                execution.ErrorFunc?.Should().BeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(A<Exception>._, A<ProcessStepTypeId>._)).MustNotHaveHappened();
                 break;
             default:

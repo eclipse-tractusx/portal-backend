@@ -209,7 +209,7 @@ public class ApplicationActivationTests
         //Assert
         result.Modified.Should().BeTrue();
         result.SkipStepTypeIds.Should().HaveCount(Enum.GetValues<ProcessStepTypeId>().Length - 1).And.NotContain(ProcessStepTypeId.START_APPLICATION_ACTIVATION);
-        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry?.Should().NotBeNull();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle()
             .And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_INITIAL_ROLES);
@@ -616,7 +616,7 @@ public class ApplicationActivationTests
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle()
             .And.Satisfy(x => x == ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION);
-        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry?.Should().NotBeNull();
         result.ModifyChecklistEntry?.Invoke(applicationChecklistEntry);
         applicationChecklistEntry.Comment.Should()
             .Be("testMessage");
