@@ -41,5 +41,4 @@ public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("offer")] OfferResponseData? Offer,
     [property: JsonPropertyName("LastEditorName")] string? LastName,
     [property: JsonPropertyName("LastEditorCompanyName")] string? CompanyName
-
 );

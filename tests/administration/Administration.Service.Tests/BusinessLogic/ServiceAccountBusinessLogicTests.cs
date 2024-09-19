@@ -242,7 +242,7 @@ public class ServiceAccountBusinessLogicTests
     [Fact]
     public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidUserTypeInternal_AuthenticationUrl()
     {
-        // Arrange        
+        // Arrange
         SetupGetOwnComapnyServiceAccountInternalType();
         var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
 
@@ -839,8 +839,8 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnCompanyServiceAccount()
     {
-        var cryptoConfig = _options.Value.EncryptionConfigs.Single(x => x.Index == _options.Value.EncryptionConfigIndex);
-        var (secret, initializationVector) = CryptoHelper.Encrypt("test", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoHelper = _options.Value.EncryptionConfigs.GetCryptoHelper(_options.Value.EncryptionConfigIndex);
+        var (secret, initializationVector) = cryptoHelper.Encrypt("test");
 
         var dimServiceAccountData = new DimServiceAccountData("https://example.org/auth", secret, initializationVector, _options.Value.EncryptionConfigIndex);
         var dataWithDim = _fixture.Build<CompanyServiceAccountDetailedData>()
@@ -872,8 +872,8 @@ public class ServiceAccountBusinessLogicTests
 
     private void SetupGetOwnComapnyServiceAccountExternalType()
     {
-        var cryptoConfig = _options.Value.EncryptionConfigs.Single(x => x.Index == _options.Value.EncryptionConfigIndex);
-        var (secret, initializationVector) = CryptoHelper.Encrypt("test", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoHelper = _options.Value.EncryptionConfigs.GetCryptoHelper(_options.Value.EncryptionConfigIndex);
+        var (secret, initializationVector) = cryptoHelper.Encrypt("test");
 
         var dimServiceAccountData = new DimServiceAccountData("https://test.org/auth", secret, initializationVector, _options.Value.EncryptionConfigIndex);
 
@@ -885,7 +885,6 @@ public class ServiceAccountBusinessLogicTests
 
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(ValidServiceAccountId, ValidCompanyId))
         .Returns(externalData);
-
     }
 
     private void SetupDeleteOwnCompanyServiceAccount(Connector? connector = null, Identity? identity = null, Guid? processId = null)
