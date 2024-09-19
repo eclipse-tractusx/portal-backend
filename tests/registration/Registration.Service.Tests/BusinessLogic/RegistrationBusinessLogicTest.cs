@@ -632,7 +632,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-            null!,
+           _userProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -671,6 +671,135 @@ public class RegistrationBusinessLogicTest
             c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
+    [Fact]
+    public async Task SetCompanyWithAddressAsync__WithCompanyNameChange_ModifiesCompany()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var identityData = A.Fake<IIdentityData>();
+        Company? company = null;
+        A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identityData.CompanyId).Returns(companyId);
+        A.CallTo(() => _identityService.IdentityData).Returns(identityData);
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.Name, "Test Company Updated Name")
+            .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider,
+            _mailingProcessCreation);
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.IsUserOfCompany, true)
+            .With(x => x.Name, "Test Company")
+            .Create();
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
+            .Returns(existingData);
+        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        // Act
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name)).MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        company.Should().Match<Company>(c =>
+            c.Id == companyId &&
+            c.Name == companyData.Name &&
+            c.Shortname == companyData.ShortName &&
+            c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
+    }
+
+    [Fact]
+    public async Task SetCompanyWithAddressAsync__WithoutCompanyNameChange_ModifiesCompany()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var identityData = A.Fake<IIdentityData>();
+        Company? company = null;
+        A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identityData.CompanyId).Returns(companyId);
+        A.CallTo(() => _identityService.IdentityData).Returns(identityData);
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.Name, "Test Company")
+            .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            _userProvisioningService,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider,
+            _mailingProcessCreation);
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.IsUserOfCompany, true)
+            .With(x => x.Name, "Test Company")
+            .Create();
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
+            .Returns(existingData);
+        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        // Act
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name)).MustNotHaveHappened();
+
+        company.Should().NotBeNull();
+        company.Should().Match<Company>(c =>
+            c.Id == companyId &&
+            c.Name == companyData.Name &&
+            c.Shortname == companyData.ShortName &&
+            c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
+    }
+
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -700,7 +829,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-            null!,
+            _userProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -718,7 +847,7 @@ public class RegistrationBusinessLogicTest
                 initialize?.Invoke(company);
                 modify(company);
             });
-
+        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
         // Act
         await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
@@ -776,7 +905,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-            null!,
+            _userProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -865,7 +994,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-            null!,
+           _userProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -974,7 +1103,7 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-            null!,
+           _userProvisioningService,
             null!,
             _portalRepositories,
             null!,
