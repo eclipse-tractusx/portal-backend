@@ -162,9 +162,11 @@ public class ServiceAccountBusinessLogic(
 
         IamClientAuthMethod? iamClientAuthMethod;
         string? secret;
+        var authServiceUrl = _settings.AuthServiceUrl;
 
         if (result.DimServiceAccountData != null)
         {
+            authServiceUrl = result.DimServiceAccountData.AuthenticationServiceUrl;
             iamClientAuthMethod = IamClientAuthMethod.SECRET;
             var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
             secret = cryptoHelper.Decrypt(
@@ -192,6 +194,8 @@ public class ServiceAccountBusinessLogic(
             iamClientAuthMethod,
             result.UserRoleDatas,
             result.CompanyServiceAccountTypeId,
+            result.CompanyServiceAccountKindId,
+            authServiceUrl,
             result.Status,
             secret,
             result.ConnectorData,

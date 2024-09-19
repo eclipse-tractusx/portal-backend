@@ -33,6 +33,8 @@ public record ServiceAccountConnectorOfferData(
     [property: JsonPropertyName("authenticationType")] IamClientAuthMethod? IamClientAuthMethod,
     [property: JsonPropertyName("roles")] IEnumerable<UserRoleData> UserRoleDatas,
     [property: JsonPropertyName("companyServiceAccountTypeId")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
+    [property: JsonPropertyName("usertype")] CompanyServiceAccountKindId CompanyServiceAccountKindId,
+    [property: JsonPropertyName("authenticationServiceUrl")] string AuthenticationServiceUrl,
     [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("secret")] string? Secret,
     [property: JsonPropertyName("connector")] ConnectorResponseData? Connector,
