@@ -799,7 +799,6 @@ public class RegistrationBusinessLogicTest
             c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
