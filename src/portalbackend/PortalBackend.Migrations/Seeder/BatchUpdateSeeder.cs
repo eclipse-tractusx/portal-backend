@@ -158,6 +158,16 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.ChecklistProcessId = entry.ChecklistProcessId;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        await SeedTable<Agreement>("agreements",
+            x => x.Id,
+            x => x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.AgreementStatusId != x.dbEntity.AgreementStatusId,
+            (dbEntry, entry) =>
+            {
+                dbEntry.Name = entry.Name;
+                dbEntry.AgreementStatusId = entry.AgreementStatusId;
+                dbEntry.DateLastChanged = DateTimeOffset.UtcNow;
+            }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         _logger.LogInformation("Finished BaseEntityBatch Seeder");
     }
