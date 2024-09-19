@@ -20,16 +20,44 @@
 ---
 version: 2
 updates:
+
+  # Divide into two nuget scans due to timeout of Github action run after 55 minutes without split
+
   # NuGet
   -
     package-ecosystem: "nuget"
-    directory: /
+    directory: "/src/"
     labels:
       - "dependabot"
       - "dependencies"
     schedule:
       interval: "weekly"
     ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    allow:
+      - dependency-name: "Microsoft.*"
+    groups:
+      default:
+        patterns:
+          - "*"
+
+  # NuGet
+  -
+    package-ecosystem: "nuget"
+    directory: "/src/"
+    # Makes it possible to have another nuget configuration for the same directory.
+    # https://github.com/dependabot/dependabot-core/issues/1778#issuecomment-1988140219
+    target-branch: main
+    labels:
+      - "dependabot"
+      - "dependencies"
+    schedule:
+      interval: "weekly"
+    # Ignore xunit* because scan fails when included
+    ignore:
+      - dependency-name: "Microsoft.*"
+      - dependency-name: "xunit*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
     groups:
