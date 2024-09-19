@@ -560,8 +560,6 @@ public class OfferService(
         await notificationService.CreateNotifications(notificationRecipients, _identityData.IdentityId, content, declineData.CompanyId.Value).AwaitAll().ConfigureAwait(false);
         await notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-
         await mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
             new[]
@@ -576,6 +574,8 @@ public class OfferService(
                 $"{offerType.ToString().ToLower()}-request-decline"
             },
             declineData.CompanyId.Value).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task CheckLanguageCodesExist(IEnumerable<string> languageCodes)
