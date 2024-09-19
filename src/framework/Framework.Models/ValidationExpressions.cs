@@ -24,6 +24,6 @@ public static class ValidationExpressions
     public const string Name = @"^.+$";
     public const string Bpn = @"^(BPNL|bpnl)[\w|\d]{12}$";
     public const string Bpns = @"^(BPNS|bpns)[\w|\d]{12}$";
-    public const string Company = @"^(?!.*\s$)([\wÀ-ÿ£$€¥¢@%*+\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
+    public const string Company = @"^(?!.*\s$)([\p{L}\u0E00-\u0E7F\d\p{Sc}@%*+_\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
     public const string ExternalCertificateNumber = @"^[a-zA-Z0-9]{0,36}$";
 }
