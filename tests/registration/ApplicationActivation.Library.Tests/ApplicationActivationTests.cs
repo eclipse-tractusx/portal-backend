@@ -318,8 +318,7 @@ public class ApplicationActivationTests
         var result = await _sut.AssignRoles(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId2, UserRoleId)).MustNotHaveHappened();
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.Matches(x => x.Count() == 1 && x.Single().Item1 == CompanyUserId1 && x.Single().Item2 == UserRoleId))).MustHaveHappenedOnceExactly();
         result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_INITIAL_ROLES);
         result.ModifyChecklistEntry.Should().BeNull();
         result.ProcessMessage.Should().BeNull();
@@ -360,7 +359,7 @@ public class ApplicationActivationTests
         var result = await _sut.AssignRoles(context, CancellationToken.None);
 
         //Assert
-        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRole(CompanyUserId1, UserRoleId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _rolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.Matches(x => x.Count() == 1 && x.Single().Item1 == CompanyUserId1 && x.Single().Item2 == UserRoleId))).MustHaveHappenedOnceExactly();
         result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(x => x == ProcessStepTypeId.ASSIGN_BPN_TO_USERS);
         result.ModifyChecklistEntry.Should().BeNull();
         result.ProcessMessage.Should().BeNull();
