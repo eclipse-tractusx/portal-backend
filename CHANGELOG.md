@@ -2,6 +2,56 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## 2.3.0-alpha.1
+
+## Feature
+
+* **Process Retriggers**
+  * adjusted retriggers [#915](https://github.com/eclipse-tractusx/portal-backend/pull/915)
+  * enabled maintenance worker to retrigger the clearinghouse process [#958](https://github.com/eclipse-tractusx/portal-backend/pull/958)
+* **Invitation**
+  * enabled creation of application and company on invite to remove the delay of the company application after invite [#960](https://github.com/eclipse-tractusx/portal-backend/pull/960)
+  * allowed access to invitation endpoint to technical user [#933](https://github.com/eclipse-tractusx/portal-backend/pull/933)
+* **Technical User**: new parameters for api expansion for technical user data [#997](https://github.com/eclipse-tractusx/portal-backend/pull/997)
+* **Administration**: introduced validating og bpn before adding to company user [#902](https://github.com/eclipse-tractusx/portal-backend/pull/902)
+* **Business Partner Data Management**: add sharing state ready toggle [#905](https://github.com/eclipse-tractusx/portal-backend/pull/905)
+
+### Change
+
+* **notification**: adjusted create notification endpoint [#906](https://github.com/eclipse-tractusx/portal-backend/pull/906)
+* **Legal Entity**: extended legal entity length [#860](https://github.com/eclipse-tractusx/portal-backend/pull/860)
+* **Connector**: added duplicate check to connector creation [#921](https://github.com/eclipse-tractusx/portal-backend/pull/921)
+* **Offers**: removed provider from offer [#911](https://github.com/eclipse-tractusx/portal-backend/pull/911)
+* **ServiceAccountDeletion**: adjusted error messages [#995](https://github.com/eclipse-tractusx/portal-backend/pull/995)
+
+### Technical Support
+
+* added sql scripts to query application checklist data [#925](https://github.com/eclipse-tractusx/portal-backend/pull/925)
+* removed Microsoft.AspNetCore.Mvc.Abstractions [#926](https://github.com/eclipse-tractusx/portal-backend/pull/926)
+* removed consortia test seeding files [#957](https://github.com/eclipse-tractusx/portal-backend/pull/957)
+* corrected German translation for TechnicalIntegrationCheckpoints [#931](https://github.com/eclipse-tractusx/portal-backend/pull/931)
+* added TruffleHog secret scan [#999](https://github.com/eclipse-tractusx/portal-backend/pull/999)
+* dependabot: fixed nuget scanning [#1009](https://github.com/eclipse-tractusx/portal-backend/pull/1009), [#1001](https://github.com/eclipse-tractusx/portal-backend/pull/1001)
+* adjusted maintenance job docker image [#1005](https://github.com/eclipse-tractusx/portal-backend/pull/1005)
+* aggregated migrations [#1014](https://github.com/eclipse-tractusx/portal-backend/pull/1014)
+* removed some redundancy from ServiceAccountBusinessLogic unit tests [#1023](https://github.com/eclipse-tractusx/portal-backend/pull/1023)
+
+### Bugfixes
+
+* **Registration**
+  * fixed BPDM details region mapping [#980](https://github.com/eclipse-tractusx/portal-backend/pull/980)
+  * added agreement table in update seeder [#1011](https://github.com/eclipse-tractusx/portal-backend/pull/1011)
+* **Mailing**
+  * subscription activation: fixed null requester name [#974](https://github.com/eclipse-tractusx/portal-backend/pull/974)
+  * fixed mail sending for subscription [#975](https://github.com/eclipse-tractusx/portal-backend/pull/975)
+  * fixed mails not getting send on app approval or rejection [#1017](https://github.com/eclipse-tractusx/portal-backend/pull/1017)
+* **Connectors**: allowed registration of connectors with pending status technical users [#924](https://github.com/eclipse-tractusx/portal-backend/pull/924)
+* **User Management**
+  * fixed sending of invitation email when uploading multiple Users [#922](https://github.com/eclipse-tractusx/portal-backend/pull/922)
+* **Technical User**
+  * adjusted response for get service account detail [#964](https://github.com/eclipse-tractusx/portal-backend/pull/964)
+* **IdP**: fixed delete iam identity provider [#1026](https://github.com/eclipse-tractusx/portal-backend/pull/1026)
+
 ## 2.2.0
 
 ### Change
