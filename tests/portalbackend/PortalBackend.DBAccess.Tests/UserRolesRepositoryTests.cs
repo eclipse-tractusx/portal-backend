@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -131,11 +132,13 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync();
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1), Constants.DefaultLanguage).ToListAsync();
 
         // Assert
         data.Should().HaveCount(13);
         data.Should().OnlyHaveUniqueItems();
+        data.Where(x => x.RoleType == UserRoleType.Internal).Should().HaveCount(12);
+        data.Where(x => x.RoleType == UserRoleType.External).Should().ContainSingle();
     }
 
     #endregion

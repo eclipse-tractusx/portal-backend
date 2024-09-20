@@ -326,8 +326,21 @@ public class ServiceAccountBusinessLogic(
             portalRepositories.GetInstance<IServiceAccountRepository>().GetOwnCompanyServiceAccountsUntracked(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
     }
 
-    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName) =>
-        portalRepositories.GetInstance<IUserRolesRepository>().GetServiceAccountRolesAsync(_identityData.CompanyId, _settings.ClientId, languageShortName ?? Constants.DefaultLanguage);
+    public async IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
+    {
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
+        var userRoles = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.DimUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        await foreach (var userRole in userRolesRepository.GetServiceAccountRolesAsync(
+                           _identityData.CompanyId,
+                           _settings.ClientId,
+                           userRoles,
+                           languageShortName ?? Constants.DefaultLanguage))
+        {
+            yield return userRole;
+        }
+    }
 
     public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)
     {

@@ -19,6 +19,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
@@ -36,19 +37,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "serviceaccount")]
 [Produces("application/json")]
 [Consumes("application/json")]
-public class ServiceAccountController : ControllerBase
+public class ServiceAccountController(IServiceAccountBusinessLogic logic) : ControllerBase
 {
-    private readonly IServiceAccountBusinessLogic _logic;
-
-    /// <summary>
-    /// Creates a new instance of <see cref="ServiceAccountController"/> 
-    /// </summary>
-    /// <param name="logic">The Service Account Buisness Logic</param>
-    public ServiceAccountController(IServiceAccountBusinessLogic logic)
-    {
-        _logic = logic;
-    }
-
     /// <summary>
     /// Creates a new technical user / service account with selected role under the same org as the requester
     /// </summary>
@@ -66,7 +56,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo) =>
-        _logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
+        logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
 
     /// <summary>
     /// Deletes the service account with the given id
@@ -86,7 +76,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<NoContentResult> DeleteServiceAccount([FromRoute] Guid serviceAccountId)
     {
-        await _logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.DeleteOwnCompanyServiceAccountAsync(serviceAccountId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
 
@@ -107,7 +97,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountConnectorOfferData> GetServiceAccountDetails([FromRoute] Guid serviceAccountId) =>
-        _logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId);
+        logic.GetOwnCompanyServiceAccountDetailsAsync(serviceAccountId);
 
     /// <summary>
     /// Updates the service account details with the given id.
@@ -134,7 +124,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public Task<ServiceAccountDetails> PutServiceAccountDetails([FromRoute] Guid serviceAccountId, [FromBody] ServiceAccountEditableDetails serviceAccountDetails) =>
-        _logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails);
+        logic.UpdateOwnCompanyServiceAccountDetailsAsync(serviceAccountId, serviceAccountDetails);
 
     /// <summary>
     /// Resets the service account credentials for the given service account Id.
@@ -156,7 +146,7 @@ public class ServiceAccountController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
     public Task<ServiceAccountDetails> ResetServiceAccountCredentials([FromRoute] Guid serviceAccountId) =>
-        _logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId);
+        logic.ResetOwnCompanyServiceAccountSecretAsync(serviceAccountId);
 
     /// <summary>
     /// Gets the service account data as pagination
@@ -176,7 +166,7 @@ public class ServiceAccountController : ControllerBase
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive = false, [FromQuery] IEnumerable<UserStatusId>? userStatus = null) =>
-        _logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive, userStatus);
+        logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive, userStatus);
 
     /// <summary>
     /// Get all service account roles
@@ -190,8 +180,8 @@ public class ServiceAccountController : ControllerBase
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("user/roles")]
     [ProducesResponseType(typeof(List<UserRoleWithDescription>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null) =>
-        _logic.GetServiceAccountRolesAsync(languageShortName);
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName = null)
+        => logic.GetServiceAccountRolesAsync(languageShortName);
 
     /// <summary>
     /// Get all service account roles
@@ -206,7 +196,7 @@ public class ServiceAccountController : ControllerBase
     [Route("callback/{processId}")]
     public async Task<OkResult> ServiceAccountCreationCallback([FromRoute] Guid processId, [FromBody] AuthenticationDetail callbackData)
     {
-        await _logic.HandleServiceAccountCreationCallback(processId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.HandleServiceAccountCreationCallback(processId, callbackData).ConfigureAwait(ConfigureAwaitOptions.None);
         return Ok();
     }
 
@@ -222,7 +212,7 @@ public class ServiceAccountController : ControllerBase
     [Route("callback/{processId}/retrigger-create-dim-technical-user")]
     public async Task<OkResult> RetriggerCreateDimTechnicalUser([FromRoute] Guid processId)
     {
-        await _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
         return Ok();
     }
 
@@ -238,7 +228,7 @@ public class ServiceAccountController : ControllerBase
     [Route("callback/{processId}/retrigger-delete-dim-technical-user")]
     public async Task<OkResult> RetriggerDeleteDimTechnicalUser([FromRoute] Guid processId)
     {
-        await _logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.RetriggerDimTechnicalUser(processId, ProcessStepTypeId.RETRIGGER_DELETE_DIM_TECHNICAL_USER).ConfigureAwait(ConfigureAwaitOptions.None);
         return Ok();
     }
 
@@ -254,7 +244,7 @@ public class ServiceAccountController : ControllerBase
     [Route("callback/{processId}/delete")]
     public async Task<OkResult> ServiceAccountDeletionCallback([FromRoute] Guid processId)
     {
-        await _logic.HandleServiceAccountDeletionCallback(processId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await logic.HandleServiceAccountDeletionCallback(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         return Ok();
     }
 }
