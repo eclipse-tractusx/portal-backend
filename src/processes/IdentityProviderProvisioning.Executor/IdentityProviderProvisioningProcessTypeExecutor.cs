@@ -28,11 +28,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.IdentityProviderProvisioning.Executor;
 
-public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecutor
+public class IdentityProviderProvisioningProcessTypeExecutor(
+    IPortalRepositories portalRepositories,
+    IProvisioningManager provisioningManager)
+    : IProcessTypeExecutor
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IProvisioningManager _provisioningManager;
-
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps =
     [
         ProcessStepTypeId.DELETE_IDP_SHARED_REALM,
@@ -41,13 +41,7 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
         ProcessStepTypeId.DELETE_IDENTITY_PROVIDER,
     ];
 
-    private IdpData? _idpData = null;
-
-    public IdentityProviderProvisioningProcessTypeExecutor(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager)
-    {
-        _portalRepositories = portalRepositories;
-        _provisioningManager = provisioningManager;
-    }
+    private IdpData? _idpData;
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.IDENTITYPROVIDER_PROVISIONING;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => ExecutableProcessSteps.Contains(processStepTypeId);
@@ -56,13 +50,9 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var idpData = await _portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdentityProviderDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var idpData = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdentityProviderDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (idpData == null)
-        {
-            throw new ConflictException($"process {processId} does not exist or is not associated with an Identity Provider");
-        }
-        _idpData = idpData;
+        _idpData = idpData ?? throw new ConflictException($"process {processId} does not exist or is not associated with an Identity Provider");
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
@@ -85,7 +75,7 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
                 ProcessStepTypeId.DELETE_IDP_SHARED_REALM => await DeleteSharedRealmAsync(_idpData).ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT => await DeleteIdpSharedServiceAccount(_idpData).ConfigureAwait(ConfigureAwaitOptions.None),
                 ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER => await DeleteCentralIdentityProvider(_idpData.IamAlias).ConfigureAwait(ConfigureAwaitOptions.None),
-                ProcessStepTypeId.DELETE_IDENTITY_PROVIDER => DeleteIdentityProvider(_idpData.IdentityProviderId),
+                ProcessStepTypeId.DELETE_IDENTITY_PROVIDER => await DeleteIdentityProvider(_idpData.IdentityProviderId).ConfigureAwait(ConfigureAwaitOptions.None),
                 _ => (null, ProcessStepStatusId.TODO, false, null)
             };
         }
@@ -94,6 +84,7 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
             (stepStatusId, processMessage, nextStepTypeIds) = ProcessError(ex, processStepTypeId);
             modified = true;
         }
+
         return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
@@ -112,9 +103,10 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
         {
             return ([ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER], ProcessStepStatusId.SKIPPED, false, $"IdentityProvider {idpData.IamAlias} is not a shared idp");
         }
+
         try
         {
-            await _provisioningManager.DeleteSharedRealmAsync(idpData.IamAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.DeleteSharedRealmAsync(idpData.IamAlias).ConfigureAwait(ConfigureAwaitOptions.None);
             return ([ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT], ProcessStepStatusId.DONE, false, null);
         }
         catch (KeycloakEntityNotFoundException)
@@ -129,9 +121,10 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
         {
             return ([ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER], ProcessStepStatusId.SKIPPED, false, $"IdentityProvider {idpData.IamAlias} is not a shared idp");
         }
+
         try
         {
-            await _provisioningManager.DeleteIdpSharedServiceAccount(idpData.IamAlias).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.DeleteIdpSharedServiceAccount(idpData.IamAlias).ConfigureAwait(ConfigureAwaitOptions.None);
             return ([ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER], ProcessStepStatusId.DONE, false, null);
         }
         catch (KeycloakEntityNotFoundException)
@@ -144,7 +137,7 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
     {
         try
         {
-            await _provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
+            await provisioningManager.DeleteCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
             return ([ProcessStepTypeId.DELETE_IDENTITY_PROVIDER], ProcessStepStatusId.DONE, false, null);
         }
         catch (KeycloakEntityNotFoundException)
@@ -153,9 +146,15 @@ public class IdentityProviderProvisioningProcessTypeExecutor : IProcessTypeExecu
         }
     }
 
-    private (IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage) DeleteIdentityProvider(Guid identityProviderId)
+    private async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> DeleteIdentityProvider(Guid identityProviderId)
     {
-        var identityProviderRepository = _portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
+        var alias = await identityProviderRepository.GetIamIdentityProviderForIdp(identityProviderId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (alias != null)
+        {
+            identityProviderRepository.DeleteIamIdentityProvider(alias);
+        }
+
         identityProviderRepository.DeleteIdentityProvider(identityProviderId);
         return (null, ProcessStepStatusId.DONE, true, null);
     }

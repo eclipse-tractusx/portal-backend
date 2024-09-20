@@ -31,8 +31,6 @@ public class IdentityProviderProvisioningProcessTypeExecutorTests
     private readonly Guid _ownProcessId = Guid.NewGuid();
     private readonly IdpData _sharedIdpData;
     private readonly IdpData _ownIdpData;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IProvisioningManager _provisioningManager;
     private readonly IIdentityProviderRepository _identityProviderRepository;
     private readonly IFixture _fixture;
     private readonly IdentityProviderProvisioningProcessTypeExecutor _executor;
@@ -44,18 +42,18 @@ public class IdentityProviderProvisioningProcessTypeExecutorTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _portalRepositories = A.Fake<IPortalRepositories>();
-        _provisioningManager = A.Fake<IProvisioningManager>();
+        var portalRepositories = A.Fake<IPortalRepositories>();
+        var provisioningManager = A.Fake<IProvisioningManager>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
 
         _sharedIdpData = new IdpData(Guid.NewGuid(), "sharedIdp", IdentityProviderTypeId.SHARED);
 
         _ownIdpData = new IdpData(Guid.NewGuid(), "ownIdp", IdentityProviderTypeId.OWN);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IIdentityProviderRepository>())
+        A.CallTo(() => portalRepositories.GetInstance<IIdentityProviderRepository>())
             .Returns(_identityProviderRepository);
 
-        _executor = new IdentityProviderProvisioningProcessTypeExecutor(_portalRepositories, _provisioningManager);
+        _executor = new IdentityProviderProvisioningProcessTypeExecutor(portalRepositories, provisioningManager);
         SetupFakes();
     }
 
@@ -184,6 +182,7 @@ public class IdentityProviderProvisioningProcessTypeExecutorTests
             result.ScheduleStepTypeIds.Should().ContainSingle()
                 .Which.Should().Be(nextprocessStepTypeId);
         }
+
         result.ProcessStepStatusId.Should().Be(stepStatus);
         result.ProcessMessage.Should().Be(message);
         result.SkipStepTypeIds.Should().BeNull();
@@ -191,7 +190,8 @@ public class IdentityProviderProvisioningProcessTypeExecutorTests
 
     #endregion
 
-    #region  SetUp
+    #region SetUp
+
     private void SetupFakes()
     {
         A.CallTo(() => _identityProviderRepository.GetIdentityProviderDataForProcessIdAsync(_sharedProcessId))
@@ -201,5 +201,4 @@ public class IdentityProviderProvisioningProcessTypeExecutorTests
     }
 
     #endregion
-
 }

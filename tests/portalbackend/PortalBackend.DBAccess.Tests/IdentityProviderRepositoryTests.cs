@@ -509,6 +509,36 @@ public class IdentityProviderRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetIamIdentityProviderForIdp
+
+    [Fact]
+    public async Task GetIamIdentityProviderForIdp_WithExisting_ReturnsAlias()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetIamIdentityProviderForIdp(new Guid("38f56465-ce26-4f25-9745-1791620dc203"));
+
+        // Assert
+        result.Should().Be("to-decline-alias");
+    }
+
+    [Fact]
+    public async Task GetIamIdentityProviderForIdp_WithNotExisting_ReturnsNull()
+    {
+        // Arrange
+        var sut = await CreateSut();
+
+        // Act
+        var result = await sut.GetIamIdentityProviderForIdp(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region Setup    
 
     private async Task<(IdentityProviderRepository, PortalDbContext)> CreateSutWithContext()
