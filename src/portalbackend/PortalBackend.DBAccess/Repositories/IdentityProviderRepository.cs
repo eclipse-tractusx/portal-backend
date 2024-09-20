@@ -364,4 +364,10 @@ public class IdentityProviderRepository : IIdentityProviderRepository
 
     public void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds) =>
         _context.AddRange(identityProviderProcessIds.Select(x => new IdentityProviderAssignedProcess(x.IdentityProviderId, x.ProcessId)));
+
+    public Task<string?> GetIamIdentityProviderForIdp(Guid identityProviderId) =>
+        _context.IamIdentityProviders
+            .Where(x => x.IdentityProviderId == identityProviderId)
+            .Select(x => x.IamIdpAlias)
+            .SingleOrDefaultAsync();
 }

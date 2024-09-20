@@ -62,4 +62,5 @@ public interface IIdentityProviderRepository
     IAsyncEnumerable<(string Email, string? FirstName, string? LastName)> GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(IEnumerable<Guid> userRoleIds, Guid identityProviderId);
     Task<IdpData?> GetIdentityProviderDataForProcessIdAsync(Guid processId);
     void CreateIdentityProviderAssignedProcessRange(IEnumerable<(Guid IdentityProviderId, Guid ProcessId)> identityProviderProcessIds);
+    Task<string?> GetIamIdentityProviderForIdp(Guid identityProviderId);
 }
