@@ -50,9 +50,9 @@ public class IdentityProviderProvisioningProcessTypeExecutor(
 
     public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var idpData = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdentityProviderDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None);
+        _idpData = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetIdentityProviderDataForProcessIdAsync(processId).ConfigureAwait(ConfigureAwaitOptions.None)
+            ?? throw new ConflictException($"process {processId} does not exist or is not associated with an Identity Provider");
 
-        _idpData = idpData ?? throw new ConflictException($"process {processId} does not exist or is not associated with an Identity Provider");
         return new IProcessTypeExecutor.InitializationResult(false, null);
     }
 
