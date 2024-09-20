@@ -31,7 +31,7 @@ public class KeycloakRealmSettings
     public string InstanceName { get; set; } = null!;
     [Required]
     [DistinctValues]
-    public IEnumerable<string> DataPathes { get; set; } = null!;
+    public IEnumerable<string> DataPaths { get; set; } = null!;
     public string? Id { get; set; }
     public string? DisplayName { get; set; }
     public string? DisplayNameHtml { get; set; }

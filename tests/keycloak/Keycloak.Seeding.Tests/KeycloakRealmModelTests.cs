@@ -35,7 +35,7 @@ public class KeycloakRealmModelTests
                 {
                     Realm = "TestRealm",
                     InstanceName = "foo",
-                    DataPathes = ["TestSeeds/test-realm.json"],
+                    DataPaths = ["TestSeeds/test-realm.json"],
                     Clients = [
                         new()
                         {
