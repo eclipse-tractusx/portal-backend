@@ -485,23 +485,21 @@ public class OfferService(
         await notificationService.CreateNotifications(approveOfferRoles, _identityData.IdentityId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
         await notificationService.SetNotificationsForOfferToDone(catenaAdminRoles, submitOfferNotificationTypeIds, offerId).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-
         await mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
-            new[]
-            {
+            [
                 ("offerName", offerDetails.OfferName),
                 ("offerSubscriptionUrl", mailParams.SubscriptionUrl),
                 ("offerDetailUrl", $"{mailParams.DetailUrl}/{offerId}"),
                 (offerTypeId == OfferTypeId.APP ? "appId" : "serviceId", offerId.ToString())
-            },
+            ],
             ("offerProviderName", "User"),
-            new[]
-            {
+            [
                 $"{offerTypeId.ToString().ToLower()}-release-activation"
-            },
+            ],
             offerDetails.ProviderCompanyId.Value).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
@@ -562,17 +560,15 @@ public class OfferService(
 
         await mailingProcessCreation.RoleBaseSendMail(
             notificationRecipients,
-            new[]
-            {
+            [
                 ("offerName", declineData.OfferName),
                 ("url", basePortalAddress),
                 ("declineMessage", data.Message),
-            },
+            ],
             ("offerProviderName", "Service Manager"),
-            new[]
-            {
+            [
                 $"{offerType.ToString().ToLower()}-request-decline"
-            },
+            ],
             declineData.CompanyId.Value).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
