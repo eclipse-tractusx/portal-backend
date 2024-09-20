@@ -32,6 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library;
 
@@ -125,11 +126,12 @@ public class ApplicationActivationService(
                 .IfAny(unassigned =>
                     throw new UnexpectedConditionException($"inconsistent data, roles not assigned in keycloak: {string.Join(", ", unassigned.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.Unassigned)}], error: {clientRoles.Error}"))}"));
 
-            foreach (var roleData in initialRoles.Where(roleData => !userData.RoleIds.Contains(roleData.UserRoleId) &&
-                                                                    assignedRoles[roleData.ClientClientId].Roles.Contains(roleData.UserRoleText)))
-            {
-                userRolesRepository.CreateIdentityAssignedRole(userData.CompanyUserId, roleData.UserRoleId);
-            }
+            initialRoles
+                .ExceptBy(userData.RoleIds, x => x.UserRoleId)
+                .IntersectBy(
+                    assignedRoles.SelectMany(x => x.Value.Roles.Select(role => (x.Key, role))),
+                    roleData => (roleData.ClientClientId, roleData.UserRoleText))
+                .IfAny(unassigned => userRolesRepository.CreateIdentityAssignedRoleRange(unassigned.Select(roleData => (userData.CompanyUserId, roleData.UserRoleId))));
 
             var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
                 ? ProcessStepTypeId.ASSIGN_INITIAL_ROLES // in case there are further users eligible to add initial roles the same step is created again
@@ -209,11 +211,10 @@ public class ApplicationActivationService(
         var invitedUsersData = userRolesRepository
             .GetUserWithUserRolesForApplicationId(context.ApplicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
 
-        var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
         await using var enumerator = invitedUsersData.GetAsyncEnumerator(cancellationToken);
-
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
+            var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
             var userData = enumerator.Current;
             if (!userData.UserRoleIds.Any())
             {
@@ -345,9 +346,7 @@ public class ApplicationActivationService(
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));
         await notificationService.CreateNotifications(_settings.CompanyAdminRoles, null, notifications, companyId)
             .AwaitAll(cancellationToken).ConfigureAwait(false);
-        var failedUserNames = await PostRegistrationWelcomeEmailAsync(context.ApplicationId, companyName, businessPartnerNumber, cancellationToken)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-
+        var failedUserNames = await PostRegistrationWelcomeEmailAsync(context.ApplicationId, companyName, businessPartnerNumber, cancellationToken).ToListAsync().ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             entry =>
@@ -357,34 +356,32 @@ public class ApplicationActivationService(
             null,
             null,
             true,
-            failedUserNames.Count == 0 ? null : $"user(s) {string.Join(",", failedUserNames)} had no assigned email");
+            failedUserNames.Count == 0
+                ? null
+                : $"user(s) {string.Join(",", failedUserNames)} had no assigned email");
     }
 
-    private async Task<List<string>> PostRegistrationWelcomeEmailAsync(Guid applicationId, string companyName, string businessPartnerNumber, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<string> PostRegistrationWelcomeEmailAsync(Guid applicationId, string companyName, string businessPartnerNumber, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var failedUserNames = new List<string>();
         await foreach (var user in portalRepositories.GetInstance<IApplicationRepository>().GetEmailDataUntrackedAsync(applicationId).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             var userName = string.Join(" ", new[] { user.FirstName, user.LastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                failedUserNames.Add(userName);
+                yield return userName;
                 continue;
             }
 
-            var mailParameters = ImmutableDictionary.CreateRange(new[]
-            {
-                KeyValuePair.Create("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
-                KeyValuePair.Create("companyName", companyName),
-                KeyValuePair.Create("bpn", businessPartnerNumber),
-                KeyValuePair.Create("homeUrl", _settings.PortalHomeAddress),
-                KeyValuePair.Create("passwordResendUrl", _settings.PasswordResendAddress),
-                KeyValuePair.Create("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
-                KeyValuePair.Create("dataspaceUrl", _settings.DataspaceAddress)
-            });
+            var mailParameters = ImmutableDictionary.CreateRange<string, string>([
+                new("userName", !string.IsNullOrWhiteSpace(userName) ? userName : user.Email),
+                new("companyName", companyName),
+                new("bpn", businessPartnerNumber),
+                new("homeUrl", _settings.PortalHomeAddress),
+                new("passwordResendUrl", _settings.PasswordResendAddress),
+                new("companyRolesParticipantUrl", _settings.CompanyRolesParticipantAddress),
+                new("dataspaceUrl", _settings.DataspaceAddress)
+            ]);
             mailingProcessCreation.CreateMailProcess(user.Email, "EmailRegistrationWelcomeTemplate", mailParameters);
         }
-
-        return failedUserNames;
     }
 }
