@@ -490,7 +490,17 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
+        var count = 0;
+        var data = _fixture
+            .Build<CompanyServiceAccountData>()
+            .With(x => x.CompanyServiceAccountKindId, (IFixture _) =>
+            {
+                var kind = count % 2 == 0 ? CompanyServiceAccountKindId.INTERNAL
+                    : CompanyServiceAccountKindId.EXTERNAL;
+                count++;
+                return kind;
+            })
+            .CreateMany(15);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
 
@@ -503,68 +513,14 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Theory]
-    [InlineData(new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE }, false, new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE })]
-    [InlineData(new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE }, true, new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE })]
-    [InlineData(new UserStatusId[] { }, false, new UserStatusId[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
-    [InlineData(new UserStatusId[] { }, true, new UserStatusId[] { UserStatusId.INACTIVE })]
-    [InlineData(null, false, new[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
-    [InlineData(null, true, new[] { UserStatusId.INACTIVE })]
-    public async Task GetOwnCompanyServiceAccountsDataAsync_CheckInternalUserType(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
-    {
-        // Arrange
-        var data = _fixture.Build<CompanyServiceAccountData>()
-                 .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.INTERNAL)
-                 .CreateMany(15);
-
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
-            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
-
-        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
-        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
-
-        // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive, userStatusIds);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Content.Should().HaveCount(5);
-        result.Content.Should().Contain(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
-            .MustHaveHappenedOnceExactly();
-    }
-
-    [Theory]
-    [InlineData(new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE }, false, new[] { UserStatusId.INACTIVE, UserStatusId.DELETED, UserStatusId.ACTIVE })]
-    [InlineData(new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE }, true, new[] { UserStatusId.DELETED, UserStatusId.PENDING, UserStatusId.ACTIVE })]
-    [InlineData(new UserStatusId[] { }, false, new UserStatusId[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
-    [InlineData(new UserStatusId[] { }, true, new UserStatusId[] { UserStatusId.INACTIVE })]
-    [InlineData(null, false, new[] { UserStatusId.ACTIVE, UserStatusId.PENDING, UserStatusId.PENDING_DELETION })]
-    [InlineData(null, true, new[] { UserStatusId.INACTIVE })]
-    public async Task GetOwnCompanyServiceAccountsDataAsync_CheckExternalUserType(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
-    {
-        // Arrange
-        var data = _fixture.Build<CompanyServiceAccountData>()
-                 .With(x => x.CompanyServiceAccountKindId, CompanyServiceAccountKindId.EXTERNAL)
-                 .CreateMany(15);
-
-        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
-            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
-
-        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
-        var sut = new ServiceAccountBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
-
-        // Act
-        var result = await sut.GetOwnCompanyServiceAccountsDataAsync(1, 10, null, null, isUserInactive, userStatusIds);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Content.Should().HaveCount(5);
-        result.Content.Should().Contain(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL);
+        result.Content
+            .Where(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
+            .Should()
+            .HaveCount(3);
+        result.Content
+            .Where(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL)
+            .Should()
+            .HaveCount(2);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
             .MustHaveHappenedOnceExactly();
     }
