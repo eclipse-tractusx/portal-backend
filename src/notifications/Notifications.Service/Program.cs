@@ -24,10 +24,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 using System.Reflection;
 
-var VERSION = $"v{Assembly.GetExecutingAssembly().GetName().Version!.ToString(3)}";
+var version = $"v{Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split("+")[0]}";
 
 await WebAppHelper
-    .BuildAndRunWebApplicationAsync<Program>(args, "notification", VERSION, builder =>
+    .BuildAndRunWebApplicationAsync<Program>(args, "notification", version, builder =>
     {
         builder.Services
             .AddPublicInfos();

@@ -37,9 +37,9 @@
         <Output TaskParameter="Assemblies" ItemName="assemblyInfo"/>
       </GetAssemblyIdentity>
   
-      <Message Text="generating openapi" Importance="high" />
+      <Message Text="generating openapi v$(Version)" Importance="high" />
       <Exec Command="dotnet tool restore" />
-      <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$([System.Version]::Parse(%(assemblyInfo.Version)).ToString(3))" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;ASPNETCORE_ENVIRONMENT=Swagger;MVC_ROUTING_BASEPATH=api/services" />
+      <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;ASPNETCORE_ENVIRONMENT=Swagger;MVC_ROUTING_BASEPATH=api/services" />
     </Target>
 
     <ItemGroup>
