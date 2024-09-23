@@ -199,6 +199,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 x.ServiceAccount.Id,
                 x.ServiceAccount.ClientClientId,
                 x.ServiceAccount.Name,
+                x.ServiceAccount.CompanyServiceAccountKindId,
                 x.ServiceAccount.CompanyServiceAccountTypeId,
                 x.ServiceAccount.Identity!.UserStatusId,
                 x.IsOwner,
