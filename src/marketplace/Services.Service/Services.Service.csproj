@@ -31,6 +31,16 @@
       <GenerateDocumentationFile>True</GenerateDocumentationFile>
       <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
+  
+    <Target Name="openapi" AfterTargets="Build">
+      <GetAssemblyIdentity AssemblyFiles="$(OutputPath)$(AssemblyName).dll">
+        <Output TaskParameter="Assemblies" ItemName="assemblyInfo"/>
+      </GetAssemblyIdentity>
+  
+      <Message Text="generating openapi" Importance="high" />
+      <Exec Command="dotnet tool restore" />
+      <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$([System.Version]::Parse(%(assemblyInfo.Version)).ToString(3))" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;ASPNETCORE_ENVIRONMENT=Swagger;MVC_ROUTING_BASEPATH=api/services" />
+    </Target>
 
     <ItemGroup>
       <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
@@ -60,6 +70,12 @@
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>Program.cs</Value>
         </SonarQubeSetting>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="appsettings.Swagger.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

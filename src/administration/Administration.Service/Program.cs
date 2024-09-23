@@ -21,7 +21,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInjection;
@@ -37,8 +36,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
+using System.Reflection;
 
-var VERSION = "v2";
+var VERSION = $"v{Assembly.GetExecutingAssembly().GetName().Version!.ToString(3)}";
 
 await WebAppHelper
     .BuildAndRunWebApplicationAsync<Program>(args, "administration", VERSION, builder =>

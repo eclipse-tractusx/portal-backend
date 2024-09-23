@@ -31,8 +31,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
+using System.Reflection;
 
-var VERSION = "v2";
+var VERSION = $"v{Assembly.GetExecutingAssembly().GetName().Version!.ToString(3)}";
 
 await WebAppHelper
     .BuildAndRunWebApplicationAsync<Program>(args, "apps", VERSION, builder =>

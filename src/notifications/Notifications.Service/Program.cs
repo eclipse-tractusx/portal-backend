@@ -22,8 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
+using System.Reflection;
 
-var VERSION = "v2";
+var VERSION = $"v{Assembly.GetExecutingAssembly().GetName().Version!.ToString(3)}";
 
 await WebAppHelper
     .BuildAndRunWebApplicationAsync<Program>(args, "notification", VERSION, builder =>
