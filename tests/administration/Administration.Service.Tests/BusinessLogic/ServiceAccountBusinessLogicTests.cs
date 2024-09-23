@@ -534,6 +534,8 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
         result.Content.Should().Contain(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
+            .MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -563,6 +565,8 @@ public class ServiceAccountBusinessLogicTests
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
         result.Content.Should().Contain(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL);
+        A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
