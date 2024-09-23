@@ -27,6 +27,7 @@ public record CompanyServiceAccountData(
     [property: JsonPropertyName("serviceAccountId")] Guid ServiceAccountId,
     [property: JsonPropertyName("clientId")] string? ClientId,
     [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("userType")] CompanyServiceAccountKindId CompanyServiceAccountKindId,
     [property: JsonPropertyName("serviceAccountType")] CompanyServiceAccountTypeId CompanyServiceAccountTypeId,
     [property: JsonPropertyName("status")] UserStatusId UserStatusId,
     [property: JsonPropertyName("isOwner")] bool IsOwner,

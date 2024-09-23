@@ -490,7 +490,17 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetOwnCompanyServiceAccountsDataAsync_GetsExpectedData(IEnumerable<UserStatusId>? userStatusIds, bool isUserInactive, IEnumerable<UserStatusId> expectedStatusIds)
     {
         // Arrange
-        var data = _fixture.CreateMany<CompanyServiceAccountData>(15);
+        var count = 0;
+        var data = _fixture
+            .Build<CompanyServiceAccountData>()
+            .With(x => x.CompanyServiceAccountKindId, (IFixture _) =>
+            {
+                var kind = count % 2 == 0 ? CompanyServiceAccountKindId.INTERNAL
+                    : CompanyServiceAccountKindId.EXTERNAL;
+                count++;
+                return kind;
+            })
+            .CreateMany(15);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
 
@@ -503,6 +513,14 @@ public class ServiceAccountBusinessLogicTests
         // Assert
         result.Should().NotBeNull();
         result.Content.Should().HaveCount(5);
+        result.Content
+            .Where(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
+            .Should()
+            .HaveCount(3);
+        result.Content
+            .Where(x => x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL)
+            .Should()
+            .HaveCount(2);
         A.CallTo(() => _serviceAccountRepository.GetOwnCompanyServiceAccountsUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
             .MustHaveHappenedOnceExactly();
     }
