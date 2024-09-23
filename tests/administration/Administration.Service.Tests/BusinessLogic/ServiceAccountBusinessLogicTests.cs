@@ -640,7 +640,7 @@ public class ServiceAccountBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<UserRoleWithDescription>(15);
 
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<IEnumerable<Guid>>._, A<string>._))
             .Returns(data.ToAsyncEnumerable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -651,7 +651,7 @@ public class ServiceAccountBusinessLogicTests
         var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
 
         // Assert
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<IEnumerable<Guid>>._, A<string>._)).MustHaveHappenedOnceExactly();
 
         result.Should().NotBeNull();
         result.Should().HaveCount(15);

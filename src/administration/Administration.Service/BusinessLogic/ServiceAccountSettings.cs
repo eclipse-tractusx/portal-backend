@@ -43,6 +43,10 @@ public class ServiceAccountSettings
 
     [Required]
     public string AuthServiceUrl { get; set; } = null!;
+
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions
