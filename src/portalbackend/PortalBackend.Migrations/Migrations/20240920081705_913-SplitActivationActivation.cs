@@ -62,6 +62,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE from portal.process_steps WHERE process_step_type_id IN (33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43)");
+
             migrationBuilder.DeleteData(
                 schema: "portal",
                 table: "process_step_types",
