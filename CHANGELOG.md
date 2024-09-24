@@ -12,9 +12,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Invitation**
   * enabled creation of application and company on invite to remove the delay of the company application after invite [#960](https://github.com/eclipse-tractusx/portal-backend/pull/960)
   * allowed access to invitation endpoint to technical user [#933](https://github.com/eclipse-tractusx/portal-backend/pull/933)
-* **Technical User**
-  * new parameters for api expansion for technical user data [#997](https://github.com/eclipse-tractusx/portal-backend/pull/997)
-  * add Registration Internal as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+* **Technical User**: new parameters for api expansion for technical user data [#997](https://github.com/eclipse-tractusx/portal-backend/pull/997)
 * **Administration**: introduced validating og bpn before adding to company user [#902](https://github.com/eclipse-tractusx/portal-backend/pull/902)
 * **Business Partner Data Management**: add sharing state ready toggle [#905](https://github.com/eclipse-tractusx/portal-backend/pull/905)
 
