@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -28,13 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ServiceAccountCreationExtensions
 {
-    public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddServiceAccountCreation(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
     {
         services.AddOptions<ServiceAccountCreationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
 
         services
             .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();

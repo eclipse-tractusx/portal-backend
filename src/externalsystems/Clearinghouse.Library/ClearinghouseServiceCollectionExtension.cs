@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,19 +19,21 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
 public static class ClearinghouseServiceCollectionExtension
 {
-    public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
     {
         services.AddOptions<ClearinghouseSettings>()
             .Bind(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         services.AddTransient<LoggingHandler<ClearinghouseService>>();
 
         var sp = services.BuildServiceProvider();

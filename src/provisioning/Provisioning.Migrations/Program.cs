@@ -40,7 +40,7 @@ try
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("ProvisioningDb"),
             x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                     .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
-                .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"));
+                .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"), hostContext.HostingEnvironment);
         })
         .AddLogging()
         .Build();

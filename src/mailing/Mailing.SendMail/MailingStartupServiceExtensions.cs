@@ -20,16 +20,17 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public static class MailingStartupServiceExtensions
 {
-    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
+    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment) =>
         services.AddTransient<IMailingService, MailingService>()
             .AddTransient<ISendMail, SendMail>()
             .AddTransient<ITemplateManager, TemplateManager>()
-            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position))
-            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
+            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position), environment)
+            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position), environment);
 }

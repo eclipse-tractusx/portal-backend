@@ -74,14 +74,12 @@ public static class UserSettingsExtension
 {
     public static IServiceCollection ConfigureUserSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<UserSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

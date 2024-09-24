@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
@@ -28,16 +29,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public static class OfferSubscriptionProcessCollectionExtensions
 {
-    public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
     {
         var section = config.GetSection("OfferSubscriptionProcess");
         services.AddOptions<OfferSubscriptionsProcessSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
 
         return services
-            .AddOfferProviderService(config)
+            .AddOfferProviderService(config, environment)
             .AddOfferServices()
             .AddTransient<IProcessTypeExecutor, OfferSubscriptionProcessTypeExecutor>();
     }

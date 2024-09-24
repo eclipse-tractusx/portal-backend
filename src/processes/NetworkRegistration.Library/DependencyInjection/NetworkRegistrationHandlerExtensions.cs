@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
@@ -47,14 +48,12 @@ public class NetworkRegistrationProcessSettings
 
 public static class NetworkRegistrationHandlerExtensions
 {
-    public static IServiceCollection AddNetworkRegistrationHandler(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddNetworkRegistrationHandler(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
     {
         var section = config.GetSection("NetworkRegistration");
         services.AddOptions<NetworkRegistrationProcessSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
 
         return services
             .AddTransient<IUserProvisioningService, UserProvisioningService>()

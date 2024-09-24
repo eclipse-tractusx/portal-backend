@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
@@ -28,10 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.E
 public static class DimUserProcessCollectionExtensions
 {
     public static IServiceCollection AddDimUserProcessExecutor(this IServiceCollection services,
-        IConfiguration config) =>
+        IConfiguration config,
+        IHostEnvironment environment) =>
         services
-            .AddIdpManagement(config)
+            .AddIdpManagement(config, environment)
             .AddTransient<IDimUserProcessService, DimUserProcessService>()
             .AddTransient<IProcessTypeExecutor, DimUserProcessTypeExecutor>()
-            .AddDimService(config.GetSection("Dim"));
+            .AddDimService(config.GetSection("Dim"), environment);
 }

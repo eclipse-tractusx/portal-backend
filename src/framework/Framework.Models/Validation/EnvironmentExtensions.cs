@@ -17,24 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
-public static class SdCreationProcessExtensions
+public static class EnvironmentExtensions
 {
-    public static IServiceCollection AddSelfDescriptionCreationProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
-    {
-        var section = config.GetSection("SelfDescriptionCreationProcess");
-        services.AddOptions<SelfDescriptionProcessSettings>()
-            .Bind(section)
-            .EnvironmentalValidation(section, environment);
-
-        return services
-            .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();
-    }
+    public static bool SkipValidation(this IHostEnvironment environment) =>
+        Constants.SkipValidationEnvironments.Any(environment.IsEnvironment);
 }

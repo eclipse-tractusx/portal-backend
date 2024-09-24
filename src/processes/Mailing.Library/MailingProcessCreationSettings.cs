@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
@@ -39,13 +40,12 @@ public static class MailingProcessCreationSettingsExtension
 {
     public static IServiceCollection ConfigureMailingProcessCreationSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<MailingProcessCreationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

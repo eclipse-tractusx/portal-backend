@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.ComponentModel.DataAnnotations;
@@ -36,14 +37,12 @@ public static class KeycloakSeederSettingsExtensions
 {
     public static IServiceCollection ConfigureKeycloakSeederSettings(
         this IServiceCollection services,
-        IConfigurationSection section
-    )
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<KeycloakSeederSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

@@ -34,13 +34,12 @@ public static class PartnerRegistrationSettingsExtensions
 {
     public static IServiceCollection ConfigurePartnerRegistrationSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<PartnerRegistrationSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateEnumEnumeration(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
@@ -32,19 +33,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Con
 
 public static class ApplicationChecklistExtensions
 {
-    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section) =>
+    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
         services
             .AddTransient<ITokenService, TokenService>()
             .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
-            .AddBpdmService(section.GetSection("Bpdm"))
-            .AddCustodianService(section.GetSection("Custodian"))
-            .AddClearinghouseService(section.GetSection("Clearinghouse"))
-            .AddSdFactoryService(section.GetSection("SdFactory"))
-            .AddDimService(section.GetSection("Dim"))
-            .AddIssuerComponentService(section.GetSection("IssuerComponent"));
+            .AddBpdmService(section.GetSection("Bpdm"), environment)
+            .AddCustodianService(section.GetSection("Custodian"), environment)
+            .AddClearinghouseService(section.GetSection("Clearinghouse"), environment)
+            .AddSdFactoryService(section.GetSection("SdFactory"), environment)
+            .AddDimService(section.GetSection("Dim"), environment)
+            .AddIssuerComponentService(section.GetSection("IssuerComponent"), environment);
 
-    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section) =>
+    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
         services
-            .ConfigureApplicationChecklistSettings(section)
+            .ConfigureApplicationChecklistSettings(section, environment)
             .AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
 }

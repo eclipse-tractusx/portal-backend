@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
@@ -28,8 +29,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Exec
 
 public static class NetworkRegistrationProcessCollectionExtensions
 {
-    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config) =>
-        services.AddNetworkRegistrationHandler(config)
-                .AddOnboardingServiceProviderService(config)
+    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment) =>
+        services.AddNetworkRegistrationHandler(config, environment)
+                .AddOnboardingServiceProviderService(config, environment)
                 .AddTransient<IProcessTypeExecutor, NetworkRegistrationProcessTypeExecutor>();
 }

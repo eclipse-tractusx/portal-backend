@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,7 +19,10 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 
@@ -42,12 +44,12 @@ public static class SeederSettingsExtensions
 {
     public static IServiceCollection ConfigureSeederSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<SeederSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

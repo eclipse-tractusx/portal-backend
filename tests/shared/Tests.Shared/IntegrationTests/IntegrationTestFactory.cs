@@ -51,13 +51,8 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var projectDir = Directory.GetCurrentDirectory();
-        var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
-
         Environment.SetEnvironmentVariable("MVC_ROUTING_BASEPATH", "/api/test");
-
-        var config = new ConfigurationBuilder().AddJsonFile(configPath, true).Build();
-        builder.UseConfiguration(config);
+        builder.UseEnvironment("Test");
         builder.ConfigureTestServices(services =>
         {
             var identityService = services.SingleOrDefault(d => d.ServiceType.GetInterfaces().Contains(typeof(IIdentityService)));

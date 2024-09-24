@@ -52,10 +52,4 @@
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="appsettings.IntegrationTests.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
@@ -52,6 +53,31 @@ public static class SettingValidation
     public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
         optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
+        return optionsBuilder;
+    }
+
+    /// <summary>
+    /// Executes the validation with an check to the current environment.
+    /// The validation will be skipped for specific environments.
+    /// </summary>
+    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+    /// <param name="optionsBuilder">The options builder to add the services to.</param>
+    /// <param name="section">The current configuration section</param>
+    /// <param name="environment">The current environment</param>
+    /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+    public static OptionsBuilder<TOptions> EnvironmentalValidation<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section, IHostEnvironment environment)
+        where TOptions : class
+    {
+        if (environment.SkipValidation())
+        {
+            return optionsBuilder;
+        }
+
+        optionsBuilder
+            .ValidateDataAnnotations()
+            .ValidateEnumEnumeration(section)
+            .ValidateDistinctValues(section)
+            .ValidateOnStart();
         return optionsBuilder;
     }
 }

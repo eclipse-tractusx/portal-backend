@@ -21,6 +21,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
@@ -29,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ProvisioningManagerStartupServiceExtensions
 {
-    public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddTransient<IKeycloakFactory, KeycloakFactory>()
-            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
+            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"), environment)
             .AddTransient<IProvisioningManager, ProvisioningManager>()
             .ConfigureProvisioningSettings(configuration.GetSection("Provisioning"));
 
@@ -45,6 +46,6 @@ public static class ProvisioningManagerStartupServiceExtensions
         }
 
         return services
-                .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
+                .AddServiceAccountCreation(configuration.GetSection("Provisioning"), environment);
     }
 }

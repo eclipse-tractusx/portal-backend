@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
@@ -29,20 +30,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Depe
 
 public static class ApplicationActivationExtensions
 {
-    public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
     {
         var section = config.GetSection("ApplicationActivation");
-        services.AddOptions<ApplicationActivationSettings>()
+        var options = services.AddOptions<ApplicationActivationSettings>()
             .Bind(section)
-            .Validate(ApplicationActivationSettings.Validate)
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
+
+        if (!environment.SkipValidation())
+        {
+            options.Validate(ApplicationActivationSettings.Validate);
+        }
 
         return services
             .AddDateTimeProvider()
             .AddTransient<INotificationService, NotificationService>()
-            .AddProvisioningManager(config)
+            .AddProvisioningManager(config, environment)
             .AddScoped<IApplicationActivationService, ApplicationActivationService>();
     }
 }

@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections.Immutable;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 /// <summary>
@@ -39,4 +41,6 @@ public static class Constants
     /// Default value for Language Code Error String
     /// </summary>
     public const string InvalidLanguageError = "InvalidLanguage";
+
+    public static readonly IImmutableList<string> SkipValidationEnvironments = ImmutableArray.Create("SWAGGER", "TEST");
 }

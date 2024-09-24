@@ -75,9 +75,4 @@
       <Value>Program.cs</Value>
     </SonarQubeSetting>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="appsettings.Swagger.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

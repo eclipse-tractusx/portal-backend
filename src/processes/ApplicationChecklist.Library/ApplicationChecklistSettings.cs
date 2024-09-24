@@ -19,6 +19,8 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
@@ -31,12 +33,12 @@ public static class ApplicationChecklistSettingsExtension
 {
     public static IServiceCollection ConfigureApplicationChecklistSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<ApplicationChecklistSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

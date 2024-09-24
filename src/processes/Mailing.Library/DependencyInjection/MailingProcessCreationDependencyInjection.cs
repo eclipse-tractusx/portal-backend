@@ -19,13 +19,14 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 
 public static class MailingProcessCreationDependencyInjection
 {
-    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services, IConfigurationSection section) =>
+    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
         services
             .AddTransient<IMailingProcessCreation, MailingProcessCreation>()
-            .ConfigureMailingProcessCreationSettings(section);
+            .ConfigureMailingProcessCreationSettings(section, environment);
 }

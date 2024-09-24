@@ -20,19 +20,21 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 public static class SdServiceCollectionExtension
 {
-    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
     {
         services.AddOptions<SdFactorySettings>()
             .Bind(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         services.AddTransient<LoggingHandler<SdFactoryService>>();
 
         var sp = services.BuildServiceProvider();

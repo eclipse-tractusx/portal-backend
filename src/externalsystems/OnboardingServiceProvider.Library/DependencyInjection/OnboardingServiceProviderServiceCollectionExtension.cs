@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
@@ -26,14 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 
 public static class OnboardingServiceProviderServiceCollectionExtension
 {
-    public static IServiceCollection AddOnboardingServiceProviderService(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddOnboardingServiceProviderService(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         var configSection = configuration.GetSection("OnboardingServiceProvider");
         services.AddOptions<OnboardingServiceProviderSettings>()
             .Bind(configSection)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(configSection)
-            .ValidateOnStart();
+            .EnvironmentalValidation(configSection, environment);
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
         _ = services.BuildServiceProvider();
         return services

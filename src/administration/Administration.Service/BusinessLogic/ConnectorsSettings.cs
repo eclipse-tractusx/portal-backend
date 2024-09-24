@@ -57,12 +57,12 @@ public static class ConnectorsSettingsExtensions
 {
     public static IServiceCollection ConfigureConnectorsSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<ConnectorsSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

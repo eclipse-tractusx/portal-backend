@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
@@ -28,13 +28,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyIn
 
 public static class OfferProviderServiceCollectionExtension
 {
-    public static IServiceCollection AddOfferProviderService(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddOfferProviderService(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         var configSection = configuration.GetSection("OfferProvider");
         services.AddOptions<OfferProviderSettings>()
             .Bind(configSection)
-            .ValidateDistinctValues(configSection)
-            .ValidateOnStart();
+            .EnvironmentalValidation(configSection, environment);
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 
         return services

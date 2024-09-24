@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
@@ -31,11 +32,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Libra
 [ExcludeFromCodeCoverage]
 public static class ProvisioningLibraryExtensions
 {
-    public static IServiceCollection AddIdpManagement(this IServiceCollection services, IConfiguration configuration) =>
+    public static IServiceCollection AddIdpManagement(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment) =>
         services
             .ConfigureIdpCreationSettings(configuration.GetSection("Provisioning"))
             .AddTransient<IKeycloakFactory, KeycloakFactory>()
-            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
+            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"), environment)
             .AddScoped<IIdpManagement, IdpManagement>();
 }
 

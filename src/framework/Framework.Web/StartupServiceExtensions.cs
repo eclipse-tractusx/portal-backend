@@ -20,9 +20,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
@@ -31,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName, IHostEnvironment environment)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
@@ -67,10 +69,11 @@ public static class StartupServiceExtensions
         });
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+        var section = configuration.GetSection("JwtBearerOptions");
         services
             .AddOptions<JwtBearerOptions>()
-            .Bind(configuration.GetSection("JwtBearerOptions"))
-            .ValidateOnStart();
+            .Bind(section)
+            .EnvironmentalValidation(section, environment);
 
         services.AddHealthChecks()
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: ["keycloak"]);

@@ -52,26 +52,26 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddMailingAndTemplateManager(hostContext.Configuration)
+                .AddMailingAndTemplateManager(hostContext.Configuration, hostContext.HostingEnvironment)
                 .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
-                .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
+                .AddOfferSubscriptionProcessExecutor(hostContext.Configuration, hostContext.HostingEnvironment)
                 .AddTechnicalUserProfile()
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
                 .AddPortalRepositories(hostContext.Configuration)
-                .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"))
-                .AddBpnDidResolver(hostContext.Configuration.GetSection("BpnDidResolver"))
-                .AddApplicationChecklistCreation(hostContext.Configuration.GetSection("ApplicationCreation"))
-                .AddApplicationActivation(hostContext.Configuration)
-                .AddConfigurationProcessIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration)
+                .AddApplicationChecklist(hostContext.Configuration.GetSection("ApplicationChecklist"), hostContext.HostingEnvironment)
+                .AddBpnDidResolver(hostContext.Configuration.GetSection("BpnDidResolver"), hostContext.HostingEnvironment)
+                .AddApplicationChecklistCreation(hostContext.Configuration.GetSection("ApplicationCreation"), hostContext.HostingEnvironment)
+                .AddApplicationActivation(hostContext.Configuration, hostContext.HostingEnvironment)
+                .AddConfigurationProcessIdentityService(hostContext.Configuration.GetSection("ProcessIdentity"), hostContext.HostingEnvironment)
+                .AddNetworkRegistrationProcessExecutor(hostContext.Configuration, hostContext.HostingEnvironment)
                 .AddMailingProcessExecutor()
-                .AddInvitationProcessExecutor(hostContext.Configuration)
-                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
-                .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
+                .AddInvitationProcessExecutor(hostContext.Configuration, hostContext.HostingEnvironment)
+                .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"), hostContext.HostingEnvironment)
+                .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"), hostContext.HostingEnvironment)
                 .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
                 .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>()
-                .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
+                .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration, hostContext.HostingEnvironment);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
             {

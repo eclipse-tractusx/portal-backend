@@ -19,7 +19,9 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
@@ -82,12 +84,20 @@ public static class KeycloakSettingsExtention
 {
     public static IServiceCollection ConfigureKeycloakSettingsMap(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
-        services.AddOptions<KeycloakSettingsMap>()
-            .Bind(section)
-            .Validate(x => x.Validate())
-            .ValidateOnStart();
+        var options = services.AddOptions<KeycloakSettingsMap>()
+            .Bind(section);
+
+        options
+            .EnvironmentalValidation(section, environment);
+
+        if (!environment.SkipValidation())
+        {
+            options.Validate(x => x.Validate());
+        }
+
         return services;
     }
 }

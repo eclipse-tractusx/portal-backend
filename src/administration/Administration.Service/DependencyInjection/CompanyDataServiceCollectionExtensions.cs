@@ -24,8 +24,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyI
 
 public static class CompanyDataServiceCollectionExtensions
 {
-    public static IServiceCollection AddCompanyDataService(this IServiceCollection services, IConfigurationSection section) =>
+    public static IServiceCollection AddCompanyDataService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
         services
-            .ConfigureCompanyDataSettings(section)
+            .ConfigureCompanyDataSettings(section, environment)
             .AddTransient<ICompanyDataBusinessLogic, CompanyDataBusinessLogic>();
 }

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,6 +19,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template.Enums;
@@ -93,13 +93,18 @@ public static class TemplateSettingsExtention
 {
     public static IServiceCollection ConfigureTemplateSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
-        services.AddOptions<TemplateSettings>()
-            .Bind(section)
-            .Validate(x => x.Validate())
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+        var options = services.AddOptions<TemplateSettings>()
+            .Bind(section);
+        options
+            .EnvironmentalValidation(section, environment);
+        if (!environment.SkipValidation())
+        {
+            options.Validate(x => x.Validate());
+        }
+
         return services;
     }
 }

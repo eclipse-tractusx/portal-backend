@@ -87,14 +87,12 @@ public static class RegistrationSettingsExtension
 {
     public static IServiceCollection ConfigureRegistrationSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<RegistrationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }

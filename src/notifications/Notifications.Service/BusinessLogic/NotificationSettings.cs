@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -17,6 +16,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 
@@ -41,12 +42,12 @@ public static class NotificationSettingsExtension
     /// </summary>
     public static IServiceCollection ConfigureNotificationSettings(
         this IServiceCollection services,
-        IConfigurationSection section)
+        IConfigurationSection section,
+        IHostEnvironment environment)
     {
         services.AddOptions<NotificationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .EnvironmentalValidation(section, environment);
         return services;
     }
 }
