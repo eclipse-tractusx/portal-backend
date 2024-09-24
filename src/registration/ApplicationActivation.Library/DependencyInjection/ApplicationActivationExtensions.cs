@@ -30,14 +30,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.Depe
 
 public static class ApplicationActivationExtensions
 {
-    public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
+    public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("ApplicationActivation");
         var options = services.AddOptions<ApplicationActivationSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
-        if (!environment.SkipValidation())
+        if (!EnvironmentExtensions.SkipValidation())
         {
             options.Validate(ApplicationActivationSettings.Validate);
         }
@@ -45,7 +45,7 @@ public static class ApplicationActivationExtensions
         return services
             .AddDateTimeProvider()
             .AddTransient<INotificationService, NotificationService>()
-            .AddProvisioningManager(config, environment)
+            .AddProvisioningManager(config)
             .AddScoped<IApplicationActivationService, ApplicationActivationService>();
     }
 }

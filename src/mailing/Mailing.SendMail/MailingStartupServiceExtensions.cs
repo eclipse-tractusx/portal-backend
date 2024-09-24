@@ -27,10 +27,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 
 public static class MailingStartupServiceExtensions
 {
-    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment) =>
+    public static IServiceCollection AddMailingAndTemplateManager(this IServiceCollection services, IConfiguration configuration) =>
         services.AddTransient<IMailingService, MailingService>()
             .AddTransient<ISendMail, SendMail>()
             .AddTransient<ITemplateManager, TemplateManager>()
-            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position), environment)
-            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position), environment);
+            .ConfigureTemplateSettings(configuration.GetSection(TemplateSettings.Position))
+            .ConfigureMailSettings(configuration.GetSection(MailSettings.Position));
 }

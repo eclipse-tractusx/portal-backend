@@ -61,13 +61,11 @@ public static class CompanyDataSettingsExtensions
 {
     public static IServiceCollection ConfigureCompanyDataSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment
-    )
+        IConfigurationSection section)
     {
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

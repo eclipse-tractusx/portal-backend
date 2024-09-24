@@ -37,5 +37,5 @@ await WebAppHelper
 
         builder.Services
             .AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
-            .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"), builder.Environment);
+            .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);

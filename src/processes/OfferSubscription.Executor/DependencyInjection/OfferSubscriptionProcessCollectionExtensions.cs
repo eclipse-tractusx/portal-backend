@@ -29,15 +29,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Execut
 
 public static class OfferSubscriptionProcessCollectionExtensions
 {
-    public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
+    public static IServiceCollection AddOfferSubscriptionProcessExecutor(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("OfferSubscriptionProcess");
         services.AddOptions<OfferSubscriptionsProcessSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         return services
-            .AddOfferProviderService(config, environment)
+            .AddOfferProviderService(config)
             .AddOfferServices()
             .AddTransient<IProcessTypeExecutor, OfferSubscriptionProcessTypeExecutor>();
     }

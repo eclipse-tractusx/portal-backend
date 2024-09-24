@@ -29,11 +29,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.E
 public static class DimUserProcessCollectionExtensions
 {
     public static IServiceCollection AddDimUserProcessExecutor(this IServiceCollection services,
-        IConfiguration config,
-        IHostEnvironment environment) =>
+        IConfiguration config) =>
         services
-            .AddIdpManagement(config, environment)
+            .AddIdpManagement(config)
             .AddTransient<IDimUserProcessService, DimUserProcessService>()
             .AddTransient<IProcessTypeExecutor, DimUserProcessTypeExecutor>()
-            .AddDimService(config.GetSection("Dim"), environment);
+            .AddDimService(config.GetSection("Dim"));
 }

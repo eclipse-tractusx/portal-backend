@@ -93,14 +93,13 @@ public static class TemplateSettingsExtention
 {
     public static IServiceCollection ConfigureTemplateSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         var options = services.AddOptions<TemplateSettings>()
             .Bind(section);
         options
-            .EnvironmentalValidation(section, environment);
-        if (!environment.SkipValidation())
+            .EnvironmentalValidation(section);
+        if (!EnvironmentExtensions.SkipValidation())
         {
             options.Validate(x => x.Validate());
         }

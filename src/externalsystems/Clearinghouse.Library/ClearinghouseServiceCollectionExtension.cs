@@ -19,7 +19,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
@@ -29,11 +28,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
 public static class ClearinghouseServiceCollectionExtension
 {
-    public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ClearinghouseSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<ClearinghouseService>>();
 
         var sp = services.BuildServiceProvider();

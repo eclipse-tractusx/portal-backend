@@ -27,12 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.
 
 public static class SdCreationProcessExtensions
 {
-    public static IServiceCollection AddSelfDescriptionCreationProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
+    public static IServiceCollection AddSelfDescriptionCreationProcessExecutor(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("SelfDescriptionCreationProcess");
         services.AddOptions<SelfDescriptionProcessSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         return services
             .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();

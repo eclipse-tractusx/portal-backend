@@ -36,9 +36,9 @@ public static class DatabaseInitializerExtensions
             .InitializeDatabasesAsync(cancellationToken);
     }
 
-    public static IServiceCollection AddDatabaseInitializer<TDbContext>(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) where TDbContext : DbContext =>
+    public static IServiceCollection AddDatabaseInitializer<TDbContext>(this IServiceCollection services, IConfigurationSection section) where TDbContext : DbContext =>
         services
-            .ConfigureSeederSettings(section, environment)
+            .ConfigureSeederSettings(section)
             .AddTransient<IDatabaseInitializer, DatabaseInitializer<TDbContext>>()
             .AddTransient<DbInitializer<TDbContext>>()
             .AddTransient<DbSeeder>()

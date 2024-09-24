@@ -48,12 +48,12 @@ public class NetworkRegistrationProcessSettings
 
 public static class NetworkRegistrationHandlerExtensions
 {
-    public static IServiceCollection AddNetworkRegistrationHandler(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
+    public static IServiceCollection AddNetworkRegistrationHandler(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("NetworkRegistration");
         services.AddOptions<NetworkRegistrationProcessSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         return services
             .AddTransient<IUserProvisioningService, UserProvisioningService>()

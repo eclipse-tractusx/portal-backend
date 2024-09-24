@@ -52,6 +52,7 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         Environment.SetEnvironmentVariable("MVC_ROUTING_BASEPATH", "/api/test");
+        Environment.SetEnvironmentVariable("SKIP_CONFIGURATION_VALIDATION", "true");
         builder.UseEnvironment("Test");
         builder.ConfigureTestServices(services =>
         {

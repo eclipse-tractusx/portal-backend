@@ -44,12 +44,11 @@ public static class SeederSettingsExtensions
 {
     public static IServiceCollection ConfigureSeederSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<SeederSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

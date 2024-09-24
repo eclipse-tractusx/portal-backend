@@ -32,11 +32,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Libra
 [ExcludeFromCodeCoverage]
 public static class ProvisioningLibraryExtensions
 {
-    public static IServiceCollection AddIdpManagement(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment) =>
+    public static IServiceCollection AddIdpManagement(this IServiceCollection services, IConfiguration configuration) =>
         services
             .ConfigureIdpCreationSettings(configuration.GetSection("Provisioning"))
             .AddTransient<IKeycloakFactory, KeycloakFactory>()
-            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"), environment)
+            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
             .AddScoped<IIdpManagement, IdpManagement>();
 }
 

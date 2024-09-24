@@ -27,12 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.
 
 public static class OnboardingServiceProviderServiceCollectionExtension
 {
-    public static IServiceCollection AddOnboardingServiceProviderService(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddOnboardingServiceProviderService(this IServiceCollection services, IConfiguration configuration)
     {
         var configSection = configuration.GetSection("OnboardingServiceProvider");
         services.AddOptions<OnboardingServiceProviderSettings>()
             .Bind(configSection)
-            .EnvironmentalValidation(configSection, environment);
+            .EnvironmentalValidation(configSection);
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
         _ = services.BuildServiceProvider();
         return services

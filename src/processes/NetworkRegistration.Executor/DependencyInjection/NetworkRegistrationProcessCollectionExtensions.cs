@@ -29,8 +29,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Exec
 
 public static class NetworkRegistrationProcessCollectionExtensions
 {
-    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment) =>
-        services.AddNetworkRegistrationHandler(config, environment)
-                .AddOnboardingServiceProviderService(config, environment)
+    public static IServiceCollection AddNetworkRegistrationProcessExecutor(this IServiceCollection services, IConfiguration config) =>
+        services.AddNetworkRegistrationHandler(config)
+                .AddOnboardingServiceProviderService(config)
                 .AddTransient<IProcessTypeExecutor, NetworkRegistrationProcessTypeExecutor>();
 }

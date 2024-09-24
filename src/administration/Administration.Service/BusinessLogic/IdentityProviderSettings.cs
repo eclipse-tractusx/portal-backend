@@ -87,13 +87,12 @@ public static class IdentityProviderSettingsExtension
 {
     public static IServiceCollection ConfigureIdentityProviderSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         var options = services.AddOptions<IdentityProviderSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
-        if (!environment.SkipValidation())
+            .EnvironmentalValidation(section);
+        if (!EnvironmentExtensions.SkipValidation())
         {
             options
                 .Validate(x => x.Validate());

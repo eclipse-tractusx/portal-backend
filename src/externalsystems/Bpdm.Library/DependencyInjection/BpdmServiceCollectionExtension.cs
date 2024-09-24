@@ -29,11 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 public static class BpdmServiceCollectionExtension
 {
-    public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddBpdmService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<BpdmServiceSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<BpdmService>>();
 
         var sp = services.BuildServiceProvider();

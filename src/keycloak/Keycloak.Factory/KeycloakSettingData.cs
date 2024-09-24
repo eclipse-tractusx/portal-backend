@@ -84,16 +84,15 @@ public static class KeycloakSettingsExtention
 {
     public static IServiceCollection ConfigureKeycloakSettingsMap(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         var options = services.AddOptions<KeycloakSettingsMap>()
             .Bind(section);
 
         options
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
-        if (!environment.SkipValidation())
+        if (!EnvironmentExtensions.SkipValidation())
         {
             options.Validate(x => x.Validate());
         }

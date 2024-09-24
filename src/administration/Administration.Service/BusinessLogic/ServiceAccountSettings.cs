@@ -53,12 +53,11 @@ public static class ServiceAccountSettingsExtensions
 {
     public static IServiceCollection ConfigureServiceAccountSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<ServiceAccountSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

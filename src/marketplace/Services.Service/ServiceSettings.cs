@@ -170,12 +170,11 @@ public static class ServiceSettingsExtension
 {
     public static IServiceCollection ConfigureServiceSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<ServiceSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

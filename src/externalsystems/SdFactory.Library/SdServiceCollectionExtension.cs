@@ -30,11 +30,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 public static class SdServiceCollectionExtension
 {
-    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddSdFactoryService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<SdFactorySettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<SdFactoryService>>();
 
         var sp = services.BuildServiceProvider();

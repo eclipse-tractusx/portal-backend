@@ -27,10 +27,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Depe
 
 public static class InvitationProcessCollectionExtensions
 {
-    public static IServiceCollection AddInvitationProcessExecutor(this IServiceCollection services, IConfiguration config, IHostEnvironment environment) =>
+    public static IServiceCollection AddInvitationProcessExecutor(this IServiceCollection services, IConfiguration config) =>
         services
-            .AddIdpManagement(config, environment)
+            .AddIdpManagement(config)
             .AddTransient<IInvitationProcessService, InvitationProcessService>()
             .AddTransient<IProcessTypeExecutor, InvitationProcessTypeExecutor>()
-            .ConfigureInvitationSettings(config.GetSection("Invitation"), environment);
+            .ConfigureInvitationSettings(config.GetSection("Invitation"));
 }

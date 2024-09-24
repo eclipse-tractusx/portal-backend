@@ -24,12 +24,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjecti
 
 public static class ServiceLogicExtensions
 {
-    public static IServiceCollection AddServiceBusinessLogic(this IServiceCollection services, IConfiguration config, IHostEnvironment environment)
+    public static IServiceCollection AddServiceBusinessLogic(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("Services");
         services.AddOptions<ServiceSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services
             .AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()

@@ -25,8 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.Dependen
 
 public static class MailingProcessCreationDependencyInjection
 {
-    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
+    public static IServiceCollection AddMailingProcessCreation(this IServiceCollection services, IConfigurationSection section) =>
         services
             .AddTransient<IMailingProcessCreation, MailingProcessCreation>()
-            .ConfigureMailingProcessCreationSettings(section, environment);
+            .ConfigureMailingProcessCreationSettings(section);
 }

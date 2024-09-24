@@ -35,7 +35,7 @@
   <Target Name="openapi" AfterTargets="Build">
     <Message Text="generating openapi v$(Version)" Importance="high" />
     <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;ASPNETCORE_ENVIRONMENT=Swagger;MVC_ROUTING_BASEPATH=api/administration" />
+    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
   </Target>
 
   <ItemGroup>
@@ -59,6 +59,7 @@
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />
     <ProjectReference Include="..\..\notifications\Notifications.Library\Notifications.Library.csproj" />
     <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />
+    <ProjectReference Include="..\..\processes\Processes.Library\Processes.Library.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />

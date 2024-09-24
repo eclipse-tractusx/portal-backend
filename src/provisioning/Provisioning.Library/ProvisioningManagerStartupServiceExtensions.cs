@@ -30,10 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
 public static class ProvisioningManagerStartupServiceExtensions
 {
-    public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddProvisioningManager(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IKeycloakFactory, KeycloakFactory>()
-            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"), environment)
+            .ConfigureKeycloakSettingsMap(configuration.GetSection("Keycloak"))
             .AddTransient<IProvisioningManager, ProvisioningManager>()
             .ConfigureProvisioningSettings(configuration.GetSection("Provisioning"));
 
@@ -46,6 +46,6 @@ public static class ProvisioningManagerStartupServiceExtensions
         }
 
         return services
-                .AddServiceAccountCreation(configuration.GetSection("Provisioning"), environment);
+                .AddServiceAccountCreation(configuration.GetSection("Provisioning"));
     }
 }

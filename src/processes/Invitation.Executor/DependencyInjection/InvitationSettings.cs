@@ -56,12 +56,11 @@ public static class InvitationSettingsExtension
 {
     public static IServiceCollection ConfigureInvitationSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<InvitationSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

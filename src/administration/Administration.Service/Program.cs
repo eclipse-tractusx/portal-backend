@@ -48,7 +48,7 @@ await WebAppHelper
 
         builder.Services
             .AddPortalRepositories(builder.Configuration)
-            .AddProvisioningManager(builder.Configuration, builder.Environment);
+            .AddProvisioningManager(builder.Configuration);
 
         builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
 
@@ -57,40 +57,40 @@ await WebAppHelper
         builder.Services.AddTransient<IUserBusinessLogic, UserBusinessLogic>()
             .AddTransient<IUserUploadBusinessLogic, UserUploadBusinessLogic>()
             .AddTransient<IUserRolesBusinessLogic, UserRolesBusinessLogic>()
-            .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"), builder.Environment);
+            .ConfigureUserSettings(builder.Configuration.GetSection("UserManagement"));
 
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"), builder.Environment);
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"));
 
         builder.Services.AddTransient<IServiceAccountBusinessLogic, ServiceAccountBusinessLogic>()
-            .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"), builder.Environment);
+            .ConfigureServiceAccountSettings(builder.Configuration.GetSection("ServiceAccount"));
 
         builder.Services.AddTransient<IDocumentsBusinessLogic, DocumentsBusinessLogic>()
-            .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"), builder.Environment);
+            .ConfigureDocumentSettings(builder.Configuration.GetSection("Document"));
         builder.Services
             .AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>()
             .AddTransient<IPartnerNetworkBusinessLogic, PartnerNetworkBusinessLogic>()
             .AddTransient<INotificationService, NotificationService>()
             .AddTransient<IMailBusinessLogic, MailBusinessLogic>()
-            .AddCompanyDataService(builder.Configuration.GetSection("CompanyData"), builder.Environment);
+            .AddCompanyDataService(builder.Configuration.GetSection("CompanyData"));
 
         builder.Services.AddTransient<IIdentityProviderBusinessLogic, IdentityProviderBusinessLogic>()
-            .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"), builder.Environment);
+            .ConfigureIdentityProviderSettings(builder.Configuration.GetSection("IdentityProviderAdmin"));
 
-        builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"), builder.Environment)
+        builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
                         .AddOfferSubscriptionProcess();
 
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
-            .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"), builder.Environment);
+            .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
-        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"), builder.Environment);
+        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
 
         builder.Services
             .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
             .AddTransient<IServiceAccountManagement, ServiceAccountManagement>()
-            .AddPartnerRegistration(builder.Configuration, builder.Environment)
+            .AddPartnerRegistration(builder.Configuration)
             .AddNetworkRegistrationProcessHelper()
-            .AddIssuerComponentService(builder.Configuration.GetSection("Issuer"), builder.Environment);
+            .AddIssuerComponentService(builder.Configuration.GetSection("Issuer"));
 
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
@@ -102,5 +102,5 @@ await WebAppHelper
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);
-        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"), builder.Environment);
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);

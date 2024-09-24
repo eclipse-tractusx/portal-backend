@@ -43,12 +43,12 @@ await WebAppHelper
 
         builder.Services
             .AddPortalRepositories(builder.Configuration)
-            .AddProvisioningManager(builder.Configuration, builder.Environment);
+            .AddProvisioningManager(builder.Configuration);
 
         builder.Services.AddTransient<INotificationService, NotificationService>();
         builder.Services
-            .AddDimService(builder.Configuration.GetSection("Dim"), builder.Environment)
-            .AddServiceBusinessLogic(builder.Configuration, builder.Environment)
+            .AddDimService(builder.Configuration.GetSection("Dim"))
+            .AddServiceBusinessLogic(builder.Configuration)
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()
             .AddTransient<IServiceChangeBusinessLogic, ServiceChangeBusinessLogic>()
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
@@ -60,5 +60,5 @@ await WebAppHelper
             .AddOfferServices()
             .AddProvisioningDBAccess(builder.Configuration);
 
-        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"), builder.Environment);
+        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);

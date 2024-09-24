@@ -40,12 +40,11 @@ public static class MailingProcessCreationSettingsExtension
 {
     public static IServiceCollection ConfigureMailingProcessCreationSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<MailingProcessCreationSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

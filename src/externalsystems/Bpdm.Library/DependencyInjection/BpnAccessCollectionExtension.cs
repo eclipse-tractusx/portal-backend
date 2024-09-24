@@ -29,11 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 public static class BpnAccessCollectionExtension
 {
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, IConfigurationSection configSection, IHostEnvironment environment)
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, IConfigurationSection configSection)
     {
         services.AddOptions<BpdmAccessSettings>()
             .Bind(configSection)
-            .EnvironmentalValidation(configSection, environment);
+            .EnvironmentalValidation(configSection);
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpdmAccessSettings>>();

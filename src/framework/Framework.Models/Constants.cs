@@ -42,5 +42,5 @@ public static class Constants
     /// </summary>
     public const string InvalidLanguageError = "InvalidLanguage";
 
-    public static readonly IImmutableList<string> SkipValidationEnvironments = ImmutableArray.Create("SWAGGER", "TEST");
+    public static readonly string SkipValidation = "SKIP_CONFIGURATION_VALIDATION";
 }

@@ -30,11 +30,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Dependency
 
 public static class IssuerComponentServiceCollectionExtensions
 {
-    public static IServiceCollection AddIssuerComponentService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddIssuerComponentService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<IssuerComponentSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<IssuerComponentService>>();
 
         var sp = services.BuildServiceProvider();

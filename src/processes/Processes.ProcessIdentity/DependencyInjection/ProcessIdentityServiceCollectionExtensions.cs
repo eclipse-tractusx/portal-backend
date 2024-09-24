@@ -27,22 +27,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.Dependen
 
 public static class ProcessIdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddConfigurationProcessIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddConfigurationProcessIdentityIdDetermination(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         return services
             .AddTransient<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()
             .AddTransient<IIdentityService, ProcessIdentityService>();
     }
 
-    public static IServiceCollection AddConfigurationProcessIdentityService(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddConfigurationProcessIdentityService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<ProcessIdentitySettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         return services
             .AddScoped<IProcessIdentityDataBuilder, ProcessIdentityDataBuilder>()

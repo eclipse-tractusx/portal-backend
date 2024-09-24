@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName, IHostEnvironment environment)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
     {
         services.AddCors(options => options.SetupCors(configuration));
 
@@ -73,7 +73,7 @@ public static class StartupServiceExtensions
         services
             .AddOptions<JwtBearerOptions>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
 
         services.AddHealthChecks()
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: ["keycloak"]);

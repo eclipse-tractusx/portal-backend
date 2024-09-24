@@ -33,19 +33,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Con
 
 public static class ApplicationChecklistExtensions
 {
-    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
+    public static IServiceCollection AddApplicationChecklist(this IServiceCollection services, IConfigurationSection section) =>
         services
             .AddTransient<ITokenService, TokenService>()
             .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
-            .AddBpdmService(section.GetSection("Bpdm"), environment)
-            .AddCustodianService(section.GetSection("Custodian"), environment)
-            .AddClearinghouseService(section.GetSection("Clearinghouse"), environment)
-            .AddSdFactoryService(section.GetSection("SdFactory"), environment)
-            .AddDimService(section.GetSection("Dim"), environment)
-            .AddIssuerComponentService(section.GetSection("IssuerComponent"), environment);
+            .AddBpdmService(section.GetSection("Bpdm"))
+            .AddCustodianService(section.GetSection("Custodian"))
+            .AddClearinghouseService(section.GetSection("Clearinghouse"))
+            .AddSdFactoryService(section.GetSection("SdFactory"))
+            .AddDimService(section.GetSection("Dim"))
+            .AddIssuerComponentService(section.GetSection("IssuerComponent"));
 
-    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment) =>
+    public static IServiceCollection AddApplicationChecklistCreation(this IServiceCollection services, IConfigurationSection section) =>
         services
-            .ConfigureApplicationChecklistSettings(section, environment)
+            .ConfigureApplicationChecklistSettings(section)
             .AddTransient<IApplicationChecklistCreationService, ApplicationChecklistCreationService>();
 }

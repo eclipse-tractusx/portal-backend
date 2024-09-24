@@ -42,12 +42,11 @@ public static class NotificationSettingsExtension
     /// </summary>
     public static IServiceCollection ConfigureNotificationSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<NotificationSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

@@ -39,14 +39,14 @@ try
         .ConfigureServices((hostContext, services) =>
         {
             services
-                .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"), hostContext.HostingEnvironment)
+                .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
                             .MigrationsHistoryTable("__efmigrations_history_portal"))
                     .UsePostgreSqlTriggers())
-                .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"), hostContext.HostingEnvironment);
+                .AddDatabaseInitializer<PortalDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
         .AddLogging()
         .Build();

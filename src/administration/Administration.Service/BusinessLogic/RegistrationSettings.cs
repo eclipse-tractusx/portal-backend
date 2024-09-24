@@ -46,12 +46,11 @@ public static class RegistrationSettingsExtension
 {
     public static IServiceCollection ConfigureRegistrationSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<RegistrationSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

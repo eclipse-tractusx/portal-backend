@@ -37,12 +37,11 @@ public static class KeycloakSeederSettingsExtensions
 {
     public static IServiceCollection ConfigureKeycloakSeederSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<KeycloakSeederSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

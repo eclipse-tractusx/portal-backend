@@ -39,9 +39,9 @@ try
         {
             services
                 .AddMaintenanceService()
-                .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"), hostContext.HostingEnvironment)
+                .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddBatchDelete(hostContext.Configuration.GetSection("BatchDelete"))
-                .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"), hostContext.HostingEnvironment)
+                .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"))
                 .AddDbAuditing()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"))

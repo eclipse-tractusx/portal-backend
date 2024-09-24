@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -39,7 +40,7 @@ public static class SettingValidation
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
     public static OptionsBuilder<TOptions> ValidateEnumEnumeration<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
-        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new EnumEnumerableValidation<TOptions>(optionsBuilder.Name, section));
+        optionsBuilder.Services.TryAddTransient<IValidateOptions<TOptions>>(_ => new EnumEnumerableValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
 
@@ -52,7 +53,7 @@ public static class SettingValidation
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
     public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
-        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
+        optionsBuilder.Services.TryAddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
 
@@ -63,12 +64,11 @@ public static class SettingValidation
     /// <typeparam name="TOptions">The options type to be configured.</typeparam>
     /// <param name="optionsBuilder">The options builder to add the services to.</param>
     /// <param name="section">The current configuration section</param>
-    /// <param name="environment">The current environment</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
-    public static OptionsBuilder<TOptions> EnvironmentalValidation<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section, IHostEnvironment environment)
+    public static OptionsBuilder<TOptions> EnvironmentalValidation<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section)
         where TOptions : class
     {
-        if (environment.SkipValidation())
+        if (EnvironmentExtensions.SkipValidation())
         {
             return optionsBuilder;
         }

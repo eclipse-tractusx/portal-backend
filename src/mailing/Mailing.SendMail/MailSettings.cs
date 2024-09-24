@@ -57,14 +57,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
     {
         public static IServiceCollection ConfigureMailSettings(
             this IServiceCollection services,
-            IConfigurationSection section,
-            IHostEnvironment environment)
+            IConfigurationSection section)
         {
             var options = services.AddOptions<MailSettings>()
                 .Bind(section);
             options
-                .EnvironmentalValidation(section, environment);
-            if (!environment.SkipValidation())
+                .EnvironmentalValidation(section);
+            if (!EnvironmentExtensions.SkipValidation())
             {
                 options.Validate(x => x.Validate());
             }

@@ -72,7 +72,7 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName, builder.Environment);
+                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName);
 
             configureBuilder?.Invoke(builder);
 

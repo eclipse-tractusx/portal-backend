@@ -24,10 +24,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyI
 
 public static class PartnerRegistrationServiceCollectionExtensions
 {
-    public static IServiceCollection AddPartnerRegistration(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment) =>
+    public static IServiceCollection AddPartnerRegistration(this IServiceCollection services, IConfiguration configuration) =>
         services
-            .ConfigurePartnerRegistrationSettings(configuration.GetSection("Network2Network"), environment)
+            .ConfigurePartnerRegistrationSettings(configuration.GetSection("Network2Network"))
             .AddTransient<IRegistrationStatusBusinessLogic, RegistrationStatusBusinessLogic>()
-            .AddOnboardingServiceProviderService(configuration, environment)
+            .AddOnboardingServiceProviderService(configuration)
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 }

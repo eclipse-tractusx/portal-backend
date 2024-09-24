@@ -29,11 +29,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyI
 
 public static class BpnDidResolverServiceCollectionExtension
 {
-    public static IServiceCollection AddBpnDidResolver(this IServiceCollection services, IConfigurationSection section, IHostEnvironment environment)
+    public static IServiceCollection AddBpnDidResolver(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<BpnDidResolverSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<BpnDidResolverService>>();
 
         var sp = services.BuildServiceProvider();

@@ -5025,7 +5025,7 @@ paths:
     post:
       tags:
         - User
-      summary: 'Create new users for the companies shared identityprovider by upload of csv-file (Authorization required - Roles: add_user_account)'
+      summary: Create new users for the companies shared identityprovider by upload of csv-file (Authorization required)
       description: 'Example: POST: api/administration/user/owncompany/usersfile'
       requestBody:
         content:

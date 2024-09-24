@@ -245,12 +245,11 @@ public static class AppsSettingsExtension
     /// </summary>
     public static IServiceCollection ConfigureAppsSettings(
         this IServiceCollection services,
-        IConfigurationSection section,
-        IHostEnvironment environment)
+        IConfigurationSection section)
     {
         services.AddOptions<AppsSettings>()
             .Bind(section)
-            .EnvironmentalValidation(section, environment);
+            .EnvironmentalValidation(section);
         return services;
     }
 }

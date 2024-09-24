@@ -39,15 +39,15 @@ await WebAppHelper
 
         builder.Services
             .AddPortalRepositories(builder.Configuration)
-            .AddProvisioningManager(builder.Configuration, builder.Environment);
+            .AddProvisioningManager(builder.Configuration);
 
         builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
         builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
-            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"), builder.Environment)
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 
-        builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"), builder.Environment);
-        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"), builder.Environment);
-        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"), builder.Environment);
+        builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
+        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
+        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);

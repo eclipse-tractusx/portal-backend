@@ -28,12 +28,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyIn
 
 public static class OfferProviderServiceCollectionExtension
 {
-    public static IServiceCollection AddOfferProviderService(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddOfferProviderService(this IServiceCollection services, IConfiguration configuration)
     {
         var configSection = configuration.GetSection("OfferProvider");
         services.AddOptions<OfferProviderSettings>()
             .Bind(configSection)
-            .EnvironmentalValidation(configSection, environment);
+            .EnvironmentalValidation(configSection);
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 
         return services

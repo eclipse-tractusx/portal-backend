@@ -17,12 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Hosting;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 public static class EnvironmentExtensions
 {
-    public static bool SkipValidation(this IHostEnvironment environment) =>
-        Constants.SkipValidationEnvironments.Any(environment.IsEnvironment);
+    public static bool SkipValidation()
+    {
+        var skipValidationEnv = Environment.GetEnvironmentVariable(Constants.SkipValidation);
+        return skipValidationEnv != null && skipValidationEnv.Equals("true", StringComparison.OrdinalIgnoreCase);
+    }
 }
