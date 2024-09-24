@@ -19,8 +19,8 @@
 
 leadingRepository: "https://github.com/eclipse-tractusx/portal"
 openApiSpecs:
-- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/9f2b0e92eb28bd75f916acaae5a4d1f3f0ac610c/docs/api/administration-service.yaml"
-- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/9f2b0e92eb28bd75f916acaae5a4d1f3f0ac610c/docs/api/apps-service.yaml"
-- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/9f2b0e92eb28bd75f916acaae5a4d1f3f0ac610c/docs/api/notifications-service.yaml"
-- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/9f2b0e92eb28bd75f916acaae5a4d1f3f0ac610c/docs/api/registration-service.yaml"
-- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/9f2b0e92eb28bd75f916acaae5a4d1f3f0ac610c/docs/api/services-service.yaml"
+- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/refs/tags/v2.3.0-alpha.2/docs/api/administration-service.yaml"
+- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/refs/tags/v2.3.0-alpha.2/docs/api/apps-service.yaml"
+- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/refs/tags/v2.3.0-alpha.2/docs/api/notifications-service.yaml"
+- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/refs/tags/v2.3.0-alpha.2/docs/api/registration-service.yaml"
+- "https://raw.githubusercontent.com/eclipse-tractusx/portal-backend/refs/tags/v2.3.0-alpha.2/docs/api/services-service.yaml"
