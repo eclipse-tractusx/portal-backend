@@ -18,3 +18,9 @@
 ###############################################################
 
 leadingRepository: "https://github.com/eclipse-tractusx/portal"
+openApiSpecs:
+- "https://github.com/eclipse-tractusx/portal-backend/tree/feature/1021-api-hub/docs/api/Org.Eclipse.TractusX.Portal.Backend.Administration.Service.yaml"
+- "https://github.com/eclipse-tractusx/portal-backend/tree/feature/1021-api-hub/docs/api/Org.Eclipse.TractusX.Portal.Backend.Apps.Service.yaml"
+- "https://github.com/eclipse-tractusx/portal-backend/tree/feature/1021-api-hub/docs/api/Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.yaml"
+- "https://github.com/eclipse-tractusx/portal-backend/tree/feature/1021-api-hub/docs/api/Org.Eclipse.TractusX.Portal.Backend.Registration.Service.yaml"
+- "https://github.com/eclipse-tractusx/portal-backend/tree/feature/1021-api-hub/docs/api/Org.Eclipse.TractusX.Portal.Backend.Services.Service.yaml"
