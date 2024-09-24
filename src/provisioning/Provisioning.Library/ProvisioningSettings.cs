@@ -21,6 +21,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
@@ -43,7 +44,7 @@ public static class ProvisioningSettingsExtension
         services.Configure<ProvisioningSettings>(x =>
             {
                 section.Bind(x);
-                if (string.IsNullOrWhiteSpace(x.CentralRealm))
+                if (!EnvironmentExtensions.SkipValidation() && string.IsNullOrWhiteSpace(x.CentralRealm))
                 {
                     throw new ConfigurationException($"{nameof(ProvisioningSettings)}: {nameof(x.CentralRealm)} must not be null or empty");
                 }

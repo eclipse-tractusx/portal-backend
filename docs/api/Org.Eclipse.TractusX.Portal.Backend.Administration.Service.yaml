@@ -5025,7 +5025,7 @@ paths:
     post:
       tags:
         - User
-      summary: Create new users for the companies shared identityprovider by upload of csv-file (Authorization required)
+      summary: 'Create new users for the companies shared identityprovider by upload of csv-file (Authorization required - Roles: add_user_account)'
       description: 'Example: POST: api/administration/user/owncompany/usersfile'
       requestBody:
         content:
@@ -6348,6 +6348,8 @@ components:
           nullable: true
         name:
           type: string
+        userType:
+          $ref: '#/components/schemas/CompanyServiceAccountKindId'
         serviceAccountType:
           $ref: '#/components/schemas/CompanyServiceAccountTypeId'
         status:
@@ -7767,6 +7769,11 @@ components:
         roleName:
           type: string
       additionalProperties: false
+    UserRoleType:
+      enum:
+        - Internal
+        - External
+      type: string
     UserRoleWithDescription:
       type: object
       properties:
@@ -7778,6 +7785,8 @@ components:
         roleDescription:
           type: string
           nullable: true
+        roleType:
+          $ref: '#/components/schemas/UserRoleType'
       additionalProperties: false
     UserRoleWithId:
       type: object
