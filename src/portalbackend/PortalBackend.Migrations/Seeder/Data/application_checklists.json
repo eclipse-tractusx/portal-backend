@@ -1,0 +1,66 @@
+[
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 1,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 2,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 3,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 3,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 2,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 4,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 5,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 6,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 7,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  },
+  {
+    "application_id": "31322991-f6fd-4a40-a529-566c9b04d6a4",
+    "application_checklist_entry_type_id": 8,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed": null,
+    "application_checklist_entry_status_id": 1,
+    "comment": null
+  }
+]
