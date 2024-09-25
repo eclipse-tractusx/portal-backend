@@ -35,7 +35,7 @@
   <Target Name="openapi" AfterTargets="Build">
     <Message Text="generating openapi v$(Version)" Importance="high" />
     <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/$(AssemblyName).yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
+    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/administration-service.yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
   </Target>
 
   <ItemGroup>
