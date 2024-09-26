@@ -137,7 +137,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         data.Should().HaveCount(14);
         data.Should().OnlyHaveUniqueItems();
-        data.Where(x => x.RoleType == UserRoleType.Internal).Should().HaveCount(12);
+        data.Where(x => x.RoleType == UserRoleType.Internal).Should().HaveCount(13);
         data.Where(x => x.RoleType == UserRoleType.External).Should().ContainSingle();
     }
 
