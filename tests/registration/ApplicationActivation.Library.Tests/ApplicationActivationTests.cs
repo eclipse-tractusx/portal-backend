@@ -446,13 +446,8 @@ public class ApplicationActivationTests
     [Fact]
     public async Task RemoveRegistrationRoles_WithMissingRoles_ThrowsUnexpectedConditionException()
     {
-        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
-            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
-        };
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
-            .Returns(userRoles.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(Id, A<IEnumerable<Guid>>._))
-            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<Guid>>(Guid.NewGuid(), Enumerable.Empty<Guid>()), 1).ToAsyncEnumerable());
+        A.CallTo(() => _rolesRepository.GetUsersWithUserRolesForApplicationId(Id, A<IEnumerable<string>>._))
+            .Returns(Enumerable.Repeat(new ValueTuple<Guid, IEnumerable<(string, Guid, string)>>(Guid.NewGuid(), Enumerable.Empty<(string, Guid, string)>()), 1).ToAsyncEnumerable());
 
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Id, default, Checklist, Enumerable.Empty<ProcessStepTypeId>());
         Task Act() => _sut.RemoveRegistrationRoles(context, CancellationToken.None);
@@ -468,17 +463,12 @@ public class ApplicationActivationTests
     public async Task RemoveRegistrationRoles_WithMultipleUsers_ReturnsExpected()
     {
         //Arrange
-        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
+        var userData = new (Guid CompanyUserId, IEnumerable<(string, Guid, string)> UserRoleIds)[]
         {
-            new(CompanyUserId1, new[] { CompanyUserRoleId }),
-            new(CompanyUserId2, new[] { CompanyUserRoleId })
+            new(CompanyUserId1, new[] { ("remove-id", CompanyUserRoleId, "remove") }),
+            new(CompanyUserId2, new[] { ("remove-id", CompanyUserRoleId, "remove") })
         };
-        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
-            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
-        };
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
-            .Returns(userRoles.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
+        A.CallTo(() => _rolesRepository.GetUsersWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
             .Returns(userData.ToAsyncEnumerable());
         SetupGetUserByUserName();
 
@@ -507,16 +497,11 @@ public class ApplicationActivationTests
     public async Task RemoveRegistrationRoles_WithValid_ReturnsExpected()
     {
         //Arrange
-        var userData = new (Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)[]
+        var userData = new (Guid CompanyUserId, IEnumerable<(string, Guid, string)> UserRoleIds)[]
         {
-            new(CompanyUserId1, new[] { CompanyUserRoleId })
+            new(CompanyUserId1, new[] { ("remove-id", CompanyUserRoleId, "remove") }),
         };
-        var userRoles = new (string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)>)[] {
-            ("remove-id", new[] { (CompanyUserRoleId, "Company Admin") })
-        };
-        A.CallTo(() => _rolesRepository.GetUserRolesByClientId(A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
-            .Returns(userRoles.ToAsyncEnumerable());
-        A.CallTo(() => _rolesRepository.GetUserWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { CompanyUserRoleId })))
+        A.CallTo(() => _rolesRepository.GetUsersWithUserRolesForApplicationId(A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { "remove-id" })))
             .Returns(userData.ToAsyncEnumerable());
         SetupGetUserByUserName();
 
