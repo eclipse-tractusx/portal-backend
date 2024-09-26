@@ -293,7 +293,8 @@ public class UserBusinessLogic(
                 }
                 return acc;
             },
-            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable())
+            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable()),
+            cancellationToken
         ).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (successfulBpns.Count != 0)

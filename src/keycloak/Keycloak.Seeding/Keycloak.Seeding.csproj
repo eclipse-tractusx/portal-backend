@@ -38,6 +38,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.4.1" />
   </ItemGroup>
 
@@ -45,6 +46,7 @@
     <ProjectReference Include="..\..\framework\Framework.Linq\Framework.Linq.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
     <ProjectReference Include="..\Keycloak.Library\Keycloak.Library.csproj" />
     <ProjectReference Include="..\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />

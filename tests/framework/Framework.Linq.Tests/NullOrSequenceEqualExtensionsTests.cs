@@ -26,12 +26,13 @@ public class NullOrSequenceEqualExtensionsTests
 {
     [Theory]
     [InlineData(new[] { "a", "b", "c" }, new[] { "c", "b", "a" }, true)]
+    [InlineData(new[] { "a", "b", null }, new[] { null, "b", "a" }, true)]
     [InlineData(null, new[] { "c", "b", "a" }, false)]
     [InlineData(new[] { "a", "b", "c" }, null, false)]
     [InlineData(null, null, true)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "a", "b", "c", "x" }, false)]
     [InlineData(new[] { "a", "b", "c", "x" }, new[] { "a", "b", "c" }, false)]
-    public void NullOrContentEqual_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string>? second, bool expected)
+    public void NullOrContentEqual_ReturnsExpected(IEnumerable<string?>? first, IEnumerable<string?>? second, bool expected)
     {
         // Act
         var result = first.NullOrContentEqual(second);
@@ -49,6 +50,8 @@ public class NullOrSequenceEqualExtensionsTests
     [Theory]
     [InlineData(new[] { "a", "b", "c" }, new[] { "a", "b", "c" }, true)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "c", "b", "a" }, true)]
+    [InlineData(new[] { "a", "b", null }, new[] { "a", "b", null }, true)]
+    [InlineData(new[] { "a", "b", null }, new[] { null, "b", "a" }, true)]
     [InlineData(null, new[] { "c", "b", "a" }, false)]
     [InlineData(new[] { "a", "b", "c" }, null, false)]
     [InlineData(null, null, true)]
@@ -66,6 +69,8 @@ public class NullOrSequenceEqualExtensionsTests
     [Theory]
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, true)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, new[] { "c", "b", "a" }, new[] { "cv", "bv", "av" }, true)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", null }, new[] { "a", "b", "c" }, new[] { "av", "bv", null }, true)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", null }, new[] { "c", "b", "a" }, new[] { null, "bv", "av" }, true)]
     [InlineData(null, null, new[] { "c", "b", "a" }, new[] { "cv", "bv", "av" }, false)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, null, null, false)]
     [InlineData(null, null, null, null, true)]
@@ -73,11 +78,34 @@ public class NullOrSequenceEqualExtensionsTests
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, new[] { "a", "b", "c", "x" }, new[] { "av", "bv", "cv", "xv" }, false)]
     [InlineData(new[] { "a", "b", "x" }, new[] { "av", "bv", "cv" }, new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, false)]
     [InlineData(new[] { "a", "b", "c" }, new[] { "av", "bv", "xv" }, new[] { "a", "b", "c" }, new[] { "av", "bv", "cv" }, false)]
-    public void NullOrContentEqual_WithKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string>? firstValues, IEnumerable<string>? second, IEnumerable<string>? secondValues, bool expected)
+    public void NullOrContentEqual_WithKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string?>? firstValues, IEnumerable<string>? second, IEnumerable<string?>? secondValues, bool expected)
     {
         // Arrange
-        var firstItems = first?.Zip(firstValues ?? throw new UnexpectedConditionException("firstValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
-        var secondItems = second?.Zip(secondValues ?? throw new UnexpectedConditionException("secondValues should never be null here"), (x, y) => new KeyValuePair<string, string>(x, y));
+        var firstItems = first?.Zip(firstValues ?? throw new UnexpectedConditionException("firstValues should never be null here"), (x, y) => new KeyValuePair<string, string?>(x, y));
+        var secondItems = second?.Zip(secondValues ?? throw new UnexpectedConditionException("secondValues should never be null here"), (x, y) => new KeyValuePair<string, string?>(x, y));
+
+        // Act
+        var result = firstItems.NullOrContentEqual(secondItems);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, true)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, new[] { "c", "b", "a" }, new[] { 3, 2, 1 }, true)]
+    [InlineData(null, null, new[] { "c", "b", "a" }, new[] { 3, 2, 1 }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, null, null, false)]
+    [InlineData(null, null, null, null, true)]
+    [InlineData(new[] { "a", "b", "c", "x" }, new[] { 1, 2, 3, 4 }, new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, new[] { "a", "b", "c", "x" }, new[] { 1, 2, 3, 4 }, false)]
+    [InlineData(new[] { "a", "b", "x" }, new[] { 1, 2, 3 }, new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { 1, 2, 4 }, new[] { "a", "b", "c" }, new[] { 1, 2, 3 }, false)]
+    public void NullOrContentEqual_WithValueTypedKeyValuePairs_ReturnsExpected(IEnumerable<string>? first, IEnumerable<int>? firstValues, IEnumerable<string>? second, IEnumerable<int>? secondValues, bool expected)
+    {
+        // Arrange
+        var firstItems = first?.Zip(firstValues ?? throw new UnexpectedConditionException("firstValues should never be null here"), (x, y) => new KeyValuePair<string, int>(x, y));
+        var secondItems = second?.Zip(secondValues ?? throw new UnexpectedConditionException("secondValues should never be null here"), (x, y) => new KeyValuePair<string, int>(x, y));
 
         // Act
         var result = firstItems.NullOrContentEqual(secondItems);
@@ -103,6 +131,32 @@ public class NullOrSequenceEqualExtensionsTests
 
         // Act
         var result = firstItems.NullOrContentEqual(secondItems);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, true)]
+    [InlineData(new[] { "c", "b", "a" }, new[] { "c1", "c2", "c3" }, new[] { "b1", "b2", "b3" }, new[] { "a1", "a2", "a3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, true)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "a3", "a2", "a1" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, true)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { null, "a2", "a1" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", null }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, true)]
+    [InlineData(new[] { "a", "b", "x" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "a1", "a2", "x3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, false)]
+    [InlineData(null, new string[] { }, new string[] { }, new string[] { }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, null, new string[] { }, new string[] { }, new string[] { }, false)]
+    [InlineData(null, new string[] { }, new string[] { }, new string[] { }, null, new string[] { }, new string[] { }, new string[] { }, true)]
+    [InlineData(new[] { "a", "b", "c" }, null, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, null, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, true)]
+    [InlineData(new[] { "a", "b", "c" }, null, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, false)]
+    [InlineData(new[] { "a", "b", "c" }, new[] { "a1", "a2", "a3" }, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, new[] { "a", "b", "c" }, null, new[] { "b1", "b2", "b3" }, new[] { "c1", "c2", "c3" }, false)]
+    public void NullOrContentEqual_WithNullableKeyValuePairEnumerables_ReturnsExpected(IEnumerable<string>? first, IEnumerable<string>? firstFirstValues, IEnumerable<string>? firstSecondValues, IEnumerable<string>? firstThirdValues, IEnumerable<string>? second, IEnumerable<string>? secondFirstValues, IEnumerable<string>? secondSecondValues, IEnumerable<string>? secondThirdValues, bool expected)
+    {
+        // Arrange
+        var firstItems = first?.Zip(new[] { firstFirstValues, firstSecondValues, firstThirdValues }, (x, y) => new KeyValuePair<string, IEnumerable<string>?>(x, y));
+        var secondItems = second?.Zip(new[] { secondFirstValues, secondSecondValues, secondThirdValues }, (x, y) => new KeyValuePair<string, IEnumerable<string>?>(x, y));
+
+        // Act
+        var result = firstItems.NullOrNullableContentEqual(secondItems);
 
         // Assert
         result.Should().Be(expected);

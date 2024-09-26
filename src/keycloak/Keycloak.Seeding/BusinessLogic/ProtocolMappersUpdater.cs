@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +43,7 @@ public static class ProtocolMappersUpdater
         mapper.Config != null && update.Config != null &&
         CompareProtocolMapperConfig(mapper.Config, update.Config));
 
-    private static Config CreateProtocolMapperConfig(IReadOnlyDictionary<string, string> update) =>
+    private static Config CreateProtocolMapperConfig(IReadOnlyDictionary<string, string?> update) =>
         new Config
         {
             Single = update.GetValueOrDefault("single"),
@@ -54,6 +53,8 @@ public static class ProtocolMappersUpdater
             UserAttribute = update.GetValueOrDefault("user.attribute"),
             IdTokenClaim = update.GetValueOrDefault("id.token.claim"),
             AccessTokenClaim = update.GetValueOrDefault("access.token.claim"),
+            IntrospectionTokenClaim = update.GetValueOrDefault("introspection.token.claim"),
+            LightweightClaim = update.GetValueOrDefault("lightweight.claim"),
             ClaimName = update.GetValueOrDefault("claim.name"),
             JsonTypelabel = update.GetValueOrDefault("jsonType.label"),
             UserAttributeFormatted = update.GetValueOrDefault("user.attribute.formated"),
@@ -63,11 +64,12 @@ public static class ProtocolMappersUpdater
             UserAttributeRegion = update.GetValueOrDefault("user.attribute.region"),
             UserAttributeLocality = update.GetValueOrDefault("user.attribute.locality"),
             IncludedClientAudience = update.GetValueOrDefault("included.client.audience"),
+            IncludedCustomAudience = update.GetValueOrDefault("included.custom.audience"),
             Multivalued = update.GetValueOrDefault("multivalued"),
             UserSessionNote = update.GetValueOrDefault("user.session.note"),
         };
 
-    private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string> update) =>
+    private static bool CompareProtocolMapperConfig(Config config, IReadOnlyDictionary<string, string?> update) =>
         config.Single == update.GetValueOrDefault("single") &&
             config.AttributeNameFormat == update.GetValueOrDefault("attribute.nameformat") &&
             config.AttributeName == update.GetValueOrDefault("attribute.name") &&
@@ -75,6 +77,8 @@ public static class ProtocolMappersUpdater
             config.UserAttribute == update.GetValueOrDefault("user.attribute") &&
             config.IdTokenClaim == update.GetValueOrDefault("id.token.claim") &&
             config.AccessTokenClaim == update.GetValueOrDefault("access.token.claim") &&
+            config.IntrospectionTokenClaim == update.GetValueOrDefault("introspection.token.name") &&
+            config.LightweightClaim == update.GetValueOrDefault("lightweight.claim") &&
             config.ClaimName == update.GetValueOrDefault("claim.name") &&
             config.JsonTypelabel == update.GetValueOrDefault("jsonType.label") &&
             config.UserAttributeFormatted == update.GetValueOrDefault("user.attribute.formated") &&
@@ -84,6 +88,7 @@ public static class ProtocolMappersUpdater
             config.UserAttributeRegion == update.GetValueOrDefault("user.attribute.region") &&
             config.UserAttributeLocality == update.GetValueOrDefault("user.attribute.locality") &&
             config.IncludedClientAudience == update.GetValueOrDefault("included.client.audience") &&
+            config.IncludedCustomAudience == update.GetValueOrDefault("included.custom.audience") &&
             config.Multivalued == update.GetValueOrDefault("multivalued") &&
             config.UserSessionNote == update.GetValueOrDefault("user.session.note");
 }

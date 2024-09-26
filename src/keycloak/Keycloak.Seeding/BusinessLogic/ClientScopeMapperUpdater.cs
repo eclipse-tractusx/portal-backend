@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
@@ -58,7 +59,7 @@ public class ClientScopeMapperUpdater : IClientScopeMapperUpdater
                     throw new ConflictException($"No client id found with name {clientName}");
                 }
                 var clientRoles = await keycloak.GetClientRolesScopeMappingsForClientAsync(realm, clientScope.Id, client.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                var mappingModelRoles = mappingModel.Roles.Select(roleName => roles.SingleOrDefault(r => r.Name == roleName) ?? throw new ConflictException($"No role with name {roleName} found"));
+                var mappingModelRoles = mappingModel.Roles?.Select(roleName => roles.SingleOrDefault(r => r.Name == roleName) ?? throw new ConflictException($"No role with name {roleName} found")) ?? Enumerable.Empty<Role>();
                 await AddAndDeleteRoles(keycloak, realm, clientScope.Id, client.Id, clientRoles, mappingModelRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         }
@@ -66,16 +67,10 @@ public class ClientScopeMapperUpdater : IClientScopeMapperUpdater
 
     private static async Task AddAndDeleteRoles(KeycloakClient keycloak, string realm, string clientScopeId, string clientId, IEnumerable<Role> roles, IEnumerable<Role> updateRoles, CancellationToken cancellationToken)
     {
-        var rolesToAdd = updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name).ToList();
-        var rolesToDelete = roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name).ToList();
-        if (rolesToDelete.Any())
-        {
-            await keycloak.RemoveClientRolesFromClientScopeForClientAsync(realm, clientScopeId, clientId, rolesToDelete, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        await updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name).IfAnyAwait(rolesToAdd =>
+            keycloak.AddClientRolesScopeMappingToClientAsync(realm, clientScopeId, clientId, rolesToAdd, cancellationToken)).ConfigureAwait(false);
 
-        if (rolesToAdd.Any())
-        {
-            await keycloak.AddClientRolesScopeMappingToClientAsync(realm, clientScopeId, clientId, rolesToAdd, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        await roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name).IfAnyAwait(rolesToDelete =>
+            keycloak.RemoveClientRolesFromClientScopeForClientAsync(realm, clientScopeId, clientId, rolesToDelete, cancellationToken)).ConfigureAwait(false);
     }
 }

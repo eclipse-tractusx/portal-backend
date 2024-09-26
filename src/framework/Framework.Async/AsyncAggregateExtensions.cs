@@ -21,9 +21,61 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class AsyncAggregateExtensions
 {
-    public static Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> select) =>
-        source.Aggregate(
-            Task.FromResult(seed),
-            async (accTask, item) => await accumulate(await accTask.ConfigureAwait(ConfigureAwaitOptions.None), item).ConfigureAwait(ConfigureAwaitOptions.None),
-            async (accTask) => select(await accTask.ConfigureAwait(ConfigureAwaitOptions.None)));
+    public static Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
+    {
+        using var enumerator = source.GetEnumerator();
+        return AggregateAwait(enumerator, seed, accumulate, cancellationToken);
+    }
+
+    public static Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken = default)
+    {
+        using var enumerator = source.GetEnumerator();
+        return AggregateAwait(enumerator, seed, accumulate, cancellationToken);
+    }
+
+    public static async Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
+        result(await AggregateAwait(source, seed, accumulate, cancellationToken));
+
+    public static async Task<TResult> AggregateAwait<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, Func<TAccumulate, TResult> result, CancellationToken cancellationToken = default) =>
+        result(await AggregateAwait(source, seed, accumulate, cancellationToken));
+
+    public static Task<TSource> AggregateAwait<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, CancellationToken, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
+    {
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            throw new InvalidOperationException("source must not be empty");
+
+        return AggregateAwait(enumerator, enumerator.Current, accumulate, cancellationToken);
+    }
+
+    public static Task<TSource> AggregateAwait<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, Task<TSource>> accumulate, CancellationToken cancellationToken = default)
+    {
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            throw new InvalidOperationException("source must not be empty");
+
+        return AggregateAwait(enumerator, enumerator.Current, accumulate, cancellationToken);
+    }
+
+    private static async Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, CancellationToken, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
+    {
+        var accumulator = seed;
+        while (enumerator.MoveNext())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            accumulator = await accumulate(accumulator, enumerator.Current, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+        return accumulator;
+    }
+
+    private static async Task<TAccumulate> AggregateAwait<TSource, TAccumulate>(IEnumerator<TSource> enumerator, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> accumulate, CancellationToken cancellationToken)
+    {
+        var accumulator = seed;
+        while (enumerator.MoveNext())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            accumulator = await accumulate(accumulator, enumerator.Current).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+        return accumulator;
+    }
 }

@@ -23,4 +23,10 @@ public static class NullableExtensions
 {
     public static bool IsNullOrEmpty<T>(this IEnumerable<T>? collection) =>
         collection == null || !collection.Any();
+
+    public static IEnumerable<KeyValuePair<TKey, TValue>> FilterNotNullValues<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue?>> source) where TValue : notnull =>
+        source.Where(x => x.Value is not null).Cast<KeyValuePair<TKey, TValue>>();
+
+    public static IEnumerable<T> FilterNotNull<T>(this IEnumerable<T?> source) where T : notnull =>
+        source.Where(x => x is not null).Cast<T>();
 }

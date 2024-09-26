@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -65,7 +64,7 @@ public sealed class KeycloakSettingsMap : Dictionary<string, KeycloakSettings>
 {
     public bool Validate()
     {
-        if (!Values.Any())
+        if (Values.Count == 0)
         {
             throw new ConfigurationException();
         }

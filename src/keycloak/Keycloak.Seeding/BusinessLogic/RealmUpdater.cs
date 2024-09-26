@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -126,7 +125,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.ResetCredentialsFlow = seedRealm.ResetCredentialsFlow;
             keycloakRealm.ClientAuthenticationFlow = seedRealm.ClientAuthenticationFlow;
             keycloakRealm.DockerAuthenticationFlow = seedRealm.DockerAuthenticationFlow;
-            keycloakRealm.Attributes = seedRealm.Attributes?.ToDictionary(x => x.Key, x => x.Value);
+            keycloakRealm.Attributes = seedRealm.Attributes?.FilterNotNullValues().ToDictionary();
             keycloakRealm.UserManagedAccessAllowed = seedRealm.UserManagedAccessAllowed;
             keycloakRealm.PasswordPolicy = seedRealm.PasswordPolicy;
 
@@ -205,10 +204,8 @@ public class RealmUpdater : IRealmUpdater
         keycloakRealm.UserManagedAccessAllowed == seedRealm.UserManagedAccessAllowed &&
         keycloakRealm.PasswordPolicy == seedRealm.PasswordPolicy;
 
-    private static bool CompareRealmAttributes(IDictionary<string, string>? attributes, IReadOnlyDictionary<string, string>? updateAttributes) =>
-        attributes == null && updateAttributes == null ||
-        attributes != null && updateAttributes != null &&
-        attributes.OrderBy(x => x.Key).SequenceEqual(updateAttributes.OrderBy(x => x.Key));
+    private static bool CompareRealmAttributes(IEnumerable<KeyValuePair<string, string>>? attributes, IEnumerable<KeyValuePair<string, string?>>? updateAttributes) =>
+        attributes.NullOrContentEqual(updateAttributes?.FilterNotNullValues());
 
     private static bool CompareBrowserSecurityHeaders(BrowserSecurityHeaders? securityHeaders, BrowserSecurityHeadersModel? updateSecurityHeaders) =>
         securityHeaders == null && updateSecurityHeaders == null ||
