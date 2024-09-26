@@ -21,9 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 public static class EnvironmentExtensions
 {
-    public static bool SkipValidation()
-    {
-        var skipValidationEnv = Environment.GetEnvironmentVariable(Constants.SkipValidation);
-        return skipValidationEnv != null && skipValidationEnv.Equals("true", StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool SkipValidation() =>
+        Environment.GetEnvironmentVariable(Constants.SkipValidation)?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
 }

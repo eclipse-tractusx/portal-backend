@@ -19,10 +19,8 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 

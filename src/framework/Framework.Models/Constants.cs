@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Collections.Immutable;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 /// <summary>

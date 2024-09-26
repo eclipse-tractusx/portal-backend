@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.Template;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;

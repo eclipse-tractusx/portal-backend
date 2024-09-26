@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,8 +19,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
@@ -40,7 +37,7 @@ public static class SettingValidation
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
     public static OptionsBuilder<TOptions> ValidateEnumEnumeration<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
-        optionsBuilder.Services.TryAddTransient<IValidateOptions<TOptions>>(_ => new EnumEnumerableValidation<TOptions>(optionsBuilder.Name, section));
+        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new EnumEnumerableValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
 
@@ -53,7 +50,7 @@ public static class SettingValidation
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
     public static OptionsBuilder<TOptions> ValidateDistinctValues<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section) where TOptions : class
     {
-        optionsBuilder.Services.TryAddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
+        optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
 
@@ -66,18 +63,12 @@ public static class SettingValidation
     /// <param name="section">The current configuration section</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
     public static OptionsBuilder<TOptions> EnvironmentalValidation<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section)
-        where TOptions : class
-    {
-        if (EnvironmentExtensions.SkipValidation())
-        {
-            return optionsBuilder;
-        }
-
-        optionsBuilder
-            .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
-        return optionsBuilder;
-    }
+        where TOptions : class =>
+            EnvironmentExtensions.SkipValidation()
+                ? optionsBuilder
+                : optionsBuilder
+                    .ValidateDataAnnotations()
+                    .ValidateEnumEnumeration(section)
+                    .ValidateDistinctValues(section)
+                    .ValidateOnStart();
 }
