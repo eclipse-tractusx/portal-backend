@@ -74,7 +74,6 @@ public class RegistrationBusinessLogicTest
     private readonly IFixture _fixture;
     private readonly IRegistrationBusinessLogic _logic;
     private readonly ICompanyRepository _companyRepository;
-    private readonly IConnectorsRepository _connectorRepository;
     private readonly IApplicationChecklistService _checklistService;
     private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
@@ -83,8 +82,6 @@ public class RegistrationBusinessLogicTest
     private readonly IProvisioningManager _provisioningManager;
     private readonly IDimBusinessLogic _dimBusinessLogic;
     private readonly IOptions<RegistrationSettings> _options;
-    private readonly IIdentityData _identityData;
-    private readonly IIdentityService _identityService;
     private readonly ILogger<RegistrationBusinessLogic> _logger;
 
     public RegistrationBusinessLogicTest()
@@ -99,15 +96,12 @@ public class RegistrationBusinessLogicTest
         _processStepRepository = A.Fake<IProcessStepRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
-        _connectorRepository = A.Fake<IConnectorsRepository>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         _options = A.Fake<IOptions<RegistrationSettings>>();
         var settings = A.Fake<RegistrationSettings>();
         settings.ApplicationsMaxPageSize = 15;
         A.CallTo(() => _options.Value).Returns(settings);
-        _identityService = A.Fake<IIdentityService>();
-        _identityData = A.Fake<IIdentityData>();
 
         _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
@@ -121,17 +115,11 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
-
-        A.CallTo(() => _identityData.IdentityId).Returns(Guid.NewGuid());
-        A.CallTo(() => _identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _identityData.CompanyId).Returns(CompanyId);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identityData);
 
         _logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
-        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, _identityService, _logger);
+        _logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, _logger);
     }
 
     #region GetCompanyApplicationDetailsAsync
@@ -186,92 +174,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetCompanyApplicationsFilteredQuery(null, A<IEnumerable<CompanyApplicationStatusId>>.That.Matches(x => x.Count() == 2 && x.All(y => companyAppStatus.Contains(y))))).MustHaveHappenedOnceExactly();
         Assert.IsType<Pagination.Response<CompanyApplicationDetails>>(result);
         result.Content.Should().HaveCount(5);
-    }
-
-    #endregion
-
-    #region GetOSPCompanyApplicationDetailsAsync
-
-    [Theory]
-    [InlineData(null, null)]
-    [InlineData(null, DateCreatedOrderFilter.ASC)]
-    [InlineData(null, DateCreatedOrderFilter.DESC)]
-    [InlineData(CompanyApplicationStatusFilter.Closed, null)]
-    [InlineData(CompanyApplicationStatusFilter.InReview, null)]
-    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.ASC)]
-    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.ASC)]
-    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.DESC)]
-    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.DESC)]
-    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter, DateCreatedOrderFilter? dateCreatedOrderFilter)
-    {
-        // Arrange
-        var companyName = "TestCompany";
-        var externalId = _fixture.Create<string>();
-        var data = _fixture.CreateMany<(Guid Id, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId, DateTimeOffset Created)>(10)
-            .Select(x => new CompanyApplication(x.Id, x.CompanyId, x.CompanyApplicationStatusId, CompanyApplicationTypeId.EXTERNAL, x.Created)
-            {
-                Company = new Company(x.CompanyId, _fixture.Create<string>(), _fixture.Create<CompanyStatusId>(), x.Created)
-                {
-                    Name = _fixture.Create<string>(),
-                    BusinessPartnerNumber = _fixture.Create<string>(),
-                },
-                NetworkRegistration = new NetworkRegistration(Guid.NewGuid(), _fixture.Create<string>(), x.CompanyId, Guid.NewGuid(), Guid.NewGuid(), x.Id, x.Created)
-                {
-                    ExternalId = _fixture.Create<string>(),
-                    DateCreated = _fixture.Create<DateTimeOffset>(),
-                },
-                DateLastChanged = _fixture.Create<DateTimeOffset>()
-            }).ToImmutableList();
-
-        var queryData = new AsyncEnumerableStub<CompanyApplication>(data).AsQueryable();
-
-        A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(A<Guid>._, A<string?>._, A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
-            .Returns(queryData);
-
-        // Act
-        var result = await _logic.GetOspCompanyDetailsAsync(0, 3, statusFilter, companyName, externalId, dateCreatedOrderFilter);
-
-        // Assert
-        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
-
-        switch (statusFilter)
-        {
-            case CompanyApplicationStatusFilter.Closed:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
-                break;
-            case CompanyApplicationStatusFilter.InReview:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
-                break;
-            default:
-                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
-                break;
-        }
-
-        result.Meta.NumberOfElements.Should().Be(10);
-
-        var sorted = dateCreatedOrderFilter switch
-        {
-            DateCreatedOrderFilter.ASC => data.OrderBy(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
-            DateCreatedOrderFilter.DESC => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
-            _ => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray()
-        };
-
-        result.Content.Should().HaveCount(3).And.Satisfy(
-            x => x.ApplicationId == sorted[0].Id && x.CompanyApplicationStatusId == sorted[0].ApplicationStatusId && x.DateCreated == sorted[0].DateCreated && x.DateLastChanged == sorted[0].DateLastChanged && x.CompanyId == sorted[0].CompanyId && x.CompanyName == sorted[0].Company!.Name && x.BusinessPartnerNumber == sorted[0].Company!.BusinessPartnerNumber,
-            x => x.ApplicationId == sorted[1].Id && x.CompanyApplicationStatusId == sorted[1].ApplicationStatusId && x.DateCreated == sorted[1].DateCreated && x.DateLastChanged == sorted[1].DateLastChanged && x.CompanyId == sorted[1].CompanyId && x.CompanyName == sorted[1].Company!.Name && x.BusinessPartnerNumber == sorted[1].Company!.BusinessPartnerNumber,
-            x => x.ApplicationId == sorted[2].Id && x.CompanyApplicationStatusId == sorted[2].ApplicationStatusId && x.DateCreated == sorted[2].DateCreated && x.DateLastChanged == sorted[2].DateLastChanged && x.CompanyId == sorted[2].CompanyId && x.CompanyName == sorted[2].Company!.Name && x.BusinessPartnerNumber == sorted[2].Company!.BusinessPartnerNumber
-        );
-
-        switch (dateCreatedOrderFilter)
-        {
-            case DateCreatedOrderFilter.ASC:
-                result.Content.Should().BeInAscendingOrder(x => x.DateCreated);
-                break;
-            case null:
-            case DateCreatedOrderFilter.DESC:
-                result.Content.Should().BeInDescendingOrder(x => x.DateCreated);
-                break;
-        }
     }
 
     #endregion
@@ -449,8 +351,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _options.Value).Returns(new RegistrationSettings { UseDimWallet = useDimWallet });
         var entry = new ApplicationChecklistEntry(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForUpdateCompanyBpn(entry);
-        var identityService = A.Fake<IIdentityService>();
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, identityService, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, _provisioningManager, null!, null!);
 
         // Act
         await logic.UpdateCompanyBpn(IdWithoutBpn, ValidBpn);
@@ -527,8 +428,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var options = Options.Create(new RegistrationSettings { UseDimWallet = useDimWallet });
-        var identityService = A.Fake<IIdentityService>();
-        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, identityService, null!);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, options, _checklistService, null!, null!, _dimBusinessLogic, null!, null!, null!, null!);
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         SetupForApproveRegistrationVerification(entry);
 
@@ -824,7 +724,7 @@ public class RegistrationBusinessLogicTest
 
         var settings = A.Fake<RegistrationSettings>();
         A.CallTo(() => _options.Value).Returns(settings);
-        var logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, _identityService, _logger);
+        var logic = new RegistrationBusinessLogic(_portalRepositories, _options, _checklistService, _clearinghouseBusinessLogic, _sdFactoryBusinessLogic, _dimBusinessLogic, _issuerComponentBusinessLogic, _provisioningManager, _mailingProcessCreation, _logger);
         await logic.TriggerChecklistAsync(applicationId, typeId, stepId);
 
         // Assert

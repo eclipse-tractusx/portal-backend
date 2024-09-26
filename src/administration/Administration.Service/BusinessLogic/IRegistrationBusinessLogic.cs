@@ -32,7 +32,6 @@ public interface IRegistrationBusinessLogic
 {
     Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId);
     Task<Pagination.Response<CompanyApplicationDetails>> GetCompanyApplicationDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName);
-    Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter);
     Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName);
     Task UpdateCompanyBpn(Guid applicationId, string bpn);
 

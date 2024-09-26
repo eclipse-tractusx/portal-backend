@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -33,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
 
@@ -42,6 +44,7 @@ public class NetworkBusinessLogicTests
 {
     private const string Bpn = "BPNL00000001TEST";
     private static readonly string ExistingExternalId = Guid.NewGuid().ToString();
+    private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
     private static readonly Guid UserRoleId = Guid.NewGuid();
     private static readonly Guid MultiIdpCompanyId = Guid.NewGuid();
     private static readonly Guid NoIdpCompanyId = Guid.NewGuid();
@@ -88,14 +91,15 @@ public class NetworkBusinessLogicTests
 
         var settings = new PartnerRegistrationSettings
         {
-            InitialRoles = new[] { new UserRoleConfig("cl1", new[] { "Company Admin" }) }
+            InitialRoles = new[] { new UserRoleConfig("cl1", new[] { "Company Admin" }) },
+            ApplicationsMaxPageSize = 20
         };
         var options = A.Fake<IOptions<PartnerRegistrationSettings>>();
 
         A.CallTo(() => options.Value).Returns(settings);
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
-        A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
+        A.CallTo(() => _identity.CompanyId).Returns(CompanyId);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
@@ -703,6 +707,92 @@ public class NetworkBusinessLogicTests
 
         // Assert
         A.CallTo(() => _networkRegistrationProcessHelper.TriggerProcessStep(externalId, ProcessStepId)).MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
+    #region GetOSPCompanyApplicationDetailsAsync
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(null, DateCreatedOrderFilter.ASC)]
+    [InlineData(null, DateCreatedOrderFilter.DESC)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, null)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, null)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.ASC)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.ASC)]
+    [InlineData(CompanyApplicationStatusFilter.Closed, DateCreatedOrderFilter.DESC)]
+    [InlineData(CompanyApplicationStatusFilter.InReview, DateCreatedOrderFilter.DESC)]
+    public async Task GetOspCompanyApplicationDetailsAsync_WithDefaultRequest_GetsExpectedEntries(CompanyApplicationStatusFilter? statusFilter, DateCreatedOrderFilter? dateCreatedOrderFilter)
+    {
+        // Arrange
+        var companyName = "TestCompany";
+        var externalId = _fixture.Create<string>();
+        var data = _fixture.CreateMany<(Guid Id, Guid CompanyId, CompanyApplicationStatusId CompanyApplicationStatusId, DateTimeOffset Created)>(10)
+            .Select(x => new CompanyApplication(x.Id, x.CompanyId, x.CompanyApplicationStatusId, CompanyApplicationTypeId.EXTERNAL, x.Created)
+            {
+                Company = new Company(x.CompanyId, _fixture.Create<string>(), _fixture.Create<CompanyStatusId>(), x.Created)
+                {
+                    Name = _fixture.Create<string>(),
+                    BusinessPartnerNumber = _fixture.Create<string>(),
+                },
+                NetworkRegistration = new NetworkRegistration(Guid.NewGuid(), _fixture.Create<string>(), x.CompanyId, Guid.NewGuid(), Guid.NewGuid(), x.Id, x.Created)
+                {
+                    ExternalId = _fixture.Create<string>(),
+                    DateCreated = _fixture.Create<DateTimeOffset>(),
+                },
+                DateLastChanged = _fixture.Create<DateTimeOffset>()
+            }).ToImmutableList();
+
+        var queryData = new AsyncEnumerableStub<CompanyApplication>(data).AsQueryable();
+
+        A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(A<Guid>._, A<string?>._, A<string?>._, A<IEnumerable<CompanyApplicationStatusId>>._))
+            .Returns(queryData);
+
+        // Act
+        var result = await _sut.GetOspCompanyDetailsAsync(0, 3, statusFilter, companyName, externalId, dateCreatedOrderFilter);
+
+        // Assert
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+
+        switch (statusFilter)
+        {
+            case CompanyApplicationStatusFilter.Closed:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                break;
+            case CompanyApplicationStatusFilter.InReview:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED }))).MustHaveHappenedOnceExactly();
+                break;
+            default:
+                A.CallTo(() => _applicationRepository.GetExternalCompanyApplicationsFilteredQuery(CompanyId, companyName, externalId, A<IEnumerable<CompanyApplicationStatusId>>.That.IsSameSequenceAs(new[] { CompanyApplicationStatusId.SUBMITTED, CompanyApplicationStatusId.CONFIRMED, CompanyApplicationStatusId.DECLINED }))).MustHaveHappenedOnceExactly();
+                break;
+        }
+
+        result.Meta.NumberOfElements.Should().Be(10);
+
+        var sorted = dateCreatedOrderFilter switch
+        {
+            DateCreatedOrderFilter.ASC => data.OrderBy(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
+            DateCreatedOrderFilter.DESC => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray(),
+            _ => data.OrderByDescending(application => application.Company!.DateCreated).Take(3).ToImmutableArray()
+        };
+
+        result.Content.Should().HaveCount(3).And.Satisfy(
+            x => x.ApplicationId == sorted[0].Id && x.CompanyApplicationStatusId == sorted[0].ApplicationStatusId && x.DateCreated == sorted[0].DateCreated && x.DateLastChanged == sorted[0].DateLastChanged && x.CompanyId == sorted[0].CompanyId && x.CompanyName == sorted[0].Company!.Name && x.BusinessPartnerNumber == sorted[0].Company!.BusinessPartnerNumber,
+            x => x.ApplicationId == sorted[1].Id && x.CompanyApplicationStatusId == sorted[1].ApplicationStatusId && x.DateCreated == sorted[1].DateCreated && x.DateLastChanged == sorted[1].DateLastChanged && x.CompanyId == sorted[1].CompanyId && x.CompanyName == sorted[1].Company!.Name && x.BusinessPartnerNumber == sorted[1].Company!.BusinessPartnerNumber,
+            x => x.ApplicationId == sorted[2].Id && x.CompanyApplicationStatusId == sorted[2].ApplicationStatusId && x.DateCreated == sorted[2].DateCreated && x.DateLastChanged == sorted[2].DateLastChanged && x.CompanyId == sorted[2].CompanyId && x.CompanyName == sorted[2].Company!.Name && x.BusinessPartnerNumber == sorted[2].Company!.BusinessPartnerNumber
+        );
+
+        switch (dateCreatedOrderFilter)
+        {
+            case DateCreatedOrderFilter.ASC:
+                result.Content.Should().BeInAscendingOrder(x => x.DateCreated);
+                break;
+            case null:
+            case DateCreatedOrderFilter.DESC:
+                result.Content.Should().BeInDescendingOrder(x => x.DateCreated);
+                break;
+        }
     }
 
     #endregion

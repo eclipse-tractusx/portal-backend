@@ -25,6 +25,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyI
 
 public class PartnerRegistrationSettings
 {
+    public int ApplicationsMaxPageSize { get; set; }
+
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> InitialRoles { get; set; } = null!;
