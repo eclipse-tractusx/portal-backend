@@ -45,7 +45,7 @@ public class CompanyRoleCollectionRolesViewTests : IAssemblyFixture<TestDbFixtur
 
         // Act
         var result = await sut.CompanyRoleCollectionRolesView.ToListAsync();
-        result.Should().HaveCount(56);
+        result.Should().HaveCount(57);
     }
 
     [Fact]

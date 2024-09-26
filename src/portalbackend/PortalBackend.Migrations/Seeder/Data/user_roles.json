@@ -160,5 +160,11 @@
     "user_role": "BPDM Pool Sharing Consumer",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
+  },
+  {
+    "id": "34c42896-a003-4653-af8f-ba06ca595754",
+    "user_role": "Registration Internal",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
   }
 ]

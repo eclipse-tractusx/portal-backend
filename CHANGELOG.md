@@ -2,6 +2,13 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## Unreleased
+
+## Feature
+
+* **Technical User**
+  * add Registration Internal as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+
 ## 2.3.0-alpha.1
 
 ## Feature
