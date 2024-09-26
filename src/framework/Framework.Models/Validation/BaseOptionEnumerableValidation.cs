@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,11 +30,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 public abstract class SharedBaseOptionEnumerableValidation
 {
-    protected static readonly ImmutableArray<Type> IgnoreTypes = ImmutableArray.Create(
+    protected static readonly ImmutableArray<Type> IgnoreTypes = [
         typeof(string),
         typeof(bool),
         typeof(decimal),
-        typeof(Encoding));
+        typeof(Encoding)
+    ];
 }
 
 public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptionEnumerableValidation, IValidateOptions<TOptions> where TOptions : class
@@ -83,8 +83,15 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
             .ExceptBy(IgnoreTypes, prop => prop.PropertyType)
             .Where(prop => !prop.PropertyType.IsEnum)
             .SelectMany(property =>
-                ValidateAttribute(configSection, property, property.Name)
-                    .Concat(CheckPropertiesOfProperty(configSection, property, property.Name)));
+                ValidateAttributeAndDescendants(configSection, property, property.Name));
+
+    private IEnumerable<ValidationResult> ValidateAttributeAndDescendants(IConfiguration config, PropertyInfo property, string propertyName)
+    {
+        var result = ValidateAttribute(config, property, propertyName);
+        return config.GetSection(propertyName).Get(property.PropertyType) == null
+            ? result
+            : result.Concat(CheckPropertiesOfProperty(config, property, propertyName));
+    }
 
     protected abstract IEnumerable<ValidationResult> ValidateAttribute(IConfiguration config, PropertyInfo property, string propertyName);
 
@@ -101,6 +108,6 @@ public abstract class BaseOptionEnumerableValidation<TOptions> : SharedBaseOptio
                 ?.ToIEnumerable()
                 .Select((_, i) => configSection.GetSection($"{propertyName}:{i}"))
                 .SelectMany(section => GetValidationErrors(genericType, section)) ?? Enumerable.Empty<ValidationResult>(),
-            _ => Enumerable.Empty<ValidationResult>()
+            _ => []
         };
 }
