@@ -204,30 +204,23 @@ public class ApplicationActivationService(
     {
         var iamClientIds = _settings.ClientToRemoveRolesOnActivation;
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
-        var clientRoleData = await userRolesRepository
-            .GetUserRolesByClientId(iamClientIds)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-        var invitedUsersData = userRolesRepository
-            .GetUserWithUserRolesForApplicationId(context.ApplicationId, clientRoleData.SelectMany(data => data.UserRoles).Select(role => role.UserRoleId));
+        var invitedUsersData = userRolesRepository.GetUsersWithUserRolesForApplicationId(context.ApplicationId, iamClientIds);
 
         await using var enumerator = invitedUsersData.GetAsyncEnumerator(cancellationToken);
         if (await enumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            var userRoles = clientRoleData.SelectMany(data => data.UserRoles.Select(role => (role.UserRoleId, data.ClientClientId, role.UserRoleText))).ToImmutableDictionary(x => x.UserRoleId, x => (x.ClientClientId, x.UserRoleText));
             var userData = enumerator.Current;
-            if (!userData.UserRoleIds.Any())
+            if (!userData.InstanceRoleData.Any())
             {
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
             var iamUserId =
-                await provisioningManager.GetUserByUserName(userData.CompanyUserId.ToString())
+                await provisioningManager.GetUserByUserName(userData.IdentityId.ToString())
                     .ConfigureAwait(ConfigureAwaitOptions.None) ??
-                throw new ConflictException($"user {userData.CompanyUserId} not found in keycloak");
+                throw new ConflictException($"user {userData.IdentityId} not found in keycloak");
 
-            var roleNamesToDelete = userData.UserRoleIds
-                .Select(roleId => userRoles[roleId])
+            var roleNamesToDelete = userData.InstanceRoleData
                 .GroupBy(clientRoleData => clientRoleData.ClientClientId)
                 .ToImmutableDictionary(
                     clientRoleDataGroup => clientRoleDataGroup.Key,
@@ -235,11 +228,10 @@ public class ApplicationActivationService(
 
             await provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
-            userRolesRepository.DeleteCompanyUserAssignedRoles(
-                userData.UserRoleIds.Select(roleId => (userData.CompanyUserId, roleId)));
+            userRolesRepository.DeleteCompanyUserAssignedRoles(userData.InstanceRoleData.Select(roleId => (userData.IdentityId, roleId.UserRoleId)));
 
             var nextStepTypeIds = await enumerator.MoveNextAsync().ConfigureAwait(false)
-                ? ProcessStepTypeId.REMOVE_REGISTRATION_ROLES // in case there are further users eligible to remove roles from the same step is created again
+                ? ProcessStepTypeId.REMOVE_REGISTRATION_ROLES // in case there are further users eligible to remove the roles from the same step is created again
                 : ProcessStepTypeId.SET_THEME;
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.DONE,
