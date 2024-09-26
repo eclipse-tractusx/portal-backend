@@ -68,11 +68,14 @@ public static class StartupServiceExtensions
         });
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        var section = configuration.GetSection("JwtBearerOptions");
-        services
+        var options = services
             .AddOptions<JwtBearerOptions>()
-            .Bind(section)
-            .EnvironmentalValidation(section);
+            .Bind(configuration.GetSection("JwtBearerOptions"));
+
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options.ValidateOnStart();
+        }
 
         services.AddHealthChecks()
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: ["keycloak"]);
