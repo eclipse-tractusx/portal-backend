@@ -164,6 +164,10 @@ public class ServiceSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string OfferDetailAddress { get; init; } = null!;
+
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

@@ -20,6 +20,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -69,14 +70,17 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     }
 
     /// <inheritdoc />
-    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)>
-        GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId) =>
+    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformationTransferData> Information)> GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> externalUserRoles) =>
             _context.Offers
                 .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
-                .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
+                .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformationTransferData>>(
                     x.ProviderCompanyId == usersCompanyId,
-                    x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
+                    x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformationTransferData(
                         tup.Id,
-                        tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleInformation(ur.UserRole!.Id, ur.UserRole.UserRoleText))))))
+                        tup.TechnicalUserProfileAssignedUserRoles
+                            .Select(ur => new UserRoleInformationTransferData(
+                                ur.UserRole!.Id,
+                                ur.UserRole.UserRoleText,
+                                externalUserRoles.Contains(ur.UserRoleId)))))))
                 .SingleOrDefaultAsync();
 }

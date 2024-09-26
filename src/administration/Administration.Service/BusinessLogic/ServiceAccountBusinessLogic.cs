@@ -338,7 +338,7 @@ public class ServiceAccountBusinessLogic(
                            userRoles,
                            languageShortName ?? Constants.DefaultLanguage))
         {
-            yield return userRole;
+            yield return new UserRoleWithDescription(userRole.UserRoleId, userRole.UserRoleText, userRole.RoleDescription, userRole.External ? UserRoleType.External : UserRoleType.Internal);
         }
     }
 

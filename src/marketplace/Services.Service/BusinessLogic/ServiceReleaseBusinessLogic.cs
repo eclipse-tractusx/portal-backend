@@ -257,7 +257,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
     /// <inheritdoc />
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId) =>
-        _offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.SERVICE);
+        _offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.SERVICE, _settings.DimUserRoles);
 
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid serviceId, IEnumerable<TechnicalUserProfileData> data) =>

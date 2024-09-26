@@ -527,7 +527,7 @@ public class AppReleaseBusinessLogic(
 
     /// <inheritdoc />
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId) =>
-        offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.APP);
+        offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.APP, _settings.DimUserRoles);
 
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data) =>

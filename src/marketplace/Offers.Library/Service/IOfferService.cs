@@ -200,8 +200,9 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">Id of the offer type</param>
+    /// <param name="externalUserRoles">The ExternalUserRoles</param>
     /// <returns>IEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRoles);
 
     /// <summary>
     /// Creates or updates the technical user profiles

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,21 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
-public record TechnicalUserProfileInformation(
-    [property: JsonPropertyName("technicalUserProfileId")] Guid TechnicalUserProfileId,
-    [property: JsonPropertyName("userRoles")] IEnumerable<UserRoleInformation> UserRoles
+/// <summary>
+/// Basic model for user role data needed to display user roles with description.
+/// </summary>
+public record UserRoleWithDescription(
+    [property: JsonPropertyName("roleId")] Guid UserRoleId,
+    [property: JsonPropertyName("roleName")] string UserRoleText,
+    [property: JsonPropertyName("roleDescription")] string? RoleDescription,
+    [property: JsonPropertyName("roleType")] UserRoleType RoleType
 );
-
-public record TechnicalUserProfileInformationTransferData(
-    Guid TechnicalUserProfileId,
-    IEnumerable<UserRoleInformationTransferData> UserRoles
-);
-
-public record UserRoleInformationTransferData(
-    Guid UserRoleId,
-    string UserRoleText,
-    bool External);
