@@ -77,6 +77,14 @@ public class RegistrationSettings
     public IEnumerable<DocumentTypeId> SubmitDocumentTypeIds { get; set; } = null!;
 
     /// <summary>
+    /// Is Submit DocumentType Validation Optional
+    /// </summary>
+    /// <value></value>
+    [Required]
+    [DistinctValues]
+    public bool IsSubmitDocumentValidationOptional { get; set; } = false;
+
+    /// <summary>
     /// Url to the password resend of the portal
     /// </summary>
     [Required]
