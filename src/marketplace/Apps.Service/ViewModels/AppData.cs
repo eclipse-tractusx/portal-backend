@@ -32,7 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Provider">Provider.</param>
 /// <param name="Price">Price.</param>
 /// <param name="LicenseType">LicenseTypeId for app</param>
-/// <param name="LeadPictureId">Lead pircture Id.</param>
+/// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="UseCases">The apps use cases.</param>
 
 public record AppData(
