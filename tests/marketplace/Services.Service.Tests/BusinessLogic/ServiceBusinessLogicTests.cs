@@ -294,6 +294,7 @@ public class ServiceBusinessLogicTests
             x => x.Key == DocumentTypeId.ADDITIONAL_DETAILS && x.Value.Count() == 1 && x.Value.Any(y => y.DocumentName == "testDocument"));
         result.TechnicalUserProfile.Should().ContainSingle().Which.Should().Match<KeyValuePair<Guid, IEnumerable<string>>>(
             x => x.Value.SequenceEqual(new[] { "role1", "role2" }));
+        result.LeadPictureId.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -642,7 +643,8 @@ public class ServiceBusinessLogicTests
             {
                 OfferSubscriptionDetailData = new[] { new OfferSubscriptionStateDetailData(Guid.NewGuid(), OfferSubscriptionStatusId.ACTIVE) },
                 Documents = new[] { new DocumentTypeData(DocumentTypeId.ADDITIONAL_DETAILS, Guid.NewGuid(), "testDocument") },
-                TechnicalUserProfile = new[] { new TechnicalUserRoleData(Guid.NewGuid(), new[] { "role1", "role2" }) }
+                TechnicalUserProfile = new[] { new TechnicalUserRoleData(Guid.NewGuid(), new[] { "role1", "role2" }) },
+                LeadPictureId = Guid.NewGuid()
             });
         A.CallTo(() => _offerRepository.GetServiceDetailByIdUntrackedAsync(A<Guid>.That.Not.Matches(x => x == _existingServiceId), A<string>._, A<Guid>._))
             .Returns<ServiceDetailData?>(null);

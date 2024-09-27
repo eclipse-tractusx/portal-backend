@@ -447,6 +447,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         offerDetail.TechnicalUserProfile.Should().NotBeEmpty().And.HaveCount(2)
         .And.Satisfy(x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 1,
         x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 2);
+        offerDetail.LeadPictureId.Should().NotBeEmpty();
     }
 
     #endregion
@@ -467,8 +468,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
-        offerDetail.ActiveDocumentStatusDatas.Should().ContainSingle().And.Satisfy(
-            x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") && x.StatusId == DocumentStatusId.LOCKED);
+        offerDetail.ActiveDocumentStatusDatas.Should().ContainEquivalentOf(
+            new DocumentStatusData(new Guid("0d68c68c-d689-474c-a3be-8493f99feab2"), DocumentStatusId.LOCKED));
     }
 
     #endregion

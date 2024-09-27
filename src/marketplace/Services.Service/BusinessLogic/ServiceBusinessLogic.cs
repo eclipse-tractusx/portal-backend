@@ -94,6 +94,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             result.Id,
             result.Title,
             result.Provider,
+            result.LeadPictureId,
             result.ContactEmail,
             result.Description,
             result.LicenseTypeId,
