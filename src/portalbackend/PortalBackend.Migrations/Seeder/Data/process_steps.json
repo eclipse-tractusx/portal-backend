@@ -1,0 +1,47 @@
+[
+  {
+    "id": "e014e270-7582-4340-9e81-8aedcf83c4f0",
+    "process_step_type_id":  1,
+    "process_step_status_id":  2,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed":  null,
+    "process_id": "9782562f-5ba1-467f-b4da-a8d50d727145",
+    "message":  null
+  },
+  {
+    "id": "e014e270-7582-4340-9e81-8aedcf83c4f1",
+    "process_step_type_id":  2,
+    "process_step_status_id":  2,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed":  null,
+    "process_id": "9782562f-5ba1-467f-b4da-a8d50d727145",
+    "message": null
+  },
+  {
+    "id": "e014e270-7582-4340-9e81-8aedcf83c4f2",
+    "process_step_type_id":  3,
+    "process_step_status_id":  3,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed":  null,
+    "process_id": "9782562f-5ba1-467f-b4da-a8d50d727145",
+    "message": null
+  },
+  {
+    "id": "e014e270-7582-4340-9e81-8aedcf83c4f3",
+    "process_step_type_id":  20,
+    "process_step_status_id":  2,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed":  null,
+    "process_id": "9782562f-5ba1-467f-b4da-a8d50d727145",
+    "message": null
+  },
+  {
+    "id": "e014e270-7582-4340-9e81-8aedcf83c4f4",
+    "process_step_type_id":  21,
+    "process_step_status_id":  1,
+    "date_created": "2024-09-25 12:00:00.000000 +00:00",
+    "date_last_changed":  null,
+    "process_id": "9782562f-5ba1-467f-b4da-a8d50d727145",
+    "message": null
+  }
+]
