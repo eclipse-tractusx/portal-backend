@@ -166,5 +166,35 @@
     "user_role": "Registration Internal",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
     "last_editor_id": null
+  },
+  {
+    "id": "79638264-25f1-46df-89c6-a6e306c69462",
+    "user_role": "BPDM Orchestrator Admin",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "77439600-ebfa-4f02-a3f9-cfad6160f8ed",
+    "user_role": "BPDM Orchestrator Task Creator",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "16822e29-1b41-4359-9fc4-1aafb1bf8509",
+    "user_role": "BPDM Orchestrator Processor Clean",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "4c7e1144-0ec5-4874-8439-3afc2e8e71db",
+    "user_role": "BPDM Orchestrator Processor CleanAndSync",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
+    "id": "a53a95be-ea7b-4033-926c-26275dc16e0f",
+    "user_role": "BPDM Orchestrator Processor PoolSync",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
   }
 ]
