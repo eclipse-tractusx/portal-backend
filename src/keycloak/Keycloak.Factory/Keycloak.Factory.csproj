@@ -21,6 +21,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory</AssemblyName>
+    <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
   </ItemGroup>
 

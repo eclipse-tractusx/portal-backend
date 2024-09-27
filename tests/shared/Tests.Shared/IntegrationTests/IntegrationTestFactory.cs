@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
@@ -51,13 +50,9 @@ public class IntegrationTestFactory<TTestClass, TSeedingData> : WebApplicationFa
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var projectDir = Directory.GetCurrentDirectory();
-        var configPath = Path.Combine(projectDir, "appsettings.IntegrationTests.json");
-
         Environment.SetEnvironmentVariable("MVC_ROUTING_BASEPATH", "/api/test");
-
-        var config = new ConfigurationBuilder().AddJsonFile(configPath, true).Build();
-        builder.UseConfiguration(config);
+        Environment.SetEnvironmentVariable("SKIP_CONFIGURATION_VALIDATION", "true");
+        builder.UseEnvironment("Test");
         builder.ConfigureTestServices(services =>
         {
             var identityService = services.SingleOrDefault(d => d.ServiceType.GetInterfaces().Contains(typeof(IIdentityService)));

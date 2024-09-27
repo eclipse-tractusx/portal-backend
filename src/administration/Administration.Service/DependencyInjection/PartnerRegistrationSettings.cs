@@ -38,9 +38,7 @@ public static class PartnerRegistrationSettingsExtensions
     {
         services.AddOptions<PartnerRegistrationSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateEnumEnumeration(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

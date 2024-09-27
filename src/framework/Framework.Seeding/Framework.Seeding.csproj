@@ -76,6 +76,7 @@
 
   <ItemGroup>
       <ProjectReference Include="..\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+      <ProjectReference Include="..\Framework.Models\Framework.Models.csproj" />
   </ItemGroup>
 
 </Project>

@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Service;
 
@@ -32,8 +33,7 @@ public static class IssuerComponentServiceCollectionExtensions
     {
         services.AddOptions<IssuerComponentSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<IssuerComponentService>>();
 
         var sp = services.BuildServiceProvider();

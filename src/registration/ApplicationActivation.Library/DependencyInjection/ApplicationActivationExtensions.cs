@@ -32,12 +32,14 @@ public static class ApplicationActivationExtensions
     public static IServiceCollection AddApplicationActivation(this IServiceCollection services, IConfiguration config)
     {
         var section = config.GetSection("ApplicationActivation");
-        services.AddOptions<ApplicationActivationSettings>()
+        var options = services.AddOptions<ApplicationActivationSettings>()
             .Bind(section)
-            .Validate(ApplicationActivationSettings.Validate)
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
+
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options.Validate(ApplicationActivationSettings.Validate);
+        }
 
         return services
             .AddDateTimeProvider()

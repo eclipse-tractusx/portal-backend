@@ -61,15 +61,11 @@ public static class CompanyDataSettingsExtensions
 {
     public static IServiceCollection ConfigureCompanyDataSettings(
         this IServiceCollection services,
-        IConfigurationSection section
-    )
+        IConfigurationSection section)
     {
         services.AddOptions<CompanyDataSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateEnumEnumeration(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

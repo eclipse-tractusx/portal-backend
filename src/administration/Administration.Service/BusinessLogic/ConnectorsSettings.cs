@@ -61,8 +61,7 @@ public static class ConnectorsSettingsExtensions
     {
         services.AddOptions<ConnectorsSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

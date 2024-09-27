@@ -32,9 +32,7 @@ public static class ServiceAccountCreationExtensions
     {
         services.AddOptions<ServiceAccountCreationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
 
         services
             .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();

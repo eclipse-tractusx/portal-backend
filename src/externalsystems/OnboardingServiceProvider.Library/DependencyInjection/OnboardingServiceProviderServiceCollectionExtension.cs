@@ -31,9 +31,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
         var configSection = configuration.GetSection("OnboardingServiceProvider");
         services.AddOptions<OnboardingServiceProviderSettings>()
             .Bind(configSection)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(configSection)
-            .ValidateOnStart();
+            .EnvironmentalValidation(configSection);
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
         _ = services.BuildServiceProvider();
         return services

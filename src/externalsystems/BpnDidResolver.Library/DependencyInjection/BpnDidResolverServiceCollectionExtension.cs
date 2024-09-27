@@ -32,9 +32,7 @@ public static class BpnDidResolverServiceCollectionExtension
     {
         services.AddOptions<BpnDidResolverSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<BpnDidResolverService>>();
 
         var sp = services.BuildServiceProvider();

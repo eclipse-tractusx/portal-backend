@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
@@ -26,10 +26,10 @@ public static class ServiceLogicExtensions
 {
     public static IServiceCollection AddServiceBusinessLogic(this IServiceCollection services, IConfiguration config)
     {
+        var section = config.GetSection("Services");
         services.AddOptions<ServiceSettings>()
-            .Bind(config.GetSection("Services"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .Bind(section)
+            .EnvironmentalValidation(section);
         return services
             .AddTransient<IServiceBusinessLogic, ServiceBusinessLogic>()
             .AddTransient<IServiceReleaseBusinessLogic, ServiceReleaseBusinessLogic>()

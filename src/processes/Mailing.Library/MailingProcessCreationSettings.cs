@@ -43,9 +43,7 @@ public static class MailingProcessCreationSettingsExtension
     {
         services.AddOptions<MailingProcessCreationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

@@ -39,4 +39,6 @@ public static class Constants
     /// Default value for Language Code Error String
     /// </summary>
     public const string InvalidLanguageError = "InvalidLanguage";
+
+    public static readonly string SkipValidation = "SKIP_CONFIGURATION_VALIDATION";
 }

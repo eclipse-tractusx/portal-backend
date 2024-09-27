@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -95,11 +94,15 @@ public static class TemplateSettingsExtention
         this IServiceCollection services,
         IConfigurationSection section)
     {
-        services.AddOptions<TemplateSettings>()
-            .Bind(section)
-            .Validate(x => x.Validate())
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+        var options = services.AddOptions<TemplateSettings>()
+            .Bind(section);
+        options
+            .EnvironmentalValidation(section);
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options.Validate(x => x.Validate());
+        }
+
         return services;
     }
 }

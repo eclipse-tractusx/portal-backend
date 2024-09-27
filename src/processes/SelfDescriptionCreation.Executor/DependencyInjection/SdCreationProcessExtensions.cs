@@ -31,8 +31,7 @@ public static class SdCreationProcessExtensions
         var section = config.GetSection("SelfDescriptionCreationProcess");
         services.AddOptions<SelfDescriptionProcessSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
 
         return services
             .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,6 +20,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
 {
@@ -47,6 +47,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
             {
                 validation.NotNullOrWhiteSpace(HttpProxy, () => nameof(HttpProxy));
             }
+
             return true;
         }
     }
@@ -55,13 +56,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail
     {
         public static IServiceCollection ConfigureMailSettings(
             this IServiceCollection services,
-            IConfigurationSection section
-            )
+            IConfigurationSection section)
         {
-            services.AddOptions<MailSettings>()
-                .Bind(section)
-                .Validate(x => x.Validate())
-                .ValidateOnStart();
+            var options = services.AddOptions<MailSettings>()
+                .Bind(section);
+            options
+                .EnvironmentalValidation(section);
+            if (!EnvironmentExtensions.SkipValidation())
+            {
+                options.Validate(x => x.Validate());
+            }
+
             return services;
         }
     }

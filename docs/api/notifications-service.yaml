@@ -1,0 +1,532 @@
+openapi: 3.0.1
+info:
+  title: Org.Eclipse.TractusX.Portal.Backend.Notifications.Service
+  version: v2.3.0-alpha.1
+paths:
+  /api/notification/errormessage:
+    get:
+      tags:
+        - ErrorMessage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorMessageType'
+        '500':
+          description: Internal Server Error
+  /api/notification:
+    get:
+      tags:
+        - Notification
+      summary: 'Gets all notifications for the logged in user (Authorization required - Roles: view_notifications)'
+      description: 'Example: Get: /api/notification/'
+      operationId: GetNotifications
+      parameters:
+        - name: searchTypeIds
+          in: query
+          description: 'OPTIONAL: types for the search'
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NotificationTypeId'
+        - name: page
+          in: query
+          description: The page to get
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: Amount of entries
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: searchSemantic
+          in: query
+          description: 'OPTIONAL: choose AND or OR semantics (defaults to AND)'
+          schema:
+            $ref: '#/components/schemas/SearchSemanticTypeId'
+        - name: isRead
+          in: query
+          description: 'OPTIONAL: Filter for read or unread notifications'
+          schema:
+            type: boolean
+        - name: notificationTypeId
+          in: query
+          description: 'OPTIONAL: Type of the notifications'
+          schema:
+            $ref: '#/components/schemas/NotificationTypeId'
+        - name: notificationTopicId
+          in: query
+          description: 'OPTIONAL: Topic of the notifications'
+          schema:
+            $ref: '#/components/schemas/NotificationTopicId'
+        - name: onlyDueDate
+          in: query
+          description: 'OPTIONAL: If true only notifications with a due date will be returned'
+          schema:
+            type: boolean
+            default: false
+        - name: sorting
+          in: query
+          description: Defines the sorting of the list
+          schema:
+            $ref: '#/components/schemas/NotificationSorting'
+        - name: doneState
+          in: query
+          description: 'OPTIONAL: Defines the done state'
+          schema:
+            type: boolean
+        - name: searchQuery
+          in: query
+          description: 'OPTIONAL: a search query'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Collection of the unread notifications for the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDetailData'
+        '400':
+          description: NotificationType or NotificationStatus don't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/notification/{notificationId}':
+    get:
+      tags:
+        - Notification
+      summary: 'Gets a notification for the logged in user (Authorization required - Roles: view_notifications)'
+      description: 'Example: Get: /api/notification/f22f2b57-426a-4ac3-b3af-7924a1c61590'
+      operationId: GetNotification
+      parameters:
+        - name: notificationId
+          in: path
+          description: is of the notification
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: notifications for the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDetailData'
+        '400':
+          description: notification doesn't exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    delete:
+      tags:
+        - Notification
+      summary: 'Delete the (Authorization required - Roles: view_notifications)'
+      description: 'Example: DELETE: /api/notification/f22f2b57-426a-4ac3-b3af-7924a1c615901'
+      parameters:
+        - name: notificationId
+          in: path
+          description: Id of the notification
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: f22f2b57-426a-4ac3-b3af-7924a1c615901
+      responses:
+        '204':
+          description: Count of the notifications.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '400':
+          description: NotificationStatus does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: IamUserId is not assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/notification/count:
+    get:
+      tags:
+        - Notification
+      summary: 'Gets the notification count for the current logged in user (Authorization required - Roles: view_notifications)'
+      description: 'Example: Get: /api/notification/count'
+      parameters:
+        - name: isRead
+          in: query
+          description: 'OPTIONAL: Filter for read or unread notifications'
+          schema:
+            type: boolean
+          example: true
+      responses:
+        '200':
+          description: Count of the notifications.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '400':
+          description: NotificationStatus does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: IamUserId is not assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/notification/count-details:
+    get:
+      tags:
+        - Notification
+      summary: 'Gets the notification count for the current logged in user (Authorization required - Roles: view_notifications)'
+      description: 'Example: Get: /api/notification/count-details'
+      responses:
+        '200':
+          description: Count of the notifications.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationCountDetails'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/notification/{notificationId}/read':
+    put:
+      tags:
+        - Notification
+      summary: 'Changes the read status of a notification (Authorization required - Roles: view_notifications)'
+      description: 'Example: PUT: /api/notification/read/f22f2b57-426a-4ac3-b3af-7924a1c61590/read'
+      parameters:
+        - name: notificationId
+          in: path
+          description: 'OPTIONAL: Id of the notification status'
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: f22f2b57-426a-4ac3-b3af-7924a1c61590
+        - name: isRead
+          in: query
+          description: 'OPTIONAL: `true` if the notification is read, otherwise `false`'
+          schema:
+            type: boolean
+            default: true
+          example: false
+      responses:
+        '204':
+          description: The Read status was updated.
+        '400':
+          description: NotificationStatus does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: IamUserId is not assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/notification/ssi-credentials:
+    post:
+      tags:
+        - Notification
+      summary: 'Creates a notification with the given data (Authorization required - Roles: create_ssi_notifications)'
+      description: 'Example: POST: /api/notification/ssi-credentials'
+      requestBody:
+        description: Data for the notification
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '204':
+          description: Count of the notifications.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '400':
+          description: NotificationStatus does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: IamUserId is not assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/info:
+    get:
+      tags:
+        - OpenInformation
+      summary: ' (Authorization required)'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+components:
+  schemas:
+    ErrorDetails:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorParameter'
+      additionalProperties: false
+    ErrorMessageCode:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+      additionalProperties: false
+    ErrorMessageType:
+      type: object
+      properties:
+        errorType:
+          type: string
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorMessageCode'
+      additionalProperties: false
+    ErrorParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        errorId:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+          nullable: true
+      additionalProperties: false
+    NotificationCountDetails:
+      type: object
+      properties:
+        read:
+          type: integer
+          format: int32
+        unread:
+          type: integer
+          format: int32
+        infoUnread:
+          type: integer
+          format: int32
+        offerUnread:
+          type: integer
+          format: int32
+        actionRequired:
+          type: integer
+          format: int32
+        unreadActionRequired:
+          type: integer
+          format: int32
+      additionalProperties: false
+    NotificationDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+        typeId:
+          $ref: '#/components/schemas/NotificationTypeId'
+        notificationTopic:
+          $ref: '#/components/schemas/NotificationTopicId'
+        isRead:
+          type: boolean
+        content:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        done:
+          type: boolean
+          nullable: true
+      additionalProperties: false
+    NotificationRequest:
+      type: object
+      properties:
+        receiver:
+          type: string
+          format: uuid
+        content:
+          type: string
+        notificationTypeId:
+          $ref: '#/components/schemas/NotificationTypeId'
+      additionalProperties: false
+    NotificationSorting:
+      enum:
+        - DateAsc
+        - DateDesc
+        - ReadStatusAsc
+        - ReadStatusDesc
+      type: string
+    NotificationTopicId:
+      enum:
+        - INFO
+        - ACTION
+        - OFFER
+      type: string
+    NotificationTypeId:
+      enum:
+        - INFO
+        - ACTION
+        - WELCOME
+        - WELCOME_USE_CASES
+        - WELCOME_SERVICE_PROVIDER
+        - WELCOME_CONNECTOR_REGISTRATION
+        - WELCOME_APP_MARKETPLACE
+        - APP_SUBSCRIPTION_REQUEST
+        - APP_SUBSCRIPTION_ACTIVATION
+        - CONNECTOR_REGISTERED
+        - APP_RELEASE_REQUEST
+        - TECHNICAL_USER_CREATION
+        - SERVICE_REQUEST
+        - SERVICE_ACTIVATION
+        - APP_ROLE_ADDED
+        - APP_RELEASE_APPROVAL
+        - SERVICE_RELEASE_REQUEST
+        - SERVICE_RELEASE_APPROVAL
+        - APP_RELEASE_REJECTION
+        - SERVICE_RELEASE_REJECTION
+        - ROLE_UPDATE_CORE_OFFER
+        - ROLE_UPDATE_APP_OFFER
+        - SUBSCRIPTION_URL_UPDATE
+        - CREDENTIAL_APPROVAL
+        - CREDENTIAL_REJECTED
+        - CREDENTIAL_EXPIRY
+      type: string
+    SearchSemanticTypeId:
+      enum:
+        - OR
+        - AND
+      type: string
+    UrlInformation:
+      type: object
+      properties:
+        httpMethods:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: [ ]

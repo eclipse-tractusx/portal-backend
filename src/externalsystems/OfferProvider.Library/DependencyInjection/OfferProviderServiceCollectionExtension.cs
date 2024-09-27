@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -33,8 +32,7 @@ public static class OfferProviderServiceCollectionExtension
         var configSection = configuration.GetSection("OfferProvider");
         services.AddOptions<OfferProviderSettings>()
             .Bind(configSection)
-            .ValidateDistinctValues(configSection)
-            .ValidateOnStart();
+            .EnvironmentalValidation(configSection);
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 
         return services

@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
@@ -29,10 +29,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
-var VERSION = "v2";
+var version = AssemblyExtension.GetApplicationVersion();
 
 await WebAppHelper
-    .BuildAndRunWebApplicationAsync<Program>(args, "registration", VERSION, builder =>
+    .BuildAndRunWebApplicationAsync<Program>(args, "registration", version, builder =>
     {
         builder.Services
             .AddPublicInfos();

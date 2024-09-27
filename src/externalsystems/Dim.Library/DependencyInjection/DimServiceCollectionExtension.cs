@@ -32,9 +32,8 @@ public static class DimServiceCollectionExtension
     {
         services.AddOptions<DimSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
+
         services.AddTransient<LoggingHandler<DimService>>();
 
         var sp = services.BuildServiceProvider();

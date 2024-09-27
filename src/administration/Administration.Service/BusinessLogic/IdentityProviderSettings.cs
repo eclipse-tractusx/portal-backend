@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -90,11 +89,15 @@ public static class IdentityProviderSettingsExtension
         this IServiceCollection services,
         IConfigurationSection section)
     {
-        services.AddOptions<IdentityProviderSettings>()
+        var options = services.AddOptions<IdentityProviderSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .Validate(x => x.Validate())
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options
+                .Validate(x => x.Validate());
+        }
+
         return services;
     }
 }

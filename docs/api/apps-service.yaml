@@ -1,0 +1,3773 @@
+openapi: 3.0.1
+info:
+  title: Org.Eclipse.TractusX.Portal.Backend.Apps.Service
+  version: v2.3.0-alpha.1
+paths:
+  '/api/apps/AppChange/{appId}/role/activeapp':
+    post:
+      tags:
+        - AppChange
+      summary: 'update app roles and related description for "active" owned app offers (Authorization required - Roles: edit_apps)'
+      description: 'Example: POST: /api/apps/appchange/{appId}/role/activeapp'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AppUserRole'
+      responses:
+        '200':
+          description: created role and role description successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppRoleData'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: App provider company not set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/appupdate/description':
+    get:
+      tags:
+        - AppChange
+      summary: 'Get description of the app by Id. (Authorization required - Roles: edit_apps)'
+      description: 'Example: Get: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description'
+      parameters:
+        - name: appId
+          in: path
+          description: Id for the app description to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+      responses:
+        '200':
+          description: returns list of app descriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocalizedDescription'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    put:
+      tags:
+        - AppChange
+      summary: 'Create or Update description of the app by Id. (Authorization required - Roles: edit_apps)'
+      description: 'Example: Put: /api/apps/appchange/092bdae3-a044-4314-94f4-85c65a09e31b/appupdate/description'
+      parameters:
+        - name: appId
+          in: path
+          description: Id for the app description to create or update.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+      requestBody:
+        description: app description data to create or update.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LocalizedDescription'
+      responses:
+        '204':
+          description: The app description succesFully created or updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/appLeadImage':
+    post:
+      tags:
+        - AppChange
+      summary: 'Upload offerassigned AppLeadImage document for active apps for given appId for same company as user (Authorization required - Roles: edit_apps)'
+      description: 'Example: POST: /api/apps/appchange/{appId}/appLeadImage'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+      responses:
+        '204':
+          description: Successfully uploaded the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user is not assigned with the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Only PNG and JPEG files are supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/deactivateApp':
+    put:
+      tags:
+        - AppChange
+      summary: 'Deactivate the OfferStatus By appId (Authorization required - Roles: edit_apps)'
+      description: 'Example: PUT: /api/apps/appchanges/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateApp'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app that should be deactive
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 3c77a395-a7e7-40f2-a519-ac16498e0a79
+      responses:
+        '204':
+          description: The App Successfully Deactivated
+        '400':
+          description: invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: If app does not exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Missing Permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in incorrect state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/subscription/{subscriptionId}/tenantUrl':
+    put:
+      tags:
+        - AppChange
+      summary: 'Updates the url for a specific subscription (Authorization required - Roles: edit_apps)'
+      description: 'Example: Put: /api/apps/appchange/{appId}/subscription/{subscriptionId}/tenantUrl'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+        - name: subscriptionId
+          in: path
+          description: Id of the subscription.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+      requestBody:
+        description: new url for the subscription.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantData'
+      responses:
+        '204':
+          description: The app description succesFully created or updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/documents':
+    get:
+      tags:
+        - AppChange
+      summary: 'Returns the Active App Documents (Authorization required - Roles: edit_apps)'
+      description: 'Example: GET /apps/appchange/{appId}/documents'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+      responses:
+        '200':
+          description: Gets the Active Apps documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveAppDocumentData'
+        '404':
+          description: If App does not exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/document/{documentId}':
+    delete:
+      tags:
+        - AppChange
+      summary: 'Delete Documet for an active app for given appId for same company as user (Authorization required - Roles: edit_apps)'
+      description: 'Example: DELETE: /api/apps/AppChange/{appId}/document/{documentId}'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 092bdae3-a044-4314-94f4-85c65a09e31b
+        - name: documentId
+          in: path
+          description: Id of the Document.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: succesFully deleted document for an active app
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/documentType/{documentTypeId}/documents':
+    post:
+      tags:
+        - AppChange
+      summary: 'Upload document for an active apps for given appId for same company as user (Authorization required - Roles: edit_apps)'
+      description: 'Example: POST: /api/apps/AppChange/{appId}/documentType/{documentTypeId}/documents'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: documentTypeId
+          in: path
+          description: ''
+          required: true
+          schema:
+            $ref: '#/components/schemas/DocumentTypeId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+      responses:
+        '204':
+          description: Successfully uploaded the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user is not assigned with the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in incorrect state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Only PDF files are supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppChange/{appId}/roles':
+    get:
+      tags:
+        - AppChange
+      summary: 'Gets the client roles for the given active app. (Authorization required - Roles: edit_apps)'
+      description: 'Example: GET: /api/apps/AppChange/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app which roles should be returned.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: languageShortName
+          in: query
+          description: 'OPTIONAL: The language short name.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the client roles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActiveAppRoleDetails'
+        '400':
+          description: The language does not exist.
+        '404':
+          description: The app was not found.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/updateappdoc/{appId}/documentType/{documentTypeId}/documents':
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Upload document for apps in status CREATED and document in status PENDING in the marketplace for given appId for same company as user (Authorization required - Roles: app_management)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/updateappdoc/{appId}/documentType/{documentTypeId}/documents'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: documentTypeId
+          in: path
+          description: ''
+          required: true
+          schema:
+            $ref: '#/components/schemas/DocumentTypeId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+      responses:
+        '204':
+          description: Successfully uploaded the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user is not assigned with the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in incorrect state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Only PDF files are supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/role':
+    post:
+      tags:
+        - AppReleaseProcess
+      summary: 'Add role and role description for App (Authorization required - Roles: edit_apps)'
+      description: 'Example: POST: /api/apps/appreleaseprocess/{appId}/role'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AppUserRole'
+      responses:
+        '200':
+          description: created role and role description successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppRoleData'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with provider company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/AppReleaseProcess/agreementData:
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Return Agreement Data for offer_type_id App (Authorization required - Roles: edit_apps)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/agreementData'
+      responses:
+        '200':
+          description: Returns the Cpllection of agreement data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgreementDocumentData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/consent/{appId}':
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Gets the agreement consent status for the given app id (Authorization required - Roles: edit_apps)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/consent/{appId}'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the Offer Agreement Consent data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferAgreementConsent'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with offer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/consent/{appId}/agreementConsents':
+    post:
+      tags:
+        - AppReleaseProcess
+      summary: 'Update or Insert Consent (Authorization required - Roles: edit_apps)'
+      description: 'Example: POST: /api/apps/appreleaseprocess/consent/{appId}/agreementConsents'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAgreementConsent'
+      responses:
+        '200':
+          description: Successfully submitted consent to agreements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsentStatusData'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Either the user was not found or the user is not assignable to the given application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: App Id is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/appStatus':
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Return app detail with status (Authorization required - Roles: app_management)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/{appId}/appStatus'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Return the Offer and status data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppProviderResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/role/{roleId}':
+    delete:
+      tags:
+        - AppReleaseProcess
+      summary: 'Removes a role from persistence layer by appId and roleId. (Authorization required - Roles: edit_apps)'
+      description: 'Example: DELETE: /api/apps/appreleaseprocess/{appId}/role/{roleId}'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 5636F9B9-C3DE-4BA5-8027-00D17A2FECFB
+        - name: roleId
+          in: path
+          description: ID of the role to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 5636F9B9-C3DE-4BA5-8027-00D17A2FECFB
+      responses:
+        '204':
+          description: Empty response on success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IActionResult'
+        '404':
+          description: Record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Input is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with provider company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/AppReleaseProcess/ownCompany/salesManager:
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Get All Users with Role of Sales Manager (Authorization required - Roles: add_apps)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/ownCompany/salesManager'
+      responses:
+        '200':
+          description: Return the Users with Role of Sales Manager.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyUserNameData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/AppReleaseProcess/createapp:
+    post:
+      tags:
+        - AppReleaseProcess
+      summary: 'Creates an app according to request model (Authorization required - Roles: add_apps)'
+      description: 'Example: POST: /api/apps/appreleaseprocess/createapp'
+      requestBody:
+        description: Request model for app creation.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppRequestModel'
+      responses:
+        '201':
+          description: Returns created app's ID.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Language Code or Use Case or CompanyId is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}':
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Updates an app according to request model (Authorization required - Roles: edit_apps)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/15507472-dfdc-4885-b165-8d4a8970a3e2'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 15507472-dfdc-4885-b165-8d4a8970a3e2
+      requestBody:
+        description: Request model for app creation.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppRequestModel'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Language Code or Use Case or CompanyId is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User don't have permission to change the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in inCorrect State.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: Returns created app's ID.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    delete:
+      tags:
+        - AppReleaseProcess
+      summary: 'Delete App by Id (Authorization required - Roles: edit_apps)'
+      description: 'Example: DELETE: /api/apps/appreleaseprocess/{appId}'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 5636F9B9-C3DE-4BA5-8027-00D17A2FECFB
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Input is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/AppReleaseProcess/inReview:
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Retrieves all in review status apps in the marketplace . (Authorization required - Roles: approve_app_release,decline_app_release)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/inReview'
+      parameters:
+        - name: page
+          in: query
+          description: page index start from 0
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: size to get number of records
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          description: sort by
+          schema:
+            $ref: '#/components/schemas/OfferSorting'
+        - name: offerStatusIdFilter
+          in: query
+          description: Filter by offerStatusId
+          schema:
+            $ref: '#/components/schemas/OfferStatusIdFilter'
+      responses:
+        '200':
+          description: Returns the list of all in review status marketplace apps.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InReviewAppDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/submit':
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Submit an app for release (Authorization required - Roles: add_apps)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: The app was successfully submitted for release.
+        '400':
+          description: 'Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: User not associated with company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/approveApp':
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Approve App to change status from IN_REVIEW to Active and create notification (Authorization required - Roles: approve_app_release)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveApp'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: The app was successfully submitted to Active State.
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: App is in InCorrect Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  /api/apps/AppReleaseProcess/privacyPolicies:
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Retrieve Privacy Policies (Authorization required - Roles: add_apps)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/privacyPolicies'
+      responses:
+        '200':
+          description: Return the privacy policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyPolicyData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/declineApp':
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Declines the app request (Authorization required - Roles: decline_app_release)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/declineApp'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app that should be declined
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      requestBody:
+        description: the data of the decline request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferDeclineRequest'
+      responses:
+        '204':
+          description: NoContent.
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: If app does not exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User does not have permission to change the app
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in incorrect state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/inReview/{appId}':
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Gets InReview app details for an app referenced by id. (Authorization required - Roles: approve_app_release,decline_app_release)'
+      description: 'Example: GET: /api/apps/appreleaseprocess/inReview/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '200':
+          description: Returns the requested app details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InReviewAppDetails'
+        '400':
+          description: If sub claim is empty/invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/documents/{documentId}':
+    delete:
+      tags:
+        - AppReleaseProcess
+      summary: 'Delete Document Assigned to Offer (Authorization required - Roles: edit_apps)'
+      description: 'Example: DELETE: /api/apps/appreleaseprocess/documents/{documentId}'
+      parameters:
+        - name: documentId
+          in: path
+          description: ID of the document to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '404':
+          description: Record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to delete the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Document or App is in InCorrect Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: parameters are invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/instance-type/{appId}':
+    post:
+      tags:
+        - AppReleaseProcess
+      summary: 'Sets the instance type and all related data for the app (Authorization required - Roles: edit_apps)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/instance-type/{appId}'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 5636F9B9-C3DE-4BA5-8027-00D17A2FECFB
+      requestBody:
+        description: Data needed for the instance setup
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppInstanceSetupData'
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Input is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/technical-user-profiles':
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Retrieve app specific stored technical user profile configured to get created if a related app subscription is getting activated. (Authorization required - Roles: add_apps)'
+      description: 'Example: GET: /api/apps/{appId}/appreleaseprocess/technical-user-profiles'
+      parameters:
+        - name: appId
+          in: path
+          description: id of the app to receive the technical user profiles for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns a list of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechnicalUserProfileInformation'
+        '403':
+          description: Requesting user is not part of the providing company for the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    put:
+      tags:
+        - AppReleaseProcess
+      summary: 'Creates and updates the technical user profiles (Authorization required - Roles: add_apps)'
+      description: 'Example: PUT: /api/apps/appreleaseprocess/{appId}/technical-user-profiles'
+      parameters:
+        - name: appId
+          in: path
+          description: id of the app to receive the technical user profiles for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The data for the update of the technical user profile
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TechnicalUserProfileData'
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requesting user is not part of the providing company for the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '200':
+          description: Returns a list of profiles
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/AppReleaseProcess/{appId}/roles':
+    get:
+      tags:
+        - AppReleaseProcess
+      summary: 'Gets the app providers an overview of configures app roles. (Authorization required - Roles: add_apps)'
+      description: 'Example: GET: /api/apps/AppChange/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/roles'
+      parameters:
+        - name: appId
+          in: path
+          description: Id of the app which roles should be returned.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: languageShortName
+          in: query
+          description: 'OPTIONAL: The language short name.'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the client roles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActiveAppRoleDetails'
+        '404':
+          description: The app was not found.
+        '403':
+          description: The app is not the provider of the company
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/active:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves all active apps in the marketplace. (Authorization required - Roles: view_apps)'
+      description: 'Example: GET: /api/apps/active'
+      parameters:
+        - name: lang
+          in: query
+          description: Optional two character language specifier for the app description. Will be empty if not provided.
+          schema:
+            type: string
+          example: en
+      responses:
+        '200':
+          description: Returns the list of all active marketplace apps.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/business:
+    get:
+      tags:
+        - Apps
+      summary: 'Get all apps that currently logged in user has been assigned roles in. (Authorization required - Roles: view_apps)'
+      description: 'Example: GET: /api/apps/business'
+      responses:
+        '200':
+          description: Returns the list of the user's business apps.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessAppData'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}':
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves app details for an app referenced by id. (Authorization required - Roles: view_apps)'
+      description: 'Example: GET: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      operationId: GetAppDetailsByIdAsync
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: lang
+          in: query
+          description: Optional two character language specifier for the app description. Will be empty if not provided.
+          schema:
+            type: string
+          example: en
+      responses:
+        '200':
+          description: Returns the requested app details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppDetailResponse'
+        '404':
+          description: App not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/favourites:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves IDs of all favourite apps of the current user (by sub claim). (Authorization required - Roles: view_apps)'
+      description: 'Example: GET: /api/apps/favourites'
+      responses:
+        '200':
+          description: Returns the list of favourite apps of current user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '400':
+          description: If sub claim is empty/invalid.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}/favourite':
+    post:
+      tags:
+        - Apps
+      summary: 'Adds an app to current user''s favourites. (Authorization required - Roles: view_apps)'
+      description: 'Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/favourite'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to add to user favourites.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: Favourite app was successfully added to user.
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    delete:
+      tags:
+        - Apps
+      summary: 'Removes an app from current user''s favourites. (Authorization required - Roles: view_apps)'
+      description: 'Example: DELETE: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/favourite'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to remove from user favourites.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: Favourite app was successfully removed from user.
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/subscribed/subscription-status:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves subscription statuses of apps. (Authorization required - Roles: view_subscription)'
+      description: 'Example: GET: /api/apps/subscribed/subscription-status'
+      parameters:
+        - name: page
+          in: query
+          description: The page that should be displayed
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: The size per page of elements that should be returned
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: status
+          in: query
+          description: 'Filter for the offer subscription status. If not set, all elements will be returned'
+          schema:
+            $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        - name: name
+          in: query
+          description: An optional search query for the name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns list of applicable apps subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferSubscriptionStatusDetailDataResponse'
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/provided/subscription-status:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves subscription statuses of provided apps of the currently logged in user''s company. (Authorization required - Roles: view_app_subscription)'
+      description: 'Example: GET: /api/apps/provided/subscription-status'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          schema:
+            $ref: '#/components/schemas/SubscriptionStatusSorting'
+        - name: statusId
+          in: query
+          schema:
+            $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        - name: offerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: companyName
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns list of applicable app subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferCompanySubscriptionStatusResponseResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}/subscribe':
+    post:
+      tags:
+        - Apps
+      summary: 'Adds an app to current user''s company''s subscriptions. (Authorization required - Roles: subscribe_apps)'
+      description: 'Example: POST: /api/apps/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe'
+      parameters:
+        - name: appId
+          in: path
+          description: ID of the app to subscribe to.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      requestBody:
+        description: The agreement consent data
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/OfferAgreementConsentData'
+      responses:
+        '204':
+          description: App was successfully subscribed to.
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: If appId does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/apps/appAgreementData/{appId}':
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieve all app marketplace agreements mandatory to be agreed before releasing an app on the CX marketplace (Authorization required - Roles: subscribe_apps)'
+      description: 'Example: GET: /api/apps/appAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      parameters:
+        - name: appId
+          in: path
+          description: Id for the app consent to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '200':
+          description: Returns the app agreement data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/subscription/{subscriptionId}/activate':
+    put:
+      tags:
+        - Apps
+      summary: 'Activates a pending app subscription. (Authorization required - Roles: activate_subscription)'
+      description: 'Example: PUT: /api/apps/subscription/{subscriptiondId}/activate'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: ID of the subscription to activate.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: App subscription was successfully activated.
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{subscriptionId}/unsubscribe':
+    put:
+      tags:
+        - Apps
+      summary: 'Unsubscribes an app from the current user''s company''s subscriptions. (Authorization required - Roles: unsubscribe_apps)'
+      description: 'Example: PUT: /api/apps/{subscriptionId}/unsubscribe'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: ID of the subscription to unsubscribe from.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: The app was successfully unsubscribed from.
+        '400':
+          description: 'Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/provided:
+    get:
+      tags:
+        - Apps
+      summary: 'Get all company owned apps. (Authorization required - Roles: app_management)'
+      description: 'Example: GET: /api/apps/provided'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          schema:
+            $ref: '#/components/schemas/OfferSorting'
+        - name: offerName
+          in: query
+          schema:
+            type: string
+        - name: statusId
+          in: query
+          description: Filters the OfferStatusId information
+          schema:
+            $ref: '#/components/schemas/AppStatusIdFilter'
+      responses:
+        '200':
+          description: Returns list of apps provided by the user assigned company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllOfferDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/autoSetup:
+    post:
+      tags:
+        - Apps
+      summary: 'Auto setup the app (Authorization required - Roles: activate_subscription)'
+      description: 'Example: POST: /api/apps/autoSetup'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAutoSetupData'
+      responses:
+        '200':
+          description: Returns the app agreement data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferAutoSetupResponseData'
+        '400':
+          description: Offer Subscription is pending or not the providing company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+      deprecated: true
+  /api/apps/start-autoSetup:
+    post:
+      tags:
+        - Apps
+      summary: 'Auto setup the app (Authorization required - Roles: activate_subscription)'
+      description: 'Example: POST: /api/apps/start-autoSetup'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAutoSetupData'
+      responses:
+        '204':
+          description: The auto setup has successfully been started.
+        '400':
+          description: Offer Subscription is pending or not the providing company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/subscription/{offerSubscriptionId}/activate-single-instance':
+    put:
+      tags:
+        - Apps
+      summary: 'Triggers the activation of a single instance app subscription (Authorization required - Roles: activate_subscription)'
+      description: 'Example: PUT: /api/apps/subscription/{offerSubscriptionId}/activate-single-instance'
+      parameters:
+        - name: offerSubscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: The activation of the subscription has successfully been started.
+        '400':
+          description: Offer Subscription is pending or not the providing company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}/appDocuments/{documentId}':
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieve Document Content for document type "App Lead Image" and "App Image" by ID (Authorization required - Roles: view_documents)'
+      description: 'Example: GET: /api/apps/{appId}/appDocuments/{documentId}'
+      parameters:
+        - name: appId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: documentId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the document Content
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+            image/tiff:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Document / App id not found or document type not supported.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: document not found.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: UnSupported Media Type.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}/subscription/{subscriptionId}/provider':
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: app_management)'
+      description: 'Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/provider'
+      parameters:
+        - name: appId
+          in: path
+          description: id of the app to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: subscriptionId
+          in: path
+          description: id of the subscription to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the subscription details for the provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppProviderSubscriptionDetailData'
+        '403':
+          description: User's company does not provide the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No app or subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/apps/{appId}/subscription/{subscriptionId}/subscriber':
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: subscribe_apps)'
+      description: 'Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber'
+      parameters:
+        - name: appId
+          in: path
+          description: id of the app to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: subscriptionId
+          in: path
+          description: id of the subscription to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the subscription details for the subscriber
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriberSubscriptionDetailData'
+        '403':
+          description: User's company does not provide the app.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No app or subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/subscribed/activesubscriptions:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves Active subscription statuses of apps. (Authorization required - Roles: view_subscription)'
+      description: 'Example: GET: /api/apps/subscribed/activesubscriptions'
+      responses:
+        '200':
+          description: Returns list of applicable active apps subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveOfferSubscriptionStatusData'
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/subscribed/subscriptions:
+    get:
+      tags:
+        - Apps
+      summary: 'Retrieves subscription statuses of apps. (Authorization required - Roles: view_subscription)'
+      description: 'Example: GET: /api/apps/subscribed/subscriptions'
+      responses:
+        '200':
+          description: Returns list of applicable active apps subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferSubscriptionData'
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/apps/errormessage:
+    get:
+      tags:
+        - ErrorMessage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorMessageType'
+        '500':
+          description: Internal Server Error
+  /api/info:
+    get:
+      tags:
+        - OpenInformation
+      summary: ' (Authorization required)'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+components:
+  schemas:
+    ActiveAppDocumentData:
+      type: object
+      properties:
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: Id of the App.
+      additionalProperties: false
+      description: View model of an Active App Documents
+    ActiveAppRoleDetails:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        role:
+          type: string
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActiveAppUserRoleDescription'
+      additionalProperties: false
+    ActiveAppUserRoleDescription:
+      type: object
+      properties:
+        languageCode:
+          type: string
+        description:
+          type: string
+      additionalProperties: false
+    ActiveOfferSubscriptionStatusData:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        image:
+          type: string
+          format: uuid
+          nullable: true
+        subscriptionId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    AgreementConsentStatus:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    AgreementData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        mandatory:
+          type: boolean
+      additionalProperties: false
+    AgreementDocumentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        agreementLink:
+          type: string
+          nullable: true
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+        mandatory:
+          type: boolean
+      additionalProperties: false
+    AllOfferData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        leadPictureId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferStatusId'
+        lastChanged:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    AllOfferDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllOfferData'
+      additionalProperties: false
+    AppData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the App.
+          format: uuid
+        name:
+          type: string
+          description: Name of the app.
+        shortDescription:
+          type: string
+          description: Short description.
+        provider:
+          type: string
+          description: Provider.
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        price:
+          type: string
+          description: Price.
+        leadPictureId:
+          type: string
+          description: Lead pircture Id.
+          format: uuid
+        useCases:
+          type: array
+          items:
+            type: string
+          description: The apps use cases.
+      additionalProperties: false
+      description: View model of an application's base data.
+    AppDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the app.
+          format: uuid
+        title:
+          type: string
+          description: Title or name of the app.
+        leadPictureId:
+          type: string
+          description: Uri to app's lead picture.
+          format: uuid
+        images:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of Images to app's secondary pictures.
+        providerUri:
+          type: string
+          description: Uri to provider's marketing presence.
+        provider:
+          type: string
+          description: Provider of the app.
+        contactEmail:
+          type: string
+          description: Email address of the app's primary contact.
+          nullable: true
+        contactNumber:
+          type: string
+          description: Phone number of the app's primary contact.
+          nullable: true
+        useCases:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUseCaseData'
+          description: Names of the app's use cases.
+        longDescription:
+          type: string
+          description: Long description of the app.
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        price:
+          type: string
+          description: Pricing information of the app.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags assigned to application.
+        isSubscribed:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        languages:
+          type: array
+          items:
+            type: string
+          description: Languages that the app is available in.
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: documents assigned to offer
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+          description: Privacy Policies assigned to offer
+        isSingleInstance:
+          type: boolean
+          description: Defines whether the app is a single instance
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Technical User Profile for app
+      additionalProperties: false
+      description: View model of an application's detailed data.
+    AppInstanceSetupData:
+      type: object
+      properties:
+        isSingleInstance:
+          type: boolean
+          description: '`true` if the service is an single instance service, otherwise `false`'
+        instanceUrl:
+          type: string
+          description: Only required if <seealso cref="P:Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels.AppInstanceSetupData.IsSingleInstance" /> is true
+          nullable: true
+      additionalProperties: false
+      description: Request Model to set or update the app instance type and all related data.
+    AppProviderResponse:
+      type: object
+      properties:
+        title:
+          type: string
+          description: title of the offer
+          nullable: true
+        provider:
+          type: string
+          description: provider name
+        leadPictureId:
+          type: string
+          description: id of the lead picture
+          format: uuid
+        providerName:
+          type: string
+          description: provider name
+          nullable: true
+        useCase:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUseCaseData'
+          description: list of use cases
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+          description: the offer descriptions
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferAgreement'
+          description: the assigned agreements
+        supportedLanguageCodes:
+          type: array
+          items:
+            type: string
+          description: the supported language codes
+        price:
+          type: string
+          description: the app price
+          nullable: true
+        images:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: list of the images
+        providerUri:
+          type: string
+          description: the provider uri
+          nullable: true
+        contactEmail:
+          type: string
+          description: contact email
+          nullable: true
+        contactNumber:
+          type: string
+          description: contact number
+          nullable: true
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: list of linked documents
+        salesManagerId:
+          type: string
+          description: id of the salesmanager
+          format: uuid
+          nullable: true
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+          description: the privacy policies
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: the technicalUser Profile
+      additionalProperties: false
+      description: Response for the app creation
+    AppProviderSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        customer:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+        tenantUrl:
+          type: string
+          nullable: true
+        appInstanceId:
+          type: string
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+        externalService:
+          $ref: '#/components/schemas/SubscriptionExternalServiceData'
+      additionalProperties: false
+    AppRequestModel:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title
+          nullable: true
+        salesManagerId:
+          type: string
+          description: SalesManagerId
+          format: uuid
+          nullable: true
+        useCaseIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: UseCaseIds
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+          description: Descriptions
+        supportedLanguageCodes:
+          type: array
+          items:
+            type: string
+          description: SupportedLanguageCodes
+        price:
+          type: string
+          description: Price
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+          description: Price
+        providerUri:
+          type: string
+          description: Price
+          nullable: true
+        contactEmail:
+          type: string
+          description: Price
+          nullable: true
+        contactNumber:
+          type: string
+          description: Price
+          nullable: true
+      additionalProperties: false
+      description: Request Model for App Creation.
+    AppRoleData:
+      type: object
+      properties:
+        roleId:
+          type: string
+          description: ''
+          format: uuid
+        roleName:
+          type: string
+          description: ''
+      additionalProperties: false
+      description: Model for Role Data
+    AppStatusIdFilter:
+      enum:
+        - Active
+        - Inactive
+        - WIP
+        - All
+      type: string
+      description: Filters the OfferStatusId information
+    AppUseCaseData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+      additionalProperties: false
+    AppUserRole:
+      type: object
+      properties:
+        role:
+          type: string
+          description: ''
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUserRoleDescription'
+          description: ''
+      additionalProperties: false
+      description: Model for Input Role
+    AppUserRoleDescription:
+      type: object
+      properties:
+        languageCode:
+          type: string
+          description: ''
+        description:
+          type: string
+          description: ''
+      additionalProperties: false
+      description: Model for Role Description
+    BusinessAppData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        subscriptionId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        uri:
+          type: string
+        leadPictureId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+      additionalProperties: false
+    ClientInfoData:
+      type: object
+      properties:
+        clientId:
+          type: string
+        clientUrl:
+          type: string
+      additionalProperties: false
+    CompanySubscriptionStatus:
+      type: object
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        subscriptionId:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        country:
+          type: string
+          nullable: true
+        bpnNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        technicalUser:
+          type: boolean
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+      additionalProperties: false
+    CompanyUserNameData:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ConsentStatusData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    ConsentStatusId:
+      enum:
+        - ACTIVE
+        - INACTIVE
+      type: string
+    DocumentData:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        documentName:
+          type: string
+      additionalProperties: false
+    DocumentTypeId:
+      enum:
+        - CX_FRAME_CONTRACT
+        - COMMERCIAL_REGISTER_EXTRACT
+        - APP_CONTRACT
+        - CONFORMITY_APPROVAL_REGISTRATION
+        - ADDITIONAL_DETAILS
+        - APP_LEADIMAGE
+        - APP_IMAGE
+        - SELF_DESCRIPTION
+        - APP_TECHNICAL_INFORMATION
+        - CONFORMITY_APPROVAL_CONNECTOR
+        - CONFORMITY_APPROVAL_BUSINESS_APPS
+        - CONFORMITY_APPROVAL_SERVICES
+        - SERVICE_LEADIMAGE
+        - PRESENTATION
+        - COMPANY_CERTIFICATE
+      type: string
+    ErrorDetails:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorParameter'
+      additionalProperties: false
+    ErrorMessageCode:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+      additionalProperties: false
+    ErrorMessageType:
+      type: object
+      properties:
+        errorType:
+          type: string
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorMessageCode'
+      additionalProperties: false
+    ErrorParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        errorId:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+          nullable: true
+      additionalProperties: false
+    IActionResult:
+      type: object
+      additionalProperties: false
+    InReviewAppData:
+      type: object
+      properties:
+        appId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferStatusId'
+      additionalProperties: false
+    InReviewAppDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/InReviewAppData'
+      additionalProperties: false
+    InReviewAppDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the app.
+          format: uuid
+        title:
+          type: string
+          description: Title or name of the app.
+        leadPictureId:
+          type: string
+          description: Uri to app's lead picture.
+          format: uuid
+        images:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of Images to app's secondary pictures.
+        provider:
+          type: string
+          description: Provider of the app.
+        useCases:
+          type: array
+          items:
+            type: string
+          description: Names of the app's use cases.
+        description:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+          description: description of the app.
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: documents assigned to offer
+        roles:
+          type: array
+          items:
+            type: string
+          description: Roles assigned to offer
+        languages:
+          type: array
+          items:
+            type: string
+          description: Languages that the app is available in.
+        providerUri:
+          type: string
+          description: Uri to provider's marketing presence.
+        contactEmail:
+          type: string
+          description: Email address of the app's primary contact.
+          nullable: true
+        contactNumber:
+          type: string
+          description: Phone number of the app's primary contact.
+          nullable: true
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        price:
+          type: string
+          description: Pricing information of the app.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags assigned to application.
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+          description: Privacy policy assigned to app.
+        offerStatusId:
+          $ref: '#/components/schemas/OfferStatusId'
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: TechnicalUserProfile of the User.
+      additionalProperties: false
+      description: View model of an application's detailed data.
+    LicenseTypeId:
+      enum:
+        - COTS
+        - FOSS
+      type: string
+    LocalizedDescription:
+      type: object
+      properties:
+        languageCode:
+          type: string
+        longDescription:
+          type: string
+        shortDescription:
+          type: string
+      additionalProperties: false
+    Metadata:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        contentSize:
+          type: integer
+          format: int32
+      additionalProperties: false
+    NoContentResult:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+      additionalProperties: false
+    OfferAgreement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        consentStatus:
+          type: string
+          nullable: true
+      additionalProperties: false
+    OfferAgreementConsent:
+      type: object
+      properties:
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementConsentStatus'
+      additionalProperties: false
+    OfferAgreementConsentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatusId:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    OfferAutoSetupData:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        offerUrl:
+          type: string
+      additionalProperties: false
+    OfferAutoSetupResponseData:
+      type: object
+      properties:
+        technicalUserInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TechnicalUserInfoData'
+        clientInfo:
+          $ref: '#/components/schemas/ClientInfoData'
+      additionalProperties: false
+    OfferCompanySubscriptionStatusResponse:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        offerName:
+          type: string
+          nullable: true
+        companySubscriptionStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySubscriptionStatus'
+        image:
+          type: string
+          format: uuid
+          nullable: true
+      additionalProperties: false
+    OfferCompanySubscriptionStatusResponseResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferCompanySubscriptionStatusResponse'
+      additionalProperties: false
+    OfferDeclineRequest:
+      type: object
+      properties:
+        message:
+          type: string
+      additionalProperties: false
+    OfferSorting:
+      enum:
+        - DateAsc
+        - DateDesc
+        - NameAsc
+        - NameDesc
+      type: string
+    OfferStatusId:
+      enum:
+        - CREATED
+        - IN_REVIEW
+        - ACTIVE
+        - INACTIVE
+      type: string
+    OfferStatusIdFilter:
+      enum:
+        - InReview
+        - All
+      type: string
+      description: Filters the OfferStatusId information
+    OfferSubscriptionData:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    OfferSubscriptionStatusDetailData:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        subscriptionId:
+          type: string
+          format: uuid
+        image:
+          type: string
+          format: uuid
+          nullable: true
+      additionalProperties: false
+    OfferSubscriptionStatusDetailDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferSubscriptionStatusDetailData'
+      additionalProperties: false
+    OfferSubscriptionStatusId:
+      enum:
+        - PENDING
+        - ACTIVE
+        - INACTIVE
+      type: string
+    PrivacyPolicyData:
+      type: object
+      properties:
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+          description: Privacy Policy.
+      additionalProperties: false
+      description: model of Privacy Policy data.
+    PrivacyPolicyId:
+      enum:
+        - COMPANY_DATA
+        - USER_DATA
+        - LOCATION
+        - BROWSER_HISTORY
+        - NONE
+      type: string
+    ProcessStepTypeId:
+      enum:
+        - MANUAL_VERIFY_REGISTRATION
+        - CREATE_BUSINESS_PARTNER_NUMBER_PUSH
+        - CREATE_BUSINESS_PARTNER_NUMBER_PULL
+        - CREATE_BUSINESS_PARTNER_NUMBER_MANUAL
+        - CREATE_IDENTITY_WALLET
+        - RETRIGGER_IDENTITY_WALLET
+        - START_CLEARING_HOUSE
+        - RETRIGGER_CLEARING_HOUSE
+        - AWAIT_CLEARING_HOUSE_RESPONSE
+        - START_SELF_DESCRIPTION_LP
+        - RETRIGGER_SELF_DESCRIPTION_LP
+        - ACTIVATE_APPLICATION
+        - RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
+        - RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL
+        - MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE
+        - START_OVERRIDE_CLEARING_HOUSE
+        - AWAIT_SELF_DESCRIPTION_LP_RESPONSE
+        - MANUAL_DECLINE_APPLICATION
+        - CREATE_DIM_WALLET
+        - AWAIT_DIM_RESPONSE_RESPONSE
+        - RETRIGGER_CREATE_DIM_WALLET
+        - VALIDATE_DID_DOCUMENT
+        - RETRIGGER_VALIDATE_DID_DOCUMENT
+        - REQUEST_BPN_CREDENTIAL
+        - AWAIT_BPN_CREDENTIAL_RESPONSE
+        - REQUEST_MEMBERSHIP_CREDENTIAL
+        - AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE
+        - TRANSMIT_BPN_DID
+        - RETRIGGER_TRANSMIT_DID_BPN
+        - RETRIGGER_REQUEST_BPN_CREDENTIAL
+        - RETRIGGER_REQUEST_MEMBERSHIP_CREDENTIAL
+        - TRIGGER_PROVIDER
+        - AWAIT_START_AUTOSETUP
+        - OFFERSUBSCRIPTION_CLIENT_CREATION
+        - SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION
+        - OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+        - ACTIVATE_SUBSCRIPTION
+        - TRIGGER_PROVIDER_CALLBACK
+        - RETRIGGER_PROVIDER
+        - RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION
+        - RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+        - RETRIGGER_PROVIDER_CALLBACK
+        - MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION
+        - OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
+        - RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
+        - SYNCHRONIZE_USER
+        - RETRIGGER_SYNCHRONIZE_USER
+        - TRIGGER_CALLBACK_OSP_SUBMITTED
+        - TRIGGER_CALLBACK_OSP_APPROVED
+        - TRIGGER_CALLBACK_OSP_DECLINED
+        - RETRIGGER_CALLBACK_OSP_SUBMITTED
+        - RETRIGGER_CALLBACK_OSP_APPROVED
+        - RETRIGGER_CALLBACK_OSP_DECLINED
+        - MANUAL_DECLINE_OSP
+        - REMOVE_KEYCLOAK_USERS
+        - RETRIGGER_REMOVE_KEYCLOAK_USERS
+        - SEND_MAIL
+        - RETRIGGER_SEND_MAIL
+        - INVITATION_CREATE_CENTRAL_IDP
+        - INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT
+        - INVITATION_ADD_REALM_ROLE
+        - INVITATION_CREATE_SHARED_REALM
+        - INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER
+        - INVITATION_UPDATE_CENTRAL_IDP_URLS
+        - INVITATION_CREATE_SHARED_CLIENT
+        - INVITATION_ENABLE_CENTRAL_IDP
+        - INVITATION_CREATE_DATABASE_IDP
+        - INVITATION_CREATE_USER
+        - RETRIGGER_INVITATION_CREATE_CENTRAL_IDP
+        - RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT
+        - RETRIGGER_INVITATION_ADD_REALM_ROLE
+        - RETRIGGER_INVITATION_CREATE_SHARED_REALM
+        - RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER
+        - RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS
+        - RETRIGGER_INVITATION_CREATE_SHARED_CLIENT
+        - RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP
+        - RETRIGGER_INVITATION_CREATE_USER
+        - RETRIGGER_INVITATION_CREATE_DATABASE_IDP
+        - CREATE_DIM_TECHNICAL_USER
+        - RETRIGGER_CREATE_DIM_TECHNICAL_USER
+        - AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
+        - DELETE_DIM_TECHNICAL_USER
+        - AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE
+        - RETRIGGER_DELETE_DIM_TECHNICAL_USER
+        - DELETE_CENTRAL_USER
+        - RETRIGGER_DELETE_CENTRAL_USER
+        - DELETE_COMPANYUSER_ASSIGNED_PROCESS
+        - DELETE_IDP_SHARED_REALM
+        - RETRIGGER_DELETE_IDP_SHARED_REALM
+        - DELETE_IDP_SHARED_SERVICEACCOUNT
+        - RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT
+        - DELETE_CENTRAL_IDENTITY_PROVIDER
+        - RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER
+        - DELETE_IDENTITY_PROVIDER
+        - SELF_DESCRIPTION_CONNECTOR_CREATION
+        - SELF_DESCRIPTION_COMPANY_CREATION
+        - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
+        - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
+      type: string
+    SubscriberSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+      additionalProperties: false
+    SubscriptionAssignedConnectorData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        endpoint:
+          type: string
+      additionalProperties: false
+    SubscriptionExternalServiceData:
+      type: object
+      properties:
+        trusted_issuer:
+          type: string
+        participant_id:
+          type: string
+          nullable: true
+        iatp_id:
+          type: string
+          nullable: true
+        did_resolver:
+          type: string
+        decentralIdentityManagementAuthUrl:
+          type: string
+        decentralIdentityManagementServiceUrl:
+          type: string
+          nullable: true
+      additionalProperties: false
+    SubscriptionStatusSorting:
+      enum:
+        - CompanyNameAsc
+        - CompanyNameDesc
+        - OfferIdAsc
+        - OfferIdDesc
+      type: string
+    SubscriptionTechnicalUserData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    TechnicalUserInfoData:
+      type: object
+      properties:
+        technicalUserId:
+          type: string
+          format: uuid
+        technicalUserPermissions:
+          type: array
+          items:
+            type: string
+        technicalUserSecret:
+          type: string
+          nullable: true
+        technicalClientId:
+          type: string
+          nullable: true
+      additionalProperties: false
+    TechnicalUserProfileData:
+      type: object
+      properties:
+        technicalUserProfileId:
+          type: string
+          format: uuid
+          nullable: true
+        userRoleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      additionalProperties: false
+    TechnicalUserProfileInformation:
+      type: object
+      properties:
+        technicalUserProfileId:
+          type: string
+          format: uuid
+        userRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleInformation'
+      additionalProperties: false
+    UpdateTenantData:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The new url
+      additionalProperties: false
+      description: Data to update the offer subscription url
+    UrlInformation:
+      type: object
+      properties:
+        httpMethods:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+    UserRoleInformation:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        roleName:
+          type: string
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: [ ]

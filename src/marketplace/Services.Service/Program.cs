@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
@@ -32,10 +33,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Services.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
-var VERSION = "v2";
+var version = AssemblyExtension.GetApplicationVersion();
 
 await WebAppHelper
-    .BuildAndRunWebApplicationAsync<Program>(args, "services", VERSION, builder =>
+    .BuildAndRunWebApplicationAsync<Program>(args, "services", version, builder =>
     {
         builder.Services
             .AddPublicInfos();

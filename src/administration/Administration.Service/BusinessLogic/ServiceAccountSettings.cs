@@ -57,9 +57,7 @@ public static class ServiceAccountSettingsExtensions
     {
         services.AddOptions<ServiceAccountSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

@@ -52,9 +52,7 @@ public static class NetworkRegistrationHandlerExtensions
         var section = config.GetSection("NetworkRegistration");
         services.AddOptions<NetworkRegistrationProcessSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
 
         return services
             .AddTransient<IUserProvisioningService, UserProvisioningService>()

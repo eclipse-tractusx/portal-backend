@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -23,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 
@@ -32,7 +32,7 @@ public static class CustodianServiceCollectionExtension
     {
         services.AddOptions<CustodianSettings>()
             .Bind(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         services.AddTransient<LoggingHandler<CustodianService>>();
 
         var sp = services.BuildServiceProvider();

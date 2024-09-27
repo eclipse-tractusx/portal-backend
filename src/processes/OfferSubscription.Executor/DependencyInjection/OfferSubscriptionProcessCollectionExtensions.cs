@@ -33,8 +33,7 @@ public static class OfferSubscriptionProcessCollectionExtensions
         var section = config.GetSection("OfferSubscriptionProcess");
         services.AddOptions<OfferSubscriptionsProcessSettings>()
             .Bind(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
 
         return services
             .AddOfferProviderService(config)

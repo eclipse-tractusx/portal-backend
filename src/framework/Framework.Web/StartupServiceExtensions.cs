@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Serialization;
@@ -67,10 +68,14 @@ public static class StartupServiceExtensions
         });
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        services
+        var options = services
             .AddOptions<JwtBearerOptions>()
-            .Bind(configuration.GetSection("JwtBearerOptions"))
-            .ValidateOnStart();
+            .Bind(configuration.GetSection("JwtBearerOptions"));
+
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options.ValidateOnStart();
+        }
 
         services.AddHealthChecks()
             .AddCheck<JwtBearerConfigurationHealthCheck>("JwtBearerConfiguration", tags: ["keycloak"]);

@@ -91,10 +91,7 @@ public static class RegistrationSettingsExtension
     {
         services.AddOptions<RegistrationSettings>()
             .Bind(section)
-            .ValidateDataAnnotations()
-            .ValidateEnumEnumeration(section)
-            .ValidateDistinctValues(section)
-            .ValidateOnStart();
+            .EnvironmentalValidation(section);
         return services;
     }
 }

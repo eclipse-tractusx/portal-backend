@@ -134,7 +134,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    public async Task<NoContentResult> UploadOfferAssignedAppLeadImageDocumentByIdAsync([FromRoute] Guid appId, IFormFile document, CancellationToken cancellationToken)
     {
         await _businessLogic.UploadOfferAssignedAppLeadImageDocumentByIdAsync(appId, document, cancellationToken);
         return NoContent();
@@ -251,7 +251,7 @@ public class AppChangeController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
-    public async Task<NoContentResult> CreateActiveAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, [FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken)
+    public async Task<NoContentResult> CreateActiveAppDocumentAsync([FromRoute] Guid appId, [FromRoute] DocumentTypeId documentTypeId, IFormFile document, CancellationToken cancellationToken)
     {
         await _businessLogic.CreateActiveAppDocumentAsync(appId, documentTypeId, document, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();

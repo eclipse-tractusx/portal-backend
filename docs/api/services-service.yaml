@@ -1,0 +1,2835 @@
+openapi: 3.0.1
+info:
+  title: Org.Eclipse.TractusX.Portal.Backend.Services.Service
+  version: v2.3.0-alpha.1
+paths:
+  /api/services/errormessage:
+    get:
+      tags:
+        - ErrorMessage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorMessageType'
+        '500':
+          description: Internal Server Error
+  /api/info:
+    get:
+      tags:
+        - OpenInformation
+      summary: ' (Authorization required)'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceChange/{serviceId}/deactivateService':
+    put:
+      tags:
+        - ServiceChange
+      summary: 'Deactivate the OfferStatus By serviceId (Authorization required - Roles: update_service_offering)'
+      description: 'Example: PUT: /api/service/servicechanges/3c77a395-a7e7-40f2-a519-ac16498e0a79/deactivateService'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id of the service that should be deactive
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 3c77a395-a7e7-40f2-a519-ac16498e0a79
+      responses:
+        '204':
+          description: The Service Successfully Deactivated
+        '400':
+          description: invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: If service does not exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Missing Permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in incorrect state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/ServiceRelease/agreementData:
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Return Agreement Data for offer_type_id Service (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/servicerelease/agreementData'
+      responses:
+        '200':
+          description: Returns the Cpllection of agreement data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgreementDocumentData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/inReview/{serviceId}':
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Retrieves service details for an offer referenced by id. (Authorization required - Roles: approve_service_release,decline_service_release)'
+      description: 'Example: GET: /api/services/servicerelease/inReview/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      operationId: GetServiceDetailsByIdAsync
+      parameters:
+        - name: serviceId
+          in: path
+          description: ID of the offer to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '200':
+          description: Returns the requested service details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceData'
+        '404':
+          description: service not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: service is inCorrect Status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/ServiceRelease/serviceTypes:
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Retrieve Service Type Data (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/servicerelease/serviceTypes'
+      responses:
+        '200':
+          description: Returns the Service Type.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceTypeData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/consent/{serviceId}':
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Gets the agreement consent status for the given service id (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/servicerelease/consent/{serviceId}'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the offer Agreement Consent data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferAgreementConsent'
+        '404':
+          description: offer does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with offer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}/serviceStatus':
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Return app detail with status (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/servicerelease/{serviceId}/serviceStatus'
+      operationId: GetServiceDetailsForStatusAsync
+      parameters:
+        - name: serviceId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Return the Offer and status data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderResponse'
+        '404':
+          description: App does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User not associated with provider company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/consent/{serviceId}/agreementConsents':
+    post:
+      tags:
+        - ServiceRelease
+      summary: 'Update or Insert Consent (Authorization required - Roles: add_service_offering)'
+      description: 'Example: POST: /api/services/servicerelease/consent/{serviceId}/agreementConsents'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id of the service
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: agreement consent data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAgreementConsent'
+      responses:
+        '200':
+          description: Successfully submitted consent to agreements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsentStatusData'
+        '404':
+          description: Service does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Either the user was not found or the user is not assignable to the given application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Service Id is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/ServiceRelease/inReview:
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Retrieves all in review status service in the marketplace . (Authorization required - Roles: approve_service_release,decline_service_release)'
+      description: 'Example: GET: /api/services/servicerelease/inReview'
+      parameters:
+        - name: page
+          in: query
+          description: page index start from 0
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: size to get number of records
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          description: sort by
+          schema:
+            $ref: '#/components/schemas/OfferSorting'
+        - name: serviceName
+          in: query
+          description: search by service name
+          schema:
+            type: string
+        - name: languageShortName
+          in: query
+          description: Filter by language shortname
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/ServiceReleaseStatusIdFilter'
+      responses:
+        '200':
+          description: Returns the list of all in review status marketplace service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InReviewServiceDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/documents/{documentId}':
+    delete:
+      tags:
+        - ServiceRelease
+      summary: 'Delete Document Assigned to Offer (Authorization required - Roles: add_service_offering)'
+      description: 'Example: DELETE: /api/services/servicerelease/documents/{documentId}'
+      parameters:
+        - name: documentId
+          in: path
+          description: ID of the document to be deleted.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '404':
+          description: Record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not allowed to delete the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Document or App is in InCorrect Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: parameters are invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/ServiceRelease/addservice:
+    post:
+      tags:
+        - ServiceRelease
+      summary: 'Creates a new service offering. (Authorization required - Roles: add_service_offering)'
+      description: 'Example: POST: /api/services/servicerelease/addservice'
+      requestBody:
+        description: The data for the new service offering.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceOfferingData'
+      responses:
+        '201':
+          description: Returns the newly created service id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferProviderResponse'
+        '400':
+          description: The given service offering data were invalid i.e At lease one Service Type Id is missing or Title is less than three character or IamUser is not assignable to company user or SalesManager does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}':
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Updates the service (Authorization required - Roles: update_service_offering)'
+      description: 'Example: PUT: /api/services/servicerelease/{serviceId}'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id for the service to update.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      requestBody:
+        description: The request data to update the service
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceUpdateRequestData'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Offer Subscription is not in state created or user is not in the same company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User don't have permission to change the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Service is in inCorrect state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: Service was successfully updated.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}/submit':
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Submit an Service for release (Authorization required - Roles: add_service_offering)'
+      description: 'Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/submit'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ID of the service.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: The service was successfully submitted for release.
+        '400':
+          description: 'Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: service does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}/approveService':
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Approve Service to change status from IN_REVIEW to Active and create notification (Authorization required - Roles: approve_service_release)'
+      description: 'Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/approveService'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: The service was successfully submitted to Active State.
+        '404':
+          description: service does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Service is in InCorrect Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}/declineService':
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Declines the service request (Authorization required - Roles: decline_service_release)'
+      description: 'Example: PUT: /api/services/servicerelease/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/decline'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id of the service that should be declined
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      requestBody:
+        description: the data of the decline request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferDeclineRequest'
+      responses:
+        '204':
+          description: NoContent.
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: If service does not exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User doest not have permission to change
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer Type is in inCorrect state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents':
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Upload document for active service in the marketplace for given serviceId for same company as user (Authorization required - Roles: add_service_offering)'
+      description: 'Example: PUT: /api/services/servicerelease/updateservicedoc/{serviceId}/documentType/{documentTypeId}/documents'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: documentTypeId
+          in: path
+          description: ''
+          required: true
+          schema:
+            $ref: '#/components/schemas/DocumentTypeId'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+      responses:
+        '204':
+          description: Successfully uploaded the document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: service does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user is not assigned with the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Offer is in inCorrect State.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Only PDF files are supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/ServiceRelease/{serviceId}/technical-user-profiles':
+    get:
+      tags:
+        - ServiceRelease
+      summary: 'Retrieve service specific stored technical user profile configured to get created if a related service subscription is getting activated. (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/servicerelease/{serviceId}/technical-user-profiles'
+      parameters:
+        - name: serviceId
+          in: path
+          description: id of the service to receive the technical user profiles for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns a list of Technical User profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TechnicalUserProfileInformation'
+        '403':
+          description: Requesting user is not part of the providing company for the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    put:
+      tags:
+        - ServiceRelease
+      summary: 'Creates and updates the technical user profiles (Authorization required - Roles: add_service_offering)'
+      description: 'Example: PUT: /api/services/servicerelease/{serviceId}/technical-user-profiles'
+      parameters:
+        - name: serviceId
+          in: path
+          description: id of the service to receive the technical user profiles for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The data for the update of the technical user profile
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TechnicalUserProfileData'
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoContentResult'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requesting user is not part of the providing company for the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '200':
+          description: Returns a list of profiles
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/active:
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves all active services in the marketplace. (Authorization required - Roles: view_service_offering)'
+      description: 'Example: GET: /api/services/active'
+      parameters:
+        - name: page
+          in: query
+          description: Optional the page of the services.
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: 'Amount of services that should be returned, default is 15.'
+          schema:
+            type: integer
+            format: int32
+            default: 15
+          example: 15
+        - name: sorting
+          in: query
+          description: Optional Sorting of the pagination
+          schema:
+            $ref: '#/components/schemas/ServiceOverviewSorting'
+          example: ProviderAsc
+        - name: serviceTypeId
+          in: query
+          description: Optional filter for service type ids
+          schema:
+            $ref: '#/components/schemas/ServiceTypeId'
+      responses:
+        '200':
+          description: Returns the list of all active services.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceOverviewDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{serviceId}/subscribe':
+    post:
+      tags:
+        - Services
+      summary: 'Adds a new service subscription. (Authorization required - Roles: subscribe_service)'
+      description: 'Example: POST: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645/subscribe'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id for the service the user wants to subscribe to.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      requestBody:
+        description: The agreement consent data
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/OfferAgreementConsentData'
+      responses:
+        '201':
+          description: Returns success
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+        '400':
+          description: Company or company user wasn't assigned to the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No Service was found for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/subscription/{subscriptionId}':
+    get:
+      tags:
+        - Services
+      summary: 'Gets the Subscription Detail Data (Authorization required - Roles: view_service_offering)'
+      description: 'Example: Get: /api/services/subscription/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C646'
+      operationId: GetSubscriptionDetail
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Id for the subscription the wants to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C646
+      responses:
+        '200':
+          description: Returns the subscription details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionDetailData'
+        '404':
+          description: Service was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{serviceId}':
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves service offer details for the respective service id. (Authorization required - Roles: view_service_offering)'
+      description: 'Example: Get: /api/services/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      operationId: GetServiceDetails
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id for the service the wants to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: lang
+          in: query
+          description: 'OPTIONAL: Optional two character language specifier for the service description. Default response is set to english.'
+          schema:
+            type: string
+            default: en
+          example: de
+      responses:
+        '200':
+          description: Returns the service details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDetailResponse'
+        '404':
+          description: Service was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/serviceConsent/{serviceConsentId}':
+    get:
+      tags:
+        - Services
+      summary: 'Gets the service agreement consent details. (Authorization required - Roles: view_service_offering)'
+      description: 'Example: Get: /api/services/serviceConsent/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      operationId: GetServiceAgreementConsentDetail
+      parameters:
+        - name: serviceConsentId
+          in: path
+          description: Id for the service consent to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '200':
+          description: Returns the service consent details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentDetailData'
+        '404':
+          description: Consent was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/serviceAgreementData/{serviceId}':
+    get:
+      tags:
+        - Services
+      summary: 'Gets all agreements (Authorization required - Roles: subscribe_service)'
+      description: 'Example: GET: /api/services/serviceAgreementData/D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645'
+      parameters:
+        - name: serviceId
+          in: path
+          description: Id for the service consent to retrieve.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '200':
+          description: Returns the service agreement data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/autoSetup:
+    post:
+      tags:
+        - Services
+      summary: 'Auto setup the service (Authorization required - Roles: activate_subscription)'
+      description: 'Example: POST: /api/services/autoSetup'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAutoSetupData'
+      responses:
+        '200':
+          description: Returns the service agreement data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferAutoSetupResponseData'
+        '400':
+          description: Offer Subscription is pending or not the providing company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+      deprecated: true
+  /api/services/start-autoSetup:
+    post:
+      tags:
+        - Services
+      summary: 'Auto setup the app (Authorization required - Roles: activate_subscription)'
+      description: 'Example: POST: /api/apps/start-autoSetup'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferAutoSetupData'
+      responses:
+        '204':
+          description: The auto setup has successfully been started.
+        '400':
+          description: Offer Subscription is pending or not the providing company.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer Subscription not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/provided/subscription-status:
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves subscription statuses of provided services of the currently logged in user''s company. (Authorization required - Roles: view_service_subscriptions)'
+      description: 'Example: GET: /api/services/provided/subscription-status'
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          schema:
+            $ref: '#/components/schemas/SubscriptionStatusSorting'
+        - name: statusId
+          in: query
+          schema:
+            $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        - name: offerId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: companyName
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns list of applicable service subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferCompanySubscriptionStatusResponseResponse'
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{serviceId}/serviceDocuments/{documentId}':
+    get:
+      tags:
+        - Services
+      summary: 'Retrieve Document Content for Service by ID (Authorization required - Roles: view_documents)'
+      description: 'Example: GET: /api/services/{serviceId}/serviceDocuments/{documentId}'
+      parameters:
+        - name: serviceId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: documentId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the document Content
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+            image/tiff:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Document / Service id not found or document type not supported.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: document not found.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: UnSupported Media Type.
+          content:
+            image/jpeg:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/gif:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            image/tiff:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/provided:
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves all in review status service in the marketplace . (Authorization required - Roles: add_service_offering)'
+      description: 'Example: GET: /api/services/provided'
+      parameters:
+        - name: page
+          in: query
+          description: page index start from 0
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: size to get number of records
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: sorting
+          in: query
+          description: sort by
+          schema:
+            $ref: '#/components/schemas/OfferSorting'
+        - name: offerName
+          in: query
+          description: search by status Id
+          schema:
+            type: string
+        - name: statusId
+          in: query
+          description: search by status Id
+          schema:
+            $ref: '#/components/schemas/ServiceStatusIdFilter'
+      responses:
+        '200':
+          description: Returns the list of service filtered by offer status Id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllOfferStatusDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{serviceId}/subscription/{subscriptionId}/provider':
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: service_management)'
+      description: 'Example: GET: /api/services/{serviceId}/subscription/{subscriptionId}/provider'
+      parameters:
+        - name: serviceId
+          in: path
+          description: id of the service to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: subscriptionId
+          in: path
+          description: id of the subscription to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the subscription details for the provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderSubscriptionDetailData'
+        '403':
+          description: User's company does not provide the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No service or subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{serviceId}/subscription/{subscriptionId}/subscriber':
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: subscribe_service)'
+      description: 'Example: GET: /api/services/{serviceId}/subscription/{subscriptionId}/subscriber'
+      parameters:
+        - name: serviceId
+          in: path
+          description: id of the service to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: subscriptionId
+          in: path
+          description: id of the subscription to receive the details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Returns the subscription details for the subscriber
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriberSubscriptionDetailData'
+        '403':
+          description: User's company does not provide the service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No service or subscription found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/services/subscribed/subscription-status:
+    get:
+      tags:
+        - Services
+      summary: 'Retrieves subscription statuses of services. (Authorization required - Roles: view_service_subscriptions)'
+      description: 'Example: GET: /api/services/subscribed/subscription-status'
+      parameters:
+        - name: page
+          in: query
+          description: The page that should be displayed
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: The size per page of elements that should be returned
+          schema:
+            type: integer
+            format: int32
+            default: 15
+        - name: status
+          in: query
+          description: 'Filter for the offer subscription status. If not set, all elements will be returned'
+          schema:
+            $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        - name: name
+          in: query
+          description: Optional search query to filter for the name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns list of applicable service subscription statuses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferSubscriptionStatusDetailDataResponse'
+        '400':
+          description: If sub claim is empty/invalid or user does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/services/{subscriptionId}/unsubscribe':
+    put:
+      tags:
+        - Services
+      summary: 'Unsubscribes an service from the current user''s company''s subscriptions. (Authorization required - Roles: unsubscribe_services)'
+      description: 'Example: PUT: /api/service/{subscriptionId}/unsubscribe'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: ID of the subscription to unsubscribe from.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: The service was successfully unsubscribed from.
+        '400':
+          description: 'Either the sub claim is empty/invalid, user does not exist or the subscription might not have the correct status or the companyID is incorrect.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/subscription/{subscriptionId}/activate':
+    put:
+      tags:
+        - Services
+      summary: 'Activates a pending service subscription. (Authorization required - Roles: activate_subscription)'
+      description: 'Example: PUT: /api/services/supscription/{subscriptiondId}/activate'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: ID of the subscription to activate.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: Service subscription was successfully activated.
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+components:
+  schemas:
+    AgreementConsentStatus:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    AgreementData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        mandatory:
+          type: boolean
+      additionalProperties: false
+    AgreementDocumentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        agreementLink:
+          type: string
+          nullable: true
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+        mandatory:
+          type: boolean
+      additionalProperties: false
+    AllOfferStatusData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        leadPictureId:
+          type: string
+          format: uuid
+          nullable: true
+        provider:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferStatusId'
+        lastChanged:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    AllOfferStatusDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllOfferStatusData'
+      additionalProperties: false
+    AppUseCaseData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+      additionalProperties: false
+    ClientInfoData:
+      type: object
+      properties:
+        clientId:
+          type: string
+        clientUrl:
+          type: string
+      additionalProperties: false
+    CompanySubscriptionStatus:
+      type: object
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        subscriptionId:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        country:
+          type: string
+          nullable: true
+        bpnNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        technicalUser:
+          type: boolean
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+      additionalProperties: false
+    ConsentDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        companyUserId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+        agreementName:
+          type: string
+      additionalProperties: false
+    ConsentStatusData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    ConsentStatusId:
+      enum:
+        - ACTIVE
+        - INACTIVE
+      type: string
+    DocumentData:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        documentName:
+          type: string
+      additionalProperties: false
+    DocumentTypeId:
+      enum:
+        - CX_FRAME_CONTRACT
+        - COMMERCIAL_REGISTER_EXTRACT
+        - APP_CONTRACT
+        - CONFORMITY_APPROVAL_REGISTRATION
+        - ADDITIONAL_DETAILS
+        - APP_LEADIMAGE
+        - APP_IMAGE
+        - SELF_DESCRIPTION
+        - APP_TECHNICAL_INFORMATION
+        - CONFORMITY_APPROVAL_CONNECTOR
+        - CONFORMITY_APPROVAL_BUSINESS_APPS
+        - CONFORMITY_APPROVAL_SERVICES
+        - SERVICE_LEADIMAGE
+        - PRESENTATION
+        - COMPANY_CERTIFICATE
+      type: string
+    ErrorDetails:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorParameter'
+      additionalProperties: false
+    ErrorMessageCode:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+      additionalProperties: false
+    ErrorMessageType:
+      type: object
+      properties:
+        errorType:
+          type: string
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorMessageCode'
+      additionalProperties: false
+    ErrorParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        errorId:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+          nullable: true
+      additionalProperties: false
+    InReviewServiceData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OfferStatusId'
+        provider:
+          type: string
+        description:
+          type: string
+      additionalProperties: false
+    InReviewServiceDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/InReviewServiceData'
+      additionalProperties: false
+    LicenseTypeId:
+      enum:
+        - COTS
+        - FOSS
+      type: string
+    LocalizedDescription:
+      type: object
+      properties:
+        languageCode:
+          type: string
+        longDescription:
+          type: string
+        shortDescription:
+          type: string
+      additionalProperties: false
+    Metadata:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        contentSize:
+          type: integer
+          format: int32
+      additionalProperties: false
+    NoContentResult:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+      additionalProperties: false
+    OfferAgreement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        consentStatus:
+          type: string
+          nullable: true
+      additionalProperties: false
+    OfferAgreementConsent:
+      type: object
+      properties:
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementConsentStatus'
+      additionalProperties: false
+    OfferAgreementConsentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatusId:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    OfferAutoSetupData:
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        offerUrl:
+          type: string
+      additionalProperties: false
+    OfferAutoSetupResponseData:
+      type: object
+      properties:
+        technicalUserInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TechnicalUserInfoData'
+        clientInfo:
+          $ref: '#/components/schemas/ClientInfoData'
+      additionalProperties: false
+    OfferCompanySubscriptionStatusResponse:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        offerName:
+          type: string
+          nullable: true
+        companySubscriptionStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySubscriptionStatus'
+        image:
+          type: string
+          format: uuid
+          nullable: true
+      additionalProperties: false
+    OfferCompanySubscriptionStatusResponseResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferCompanySubscriptionStatusResponse'
+      additionalProperties: false
+    OfferDeclineRequest:
+      type: object
+      properties:
+        message:
+          type: string
+      additionalProperties: false
+    OfferProviderResponse:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        leadPictureId:
+          type: string
+          format: uuid
+        providerName:
+          type: string
+          nullable: true
+        useCase:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUseCaseData'
+          nullable: true
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferAgreement'
+        supportedLanguageCodes:
+          type: array
+          items:
+            type: string
+        price:
+          type: string
+          nullable: true
+        images:
+          type: array
+          items:
+            type: string
+            format: uuid
+        providerUri:
+          type: string
+          nullable: true
+        contactEmail:
+          type: string
+          nullable: true
+        contactNumber:
+          type: string
+          nullable: true
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+        salesManagerId:
+          type: string
+          format: uuid
+          nullable: true
+        privacyPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivacyPolicyId'
+        serviceTypeIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+          nullable: true
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      additionalProperties: false
+    OfferSorting:
+      enum:
+        - DateAsc
+        - DateDesc
+        - NameAsc
+        - NameDesc
+      type: string
+    OfferStatusId:
+      enum:
+        - CREATED
+        - IN_REVIEW
+        - ACTIVE
+        - INACTIVE
+      type: string
+    OfferSubscriptionStateDetailData:
+      type: object
+      properties:
+        offerSubscriptionId:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    OfferSubscriptionStatusDetailData:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        subscriptionId:
+          type: string
+          format: uuid
+        image:
+          type: string
+          format: uuid
+          nullable: true
+      additionalProperties: false
+    OfferSubscriptionStatusDetailDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferSubscriptionStatusDetailData'
+      additionalProperties: false
+    OfferSubscriptionStatusId:
+      enum:
+        - PENDING
+        - ACTIVE
+        - INACTIVE
+      type: string
+    PrivacyPolicyId:
+      enum:
+        - COMPANY_DATA
+        - USER_DATA
+        - LOCATION
+        - BROWSER_HISTORY
+        - NONE
+      type: string
+    ProcessStepTypeId:
+      enum:
+        - MANUAL_VERIFY_REGISTRATION
+        - CREATE_BUSINESS_PARTNER_NUMBER_PUSH
+        - CREATE_BUSINESS_PARTNER_NUMBER_PULL
+        - CREATE_BUSINESS_PARTNER_NUMBER_MANUAL
+        - CREATE_IDENTITY_WALLET
+        - RETRIGGER_IDENTITY_WALLET
+        - START_CLEARING_HOUSE
+        - RETRIGGER_CLEARING_HOUSE
+        - AWAIT_CLEARING_HOUSE_RESPONSE
+        - START_SELF_DESCRIPTION_LP
+        - RETRIGGER_SELF_DESCRIPTION_LP
+        - ACTIVATE_APPLICATION
+        - RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH
+        - RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL
+        - MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE
+        - START_OVERRIDE_CLEARING_HOUSE
+        - AWAIT_SELF_DESCRIPTION_LP_RESPONSE
+        - MANUAL_DECLINE_APPLICATION
+        - CREATE_DIM_WALLET
+        - AWAIT_DIM_RESPONSE_RESPONSE
+        - RETRIGGER_CREATE_DIM_WALLET
+        - VALIDATE_DID_DOCUMENT
+        - RETRIGGER_VALIDATE_DID_DOCUMENT
+        - REQUEST_BPN_CREDENTIAL
+        - AWAIT_BPN_CREDENTIAL_RESPONSE
+        - REQUEST_MEMBERSHIP_CREDENTIAL
+        - AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE
+        - TRANSMIT_BPN_DID
+        - RETRIGGER_TRANSMIT_DID_BPN
+        - RETRIGGER_REQUEST_BPN_CREDENTIAL
+        - RETRIGGER_REQUEST_MEMBERSHIP_CREDENTIAL
+        - TRIGGER_PROVIDER
+        - AWAIT_START_AUTOSETUP
+        - OFFERSUBSCRIPTION_CLIENT_CREATION
+        - SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION
+        - OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+        - ACTIVATE_SUBSCRIPTION
+        - TRIGGER_PROVIDER_CALLBACK
+        - RETRIGGER_PROVIDER
+        - RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION
+        - RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION
+        - RETRIGGER_PROVIDER_CALLBACK
+        - MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION
+        - OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
+        - RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER
+        - SYNCHRONIZE_USER
+        - RETRIGGER_SYNCHRONIZE_USER
+        - TRIGGER_CALLBACK_OSP_SUBMITTED
+        - TRIGGER_CALLBACK_OSP_APPROVED
+        - TRIGGER_CALLBACK_OSP_DECLINED
+        - RETRIGGER_CALLBACK_OSP_SUBMITTED
+        - RETRIGGER_CALLBACK_OSP_APPROVED
+        - RETRIGGER_CALLBACK_OSP_DECLINED
+        - MANUAL_DECLINE_OSP
+        - REMOVE_KEYCLOAK_USERS
+        - RETRIGGER_REMOVE_KEYCLOAK_USERS
+        - SEND_MAIL
+        - RETRIGGER_SEND_MAIL
+        - INVITATION_CREATE_CENTRAL_IDP
+        - INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT
+        - INVITATION_ADD_REALM_ROLE
+        - INVITATION_CREATE_SHARED_REALM
+        - INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER
+        - INVITATION_UPDATE_CENTRAL_IDP_URLS
+        - INVITATION_CREATE_SHARED_CLIENT
+        - INVITATION_ENABLE_CENTRAL_IDP
+        - INVITATION_CREATE_DATABASE_IDP
+        - INVITATION_CREATE_USER
+        - RETRIGGER_INVITATION_CREATE_CENTRAL_IDP
+        - RETRIGGER_INVITATION_CREATE_SHARED_IDP_SERVICE_ACCOUNT
+        - RETRIGGER_INVITATION_ADD_REALM_ROLE
+        - RETRIGGER_INVITATION_CREATE_SHARED_REALM
+        - RETRIGGER_INVITATION_CREATE_CENTRAL_IDP_ORG_MAPPER
+        - RETRIGGER_INVITATION_UPDATE_CENTRAL_IDP_URLS
+        - RETRIGGER_INVITATION_CREATE_SHARED_CLIENT
+        - RETRIGGER_INVITATION_ENABLE_CENTRAL_IDP
+        - RETRIGGER_INVITATION_CREATE_USER
+        - RETRIGGER_INVITATION_CREATE_DATABASE_IDP
+        - CREATE_DIM_TECHNICAL_USER
+        - RETRIGGER_CREATE_DIM_TECHNICAL_USER
+        - AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
+        - DELETE_DIM_TECHNICAL_USER
+        - AWAIT_DELETE_DIM_TECHNICAL_USER_RESPONSE
+        - RETRIGGER_DELETE_DIM_TECHNICAL_USER
+        - DELETE_CENTRAL_USER
+        - RETRIGGER_DELETE_CENTRAL_USER
+        - DELETE_COMPANYUSER_ASSIGNED_PROCESS
+        - DELETE_IDP_SHARED_REALM
+        - RETRIGGER_DELETE_IDP_SHARED_REALM
+        - DELETE_IDP_SHARED_SERVICEACCOUNT
+        - RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT
+        - DELETE_CENTRAL_IDENTITY_PROVIDER
+        - RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER
+        - DELETE_IDENTITY_PROVIDER
+        - SELF_DESCRIPTION_CONNECTOR_CREATION
+        - SELF_DESCRIPTION_COMPANY_CREATION
+        - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
+        - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
+      type: string
+    ProviderSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        customer:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+      additionalProperties: false
+    ServiceData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the service.
+          format: uuid
+        title:
+          type: string
+          description: Title or name of the service.
+        serviceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+          description: Collection of the assigned serviceTypeIds
+        provider:
+          type: string
+          description: Provider of the service.
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+          description: The description of the service.
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: documents assigned to service.
+        providerUri:
+          type: string
+          description: Provider Uri of the service
+        contactEmail:
+          type: string
+          description: Contact Email of the service.
+          nullable: true
+        contactNumber:
+          type: string
+          description: Contact Number of the service.
+          nullable: true
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        offerStatus:
+          $ref: '#/components/schemas/OfferStatusId'
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Status of the offer
+      additionalProperties: false
+      description: View model of an application's detailed data specific for service.
+    ServiceDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID of the app.
+          format: uuid
+        title:
+          type: string
+          description: Title or name of the app.
+          nullable: true
+        provider:
+          type: string
+          description: Provider of the app.
+        contactEmail:
+          type: string
+          description: Contact email address.
+          nullable: true
+        description:
+          type: string
+          description: The description of the service.
+          nullable: true
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        price:
+          type: string
+          description: Pricing information of the app.
+        offerSubscriptionDetailData:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferSubscriptionStateDetailData'
+          description: Detail Data of the offer subscription
+        serviceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+          description: Collection of the assigned serviceTypeIds.
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: documents assigned to offer
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Technical User Profile
+      additionalProperties: false
+      description: View model of an application's detailed data specific for service.
+    ServiceOfferingData:
+      type: object
+      properties:
+        title:
+          type: string
+        price:
+          type: string
+        contactEmail:
+          type: string
+          nullable: true
+        salesManager:
+          type: string
+          format: uuid
+          nullable: true
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+        serviceTypeIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+        providerUri:
+          type: string
+          nullable: true
+      additionalProperties: false
+    ServiceOverviewData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        contactEmail:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        licenseType:
+          $ref: '#/components/schemas/LicenseTypeId'
+        price:
+          type: string
+        serviceTypeIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+      additionalProperties: false
+    ServiceOverviewDataResponse:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/Metadata'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceOverviewData'
+      additionalProperties: false
+    ServiceOverviewSorting:
+      enum:
+        - ProviderAsc
+        - ProviderDesc
+        - ReleaseDateAsc
+        - ReleaseDateDesc
+      type: string
+    ServiceProviderResponse:
+      type: object
+      properties:
+        title:
+          type: string
+          description: title of the offer
+          nullable: true
+        leadPictureId:
+          type: string
+          description: id of the lead picture
+          format: uuid
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+          description: the offer descriptions
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferAgreement'
+          description: the assigned agreements
+        price:
+          type: string
+          description: the offer price
+          nullable: true
+        images:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: list of the images
+        providerUri:
+          type: string
+          description: the provider uri
+          nullable: true
+        contactEmail:
+          type: string
+          description: contact email
+          nullable: true
+        contactNumber:
+          type: string
+          description: contact number
+          nullable: true
+        documents:
+          type: object
+          properties:
+            CX_FRAME_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMMERCIAL_REGISTER_EXTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_CONTRACT:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_REGISTRATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            ADDITIONAL_DETAILS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_IMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SELF_DESCRIPTION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            APP_TECHNICAL_INFORMATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_CONNECTOR:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_BUSINESS_APPS:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            CONFORMITY_APPROVAL_SERVICES:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            SERVICE_LEADIMAGE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            PRESENTATION:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+            COMPANY_CERTIFICATE:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentData'
+          additionalProperties: false
+          description: list of linked documents
+        salesManagerId:
+          type: string
+          description: id of the salesmanager
+          format: uuid
+          nullable: true
+        serviceTypeIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+          description: ids of the service types
+        technicalUserProfile:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: ids of the service types
+      additionalProperties: false
+      description: Response for the service creation
+    ServiceReleaseStatusIdFilter:
+      enum:
+        - InReview
+        - All
+      type: string
+      description: Filters the OfferStatusId information
+    ServiceStatusIdFilter:
+      enum:
+        - Active
+        - Inactive
+        - InReview
+        - WIP
+        - All
+      type: string
+      description: Filters the OfferStatusId information
+    ServiceTypeData:
+      type: object
+      properties:
+        serviceTypeId:
+          type: integer
+          format: int32
+        name:
+          type: string
+      additionalProperties: false
+    ServiceTypeId:
+      enum:
+        - DATASPACE_SERVICE
+        - CONSULTANCY_SERVICE
+      type: string
+    ServiceUpdateRequestData:
+      type: object
+      properties:
+        title:
+          type: string
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalizedDescription'
+        serviceTypeIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceTypeId'
+        price:
+          type: string
+        contactEmail:
+          type: string
+        salesManager:
+          type: string
+          format: uuid
+          nullable: true
+        providerUri:
+          type: string
+          nullable: true
+      additionalProperties: false
+    SubscriberSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        provider:
+          type: string
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+      additionalProperties: false
+    SubscriptionAssignedConnectorData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        endpoint:
+          type: string
+      additionalProperties: false
+    SubscriptionDetailData:
+      type: object
+      properties:
+        offerId:
+          type: string
+          format: uuid
+        offerName:
+          type: string
+        status:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    SubscriptionStatusSorting:
+      enum:
+        - CompanyNameAsc
+        - CompanyNameDesc
+        - OfferIdAsc
+        - OfferIdDesc
+      type: string
+    SubscriptionTechnicalUserData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    TechnicalUserInfoData:
+      type: object
+      properties:
+        technicalUserId:
+          type: string
+          format: uuid
+        technicalUserPermissions:
+          type: array
+          items:
+            type: string
+        technicalUserSecret:
+          type: string
+          nullable: true
+        technicalClientId:
+          type: string
+          nullable: true
+      additionalProperties: false
+    TechnicalUserProfileData:
+      type: object
+      properties:
+        technicalUserProfileId:
+          type: string
+          format: uuid
+          nullable: true
+        userRoleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      additionalProperties: false
+    TechnicalUserProfileInformation:
+      type: object
+      properties:
+        technicalUserProfileId:
+          type: string
+          format: uuid
+        userRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleInformation'
+      additionalProperties: false
+    UrlInformation:
+      type: object
+      properties:
+        httpMethods:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+    UserRoleInformation:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        roleName:
+          type: string
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: [ ]

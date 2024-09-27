@@ -32,6 +32,12 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
+  <Target Name="openapi" AfterTargets="Build">
+    <Message Text="generating openapi v$(Version)" Importance="high" />
+    <Exec Command="dotnet tool restore" />
+    <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/administration-service.yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/administration" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
       <PrivateAssets>all</PrivateAssets>

@@ -1,0 +1,1681 @@
+openapi: 3.0.1
+info:
+  title: Org.Eclipse.TractusX.Portal.Backend.Registration.Service
+  version: v2.3.0-alpha.1
+paths:
+  /api/registration/errormessage:
+    get:
+      tags:
+        - ErrorMessage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorMessageType'
+        '500':
+          description: Internal Server Error
+  /api/registration/Network/partnerRegistration/submit:
+    post:
+      tags:
+        - Network
+      summary: 'Submits the application (Authorization required - Roles: submit_registration)'
+      requestBody:
+        description: The agreements for the companyRoles
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerSubmitData'
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No registration found for the externalId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/Network/decline:
+    post:
+      tags:
+        - Network
+      summary: 'Declines the osp registration (Authorization required - Roles: decline_partner_registration)'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the company application
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Data with the information to decline
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclineOspData'
+      responses:
+        '200':
+          description: Empty response on success.
+        '404':
+          description: No registration found for the externalId.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/info:
+    get:
+      tags:
+        - OpenInformation
+      summary: ' (Authorization required)'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+            text/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrlInformation'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/legalEntityAddress/{bpn}':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets legal entity and address data from bpdm by its bpn (Authorization required - Roles: add_company_data)'
+      description: 'Example: Get: /api/registration/legalEntityAddress/BPNL000000055EPN'
+      parameters:
+        - name: bpn
+          in: path
+          description: The bpn to get the company for
+          required: true
+          schema:
+            type: string
+          example: BPNL000000055EPN
+      responses:
+        '200':
+          description: Returns the company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BpdmLegalAddressDto'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: The requested service responded with the given error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/documentType/{documentTypeId}/documents':
+    post:
+      tags:
+        - Registration
+      summary: 'Uploads a document (Authorization required - Roles: upload_documents)'
+      description: 'Example: Post: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents'
+      parameters:
+        - name: applicationId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: documentTypeId
+          in: path
+          description: ''
+          required: true
+          schema:
+            $ref: '#/components/schemas/DocumentTypeId'
+          example: '1'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+          application/json:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: file
+                  description: ''
+                  format: binary
+            encoding:
+              document:
+                style: form
+      responses:
+        '204':
+          description: Successfully uploaded the document
+        '403':
+          description: The user is not assigned with the CompanyApplication.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Input is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: Only PDF files are supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    get:
+      tags:
+        - Registration
+      summary: 'Gets documents for a specific document type and application (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/{applicationId}/documentType/{documentTypeId}/documents'
+      parameters:
+        - name: applicationId
+          in: path
+          description: The application to get the documents from.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+        - name: documentTypeId
+          in: path
+          description: Type of the documents to get.
+          required: true
+          schema:
+            $ref: '#/components/schemas/DocumentTypeId'
+          example: '1'
+      responses:
+        '200':
+          description: Returns a list of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UploadDocuments'
+        '403':
+          description: The user is not associated with invitation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Application not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/documents/{documentId}':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets a specific document by its id (Authorization required - Roles: view_documents)'
+      description: 'Example: Get: /api/registration/documents/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3'
+      parameters:
+        - name: documentId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4ad087bb-80a1-49d3-9ba9-da0b175cd4e3
+      responses:
+        '200':
+          description: Successfully uploaded the document
+          content:
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/File'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        '403':
+          description: User does not have the relevant rights to request for the document.
+          content:
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No document with the given id was found.
+          content:
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    delete:
+      tags:
+        - Registration
+      summary: 'Deletes the document with the given id (Authorization required - Roles: delete_documents)'
+      description: 'Example: Delete: /api/registration/documents/{documentId}'
+      parameters:
+        - name: documentId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4ad087bb-80a1-49d3-9ba9-da0b175cd4e3
+      responses:
+        '200':
+          description: Successfully deleted the document
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '400':
+          description: Incorrect document state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user is not assigned with the Company Application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The document was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Document deletion not allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/rolesComposite:
+    get:
+      tags:
+        - Registration
+      summary: 'Get all composite client roles (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/rolesComposite'
+      responses:
+        '200':
+          description: returns all composite client roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/applications:
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the applications with each status (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/applications'
+      responses:
+        '200':
+          description: Returns a list of company applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyApplicationWithStatus'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/applications/declinedata:
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the applications with each status, company-name and linked users (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/applications/declinedata'
+      responses:
+        '200':
+          description: Returns a list of company applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyApplicationDeclineData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/status':
+    put:
+      tags:
+        - Registration
+      summary: 'Sets the status of a specific application. (Authorization required - Roles: submit_registration)'
+      description: 'Example: Put: /api/registration/application/{applicationId}/status'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application which status should be set.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+        - name: status
+          in: query
+          description: The status that should be set
+          schema:
+            $ref: '#/components/schemas/CompanyApplicationStatusId'
+          example: '8'
+      responses:
+        '200':
+          description: Successfully set the status
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '400':
+          description: Status must be null.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: CompanyApplication was not found for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User Not associated wit application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the status of an application for the given id (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/status'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application to get the status from
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Returns the company application status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyApplicationStatusId'
+        '404':
+          description: CompanyApplication was not found for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with  application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/companyDetailsWithAddress':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the company of a specific application with its address (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyDetailsWithAddress'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application to get the company to.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Returns the company with its address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyDetailData'
+        '404':
+          description: CompanyApplication was not found for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with company application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    post:
+      tags:
+        - Registration
+      summary: 'Sets the company with its address for the given application id (Authorization required - Roles: add_company_data)'
+      description: 'Example: Post: /api/registration/application/{applicationId}/companyDetailsWithAddress'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application to set the company for.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      requestBody:
+        description: The company with its address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyDetailData'
+      responses:
+        '200':
+          description: Successfully set the company with its address
+        '400':
+          description: A request parameter was incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: CompanyApplication was not found for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with company application or application status is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/inviteNewUser':
+    post:
+      tags:
+        - Registration
+      summary: 'Invites the given user to the given application (Authorization required - Roles: invite_user)'
+      description: 'Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/inviteNewUser'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application a user should be invited to
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      requestBody:
+        description: The information of the user that should be invited
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationInfoWithMessage'
+      responses:
+        '200':
+          description: Successfully invited the user.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '400':
+          description: The user with the given email does already exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Service Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/companyRoleAgreementConsents':
+    post:
+      tags:
+        - Registration
+      summary: 'Post the agreement consent status for the given application. (Authorization required - Roles: sign_consent)'
+      description: 'Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyRoleAgreementConsents'
+      parameters:
+        - name: applicationId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyRoleAgreementConsents'
+      responses:
+        '200':
+          description: Successfully submitted consent to agreements
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '403':
+          description: Either the user was not found or the user is not assignable to the given application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Application does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Input is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the agreement consent statuses for the given application (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/companyRoleAgreementConsents'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application to get the agreement consent statuses for
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Return the company role agreement consents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyRoleAgreementConsents'
+        '403':
+          description: The user is not assignable to the given application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/companyRoleAgreementData:
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the company role agreement data (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/companyRoleAgreementData'
+      responses:
+        '200':
+          description: Returns the Company role agreement data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyRoleAgreementData'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/submitRegistration':
+    post:
+      tags:
+        - Registration
+      summary: 'Submits a registration (Authorization required - Roles: submit_registration)'
+      description: 'Example: Post: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/submitRegistration'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application to submit registration
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Successfully submitted the registration
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '404':
+          description: Application does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: User is not associated with company application or Application status is not fitting to the pre-requisite or Application is already closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/invitedusers':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets all invited users for a given application (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/invitedusers'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Returns all invited users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvitedUser'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/invitation/status:
+    put:
+      tags:
+        - Registration
+      summary: 'Sets the invitation status (Authorization required - Roles: view_registration)'
+      description: 'Example: Put: /api/registration/invitation/status'
+      responses:
+        '200':
+          description: Successfully sets the invitation status
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        '403':
+          description: The user id is not associated with invitation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/application/{applicationId}/registrationData':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the registration data for the given application id (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/application/4f0146c6-32aa-4bb1-b844-df7e8babdcb4/registrationData'
+      parameters:
+        - name: applicationId
+          in: path
+          description: The application id to get the registration data for.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 4f0146c6-32aa-4bb1-b844-df7e8babdcb4
+      responses:
+        '200':
+          description: Returns the registration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyRegistrationData'
+        '404':
+          description: The application does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: The user id is not associated with CompanyApplication.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Registration data null.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/company/companyRoles:
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the company roles and roles description (Authorization required - Roles: view_company_roles)'
+      description: 'Example: Get: /api/registration/company/companyRoles'
+      parameters:
+        - name: languageShortName
+          in: query
+          description: Optional two character language specifier for the roles description. Will be empty if not provided.
+          schema:
+            type: string
+          example: en
+      responses:
+        '200':
+          description: Returns the Company roles data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyRolesDetails'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/company/country/{alpha2Code}/uniqueidentifiers':
+    get:
+      tags:
+        - Registration
+      summary: 'Gets the company Identifier for Country Alpha2Code (Authorization required - Roles: view_registration)'
+      description: 'Example: Get: /api/registration/company/country/{alpha2Code}/uniqueidentifiers'
+      parameters:
+        - name: alpha2Code
+          in: path
+          description: Country Alpha2Code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the Company Identifier data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UniqueIdentifierData'
+        '404':
+          description: The Unique Identifier for Country was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/registrationDocuments/{documentId}':
+    get:
+      tags:
+        - Registration
+      summary: 'Retrieve Registration document of type CX_FRAME_CONTRACT (Authorization required - Roles: view_documents)'
+      description: 'Example: Get: /api/registration/registrationDocuments/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3'
+      parameters:
+        - name: documentId
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successfully fetched the document
+          content:
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/File'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+        '404':
+          description: No document with the given id was found.
+          content:
+            application/pdf:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/registration/applications/{applicationId}/declineregistration':
+    post:
+      tags:
+        - Registration
+      summary: 'Declines the registration verification for the application with the given id (Authorization required - Roles: view_registration)'
+      description: 'Example: POST: /api/registration/application/{applicationId}/declineregistration'
+      parameters:
+        - name: applicationId
+          in: path
+          description: Id of the application that should be declined
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Successfully declined the application
+        '404':
+          description: Application ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/registration/StaticData/countrylist:
+    get:
+      tags:
+        - StaticData
+      summary: Retrieve all app countries - short name (2digit) and countries long name
+      description: 'Example: GET: /api/registration/staticdata/countrylist'
+      responses:
+        '200':
+          description: Returns a list of all countries long name with language code i.e german and english
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CountryLongNameData'
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    AgreementConsentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          description: ''
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+      description: ''
+    AgreementConsentStatus:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    AgreementConsentStatusForRegistrationData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        consentStatus:
+          $ref: '#/components/schemas/ConsentStatusId'
+      additionalProperties: false
+    AgreementDocumentData:
+      type: object
+      properties:
+        agreementId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        agreementLink:
+          type: string
+          nullable: true
+        documentId:
+          type: string
+          format: uuid
+          nullable: true
+        mandatory:
+          type: boolean
+      additionalProperties: false
+    ApplicationChecklistData:
+      type: object
+      properties:
+        typeId:
+          $ref: '#/components/schemas/ApplicationChecklistEntryTypeId'
+        statusId:
+          $ref: '#/components/schemas/ApplicationChecklistEntryStatusId'
+      additionalProperties: false
+    ApplicationChecklistEntryStatusId:
+      enum:
+        - TO_DO
+        - IN_PROGRESS
+        - DONE
+        - FAILED
+        - SKIPPED
+      type: string
+    ApplicationChecklistEntryTypeId:
+      enum:
+        - REGISTRATION_VERIFICATION
+        - BUSINESS_PARTNER_NUMBER
+        - IDENTITY_WALLET
+        - BPNL_CREDENTIAL
+        - MEMBERSHIP_CREDENTIAL
+        - CLEARING_HOUSE
+        - SELF_DESCRIPTION_LP
+        - APPLICATION_ACTIVATION
+      type: string
+    BpdmAddressVersionDto:
+      type: object
+      properties:
+        characterSet:
+          $ref: '#/components/schemas/BpdmDataDto'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    BpdmAdministrativeAreaDto:
+      type: object
+      properties:
+        value:
+          type: string
+        shortName:
+          type: string
+        fipsCode:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    BpdmDataDto:
+      type: object
+      properties:
+        technicalKey:
+          type: string
+        name:
+          type: string
+      additionalProperties: false
+    BpdmGeographicCoordinatesDto:
+      type: object
+      properties:
+        longitude:
+          type: number
+          format: double
+        latitude:
+          type: number
+          format: double
+        altitude:
+          type: number
+          format: double
+          nullable: true
+      additionalProperties: false
+    BpdmLegalAddressDto:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/BpdmAddressVersionDto'
+        careOf:
+          type: string
+        contexts:
+          type: array
+          items:
+            type: string
+        country:
+          $ref: '#/components/schemas/BpdmDataDto'
+        administrativeAreas:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmAdministrativeAreaDto'
+        postCodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmPostCodeDto'
+        localities:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmLocalityDto'
+        thoroughfares:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmThoroughfareDto'
+        premises:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmPremiseDto'
+        postalDeliveryPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmPostalDeliveryPointDto'
+        geographicCoordinates:
+          $ref: '#/components/schemas/BpdmGeographicCoordinatesDto'
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmTechnicalKey'
+      additionalProperties: false
+    BpdmLocalityDto:
+      type: object
+      properties:
+        value:
+          type: string
+        shortName:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    BpdmPostCodeDto:
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+      additionalProperties: false
+    BpdmPostalDeliveryPointDto:
+      type: object
+      properties:
+        value:
+          type: string
+        shortName:
+          type: string
+        number:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    BpdmPremiseDto:
+      type: object
+      properties:
+        value:
+          type: string
+        shortName:
+          type: string
+        number:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    BpdmTechnicalKey:
+      type: object
+      properties:
+        technicalKey:
+          type: string
+        name:
+          type: string
+      additionalProperties: false
+    BpdmThoroughfareDto:
+      type: object
+      properties:
+        value:
+          type: string
+        name:
+          type: string
+        shortName:
+          type: string
+        number:
+          type: string
+        direction:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKey'
+        language:
+          $ref: '#/components/schemas/BpdmDataDto'
+      additionalProperties: false
+    CompanyApplicationDeclineData:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        applicationStatus:
+          $ref: '#/components/schemas/CompanyApplicationStatusId'
+        user:
+          type: string
+        companyName:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    CompanyApplicationStatusId:
+      enum:
+        - CREATED
+        - ADD_COMPANY_DATA
+        - INVITE_USER
+        - SELECT_COMPANY_ROLE
+        - UPLOAD_DOCUMENTS
+        - VERIFY
+        - SUBMITTED
+        - CONFIRMED
+        - DECLINED
+        - CANCELLED_BY_CUSTOMER
+      type: string
+    CompanyApplicationTypeId:
+      enum:
+        - INTERNAL
+        - EXTERNAL
+      type: string
+    CompanyApplicationWithStatus:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        applicationStatus:
+          $ref: '#/components/schemas/CompanyApplicationStatusId'
+        applicationType:
+          $ref: '#/components/schemas/CompanyApplicationTypeId'
+        applicationChecklist:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationChecklistData'
+      additionalProperties: false
+    CompanyDetailData:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        streetName:
+          type: string
+        countryAlpha2Code:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        shortName:
+          type: string
+          nullable: true
+        region:
+          type: string
+          nullable: true
+        streetAdditional:
+          type: string
+          nullable: true
+        streetNumber:
+          type: string
+          nullable: true
+        zipCode:
+          type: string
+          nullable: true
+        uniqueIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyUniqueIdData'
+        companyId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    CompanyRegistrationData:
+      type: object
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        shortName:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        region:
+          type: string
+          nullable: true
+        streetAdditional:
+          type: string
+          nullable: true
+        streetName:
+          type: string
+          nullable: true
+        streetNumber:
+          type: string
+          nullable: true
+        zipCode:
+          type: string
+          nullable: true
+        countryAlpha2Code:
+          type: string
+          nullable: true
+        companyRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyRoleId'
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementConsentStatusForRegistrationData'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistrationDocumentNames'
+        uniqueIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyUniqueIdData'
+      additionalProperties: false
+    CompanyRoleAgreementConsents:
+      type: object
+      properties:
+        companyRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyRoleId'
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementConsentStatus'
+      additionalProperties: false
+    CompanyRoleAgreementData:
+      type: object
+      properties:
+        companyRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyRoleData'
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementDocumentData'
+      additionalProperties: false
+    CompanyRoleData:
+      type: object
+      properties:
+        companyRole:
+          $ref: '#/components/schemas/CompanyRoleId'
+        descriptions:
+          type: object
+          additionalProperties:
+            type: string
+        agreementIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      additionalProperties: false
+    CompanyRoleId:
+      enum:
+        - ACTIVE_PARTICIPANT
+        - APP_PROVIDER
+        - SERVICE_PROVIDER
+        - OPERATOR
+        - ONBOARDING_SERVICE_PROVIDER
+      type: string
+    CompanyRolesDetails:
+      type: object
+      properties:
+        companyRole:
+          type: string
+        roleDescription:
+          type: string
+      additionalProperties: false
+    CompanyUniqueIdData:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/UniqueIdentifierId'
+        value:
+          type: string
+      additionalProperties: false
+    ConsentStatusId:
+      enum:
+        - ACTIVE
+        - INACTIVE
+      type: string
+    CountryLongNameData:
+      type: object
+      properties:
+        alpha2Code:
+          type: string
+        countryName:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryName'
+      additionalProperties: false
+    CountryName:
+      type: object
+      properties:
+        language:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+    DeclineOspData:
+      type: object
+      properties:
+        declineReason:
+          $ref: '#/components/schemas/OspDeclineReason'
+        message:
+          type: string
+          nullable: true
+      additionalProperties: false
+    DocumentTypeId:
+      enum:
+        - CX_FRAME_CONTRACT
+        - COMMERCIAL_REGISTER_EXTRACT
+        - APP_CONTRACT
+        - CONFORMITY_APPROVAL_REGISTRATION
+        - ADDITIONAL_DETAILS
+        - APP_LEADIMAGE
+        - APP_IMAGE
+        - SELF_DESCRIPTION
+        - APP_TECHNICAL_INFORMATION
+        - CONFORMITY_APPROVAL_CONNECTOR
+        - CONFORMITY_APPROVAL_BUSINESS_APPS
+        - CONFORMITY_APPROVAL_SERVICES
+        - SERVICE_LEADIMAGE
+        - PRESENTATION
+        - COMPANY_CERTIFICATE
+      type: string
+    ErrorDetails:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorParameter'
+      additionalProperties: false
+    ErrorMessageCode:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+      additionalProperties: false
+    ErrorMessageType:
+      type: object
+      properties:
+        errorType:
+          type: string
+        errorMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorMessageCode'
+      additionalProperties: false
+    ErrorParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        errorId:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+          nullable: true
+      additionalProperties: false
+    File:
+      type: object
+      additionalProperties: false
+    InvitationStatusId:
+      enum:
+        - CREATED
+        - PENDING
+        - ACCEPTED
+        - DECLINED
+      type: string
+    InvitedUser:
+      type: object
+      properties:
+        invitationStatus:
+          $ref: '#/components/schemas/InvitationStatusId'
+        emailId:
+          type: string
+          nullable: true
+        invitedUserRoles:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    OspDeclineReason:
+      enum:
+        - REGISTRATION_NOT_REQUESTED
+        - OPINION_CHANGED
+        - INACCAPTABLE_DATASPACE_RULES
+        - OTHERS
+      type: string
+    PartnerSubmitData:
+      type: object
+      properties:
+        companyRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyRoleId'
+        agreements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementConsentData'
+      additionalProperties: false
+    RegistrationDocumentNames:
+      type: object
+      properties:
+        documentName:
+          type: string
+      additionalProperties: false
+    UniqueIdentifierData:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        label:
+          $ref: '#/components/schemas/UniqueIdentifierId'
+      additionalProperties: false
+    UniqueIdentifierId:
+      enum:
+        - COMMERCIAL_REG_NUMBER
+        - VAT_ID
+        - LEI_CODE
+        - VIES
+        - EORI
+      type: string
+    UploadDocuments:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        documentName:
+          type: string
+      additionalProperties: false
+    UrlInformation:
+      type: object
+      properties:
+        httpMethods:
+          type: string
+        url:
+          type: string
+      additionalProperties: false
+    UserCreationInfoWithMessage:
+      type: object
+      properties:
+        userName:
+          type: string
+          nullable: true
+        email:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        roles:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+          nullable: true
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: [ ]

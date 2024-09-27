@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -54,4 +53,22 @@ public static class SettingValidation
         optionsBuilder.Services.AddTransient<IValidateOptions<TOptions>>(_ => new DistinctValuesValidation<TOptions>(optionsBuilder.Name, section));
         return optionsBuilder;
     }
+
+    /// <summary>
+    /// Executes the validation with an check to the current environment.
+    /// The validation will be skipped for specific environments.
+    /// </summary>
+    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+    /// <param name="optionsBuilder">The options builder to add the services to.</param>
+    /// <param name="section">The current configuration section</param>
+    /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
+    public static OptionsBuilder<TOptions> EnvironmentalValidation<TOptions>(this OptionsBuilder<TOptions> optionsBuilder, IConfigurationSection section)
+        where TOptions : class =>
+            EnvironmentExtensions.SkipValidation()
+                ? optionsBuilder
+                : optionsBuilder
+                    .ValidateDataAnnotations()
+                    .ValidateEnumEnumeration(section)
+                    .ValidateDistinctValues(section)
+                    .ValidateOnStart();
 }

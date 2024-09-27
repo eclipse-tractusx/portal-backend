@@ -31,6 +31,16 @@
       <GenerateDocumentationFile>True</GenerateDocumentationFile>
       <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
+  
+    <Target Name="openapi" AfterTargets="Build">
+      <GetAssemblyIdentity AssemblyFiles="$(OutputPath)$(AssemblyName).dll">
+        <Output TaskParameter="Assemblies" ItemName="assemblyInfo"/>
+      </GetAssemblyIdentity>
+  
+      <Message Text="generating openapi v$(Version)" Importance="high" />
+      <Exec Command="dotnet tool restore" />
+      <Exec Command="dotnet tool run swagger tofile --yaml --output ../../../docs/api/services-service.yaml $(OutputPath)$(AssemblyName).dll v$(Version)" EnvironmentVariables="DOTNET_ROLL_FORWARD=LatestMajor;SKIP_CONFIGURATION_VALIDATION=true;MVC_ROUTING_BASEPATH=api/services" />
+    </Target>
 
     <ItemGroup>
       <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />

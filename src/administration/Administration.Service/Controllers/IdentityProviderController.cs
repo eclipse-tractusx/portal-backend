@@ -284,7 +284,7 @@ public class IdentityProviderController(IIdentityProviderBusinessLogic businessL
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync([FromForm(Name = "document")] IFormFile document, CancellationToken cancellationToken) =>
+    public ValueTask<IdentityProviderUpdateStats> UploadOwnCompanyUsersIdentityProviderFileAsync(IFormFile document, CancellationToken cancellationToken) =>
         businessLogic.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(document, cancellationToken);
 
     /// <summary>
