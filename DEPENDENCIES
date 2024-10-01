@@ -5,9 +5,9 @@ nuget/nuget/-/BouncyCastle.Cryptography/2.2.1, MIT AND Apache-2.0 AND BSD-3-Clau
 nuget/nuget/-/BouncyCastle.Cryptography/2.4.0, MIT AND Apache-2.0 AND BSD-3-Clause AND LicenseRef-scancode-ietf-trust, approved, #15706
 nuget/nuget/-/Castle.Core/5.1.1, Apache-2.0, approved, #13966
 nuget/nuget/-/EFCore.NamingConventions/8.0.3, Apache-2.0, approved, #13983
-nuget/nuget/-/FakeItEasy/8.1.0, MIT, approved, #13970
+nuget/nuget/-/FakeItEasy/8.3.0, MIT, approved, #16328
 nuget/nuget/-/Fare/2.1.1, MIT, approved, clearlydefined
-nuget/nuget/-/FluentAssertions/6.12.0, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
+nuget/nuget/-/FluentAssertions/6.12.1, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
 nuget/nuget/-/Flurl.Http.Signed/3.2.4, MIT, approved, #3503
 nuget/nuget/-/Flurl.Signed/3.0.6, MIT, approved, #3501
 nuget/nuget/-/HtmlAgilityPack/1.11.59, MIT, approved, #9293
@@ -57,6 +57,7 @@ nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.8.0, MIT AND Apache-2.0, appro
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.8.0, MIT AND Apache-2.0, approved, #16261
 nuget/nuget/-/Swashbuckle.AspNetCore/6.8.0, MIT AND Apache-2.0, approved, #16260
 nuget/nuget/-/Testcontainers.PostgreSql/3.7.0, MIT, approved, #13960
+nuget/nuget/-/Testcontainers/3.10.0, MIT, approved, #16236
 nuget/nuget/-/Testcontainers/3.7.0, MIT, approved, #13982
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.4.1, MIT, approved, #3502
 nuget/nuget/-/coverlet.collector/6.0.0, MIT, approved, #10075
