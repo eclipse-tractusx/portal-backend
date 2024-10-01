@@ -17,8 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
@@ -295,5 +297,46 @@ public class NetworkBusinessLogic(
         {
             throw new ControllerArgumentException("Lastname does not match expected format");
         }
+    }
+
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter)
+    {
+        if (companyName != null && !companyName.IsValidCompanyName())
+        {
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
+        }
+
+        var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
+            .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
+                companyName?.Length >= 3 ? companyName : null, externalId,
+                companyApplicationStatusFilter.GetCompanyApplicationStatusIds());
+
+        var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
+            ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
+            : applicationsQuery.AsSplitQuery().OrderBy(application => application.DateCreated);
+
+        return Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.ApplicationsMaxPageSize,
+            (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
+                applicationsQuery.CountAsync(),
+                orderedQuery
+                    .Skip(skip)
+                    .Take(take)
+                    .Select(application => new CompanyDetailsOspOnboarding(
+                        application.CompanyId,
+                        application.NetworkRegistration!.ExternalId,
+                        application.Id,
+                        application.ApplicationStatusId,
+                        application.DateCreated,
+                        application.Company!.DateCreated,
+                        application.DateLastChanged,
+                        application.Company!.Name,
+                        application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
+                        application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
+                        application.Company.BusinessPartnerNumber,
+                        application.Company.Identities.Count(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)))
+                    .AsAsyncEnumerable()));
     }
 }

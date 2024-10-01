@@ -59,13 +59,11 @@ public sealed class RegistrationBusinessLogic(
     IIssuerComponentBusinessLogic issuerComponentBusinessLogic,
     IProvisioningManager provisioningManager,
     IMailingProcessCreation mailingProcessCreation,
-    IIdentityService identityService,
     ILogger<RegistrationBusinessLogic> logger)
     : IRegistrationBusinessLogic
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-    private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly RegistrationSettings _settings = configuration.Value;
 
     public Task<CompanyWithAddressData> GetCompanyWithAddressAsync(Guid applicationId)
@@ -162,45 +160,6 @@ public sealed class RegistrationBusinessLogic(
                     .AsAsyncEnumerable()));
     }
 
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync(int page, int size, CompanyApplicationStatusFilter? companyApplicationStatusFilter, string? companyName, string? externalId, DateCreatedOrderFilter? dateCreatedOrderFilter)
-    {
-        if (companyName != null && !companyName.IsValidCompanyName())
-        {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
-        }
-        var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
-            .GetExternalCompanyApplicationsFilteredQuery(_identityData.CompanyId,
-                companyName?.Length >= 3 ? companyName : null, externalId,
-                companyApplicationStatusFilter.GetCompanyApplicationStatusIds());
-
-        var orderedQuery = dateCreatedOrderFilter == null || dateCreatedOrderFilter.Value == DateCreatedOrderFilter.DESC
-            ? applicationsQuery.AsSplitQuery().OrderByDescending(application => application.DateCreated)
-            : applicationsQuery.AsSplitQuery().OrderBy(application => application.DateCreated);
-
-        return Pagination.CreateResponseAsync(
-            page,
-            size,
-            _settings.ApplicationsMaxPageSize,
-            (skip, take) => new Pagination.AsyncSource<CompanyDetailsOspOnboarding>(
-                applicationsQuery.CountAsync(),
-                orderedQuery
-                    .Skip(skip)
-                    .Take(take)
-                    .Select(application => new CompanyDetailsOspOnboarding(
-                        application.CompanyId,
-                        application.NetworkRegistration!.ExternalId,
-                        application.Id,
-                        application.ApplicationStatusId,
-                        application.DateCreated,
-                        application.Company!.DateCreated,
-                        application.DateLastChanged,
-                        application.Company!.Name,
-                        application.Company.CompanyAssignedRoles.Select(companyAssignedRoles => companyAssignedRoles.CompanyRoleId),
-                        application.Company.IdentityProviders.Select(x => new IdentityProvidersDetails(x.Id, x.IamIdentityProvider!.IamIdpAlias)),
-                        application.Company.BusinessPartnerNumber,
-                        application.Company.Identities.Count(x => x.CompanyUser!.Identity!.UserStatusId != UserStatusId.DELETED)))
-                    .AsAsyncEnumerable()));
-    }
     public Task<Pagination.Response<CompanyApplicationWithCompanyUserDetails>> GetAllCompanyApplicationsDetailsAsync(int page, int size, string? companyName)
     {
         if (companyName != null && !companyName.IsValidCompanyName())

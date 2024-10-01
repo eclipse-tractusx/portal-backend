@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
@@ -109,5 +110,29 @@ public class NetworkControllerTests
         result.StatusCode.Should().Be(204);
         A.CallTo(() => _logic.RetriggerProcessStep(externalId, ProcessStepTypeId.RETRIGGER_CALLBACK_OSP_SUBMITTED))
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetOspCompanyApplicationDetailsAsync_ReturnsCompanyApplicationDetails()
+    {
+        //Arrange
+        var page = _fixture.Create<int>();
+        var size = _fixture.Create<int>();
+        var companyApplicationStatusFilter = _fixture.Create<CompanyApplicationStatusFilter>();
+        var companyName = _fixture.Create<string>();
+        var externalId = _fixture.Create<string>();
+        var dateCreatedOrderFilter = _fixture.Create<DateCreatedOrderFilter>();
+
+        var paginationResponse = new Pagination.Response<CompanyDetailsOspOnboarding>(new Pagination.Metadata(15, 1, 1, 15), _fixture.CreateMany<CompanyDetailsOspOnboarding>(5));
+        A.CallTo(() => _logic.GetOspCompanyDetailsAsync(A<int>._, A<int>._, A<CompanyApplicationStatusFilter>._, A<string>._, A<string>._, A<DateCreatedOrderFilter>._))
+            .Returns(paginationResponse);
+
+        //Act
+        var result = await _controller.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId, dateCreatedOrderFilter);
+
+        //Assert
+        A.CallTo(() => _logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId, dateCreatedOrderFilter)).MustHaveHappenedOnceExactly();
+        Assert.IsType<Pagination.Response<CompanyDetailsOspOnboarding>>(result);
+        result.Content.Should().HaveCount(5);
     }
 }
