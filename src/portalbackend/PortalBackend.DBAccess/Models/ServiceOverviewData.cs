@@ -37,7 +37,7 @@ public record ServiceOverviewData(
     Guid Id,
     string? Title,
     string Provider,
-    Guid LeadPictureId,
+    Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
     LicenseTypeId LicenseType,

@@ -60,7 +60,7 @@ public record ServiceDetailData(
     Guid Id,
     string? Title,
     string Provider,
-    Guid LeadPictureId,
+    Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
     string Price,
