@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class AccessTokenAuthorization
 {
-    [JsonProperty("permissions")]
+    [JsonPropertyName("permissions")]
     public IEnumerable<Permission> Permissions { get; set; }
 }

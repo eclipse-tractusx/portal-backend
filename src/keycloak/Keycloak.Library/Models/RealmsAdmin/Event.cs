@@ -24,28 +24,28 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Event
 {
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string ClientId { get; set; }
-    [JsonProperty("details")]
+    [JsonPropertyName("details")]
     public IDictionary<string, object> Details { get; set; }
-    [JsonProperty("error")]
+    [JsonPropertyName("error")]
     public string Error { get; set; }
-    [JsonProperty("ipAddress")]
+    [JsonPropertyName("ipAddress")]
     public string IpAddress { get; set; }
-    [JsonProperty("realmId")]
+    [JsonPropertyName("realmId")]
     public string RealmId { get; set; }
-    [JsonProperty("sessionId")]
+    [JsonPropertyName("sessionId")]
     public string SessionId { get; set; }
-    [JsonProperty("time")]
+    [JsonPropertyName("time")]
     public long Time { get; set; }
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
-    [JsonProperty("userId")]
+    [JsonPropertyName("userId")]
     public string UserId { get; set; }
 }

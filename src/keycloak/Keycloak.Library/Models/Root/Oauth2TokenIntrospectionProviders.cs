@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Oauth2TokenIntrospectionProviders
 {
-    [JsonProperty("access_token")]
+    [JsonPropertyName("access_token")]
     public HasOrder AccessToken { get; set; }
 
-    [JsonProperty("refresh_token")]
+    [JsonPropertyName("refresh_token")]
     public HasOrder RefreshToken { get; set; }
 
-    [JsonProperty("requesting_party_token")]
+    [JsonPropertyName("requesting_party_token")]
     public HasOrder RequestingPartyToken { get; set; }
 }

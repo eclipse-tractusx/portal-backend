@@ -60,25 +60,6 @@ public partial class KeycloakClient
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task<int> GetGroupsCountAsync(string realm, string? search = null, bool? top = null)
-    {
-        var queryParams = new Dictionary<string, object?>
-        {
-            [nameof(search)] = search,
-            [nameof(top)] = top
-        };
-
-        var result = await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/groups/count")
-            .SetQueryParams(queryParams)
-            .GetJsonAsync()
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        return Convert.ToInt32(DynamicExtensions.GetFirstPropertyValue(result));
-    }
-
     public async Task<Group> GetGroupAsync(string realm, string groupId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment("/admin/realms/")

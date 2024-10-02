@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AttackDetection;
 
 public class UserNameStatus
 {
-    [JsonProperty("numFailures")]
+    [JsonPropertyName("numFailures")]
     public int? NumFailures { get; set; }
-    [JsonProperty("disabled")]
+    [JsonPropertyName("disabled")]
     public bool? Disabled { get; set; }
-    [JsonProperty("lastIPFailure")]
+    [JsonPropertyName("lastIPFailure")]
     public string LastIpFailure { get; set; }
-    [JsonProperty("lastFailure")]
+    [JsonPropertyName("lastFailure")]
     public int? LastFailure { get; set; }
 }

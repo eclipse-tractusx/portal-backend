@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class KeycloakStorageLdapMappersLdapStorageMapperMetadata
 {
-    [JsonProperty("fedToKeycloakSyncSupported")]
+    [JsonPropertyName("fedToKeycloakSyncSupported")]
     public bool? FedToKeycloakSyncSupported { get; set; }
 
-    [JsonProperty("keycloakToFedSyncSupported")]
+    [JsonPropertyName("keycloakToFedSyncSupported")]
     public bool? KeycloakToFedSyncSupported { get; set; }
 
-    [JsonProperty("fedToKeycloakSyncMessage")]
+    [JsonPropertyName("fedToKeycloakSyncMessage")]
     public string FedToKeycloakSyncMessage { get; set; }
 
-    [JsonProperty("keycloakToFedSyncMessage")]
+    [JsonPropertyName("keycloakToFedSyncMessage")]
     public string KeycloakToFedSyncMessage { get; set; }
 }

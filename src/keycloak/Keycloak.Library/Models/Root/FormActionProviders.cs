@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class FormActionProviders
 {
-    [JsonProperty("registration-profile-action")]
+    [JsonPropertyName("registration-profile-action")]
     public HasOrder RegistrationProfileAction { get; set; }
 
-    [JsonProperty("registration-recaptcha-action")]
+    [JsonPropertyName("registration-recaptcha-action")]
     public HasOrder RegistrationRecaptchaAction { get; set; }
 
-    [JsonProperty("registration-password-action")]
+    [JsonPropertyName("registration-password-action")]
     public HasOrder RegistrationPasswordAction { get; set; }
 
-    [JsonProperty("registration-user-creation")]
+    [JsonPropertyName("registration-user-creation")]
     public HasOrder RegistrationUserCreation { get; set; }
 }

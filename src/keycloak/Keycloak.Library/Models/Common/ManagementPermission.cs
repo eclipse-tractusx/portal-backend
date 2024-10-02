@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 
 public class ManagementPermission
 {
-    [JsonProperty("enabled")]
+    [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
 }

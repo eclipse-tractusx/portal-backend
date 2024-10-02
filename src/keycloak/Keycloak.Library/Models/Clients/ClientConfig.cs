@@ -24,29 +24,29 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class ClientConfig
 {
-    [JsonProperty("userinfo.token.claim")]
+    [JsonPropertyName("userinfo.token.claim")]
     public string? UserInfoTokenClaim { get; set; }
-    [JsonProperty("user.attribute")]
+    [JsonPropertyName("user.attribute")]
     public string? UserAttribute { get; set; }
-    [JsonProperty("id.token.claim")]
+    [JsonPropertyName("id.token.claim")]
     public string? IdTokenClaim { get; set; }
-    [JsonProperty("access.token.claim")]
+    [JsonPropertyName("access.token.claim")]
     public string? AccessTokenClaim { get; set; }
-    [JsonProperty("claim.name")]
+    [JsonPropertyName("claim.name")]
     public string? ClaimName { get; set; }
-    [JsonProperty("jsonType.label")]
+    [JsonPropertyName("jsonType.label")]
     public string? JsonTypelabel { get; set; }
-    [JsonProperty("friendly.name")]
+    [JsonPropertyName("friendly.name")]
     public string? FriendlyName { get; set; }
-    [JsonProperty("attribute.name")]
+    [JsonPropertyName("attribute.name")]
     public string? AttributeName { get; set; }
 
-    [JsonProperty("user.session.note")]
+    [JsonPropertyName("user.session.note")]
     public string? UserSessionNote { get; set; }
 }

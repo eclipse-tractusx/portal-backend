@@ -24,28 +24,28 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ProtocolMapperType
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("category")]
+    [JsonPropertyName("category")]
     public Category Category { get; set; }
 
-    [JsonProperty("helpText")]
+    [JsonPropertyName("helpText")]
     public string HelpText { get; set; }
 
-    [JsonProperty("priority")]
+    [JsonPropertyName("priority")]
     public long Priority { get; set; }
 
-    [JsonProperty("properties")]
+    [JsonPropertyName("properties")]
     public List<ConfigProperty> Properties { get; set; }
 }

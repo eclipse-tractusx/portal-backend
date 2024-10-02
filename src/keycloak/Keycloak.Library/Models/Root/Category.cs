@@ -24,17 +24,27 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-[JsonConverter(typeof(CategoryConverter))]
+[JsonConverter(typeof(EnumMemberConverter<Category>))]
 public enum Category
 {
+    [EnumMember(Value = "attribute statement mapper")]
     AttributeStatementMapper,
+
+    [EnumMember(Value = "docker auth mapper")]
     DockerAuthMapper,
+
+    [EnumMember(Value = "group mapper")]
     GroupMapper,
+
+    [EnumMember(Value = "role mapper")]
     RoleMapper,
+
+    [EnumMember(Value = "token mapper")]
     TokenMapper
 }

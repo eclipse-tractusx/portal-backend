@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Account
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public Name Name { get; set; }
 
-    [JsonProperty("locales")]
+    [JsonPropertyName("locales")]
     public List<Locale> Locales { get; set; }
 }

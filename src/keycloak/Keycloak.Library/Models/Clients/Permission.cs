@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Permission : Resource
 {
-    [JsonProperty("claims")]
+    [JsonPropertyName("claims")]
     public IDictionary<string, object> Claims { get; set; }
 }

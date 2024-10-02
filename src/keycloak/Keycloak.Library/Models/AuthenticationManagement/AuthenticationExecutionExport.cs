@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticationExecutionExport : AuthenticationExecutionBase
 {
-    [JsonProperty("flowAlias")]
+    [JsonPropertyName("flowAlias")]
     public string? FlowAlias { get; set; }
-    [JsonProperty("userSetupAllowed")]
+    [JsonPropertyName("userSetupAllowed")]
     public bool? UserSetupAllowed { get; set; }
 }

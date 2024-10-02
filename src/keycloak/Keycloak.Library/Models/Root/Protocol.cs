@@ -24,15 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-[JsonConverter(typeof(ProtocolConverter))]
+[JsonConverter(typeof(EnumMemberConverter<Protocol>))]
 public enum Protocol
 {
+    [EnumMember(Value = "dockerv2")]
     DockerV2,
+
+    [EnumMember(Value = "openid-connect")]
     OpenIdConnect,
+
+    [EnumMember(Value = "Saml")]
     Saml
 }

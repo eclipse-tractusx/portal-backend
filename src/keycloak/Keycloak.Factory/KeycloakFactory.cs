@@ -17,35 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Flurl.Http.Configuration;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 
-public class KeycloakFactory : IKeycloakFactory
+public class KeycloakFactory(IOptions<KeycloakSettingsMap> options)
+    : IKeycloakFactory
 {
-    private readonly KeycloakSettingsMap _settings;
-
-    private static readonly JsonSerializerSettings SerializerSettings = new()
-    {
-        NullValueHandling = NullValueHandling.Ignore,
-        ContractResolver = new DefaultContractResolver
-        {
-            NamingStrategy = new CamelCaseNamingStrategy
-            {
-                ProcessDictionaryKeys = false
-            }
-        }
-    };
-
-    public KeycloakFactory(IOptions<KeycloakSettingsMap> settings)
-    {
-        _settings = settings.Value;
-    }
+    private readonly KeycloakSettingsMap _settings = options.Value;
 
     public KeycloakClient CreateKeycloakClient(string instance)
     {
@@ -59,7 +40,6 @@ public class KeycloakFactory : IKeycloakFactory
         var keycloakClient = settings.ClientSecret == null
             ? new KeycloakClient(settings.ConnectionString, settings.User, settings.Password, settings.AuthRealm, settings.UseAuthTrail)
             : KeycloakClient.CreateWithClientId(settings.ConnectionString, settings.ClientId, settings.ClientSecret, settings.UseAuthTrail, settings.AuthRealm);
-        keycloakClient.SetSerializer(new NewtonsoftJsonSerializer(SerializerSettings));
 
         return keycloakClient;
     }
@@ -73,7 +53,6 @@ public class KeycloakFactory : IKeycloakFactory
 
         var settings = _settings.Single(x => x.Key.Equals(instance, StringComparison.InvariantCultureIgnoreCase)).Value;
         var keycloakClient = KeycloakClient.CreateWithClientId(settings.ConnectionString, clientId, secret, settings.UseAuthTrail, settings.AuthRealm);
-        keycloakClient.SetSerializer(new NewtonsoftJsonSerializer(SerializerSettings));
 
         return keycloakClient;
     }

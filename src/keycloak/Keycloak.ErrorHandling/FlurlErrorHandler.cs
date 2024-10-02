@@ -30,7 +30,7 @@ public static class FlurlErrorHandler
 {
     public static void ConfigureErrorHandler(ILogger logger)
     {
-        FlurlHttp.Configure(settings => settings.OnError = (call) =>
+        FlurlHttp.Clients.WithDefaults(c => c.OnError(call =>
         {
             var message = $"{call.HttpResponseMessage?.ReasonPhrase ?? "ReasonPhrase is null"}: {call.HttpRequestMessage.RequestUri}";
 
@@ -38,23 +38,26 @@ public static class FlurlErrorHandler
             {
                 LogDebug(logger, call);
             }
-            if (call.HttpResponseMessage != null)
+
+            if (call.HttpResponseMessage is null)
             {
-                var errorContent = JsonSerializer.Deserialize<KeycloakErrorResponse>(call.HttpResponseMessage.Content.ReadAsStream())?.ErrorMessage;
-                if (!string.IsNullOrWhiteSpace(errorContent))
-                {
-                    message = errorContent;
-                }
-                throw call.HttpResponseMessage.StatusCode switch
-                {
-                    HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
-                    HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
-                    HttpStatusCode.BadRequest => new KeycloakNoSuccessException(message, call.Exception),
-                    _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
-                };
+                throw new ServiceException(message, call.Exception);
             }
-            throw new ServiceException(message, call.Exception);
-        });
+
+            var errorContent = JsonSerializer.Deserialize<KeycloakErrorResponse>(call.HttpResponseMessage.Content.ReadAsStream())?.ErrorMessage;
+            if (!string.IsNullOrWhiteSpace(errorContent))
+            {
+                message = errorContent;
+            }
+
+            throw call.HttpResponseMessage.StatusCode switch
+            {
+                HttpStatusCode.NotFound => new KeycloakEntityNotFoundException(message, call.Exception),
+                HttpStatusCode.Conflict => new KeycloakEntityConflictException(message, call.Exception),
+                HttpStatusCode.BadRequest => new KeycloakNoSuccessException(message, call.Exception),
+                _ => new ServiceException(message, call.Exception, call.HttpResponseMessage.StatusCode),
+            };
+        }));
     }
 
     private static void LogDebug(ILogger logger, FlurlCall call)

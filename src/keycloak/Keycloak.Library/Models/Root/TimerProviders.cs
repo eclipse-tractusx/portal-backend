@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class TimerProviders
 {
-    [JsonProperty("basic")]
+    [JsonPropertyName("basic")]
     public HasOrder Basic { get; set; }
 }

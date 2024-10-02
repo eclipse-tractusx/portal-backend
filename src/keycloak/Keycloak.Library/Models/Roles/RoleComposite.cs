@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 
 public class RoleComposite
 {
-    [JsonProperty("client")]
+    [JsonPropertyName("client")]
     public IDictionary<string, IEnumerable<string>>? Client { get; set; }
-    [JsonProperty("realm")]
+    [JsonPropertyName("realm")]
     public IEnumerable<string>? Realm { get; set; }
 }

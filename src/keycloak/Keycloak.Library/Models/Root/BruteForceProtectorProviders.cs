@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class BruteForceProtectorProviders
 {
-    [JsonProperty("default-brute-force-detector")]
+    [JsonPropertyName("default-brute-force-detector")]
     public HasOrder DefaultBruteForceDetector { get; set; }
 }

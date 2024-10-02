@@ -108,7 +108,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .PostJsonAsync(roles, cancellationToken)
+            .PostJsonAsync(roles, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetRealmRoleMappingsForUserAsync(string realm, string userId, CancellationToken cancellationToken = default) =>
@@ -118,7 +118,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<Role>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteRealmRoleMappingsFromUserAsync(string realm, string userId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
@@ -128,7 +128,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/users/")
             .AppendPathSegment(userId, true)
             .AppendPathSegment("/role-mappings/realm")
-            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken)
+            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetAvailableRealmRoleMappingsForUserAsync(string realm, string userId) =>

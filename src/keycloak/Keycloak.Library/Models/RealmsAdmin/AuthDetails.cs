@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class AuthDetails
 {
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string ClientId { get; set; }
-    [JsonProperty("ipAddress")]
+    [JsonPropertyName("ipAddress")]
     public string IpAddress { get; set; }
-    [JsonProperty("realmId")]
+    [JsonPropertyName("realmId")]
     public string RealmId { get; set; }
-    [JsonProperty("userId")]
+    [JsonPropertyName("userId")]
     public string UserId { get; set; }
 }

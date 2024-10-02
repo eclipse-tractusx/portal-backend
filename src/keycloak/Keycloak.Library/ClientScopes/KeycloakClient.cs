@@ -35,7 +35,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes")
-            .PostJsonAsync(clientScope, cancellationToken)
+            .PostJsonAsync(clientScope, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<ClientScope>> GetClientScopesAsync(string realm, CancellationToken cancellationToken = default) =>
@@ -43,7 +43,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes")
-            .GetJsonAsync<IEnumerable<ClientScope>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<ClientScope>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<ClientScope> GetClientScopeAsync(string realm, string clientScopeId) =>
@@ -61,7 +61,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .PutJsonAsync(clientScope, cancellationToken)
+            .PutJsonAsync(clientScope, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteClientScopeAsync(string realm, string clientScopeId, CancellationToken cancellationToken = default) =>
@@ -70,6 +70,6 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/client-scopes/")
             .AppendPathSegment(clientScopeId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 }

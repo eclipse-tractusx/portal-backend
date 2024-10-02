@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ClientAuthenticatorProviders
 {
-    [JsonProperty("client-jwt")]
+    [JsonPropertyName("client-jwt")]
     public HasOrder ClientJwt { get; set; }
 
-    [JsonProperty("client-secret")]
+    [JsonPropertyName("client-secret")]
     public HasOrder ClientSecret { get; set; }
 
-    [JsonProperty("client-x509")]
+    [JsonPropertyName("client-x509")]
     public HasOrder ClientX509 { get; set; }
 
-    [JsonProperty("client-secret-jwt")]
+    [JsonPropertyName("client-secret-jwt")]
     public HasOrder ClientSecretJwt { get; set; }
 }

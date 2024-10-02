@@ -49,7 +49,7 @@ public partial class KeycloakClient
             {
                 ["fromUrl"] = url,
                 ["providerId"] = "oidc"
-            }, cancellationToken)
+            }, cancellationToken: cancellationToken)
             .ReceiveJson<IDictionary<string, object>>()
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -58,7 +58,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances")
-            .PostJsonAsync(identityProvider, cancellationToken)
+            .PostJsonAsync(identityProvider, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<IdentityProvider>> GetIdentityProviderInstancesAsync(string realm) =>
@@ -75,7 +75,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
-            .GetJsonAsync<IdentityProvider>(cancellationToken)
+            .GetJsonAsync<IdentityProvider>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     /// <summary>
@@ -100,7 +100,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
-            .PutJsonAsync(identityProvider, cancellationToken)
+            .PutJsonAsync(identityProvider, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteIdentityProviderAsync(string realm, string identityProviderAlias) =>
@@ -160,7 +160,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers")
-            .PostJsonAsync(identityProviderMapper, cancellationToken)
+            .PostJsonAsync(identityProviderMapper, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<IdentityProviderMapper>> GetIdentityProviderMappersAsync(string realm, string identityProviderAlias, CancellationToken cancellationToken = default) =>
@@ -170,7 +170,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/identity-provider/instances/")
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers")
-            .GetJsonAsync<IEnumerable<IdentityProviderMapper>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<IdentityProviderMapper>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IdentityProviderMapper> GetIdentityProviderMapperByIdAsync(string realm, string identityProviderAlias, string mapperId) =>
@@ -192,7 +192,7 @@ public partial class KeycloakClient
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers/")
             .AppendPathSegment(mapperId, true)
-            .PutJsonAsync(identityProviderMapper, cancellationToken)
+            .PutJsonAsync(identityProviderMapper, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteIdentityProviderMapperAsync(string realm, string identityProviderAlias, string mapperId, CancellationToken cancellationToken = default) =>
@@ -203,7 +203,7 @@ public partial class KeycloakClient
             .AppendPathSegment(identityProviderAlias, true)
             .AppendPathSegment("/mappers/")
             .AppendPathSegment(mapperId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IdentityProviderInfo> GetIdentityProviderByProviderIdAsync(string realm, string providerId) =>

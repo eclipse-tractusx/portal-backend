@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class LoginProtocolProviders
 {
-    [JsonProperty("saml")]
+    [JsonPropertyName("saml")]
     public HasOrder Saml { get; set; }
 
-    [JsonProperty("openid-connect")]
+    [JsonPropertyName("openid-connect")]
     public HasOrder OpenIdConnect { get; set; }
 }

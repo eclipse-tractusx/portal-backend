@@ -24,11 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using System.Runtime.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public enum Policies
 {
+    [EnumMember(Value = "SKIP")]
     Skip,
+
+    [EnumMember(Value = "OVERWRITE")]
     Overwrite,
+
+    [EnumMember(Value = "FAIL")]
     Fail
 }

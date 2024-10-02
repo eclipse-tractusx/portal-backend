@@ -23,59 +23,71 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
 
 public class AuthorizationPermission
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
 
-    [JsonConverter(typeof(AuthorizationPermissionTypeConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<AuthorizationPermissionType>))]
     public AuthorizationPermissionType Type { get; set; }
 
-    [JsonConverter(typeof(PolicyDecisionLogicConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<PolicyDecisionLogic>))]
     public PolicyDecisionLogic Logic { get; set; }
 
-    [JsonConverter(typeof(DecisionStrategiesConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<DecisionStrategy>))]
     public DecisionStrategy DecisionStrategy { get; set; }
 
-    [JsonProperty("resourceType")]
+    [JsonPropertyName("resourceType")]
     public string ResourceType { get; set; }
 
-    [JsonProperty("resources")]
+    [JsonPropertyName("resources")]
     public IEnumerable<string> ResourceIds { get; set; }
 
-    [JsonProperty("scopes")]
+    [JsonPropertyName("scopes")]
     public IEnumerable<string> ScopeIds { get; set; }
 
-    [JsonProperty("policies")]
+    [JsonPropertyName("policies")]
     public IEnumerable<string> PolicyIds { get; set; }
 }
 
 public enum PolicyDecisionLogic
 {
+    [EnumMember(Value = "POSITIVE")]
     Positive,
+
+    [EnumMember(Value = "NEGATIVE")]
     Negative
 }
 
 public enum AuthorizationPermissionType
 {
+    [EnumMember(Value = "scope")]
     Scope,
+
+    [EnumMember(Value = "resource")]
     Resource
 }
 
 public enum DecisionStrategy
 {
+    [EnumMember(Value = "UNANIMOUS")]
     Unanimous,
+
+    [EnumMember(Value = "AFFIRMATIVE")]
     Affirmative,
+
+    [EnumMember(Value = "CONSENSUS")]
     Consensus
 }

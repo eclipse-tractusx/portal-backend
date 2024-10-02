@@ -24,16 +24,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class Active
 {
-    [JsonProperty("HS256")]
+    [JsonPropertyName("HS256")]
     public string Hs256 { get; set; }
-    [JsonProperty("RS256")]
+    [JsonPropertyName("RS256")]
     public string Rs256 { get; set; }
-    [JsonProperty("AES")]
+    [JsonPropertyName("AES")]
     public string Aes { get; set; }
 }

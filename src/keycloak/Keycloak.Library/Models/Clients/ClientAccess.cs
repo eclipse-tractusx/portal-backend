@@ -24,16 +24,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class ClientAccess
 {
-    [JsonProperty("view")]
+    [JsonPropertyName("view")]
     public bool? View { get; set; }
-    [JsonProperty("configure")]
+    [JsonPropertyName("configure")]
     public bool? Configure { get; set; }
-    [JsonProperty("manage")]
+    [JsonPropertyName("manage")]
     public bool? Manage { get; set; }
 }
