@@ -25,6 +25,7 @@
 
 using Flurl;
 using Flurl.Http;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 
@@ -43,13 +44,10 @@ public static class FlurlRequestExtensions
                 new KeyValuePair<string, string>("password", password),
                 new KeyValuePair<string, string>("client_id", "admin-cli")
             },
-            cancellationToken)
-            .ReceiveJson().ConfigureAwait(ConfigureAwaitOptions.None);
+            cancellationToken: cancellationToken)
+            .ReceiveJson<AccessTokenResponse>().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        string accessToken = result
-            .access_token.ToString();
-
-        return accessToken;
+        return result.AccessToken;
     }
 
     private static async Task<string> GetAccessTokenWithClientIdAsync(string url, string realm, string clientSecret, string? clientId, bool useAuthTrail, CancellationToken cancellationToken)
@@ -64,13 +62,10 @@ public static class FlurlRequestExtensions
                 new("client_secret", clientSecret),
                 new("client_id", clientId ?? "admin-cli")
             },
-            cancellationToken)
-            .ReceiveJson().ConfigureAwait(ConfigureAwaitOptions.None);
+            cancellationToken: cancellationToken)
+            .ReceiveJson<AccessTokenResponse>().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        string accessToken = result
-            .access_token.ToString();
-
-        return accessToken;
+        return result.AccessToken;
     }
 
     public static async Task<IFlurlRequest> WithAuthenticationAsync(this IFlurlRequest request, Func<CancellationToken, Task<string>>? getTokenAsync, string url, string realm, string? userName, string? password, string? clientSecret, string? clientId, bool useAuthTrail, CancellationToken cancellationToken)
@@ -115,4 +110,8 @@ public static class FlurlRequestExtensions
 
         return request;
     }
+
+    public record AccessTokenResponse(
+        [property: JsonPropertyName("access_token")] string AccessToken
+    );
 }

@@ -24,27 +24,27 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
 public class IdentityProviderToken
 {
-    [JsonProperty("access_token")]
+    [JsonPropertyName("access_token")]
     public string AccessToken { get; set; }
 
-    [JsonProperty("token_type")]
+    [JsonPropertyName("token_type")]
     public string RequestingPartyToken { get; set; }
 
-    [JsonProperty("expires_in")]
+    [JsonPropertyName("expires_in")]
     public int ExpiresIn { get; set; }
 
-    [JsonProperty("refresh_token")]
+    [JsonPropertyName("refresh_token")]
     public string RefreshToken { get; set; }
 
-    [JsonProperty("scope")]
+    [JsonPropertyName("scope")]
     public string Scope { get; set; }
 
-    [JsonProperty("created_at")]
+    [JsonPropertyName("created_at")]
     public long CreatedAt { get; set; }
 }

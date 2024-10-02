@@ -24,24 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Components;
 
 public class Config
 {
-    [JsonProperty("priority")]
+    [JsonPropertyName("priority")]
     public IEnumerable<string> Priority { get; set; }
-    [JsonProperty("allowdefaultscopes")]
+    [JsonPropertyName("allowdefaultscopes")]
     public IEnumerable<string> AllowDefaultScopes { get; set; }
-    [JsonProperty("maxclients")]
+    [JsonPropertyName("maxclients")]
     public IEnumerable<string> MaxClients { get; set; }
-    [JsonProperty("allowedprotocolmappertypes")]
+    [JsonPropertyName("allowedprotocolmappertypes")]
     public IEnumerable<string> AllowedProtocolMapperTypes { get; set; }
-    [JsonProperty("algorithm")]
+    [JsonPropertyName("algorithm")]
     public IEnumerable<string> Algorithm { get; set; }
-    [JsonProperty("hostsendingregistrationrequestmustmatch")]
+    [JsonPropertyName("hostsendingregistrationrequestmustmatch")]
     public IEnumerable<string> HostSendingRegistrationRequestMustMatch { get; set; }
-    [JsonProperty("clienturismustmatch")]
+    [JsonPropertyName("clienturismustmatch")]
     public IEnumerable<string> ClientUrisMustMatch { get; set; }
 }

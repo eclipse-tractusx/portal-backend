@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class BuiltinProtocolMappers
 {
-    [JsonProperty("saml")]
+    [JsonPropertyName("saml")]
     public List<Saml> Saml { get; set; }
 
-    [JsonProperty("openid-connect")]
+    [JsonPropertyName("openid-connect")]
     public List<OpenIdConnect> OpenIdConnect { get; set; }
 }

@@ -24,24 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticationFlow
 {
-    [JsonProperty("alias")]
+    [JsonPropertyName("alias")]
     public string? Alias { get; set; }
-    [JsonProperty("authenticationExecutions")]
+    [JsonPropertyName("authenticationExecutions")]
     public IEnumerable<AuthenticationExecutionExport>? AuthenticationExecutions { get; set; }
-    [JsonProperty("builtIn")]
+    [JsonPropertyName("builtIn")]
     public bool? BuiltIn { get; set; }
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string? Description { get; set; }
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string? Id { get; set; }
-    [JsonProperty("providerId")]
+    [JsonPropertyName("providerId")]
     public string? ProviderId { get; set; }
-    [JsonProperty("topLevel")]
+    [JsonPropertyName("topLevel")]
     public bool? TopLevel { get; set; }
 }

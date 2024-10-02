@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class OperationalInfo
 {
-    [JsonProperty("databaseUrl")]
+    [JsonPropertyName("databaseUrl")]
     public string DatabaseUrl { get; set; }
 
-    [JsonProperty("databaseUser")]
+    [JsonPropertyName("databaseUser")]
     public string DatabaseUser { get; set; }
 
-    [JsonProperty("databaseProduct")]
+    [JsonPropertyName("databaseProduct")]
     public string DatabaseProduct { get; set; }
 
-    [JsonProperty("databaseDriver")]
+    [JsonPropertyName("databaseDriver")]
     public string DatabaseDriver { get; set; }
 }

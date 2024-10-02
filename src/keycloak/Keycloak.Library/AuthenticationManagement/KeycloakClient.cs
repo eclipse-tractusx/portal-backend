@@ -58,7 +58,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/config/")
             .AppendPathSegment(configurationId, true)
-            .GetJsonAsync<AuthenticatorConfig>(cancellationToken)
+            .GetJsonAsync<AuthenticatorConfig>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task UpdateAuthenticatorConfigurationAsync(string realm, string configurationId, AuthenticatorConfig authenticatorConfig, CancellationToken cancellationToken = default) =>
@@ -67,7 +67,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/config/")
             .AppendPathSegment(configurationId, true)
-            .PutJsonAsync(authenticatorConfig, cancellationToken)
+            .PutJsonAsync(authenticatorConfig, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteAuthenticatorConfigurationAsync(string realm, string configurationId, CancellationToken cancellationToken = default) =>
@@ -76,7 +76,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/config/")
             .AppendPathSegment(configurationId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task AddAuthenticationExecutionAsync(string realm, AuthenticationExecution authenticationExecution) =>
@@ -102,7 +102,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/executions/")
             .AppendPathSegment(executionId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task CreateAuthenticationExecutionConfigurationAsync(string realm, string executionId, AuthenticatorConfig authenticatorConfig, CancellationToken cancellationToken = default) =>
@@ -112,7 +112,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/authentication/executions/")
             .AppendPathSegment(executionId, true)
             .AppendPathSegment("/config")
-            .PostJsonAsync(authenticatorConfig, cancellationToken)
+            .PostJsonAsync(authenticatorConfig, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task LowerAuthenticationExecutionPriorityAsync(string realm, string executionId)
@@ -146,7 +146,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows")
-            .PostJsonAsync(authenticationFlow, cancellationToken)
+            .PostJsonAsync(authenticationFlow, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<AuthenticationFlow>> GetAuthenticationFlowsAsync(string realm, CancellationToken cancellationToken = default) =>
@@ -154,7 +154,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/admin/realms/")
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows")
-            .GetJsonAsync<IEnumerable<AuthenticationFlow>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<AuthenticationFlow>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DuplicateAuthenticationFlowAsync(string realm, string flowAlias, string newName) =>
@@ -174,7 +174,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowAlias, true)
             .AppendPathSegment("/executions")
-            .GetJsonAsync<IEnumerable<AuthenticationFlowExecution>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<AuthenticationFlowExecution>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task UpdateAuthenticationFlowExecutionsAsync(string realm, string flowAlias, AuthenticationExecutionInfo authenticationExecutionInfo, CancellationToken cancellationToken = default) =>
@@ -184,7 +184,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowAlias, true)
             .AppendPathSegment("/executions")
-            .PutJsonAsync(authenticationExecutionInfo, cancellationToken)
+            .PutJsonAsync(authenticationExecutionInfo, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public Task AddAuthenticationFlowExecutionAsync(string realm, string flowAlias, IDictionary<string, object> dataWithProvider, CancellationToken cancellationToken = default) =>
@@ -204,7 +204,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowAlias, true)
             .AppendPathSegment("/executions/execution")
-            .PostJsonAsync(dataWithProvider, cancellationToken)
+            .PostJsonAsync(dataWithProvider, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public Task AddAuthenticationFlowAndExecutionToAuthenticationFlowAsync(string realm, string flowAlias, IDictionary<string, object> dataWithAliasTypeProviderDescription, CancellationToken cancellationToken = default) =>
@@ -224,7 +224,7 @@ public partial class KeycloakClient
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowAlias, true)
             .AppendPathSegment("/executions/flow")
-            .PostJsonAsync(dataWithAliasTypeProviderDescription, cancellationToken)
+            .PostJsonAsync(dataWithAliasTypeProviderDescription, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<AuthenticationFlow> GetAuthenticationFlowByIdAsync(string realm, string flowId) =>
@@ -242,7 +242,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowId, true)
-            .PutJsonAsync(authenticationFlow, cancellationToken)
+            .PutJsonAsync(authenticationFlow, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteAuthenticationFlowAsync(string realm, string flowId, CancellationToken cancellationToken = default) =>
@@ -251,7 +251,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/authentication/flows/")
             .AppendPathSegment(flowId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<IDictionary<string, object>>> GetFormActionProvidersAsync(string realm) =>

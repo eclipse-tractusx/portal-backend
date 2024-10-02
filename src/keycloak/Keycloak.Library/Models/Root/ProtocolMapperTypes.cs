@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ProtocolMapperTypes
 {
-    [JsonProperty("saml")]
+    [JsonPropertyName("saml")]
     public List<ProtocolMapperType> Saml { get; set; }
 
-    [JsonProperty("docker-v2")]
+    [JsonPropertyName("docker-v2")]
     public List<ProtocolMapperType> DockerV2 { get; set; }
 
-    [JsonProperty("openid-connect")]
+    [JsonPropertyName("openid-connect")]
     public List<ProtocolMapperType> OpenIdConnect { get; set; }
 }

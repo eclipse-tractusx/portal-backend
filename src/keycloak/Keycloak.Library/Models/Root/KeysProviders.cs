@@ -24,27 +24,27 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class KeysProviders
 {
-    [JsonProperty("rsa")]
+    [JsonPropertyName("rsa")]
     public HasOrder Rsa { get; set; }
 
-    [JsonProperty("java-keystore")]
+    [JsonPropertyName("java-keystore")]
     public HasOrder JavaKeystore { get; set; }
 
-    [JsonProperty("rsa-generated")]
+    [JsonPropertyName("rsa-generated")]
     public HasOrder RsaGenerated { get; set; }
 
-    [JsonProperty("aes-generated")]
+    [JsonPropertyName("aes-generated")]
     public HasOrder AesGenerated { get; set; }
 
-    [JsonProperty("ecdsa-generated")]
+    [JsonPropertyName("ecdsa-generated")]
     public HasOrder EcdsaGenerated { get; set; }
 
-    [JsonProperty("hmac-generated")]
+    [JsonPropertyName("hmac-generated")]
     public HasOrder HmacGenerated { get; set; }
 }

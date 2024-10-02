@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class AccessTokenCertConf
 {
-    [JsonProperty("x5t#S256")]
+    [JsonPropertyName("x5t#S256")]
     public string X5Ts256 { get; set; }
 }

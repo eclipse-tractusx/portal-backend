@@ -26,19 +26,19 @@
 using Flurl;
 using Flurl.Http;
 using Flurl.Http.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
 public partial class KeycloakClient
 {
-    private ISerializer _serializer = new NewtonsoftJsonSerializer(new JsonSerializerSettings
+    private readonly JsonSerializerOptions _jsonOptions = new()
     {
-        ContractResolver = new CamelCasePropertyNamesContractResolver(),
-        NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore
-    });
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     private readonly Url _url;
     private readonly string? _userName;
@@ -77,7 +77,7 @@ public partial class KeycloakClient
     public KeycloakClient(string url, Func<string> getToken, string? authRealm = null)
         : this(url)
     {
-        _getTokenAsync = (_) => Task.FromResult(getToken());
+        _getTokenAsync = _ => Task.FromResult(getToken());
         _authRealm = authRealm;
     }
 
@@ -93,11 +93,6 @@ public partial class KeycloakClient
         return new KeycloakClient(url, userName: null, password: null, authRealm, clientId, clientSecret, useAuthTrail);
     }
 
-    public void SetSerializer(ISerializer serializer)
-    {
-        _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-    }
-
     private Task<IFlurlRequest> GetBaseUrlAsync(string targetRealm, CancellationToken cancellationToken = default)
     {
         var url = new Url(_url);
@@ -108,7 +103,7 @@ public partial class KeycloakClient
         }
 
         return url
-            .ConfigureRequest(settings => settings.JsonSerializer = _serializer)
+            .WithSettings(s => s.JsonSerializer = new DefaultJsonSerializer(_jsonOptions))
             .WithAuthenticationAsync(_getTokenAsync, _url, _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId, _useAuthTrail, cancellationToken);
     }
 }

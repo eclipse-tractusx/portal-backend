@@ -24,15 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-[JsonConverter(typeof(NameConverter))]
+[JsonConverter(typeof(EnumMemberConverter<Name>))]
 public enum Name
 {
+    [EnumMember(Value = "base")]
     Base,
+
+    [EnumMember(Value = "keycloak")]
     Keycloak,
+
+    [EnumMember(Value = "rh-sso")]
     RhSso
 }

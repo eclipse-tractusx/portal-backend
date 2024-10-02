@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ConnectionsJpa
 {
-    [JsonProperty("internal")]
+    [JsonPropertyName("internal")]
     public bool? Internal { get; set; }
 
-    [JsonProperty("providers")]
+    [JsonPropertyName("providers")]
     public ConnectionsJpaProviders Providers { get; set; }
 }

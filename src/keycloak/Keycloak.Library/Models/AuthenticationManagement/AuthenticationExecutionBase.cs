@@ -23,22 +23,22 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public abstract class AuthenticationExecutionBase
 {
-    [JsonProperty("authenticator")]
+    [JsonPropertyName("authenticator")]
     public string? Authenticator { get; set; }
-    [JsonProperty("authenticatorConfig")]
+    [JsonPropertyName("authenticatorConfig")]
     public string? AuthenticatorConfig { get; set; }
-    [JsonProperty("authenticatorFlow")]
+    [JsonPropertyName("authenticatorFlow")]
     public bool? AuthenticatorFlow { get; set; }
-    [JsonProperty("autheticatorFlow")]
+    [JsonPropertyName("autheticatorFlow")]
     public bool? AutheticatorFlow { get; set; }
-    [JsonProperty("priority")]
+    [JsonPropertyName("priority")]
     public int? Priority { get; set; }
-    [JsonProperty("requirement")]
+    [JsonPropertyName("requirement")]
     public string? Requirement { get; set; }
 }

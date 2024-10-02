@@ -23,14 +23,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientInitialAccess;
 
 public class ClientInitialAccessCreatePresentation
 {
-    [JsonProperty("count")]
+    [JsonPropertyName("count")]
     public int? Count { get; set; }
-    [JsonProperty("expiration")]
+    [JsonPropertyName("expiration")]
     public int? Expiration { get; set; }
 }

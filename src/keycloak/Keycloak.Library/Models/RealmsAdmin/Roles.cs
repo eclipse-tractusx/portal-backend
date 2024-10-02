@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Roles
 {
-    [JsonProperty("client")]
+    [JsonPropertyName("client")]
     public IDictionary<string, object> Client { get; set; }
-    [JsonProperty("realm")]
+    [JsonPropertyName("realm")]
     public IEnumerable<Role> Realm { get; set; }
 }

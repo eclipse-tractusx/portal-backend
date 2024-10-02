@@ -24,16 +24,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class FederatedIdentity
 {
-    [JsonProperty("identityProvider")]
+    [JsonPropertyName("identityProvider")]
     public string? IdentityProvider { get; set; } = default!;
-    [JsonProperty("userId")]
+    [JsonPropertyName("userId")]
     public string? UserId { get; set; } = default!;
-    [JsonProperty("userName")]
+    [JsonPropertyName("userName")]
     public string? UserName { get; set; } = default!;
 }

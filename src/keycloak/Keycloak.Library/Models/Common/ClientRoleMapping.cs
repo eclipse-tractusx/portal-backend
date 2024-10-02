@@ -24,17 +24,17 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 
 public class ClientRoleMapping
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
-    [JsonProperty("client")]
+    [JsonPropertyName("client")]
     public string Client { get; set; }
-    [JsonProperty("mappings")]
+    [JsonPropertyName("mappings")]
     public List<Role> Mappings { get; set; }
 }

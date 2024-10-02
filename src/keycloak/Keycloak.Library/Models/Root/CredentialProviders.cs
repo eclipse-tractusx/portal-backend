@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class CredentialProviders
 {
-    [JsonProperty("keycloak-otp")]
+    [JsonPropertyName("keycloak-otp")]
     public HasOrder KeycloakOtp { get; set; }
 
-    [JsonProperty("keycloak-password")]
+    [JsonPropertyName("keycloak-password")]
     public HasOrder KeycloakPassword { get; set; }
 }

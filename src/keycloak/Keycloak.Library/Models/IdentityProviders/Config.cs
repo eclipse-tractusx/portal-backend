@@ -24,82 +24,82 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
 public class Config
 {
-    [JsonProperty("hideOnLoginPage")]
+    [JsonPropertyName("hideOnLoginPage")]
     public string? HideOnLoginPage { get; set; }
-    [JsonProperty("clientSecret")]
+    [JsonPropertyName("clientSecret")]
     public string? ClientSecret { get; set; }
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string? ClientId { get; set; }
-    [JsonProperty("disableUserInfo")]
+    [JsonPropertyName("disableUserInfo")]
     public string? DisableUserInfo { get; set; }
-    [JsonProperty("useJwksUrl")]
+    [JsonPropertyName("useJwksUrl")]
     public string? UseJwksUrl { get; set; }
-    [JsonProperty("tokenUrl")]
+    [JsonPropertyName("tokenUrl")]
     public string? TokenUrl { get; set; }
-    [JsonProperty("authorizationUrl")]
+    [JsonPropertyName("authorizationUrl")]
     public string? AuthorizationUrl { get; set; }
-    [JsonProperty("logoutUrl")]
+    [JsonPropertyName("logoutUrl")]
     public string? LogoutUrl { get; set; }
-    [JsonProperty("jwksUrl")]
+    [JsonPropertyName("jwksUrl")]
     public string? JwksUrl { get; set; }
-    [JsonProperty("clientAuthMethod")]
+    [JsonPropertyName("clientAuthMethod")]
     public string? ClientAuthMethod { get; set; }
-    [JsonProperty("clientAssertionSigningAlg")]
+    [JsonPropertyName("clientAssertionSigningAlg")]
     public string? ClientAssertionSigningAlg { get; set; }
-    [JsonProperty("syncMode")]
+    [JsonPropertyName("syncMode")]
     public string? SyncMode { get; set; }
-    [JsonProperty("validateSignature")]
+    [JsonPropertyName("validateSignature")]
     public string? ValidateSignature { get; set; }
-    [JsonProperty("userInfoUrl")]
+    [JsonPropertyName("userInfoUrl")]
     public string? UserInfoUrl { get; set; }
-    [JsonProperty("issuer")]
+    [JsonPropertyName("issuer")]
     public string? Issuer { get; set; }
 
     // for SAML:
-    [JsonProperty("nameIDPolicyFormat")]
+    [JsonPropertyName("nameIDPolicyFormat")]
     public string? NameIDPolicyFormat { get; set; }
-    [JsonProperty("principalType")]
+    [JsonPropertyName("principalType")]
     public string? PrincipalType { get; set; }
-    [JsonProperty("signatureAlgorithm")]
+    [JsonPropertyName("signatureAlgorithm")]
     public string? SignatureAlgorithm { get; set; }
-    [JsonProperty("xmlSigKeyInfoKeyNameTransformer")]
+    [JsonPropertyName("xmlSigKeyInfoKeyNameTransformer")]
     public string? XmlSigKeyInfoKeyNameTransformer { get; set; }
-    [JsonProperty("allowCreate")]
+    [JsonPropertyName("allowCreate")]
     public string? AllowCreate { get; set; }
-    [JsonProperty("entityId")]
+    [JsonPropertyName("entityId")]
     public string? EntityId { get; set; }
-    [JsonProperty("authnContextComparisonType")]
+    [JsonPropertyName("authnContextComparisonType")]
     public string? AuthnContextComparisonType { get; set; }
-    [JsonProperty("backchannelSupported")]
+    [JsonPropertyName("backchannelSupported")]
     public string? BackchannelSupported { get; set; }
-    [JsonProperty("postBindingResponse")]
+    [JsonPropertyName("postBindingResponse")]
     public string? PostBindingResponse { get; set; }
-    [JsonProperty("postBindingAuthnRequest")]
+    [JsonPropertyName("postBindingAuthnRequest")]
     public string? PostBindingAuthnRequest { get; set; }
-    [JsonProperty("postBindingLogout")]
+    [JsonPropertyName("postBindingLogout")]
     public string? PostBindingLogout { get; set; }
-    [JsonProperty("wantAuthnRequestsSigned")]
+    [JsonPropertyName("wantAuthnRequestsSigned")]
     public string? WantAuthnRequestsSigned { get; set; }
-    [JsonProperty("wantAssertionsSigned")]
+    [JsonPropertyName("wantAssertionsSigned")]
     public string? WantAssertionsSigned { get; set; }
-    [JsonProperty("wantAssertionsEncrypted")]
+    [JsonPropertyName("wantAssertionsEncrypted")]
     public string? WantAssertionsEncrypted { get; set; }
-    [JsonProperty("forceAuthn")]
+    [JsonPropertyName("forceAuthn")]
     public string? ForceAuthn { get; set; }
-    [JsonProperty("signSpMetadata")]
+    [JsonPropertyName("signSpMetadata")]
     public string? SignSpMetadata { get; set; }
-    [JsonProperty("loginHint")]
+    [JsonPropertyName("loginHint")]
     public string? LoginHint { get; set; }
-    [JsonProperty("singleSignOnServiceUrl")]
+    [JsonPropertyName("singleSignOnServiceUrl")]
     public string? SingleSignOnServiceUrl { get; set; }
-    [JsonProperty("allowedClockSkew")]
+    [JsonPropertyName("allowedClockSkew")]
     public string? AllowedClockSkew { get; set; }
-    [JsonProperty("attributeConsumingServiceIndex")]
+    [JsonPropertyName("attributeConsumingServiceIndex")]
     public string? AttributeConsumingServiceIndex { get; set; }
 }

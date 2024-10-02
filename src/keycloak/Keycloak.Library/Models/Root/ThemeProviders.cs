@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ThemeProviders
 {
-    [JsonProperty("folder")]
+    [JsonPropertyName("folder")]
     public HasOrder Folder { get; set; }
 
-    [JsonProperty("module")]
+    [JsonPropertyName("module")]
     public HasOrder Module { get; set; }
 
-    [JsonProperty("jar")]
+    [JsonPropertyName("jar")]
     public HasOrder Jar { get; set; }
 
-    [JsonProperty("extending")]
+    [JsonPropertyName("extending")]
     public HasOrder Extending { get; set; }
 }

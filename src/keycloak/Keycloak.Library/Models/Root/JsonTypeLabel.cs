@@ -24,23 +24,45 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-[JsonConverter(typeof(JsonTypeLabelConverter))]
+[JsonConverter(typeof(EnumMemberConverter<JsonTypeLabel>))]
 public enum JsonTypeLabel
 {
+    [EnumMember(Value = "boolean")]
     Boolean,
+
+    [EnumMember(Value = "clientlist")]
     ClientList,
+
+    [EnumMember(Value = "file")]
     File,
+
+    [EnumMember(Value = "list")]
     List,
+
+    [EnumMember(Value = "multivaluedlist")]
     MultivaluedList,
+
+    [EnumMember(Value = "multivaluedstring")]
     MultivaluedString,
+
+    [EnumMember(Value = "password")]
     Password,
+
+    [EnumMember(Value = "role")]
     Role,
+
+    [EnumMember(Value = "script")]
     Script,
+
+    [EnumMember(Value = "string")]
     String,
+
+    [EnumMember(Value = "text")]
     Text
 }

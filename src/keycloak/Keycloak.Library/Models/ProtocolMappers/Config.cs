@@ -24,52 +24,52 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
 
 public class Config
 {
-    [JsonProperty("single")]
+    [JsonPropertyName("single")]
     public string? Single { get; set; }
-    [JsonProperty("attribute.nameformat")]
+    [JsonPropertyName("attribute.nameformat")]
     public string? AttributeNameFormat { get; set; }
-    [JsonProperty("attribute.name")]
+    [JsonPropertyName("attribute.name")]
     public string? AttributeName { get; set; }
-    [JsonProperty("userinfo.token.claim")]
+    [JsonPropertyName("userinfo.token.claim")]
     public string? UserInfoTokenClaim { get; set; }
-    [JsonProperty("user.attribute")]
+    [JsonPropertyName("user.attribute")]
     public string? UserAttribute { get; set; }
-    [JsonProperty("id.token.claim")]
+    [JsonPropertyName("id.token.claim")]
     public string? IdTokenClaim { get; set; }
-    [JsonProperty("access.token.claim")]
+    [JsonPropertyName("access.token.claim")]
     public string? AccessTokenClaim { get; set; }
-    [JsonProperty("introspection.token.claim")]
+    [JsonPropertyName("introspection.token.claim")]
     public string? IntrospectionTokenClaim { get; set; }
-    [JsonProperty("lightweight.claim")]
+    [JsonPropertyName("lightweight.claim")]
     public string? LightweightClaim { get; set; }
-    [JsonProperty("claim.name")]
+    [JsonPropertyName("claim.name")]
     public string? ClaimName { get; set; }
-    [JsonProperty("jsonType.label")]
+    [JsonPropertyName("jsonType.label")]
     public string? JsonTypelabel { get; set; }
-    [JsonProperty("user.attribute.formatted")]
+    [JsonPropertyName("user.attribute.formatted")]
     public string? UserAttributeFormatted { get; set; }
-    [JsonProperty("user.attribute.country")]
+    [JsonPropertyName("user.attribute.country")]
     public string? UserAttributeCountry { get; set; }
-    [JsonProperty("user.attribute.postal_code")]
+    [JsonPropertyName("user.attribute.postal_code")]
     public string? UserAttributePostalCode { get; set; }
-    [JsonProperty("user.attribute.street")]
+    [JsonPropertyName("user.attribute.street")]
     public string? UserAttributeStreet { get; set; }
-    [JsonProperty("user.attribute.region")]
+    [JsonPropertyName("user.attribute.region")]
     public string? UserAttributeRegion { get; set; }
-    [JsonProperty("user.attribute.locality")]
+    [JsonPropertyName("user.attribute.locality")]
     public string? UserAttributeLocality { get; set; }
-    [JsonProperty("included.client.audience")]
+    [JsonPropertyName("included.client.audience")]
     public string? IncludedClientAudience { get; set; }
-    [JsonProperty("included.custom.audience")]
+    [JsonPropertyName("included.custom.audience")]
     public string? IncludedCustomAudience { get; set; }
-    [JsonProperty("multivalued")]
+    [JsonPropertyName("multivalued")]
     public string? Multivalued { get; set; }
-    [JsonProperty("user.session.note")]
+    [JsonPropertyName("user.session.note")]
     public string? UserSessionNote { get; set; }
 }

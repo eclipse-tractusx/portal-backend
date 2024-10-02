@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 
 public class GlobalRequestResult
 {
-    [JsonProperty("failedRequests")]
+    [JsonPropertyName("failedRequests")]
     public IEnumerable<string> FailedRequests { get; set; }
-    [JsonProperty("successRequests")]
+    [JsonPropertyName("successRequests")]
     public IEnumerable<string> SuccessRequests { get; set; }
 }

@@ -24,21 +24,21 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 
 public class IdentityProviderMapper
 {
-    [JsonProperty("config")]
+    [JsonPropertyName("config")]
     public IDictionary<string, string>? Config { get; set; }
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string? Id { get; set; }
-    [JsonProperty("identityProviderAlias")]
+    [JsonPropertyName("identityProviderAlias")]
     public string? IdentityProviderAlias { get; set; }
-    [JsonProperty("identityProviderMapper")]
+    [JsonPropertyName("identityProviderMapper")]
     // ReSharper disable once InconsistentNaming
     public string? _IdentityProviderMapper { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
 }

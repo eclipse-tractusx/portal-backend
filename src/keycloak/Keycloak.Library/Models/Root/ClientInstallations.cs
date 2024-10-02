@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ClientInstallations
 {
-    [JsonProperty("docker-v2")]
+    [JsonPropertyName("docker-v2")]
     public List<ClientInstallation> DockerV2 { get; set; }
 
-    [JsonProperty("saml")]
+    [JsonPropertyName("saml")]
     public List<ClientInstallation> Saml { get; set; }
 
-    [JsonProperty("openid-connect")]
+    [JsonPropertyName("openid-connect")]
     public List<ClientInstallation> OpenIdConnect { get; set; }
 }

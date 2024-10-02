@@ -24,26 +24,26 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class Key
 {
-    [JsonProperty("providerId")]
+    [JsonPropertyName("providerId")]
     public string ProviderId { get; set; }
-    [JsonProperty("providerPriority")]
+    [JsonPropertyName("providerPriority")]
     public int? ProviderPriority { get; set; }
-    [JsonProperty("kid")]
+    [JsonPropertyName("kid")]
     public string Kid { get; set; }
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public string Status { get; set; }
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
-    [JsonProperty("algorithm")]
+    [JsonPropertyName("algorithm")]
     public string Algorithm { get; set; }
-    [JsonProperty("publicKey")]
+    [JsonPropertyName("publicKey")]
     public string PublicKey { get; set; }
-    [JsonProperty("certificate")]
+    [JsonPropertyName("certificate")]
     public string Certificate { get; set; }
 }

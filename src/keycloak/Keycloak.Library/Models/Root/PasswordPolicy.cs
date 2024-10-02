@@ -24,24 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class PasswordPolicy
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("displayName")]
+    [JsonPropertyName("displayName")]
     public string DisplayName { get; set; }
 
-    [JsonProperty("configType")]
+    [JsonPropertyName("configType")]
     public ConfigType? ConfigType { get; set; }
 
-    [JsonProperty("defaultValue")]
+    [JsonPropertyName("defaultValue")]
     public string DefaultValue { get; set; }
 
-    [JsonProperty("multipleSupported")]
+    [JsonPropertyName("multipleSupported")]
     public bool? MultipleSupported { get; set; }
 }
