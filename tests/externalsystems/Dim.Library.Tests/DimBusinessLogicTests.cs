@@ -360,28 +360,35 @@ public class DimBusinessLogicTests
         const string jsonData = """
                                         {
                                             "@context": [
-                                                "https://www.w3.org/ns/did/v1"
+                                                "https://www.w3.org/ns/did/v1",
+                                                "https://w3id.org/security/suites/jws-2020/v1"
                                             ],
-                                            "id": "did:web:example.com:did:BPNL0000000000XX",
+                                            "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
+                                            "service": [
+                                                {
+                                                    "type": "CredentialService",
+                                                    "serviceEndpoint": "https://dis-agent-prod.eu10.dim.cloud.sap/api/v1.0.0/iatp",
+                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#CredentialService"
+                                                }
+                                            ],
                                             "verificationMethod": [
                                                 {
-                                                    "id": "did:web:example.com:did:BPNL0000000000XX#key-0",
+                                                    "id": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2",
                                                     "type": "JsonWebKey2020",
+                                                    "controller": "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ",
                                                     "publicKeyJwk": {
-                                                        "kty": "JsonWebKey2020",
-                                                        "crv": "Ed25519",
-                                                        "x": "3534354354353",
-                                                        "y": "123456"
+                                                        "kty": "EC",
+                                                        "crv": "secp256k1",
+                                                        "x": "RnrgNQgLvDooE7z7J1fMPFoHyJtnQ0FifgebMO7pEmk",
+                                                        "y": "Z45urmCvyQp7AJzX7_JaRFQSGO-0U8zutUTCrGA1XR8"
                                                     }
                                                 }
                                             ],
-                                            "service": [
-                                                {
-                                                    "id": "did:web:example.com:did:BPNL0000000000XX#key-0",
-                                                    "type": "CredentialStore",
-                                                    "serviceEndpoint": "https://example.com/svc"
-                                                }
-                                            ]
+                                            "authentication": [
+                                                "did:web:portal-backend.int.catena-x.net:api:administration:staticdata:did:BPNL000000006TCJ#keys-1c1e0ef5-fa61-4030-9a32-6636f6dd1ea2"
+                                            ],
+                                            "assertionMethod": [],
+                                            "keyAgreement": []
                                         }
                                 """;
         var didDocument = JsonDocument.Parse(jsonData);
