@@ -126,7 +126,7 @@
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2024-09-27 10:01:33.439000 +00:00",
     "user_status_id": 1,
-    "user_entity_id": "obsolete-obso-lete-obso-obsolete0001",
+    "user_entity_id": null,
     "identity_type_id": 2
   },
   {
@@ -134,7 +134,7 @@
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2024-09-27 10:01:33.439000 +00:00",
     "user_status_id": 1,
-    "user_entity_id": "obsolete-obso-lete-obso-obsolete0002",
+    "user_entity_id": null,
     "identity_type_id": 2
   },
   {
@@ -142,7 +142,7 @@
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2024-09-27 10:01:33.439000 +00:00",
     "user_status_id": 1,
-    "user_entity_id": "obsolete-obso-lete-obso-obsolete0003",
+    "user_entity_id": null,
     "identity_type_id": 2
   },
   {
@@ -150,7 +150,7 @@
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2024-09-27 10:01:33.439000 +00:00",
     "user_status_id": 1,
-    "user_entity_id": "obsolete-obso-lete-obso-obsolete0004",
+    "user_entity_id": null,
     "identity_type_id": 2
   },
   {
@@ -158,7 +158,7 @@
     "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
     "date_created": "2024-09-27 10:01:33.439000 +00:00",
     "user_status_id": 1,
-    "user_entity_id": "obsolete-obso-lete-obso-obsolete0005",
+    "user_entity_id": null,
     "identity_type_id": 2
   }
 ]
