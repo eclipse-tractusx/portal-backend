@@ -2908,7 +2908,7 @@ paths:
     post:
       tags:
         - Network
-      summary: 'Registers a partner company (Authorization required - Roles: create_partner_registration)'
+      summary: 'Registers a partner company (Authorization required - Roles: configure_partner_registration)'
       requestBody:
         description: Data for the registration
         content:
@@ -3073,6 +3073,56 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/administration/registration/Network/companies:
+    get:
+      tags:
+        - Network
+      summary: 'Get OSP Company Application Detail by Company Name or Status (Authorization required - Roles: configure_partner_registration)'
+      description: "Example: GET: api/administration/registration/network/companies?companyName=Car&page=0&size=4&companyApplicationStatus=Closed \n\r\nExample: GET: api/administration/registration/network/companies?page=0&size=4"
+      parameters:
+        - name: page
+          in: query
+          description: page index start from 0
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          description: size to get number of records
+          schema:
+            type: integer
+            format: int32
+        - name: companyApplicationStatusFilter
+          in: query
+          description: Search by company applicationstatus
+          schema:
+            $ref: '#/components/schemas/CompanyApplicationStatusFilter'
+        - name: companyName
+          in: query
+          description: search by company name
+          schema:
+            type: string
+        - name: externalId
+          in: query
+          description: search by external Id
+          schema:
+            type: string
+        - name: dateCreatedOrderFilter
+          in: query
+          description: sort result by dateCreated ascending or descending
+          schema:
+            $ref: '#/components/schemas/DateCreatedOrderFilter'
+      responses:
+        '200':
+          description: Result as a OSP Company Application Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyDetailsOspOnboardingResponse'
         '500':
           description: Internal Server Error
         '401':
@@ -4043,56 +4093,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal Server Error
-        '401':
-          description: The User is unauthorized
-  /api/administration/registration/network/companies:
-    get:
-      tags:
-        - Registration
-      summary: 'Get OSP Company Application Detail by Company Name or Status (Authorization required - Roles: view_submitted_applications)'
-      description: "Example: GET: api/administration/registration/network/companies?companyName=Car&page=0&size=4&companyApplicationStatus=Closed \n\r\nExample: GET: api/administration/registration/network/companies?page=0&size=4"
-      parameters:
-        - name: page
-          in: query
-          description: page index start from 0
-          schema:
-            type: integer
-            format: int32
-        - name: size
-          in: query
-          description: size to get number of records
-          schema:
-            type: integer
-            format: int32
-        - name: companyApplicationStatusFilter
-          in: query
-          description: Search by company applicationstatus
-          schema:
-            $ref: '#/components/schemas/CompanyApplicationStatusFilter'
-        - name: companyName
-          in: query
-          description: search by company name
-          schema:
-            type: string
-        - name: externalId
-          in: query
-          description: search by external Id
-          schema:
-            type: string
-        - name: dateCreatedOrderFilter
-          in: query
-          description: sort result by dateCreated ascending or descending
-          schema:
-            $ref: '#/components/schemas/DateCreatedOrderFilter'
-      responses:
-        '200':
-          description: Result as a OSP Company Application Details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CompanyDetailsOspOnboardingResponse'
         '500':
           description: Internal Server Error
         '401':
