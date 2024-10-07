@@ -22,26 +22,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccountKind
+public class TechnicalUserKind
 {
-    private CompanyServiceAccountKind()
+    private TechnicalUserKind()
     {
         Label = null!;
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        TechnicalUsers = new HashSet<TechnicalUser>();
     }
 
-    public CompanyServiceAccountKind(CompanyServiceAccountKindId companyServiceAccountKindId) : this()
+    public TechnicalUserKind(TechnicalUserKindId technicalUserKindId) : this()
     {
-        Id = companyServiceAccountKindId;
-        Label = companyServiceAccountKindId.ToString();
+        Id = technicalUserKindId;
+        Label = technicalUserKindId.ToString();
     }
 
     [Key]
-    public CompanyServiceAccountKindId Id { get; private set; }
+    public TechnicalUserKindId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public virtual ICollection<TechnicalUser> TechnicalUsers { get; private set; }
 }

@@ -26,15 +26,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public interface IServiceAccountRepository
 {
-    CompanyServiceAccount CreateCompanyServiceAccount(Guid identityId,
+    TechnicalUser CreateCompanyServiceAccount(Guid identityId,
         string name,
         string description,
         string? clientClientId,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        CompanyServiceAccountKindId companyServiceAccountKindId,
-        Action<CompanyServiceAccount>? setOptionalParameters = null);
+        TechnicalUserTypeId technicalUserTypeId,
+        TechnicalUserKindId technicalUserKindId,
+        Action<TechnicalUser>? setOptionalParameters = null);
 
-    void AttachAndModifyCompanyServiceAccount(Guid id, Guid version, Action<CompanyServiceAccount>? initialize, Action<CompanyServiceAccount> modify);
+    void AttachAndModifyCompanyServiceAccount(Guid id, Guid version, Action<TechnicalUser>? initialize, Action<TechnicalUser> modify);
     Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId);
     Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter);
     Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId);

@@ -25,15 +25,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccount : IBaseEntity, IVersionedEntity
+public class TechnicalUser : IBaseEntity, IVersionedEntity
 {
-    public CompanyServiceAccount(Guid id, Guid version, string name, string description, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId)
+    public TechnicalUser(Guid id, Guid version, string name, string description, TechnicalUserTypeId technicalUserTypeId, TechnicalUserKindId technicalUserKindId)
     {
         Id = id;
         Name = name;
         Description = description;
-        CompanyServiceAccountTypeId = companyServiceAccountTypeId;
-        CompanyServiceAccountKindId = companyServiceAccountKindId;
+        TechnicalUserTypeId = technicalUserTypeId;
+        TechnicalUserKindId = technicalUserKindId;
         Version = version;
         AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
     }
@@ -49,8 +49,8 @@ public class CompanyServiceAccount : IBaseEntity, IVersionedEntity
 
     public string Description { get; set; }
 
-    public CompanyServiceAccountTypeId CompanyServiceAccountTypeId { get; set; }
-    public CompanyServiceAccountKindId CompanyServiceAccountKindId { get; set; }
+    public TechnicalUserTypeId TechnicalUserTypeId { get; set; }
+    public TechnicalUserKindId TechnicalUserKindId { get; set; }
     public Guid? OfferSubscriptionId { get; set; }
 
     [ConcurrencyCheck]
@@ -58,12 +58,12 @@ public class CompanyServiceAccount : IBaseEntity, IVersionedEntity
 
     // Navigation properties
     public virtual Identity? Identity { get; set; }
-    public virtual CompanyServiceAccountType? CompanyServiceAccountType { get; set; }
-    public virtual CompanyServiceAccountKind? CompanyServiceAccountKind { get; set; }
+    public virtual TechnicalUserType? TechnicalUserType { get; set; }
+    public virtual TechnicalUserKind? TechnicalUserKind { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
     public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }
-    public virtual DimCompanyServiceAccount? DimCompanyServiceAccount { get; private set; }
+    public virtual ExternalTechnicalUser? ExternalTechnicalUser { get; private set; }
     public virtual DimUserCreationData? DimUserCreationData { get; set; }
     public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
 }

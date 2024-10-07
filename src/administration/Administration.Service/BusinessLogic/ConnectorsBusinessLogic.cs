@@ -232,7 +232,7 @@ public class ConnectorsBusinessLogic(
                 connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
                 if (technicalUserId != null)
                 {
-                    connector.CompanyServiceAccountId = technicalUserId;
+                    connector.TechnicalUserId = technicalUserId;
                 }
             });
 
@@ -305,7 +305,7 @@ public class ConnectorsBusinessLogic(
     {
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
-            con.CompanyServiceAccountId = null;
+            con.TechnicalUserId = null;
             con.StatusId = ConnectorStatusId.INACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });

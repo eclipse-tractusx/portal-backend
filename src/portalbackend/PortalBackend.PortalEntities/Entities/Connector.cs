@@ -66,7 +66,7 @@ public class Connector : IAuditableV1, IBaseEntity
     [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }
 
-    public Guid? CompanyServiceAccountId { get; set; }
+    public Guid? TechnicalUserId { get; set; }
 
     public Guid? SdCreationProcessId { get; set; }
 
@@ -79,7 +79,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Company? Provider { get; set; }
     public virtual Company? Host { get; set; }
     public virtual Country? Location { get; set; }
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public virtual TechnicalUser? TechnicalUser { get; set; }
     public virtual Identity? LastEditor { get; set; }
     public virtual Process? SdCreationProcess { get; set; }
 

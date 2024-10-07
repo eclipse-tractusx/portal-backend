@@ -131,8 +131,8 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var offerSubscription = new OfferSubscription(Guid.NewGuid(), Guid.Empty, Guid.Empty, OfferSubscriptionStatusId.PENDING, Guid.Empty, default);
-        var companyServiceAccount = new CompanyServiceAccount(Guid.NewGuid(), Guid.NewGuid(), "test", "test", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL);
-        var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, companyServiceAccount);
+        var technicalUser = new TechnicalUser(Guid.NewGuid(), Guid.NewGuid(), "test", "test", TechnicalUserTypeId.OWN, TechnicalUserKindId.INTERNAL);
+        var createNotificationsEnumerator = SetupAutoSetup(offerTypeId, offerSubscription, isSingleInstance, technicalUser);
         var clientId = Guid.NewGuid();
         var appInstanceId = Guid.NewGuid();
         var appSubscriptionDetailId = Guid.NewGuid();
@@ -208,7 +208,7 @@ public class OfferSetupServiceTests
                 info.TechnicalUserSecret == "katze!1234" &&
                 info.TechnicalUserPermissions.SequenceEqual(new[] { "role1", "role2" })
             );
-            companyServiceAccount.OfferSubscriptionId.Should().Be(_pendingSubscriptionId);
+            technicalUser.OfferSubscriptionId.Should().Be(_pendingSubscriptionId);
         }
 
         if (isSingleInstance)
@@ -1091,7 +1091,7 @@ public class OfferSetupServiceTests
             : Enumerable.Empty<UserRoleConfig>();
         var data = new OfferSubscriptionTechnicalUserCreationData(true, clientId, "Test App", "Stark Industries", CompanyUserCompanyId, Bpn, OfferTypeId.SERVICE);
         var serviceAccountData = _fixture.Create<ServiceAccountData>();
-        var companyServiceAccount = _fixture.Build<CompanyServiceAccount>()
+        var technicalUser = _fixture.Build<TechnicalUser>()
             .With(x => x.OfferSubscriptionId, default(Guid?))
             .Create();
         var roleIds = _fixture.CreateMany<Guid>().AsEnumerable();
@@ -1101,19 +1101,19 @@ public class OfferSetupServiceTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<TechnicalUser>>._))
             .Invokes((ServiceAccountCreationInfo _,
                 Guid _,
                 IEnumerable<string> _,
-                CompanyServiceAccountTypeId _,
+                TechnicalUserTypeId _,
                 bool _,
                 bool _,
                 ServiceAccountCreationProcessData? _,
-                Action<CompanyServiceAccount>? setOptionalParameter) =>
+                Action<TechnicalUser>? setOptionalParameter) =>
             {
-                if (companyServiceAccount != null)
+                if (technicalUser != null)
                 {
-                    setOptionalParameter?.Invoke(companyServiceAccount);
+                    setOptionalParameter?.Invoke(technicalUser);
                 }
             })
             .Returns((
@@ -1455,17 +1455,17 @@ public class OfferSetupServiceTests
 
     #region Setup
 
-    private IAsyncEnumerator<Guid> SetupServices(CompanyServiceAccount? companyServiceAccount = null)
+    private IAsyncEnumerator<Guid> SetupServices(TechnicalUser? technicalUser = null)
     {
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._, A<bool>._))
             .Returns("cl1");
 
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), CompanyServiceAccountTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData?>._, A<Action<CompanyServiceAccount>?>._))
-            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, CompanyServiceAccountTypeId _, bool _, bool _, ServiceAccountCreationProcessData? _, Action<CompanyServiceAccount>? setOptionalParameter) =>
+        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData?>._, A<Action<TechnicalUser>?>._))
+            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, TechnicalUserTypeId _, bool _, bool _, ServiceAccountCreationProcessData? _, Action<TechnicalUser>? setOptionalParameter) =>
             {
-                if (companyServiceAccount != null)
+                if (technicalUser != null)
                 {
-                    setOptionalParameter?.Invoke(companyServiceAccount);
+                    setOptionalParameter?.Invoke(technicalUser);
                 }
             })
             .Returns(new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
@@ -1490,9 +1490,9 @@ public class OfferSetupServiceTests
         return createNotificationsEnumerator;
     }
 
-    private IAsyncEnumerator<Guid> SetupAutoSetup(OfferTypeId offerTypeId, OfferSubscription? offerSubscription = null, bool isSingleInstance = false, CompanyServiceAccount? companyServiceAccount = null)
+    private IAsyncEnumerator<Guid> SetupAutoSetup(OfferTypeId offerTypeId, OfferSubscription? offerSubscription = null, bool isSingleInstance = false, TechnicalUser? technicalUser = null)
     {
-        var createNotificationsEnumerator = SetupServices(companyServiceAccount);
+        var createNotificationsEnumerator = SetupServices(technicalUser);
 
         if (offerSubscription != null)
         {

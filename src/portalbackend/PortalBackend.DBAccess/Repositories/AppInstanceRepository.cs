@@ -61,7 +61,7 @@ public class AppInstanceRepository : IAppInstanceRepository
     public IAsyncEnumerable<Guid> GetAssignedServiceAccounts(Guid appInstanceId) =>
         _portalDbContext.AppInstanceAssignedServiceAccounts
             .Where(x => x.AppInstanceId == appInstanceId)
-            .Select(x => x.CompanyServiceAccountId)
+            .Select(x => x.TechnicalUserId)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

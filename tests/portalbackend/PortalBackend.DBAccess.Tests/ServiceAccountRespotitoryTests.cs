@@ -61,8 +61,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
             "test",
             "Only a test service account",
             "sa1",
-            CompanyServiceAccountTypeId.MANAGED,
-            CompanyServiceAccountKindId.INTERNAL,
+            TechnicalUserTypeId.MANAGED,
+            TechnicalUserKindId.INTERNAL,
             sa =>
             {
                 sa.OfferSubscriptionId = _validSubscriptionId;
@@ -72,11 +72,11 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         result.OfferSubscriptionId.Should().Be(_validSubscriptionId);
-        result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result.TechnicalUserTypeId.Should().Be(TechnicalUserTypeId.MANAGED);
         result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
+            .Which.Entity.Should().BeOfType<TechnicalUser>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
     }
 
     #endregion
@@ -94,8 +94,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull().And.Match<CompanyServiceAccountWithRoleDataClientId>(
-            x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
-                 x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
+            x => x.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
+                 x.TechnicalUserKindId == TechnicalUserKindId.INTERNAL);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull()
             .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+                x.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 x.Status == UserStatusId.ACTIVE &&
                 x.CompanyLastEditorData != null &&
                 x.CompanyLastEditorData.CompanyName == "CX-Test-Access" &&
@@ -233,7 +233,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull()
             .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
                 x.ClientClientId == "sa-x-inactive" &&
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 x.Status == UserStatusId.INACTIVE);
     }
 
@@ -260,7 +260,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         if (expected > 0)
         {
             result!.Data.First().Should().Match<Models.CompanyServiceAccountData>(y =>
-                y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                y.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 y.IsOwner &&
                 !y.IsProvider);
         }
@@ -278,7 +278,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN);
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.OWN);
     }
 
     [Fact]
@@ -295,20 +295,20 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Count.Should().Be(22);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
-                y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+                y.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 y.UserStatusId == UserStatusId.ACTIVE))
             .And.BeInAscendingOrder(x => x.Name)
             .And.Satisfy(
-                x => x.ServiceAccountId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"),
-                x => x.ServiceAccountId == new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
-                x => x.ServiceAccountId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
-                x => x.ServiceAccountId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"));
+                x => x.TechnicalUserId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"),
+                x => x.TechnicalUserId == new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
+                x => x.TechnicalUserId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
+                x => x.TechnicalUserId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"));
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED
                 && !x.IsOwner && x.IsProvider);
     }
 
@@ -341,7 +341,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED);
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED);
     }
 
     [Fact]
@@ -357,7 +357,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().ContainSingle()
-            .Which.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
+            .Which.TechnicalUserTypeId.Should().Be(TechnicalUserTypeId.OWN);
     }
 
     [Fact]
@@ -389,9 +389,9 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.Count.Should().Be(1);
         result.Data.Should().ContainSingle()
             .Which.Should().Match<Models.CompanyServiceAccountData>(x =>
-                x.ServiceAccountId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
+                x.TechnicalUserId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
                 x.ClientId == "sa-x-inactive" &&
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 x.UserStatusId == UserStatusId.INACTIVE);
     }
 
@@ -488,7 +488,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<DimCompanyServiceAccount>()
+            .Which.Entity.Should().BeOfType<ExternalTechnicalUser>()
             .Which.EncryptionMode.Should().Be(0);
     }
 
@@ -543,8 +543,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<CompanyServiceAccount>()
-            .Which.Should().Match<CompanyServiceAccount>(
+            .Which.Entity.Should().BeOfType<TechnicalUser>()
+            .Which.Should().Match<TechnicalUser>(
                 x => x.Id == id && x.Version != version && x.Description == "test" && x.ClientClientId == "bar"
             );
     }

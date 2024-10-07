@@ -49,11 +49,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 con.HostId,
                 con.Host!.Name,
                 con.SelfDescriptionDocumentId,
-                con.CompanyServiceAccountId == null ? null : new TechnicalUserData(
-                    con.CompanyServiceAccount!.Id,
-                    con.CompanyServiceAccount.Name,
-                    con.CompanyServiceAccount.ClientClientId,
-                    con.CompanyServiceAccount.Description),
+                con.TechnicalUserId == null ? null : new TechnicalUserData(
+                    con.TechnicalUser!.Id,
+                    con.TechnicalUser.Name,
+                    con.TechnicalUser.ClientClientId,
+                    con.TechnicalUser.Description),
                 con.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
@@ -76,11 +76,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     c.StatusId,
                     c.Provider!.Name,
                     c.SelfDescriptionDocumentId,
-                    c.CompanyServiceAccountId == default ? null : new TechnicalUserData(
-                        c.CompanyServiceAccount!.Id,
-                        c.CompanyServiceAccount.Name,
-                        c.CompanyServiceAccount.ClientClientId,
-                        c.CompanyServiceAccount.Description),
+                    c.TechnicalUserId == default ? null : new TechnicalUserData(
+                        c.TechnicalUser!.Id,
+                        c.TechnicalUser.Name,
+                        c.TechnicalUser.ClientClientId,
+                        c.TechnicalUser.Description),
                     c.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
@@ -98,11 +98,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     connector.HostId,
                     connector.Host!.Name,
                     connector.SelfDescriptionDocumentId,
-                    connector.CompanyServiceAccountId == default ? null : new TechnicalUserData(
-                        connector.CompanyServiceAccount!.Id,
-                        connector.CompanyServiceAccount.Name,
-                        connector.CompanyServiceAccount.ClientClientId,
-                        connector.CompanyServiceAccount.Description),
+                    connector.TechnicalUserId == default ? null : new TechnicalUserData(
+                        connector.TechnicalUser!.Id,
+                        connector.TechnicalUser.Name,
+                        connector.TechnicalUser.ClientClientId,
+                        connector.TechnicalUser.Description),
                     connector.ConnectorUrl),
                 connector.ProviderId == companyId
             ))
@@ -170,17 +170,17 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     x.OfferSubscriptionId,
                     x.OfferSubscription!.OfferSubscriptionStatusId
                 )),
-                connector.CompanyServiceAccount!.Identity!.UserStatusId,
-                connector.CompanyServiceAccountId,
+                connector.TechnicalUser!.Identity!.UserStatusId,
+                connector.TechnicalUserId,
                 new DeleteServiceAccountData(
-                    connector.CompanyServiceAccount!.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
-                    connector.CompanyServiceAccount.ClientClientId,
-                    connector.CompanyServiceAccount.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
-                    connector.CompanyServiceAccount.DimUserCreationData!.Process!.ProcessSteps
+                    connector.TechnicalUser!.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
+                    connector.TechnicalUser.ClientClientId,
+                    connector.TechnicalUser.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL,
+                    connector.TechnicalUser.DimUserCreationData!.Process!.ProcessSteps
                         .Any(ps =>
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
                             processStepsToFilter.Contains(ps.ProcessStepTypeId)),
-                    connector.CompanyServiceAccount.DimUserCreationData == null ? null : connector.CompanyServiceAccount.DimUserCreationData!.ProcessId)
+                    connector.TechnicalUser.DimUserCreationData == null ? null : connector.TechnicalUser.DimUserCreationData!.ProcessId)
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />

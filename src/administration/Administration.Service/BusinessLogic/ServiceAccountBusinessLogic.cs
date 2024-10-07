@@ -79,8 +79,8 @@ public class ServiceAccountBusinessLogic(
         serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
             .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
-        const CompanyServiceAccountTypeId CompanyServiceAccountTypeId = CompanyServiceAccountTypeId.OWN;
-        var (_, _, serviceAccounts) = await serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, [result.Bpn], CompanyServiceAccountTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);
+        const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;
+        var (_, _, serviceAccounts) = await serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, [result.Bpn], TechnicalUserTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return serviceAccounts.Select(sa => new ServiceAccountDetails(
@@ -91,7 +91,7 @@ public class ServiceAccountBusinessLogic(
             sa.Status,
             sa.ServiceAccountData?.AuthData.IamClientAuthMethod,
             sa.UserRoleData,
-            CompanyServiceAccountTypeId,
+            TechnicalUserTypeId,
             sa.ServiceAccountData?.AuthData.Secret));
     }
 
@@ -141,11 +141,11 @@ public class ServiceAccountBusinessLogic(
             portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(result.ConnectorId.Value,
                 connector =>
                 {
-                    connector.CompanyServiceAccountId = serviceAccountId;
+                    connector.TechnicalUserId = serviceAccountId;
                 },
                 connector =>
                 {
-                    connector.CompanyServiceAccountId = null;
+                    connector.TechnicalUserId = null;
                 });
         }
     }
@@ -193,8 +193,8 @@ public class ServiceAccountBusinessLogic(
             result.Description,
             iamClientAuthMethod,
             result.UserRoleDatas,
-            result.CompanyServiceAccountTypeId,
-            result.CompanyServiceAccountKindId,
+            result.TechnicalUserTypeId,
+            result.TechnicalUserKindId,
             authServiceUrl,
             result.Status,
             secret,
@@ -227,7 +227,7 @@ public class ServiceAccountBusinessLogic(
             result.Status,
             authData.IamClientAuthMethod,
             result.UserRoleDatas,
-            result.CompanyServiceAccountTypeId,
+            result.TechnicalUserTypeId,
             authData.Secret);
     }
 
@@ -262,7 +262,7 @@ public class ServiceAccountBusinessLogic(
         }
 
         ClientAuthData? authData;
-        if (result.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL)
+        if (result.TechnicalUserKindId == TechnicalUserKindId.INTERNAL)
         {
             var internalClientId = await provisioningManager.UpdateCentralClientAsync(
                 result.ClientClientId,
@@ -302,7 +302,7 @@ public class ServiceAccountBusinessLogic(
             result.UserStatusId,
             authData?.IamClientAuthMethod,
             result.UserRoleDatas,
-            result.CompanyServiceAccountTypeId,
+            result.TechnicalUserTypeId,
             authData?.Secret,
             result.OfferSubscriptionId);
     }

@@ -29,50 +29,50 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 
 public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServiceAccountRepository
 {
-    public CompanyServiceAccount CreateCompanyServiceAccount(
+    public TechnicalUser CreateCompanyServiceAccount(
         Guid identityId,
         string name,
         string description,
         string? clientClientId,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        CompanyServiceAccountKindId companyServiceAccountKindId,
-        Action<CompanyServiceAccount>? setOptionalParameters = null)
+        TechnicalUserTypeId technicalUserTypeId,
+        TechnicalUserKindId technicalUserKindId,
+        Action<TechnicalUser>? setOptionalParameters = null)
     {
-        var entity = new CompanyServiceAccount(
+        var entity = new TechnicalUser(
             identityId,
             Guid.NewGuid(),
             name,
             description,
-            companyServiceAccountTypeId,
-            companyServiceAccountKindId)
+            technicalUserTypeId,
+            technicalUserKindId)
         {
             ClientClientId = clientClientId
         };
         setOptionalParameters?.Invoke(entity);
-        return portalDbContext.CompanyServiceAccounts.Add(entity).Entity;
+        return portalDbContext.TechnicalUsers.Add(entity).Entity;
     }
 
     public void AttachAndModifyCompanyServiceAccount(
         Guid id,
         Guid version,
-        Action<CompanyServiceAccount>? initialize,
-        Action<CompanyServiceAccount> modify)
+        Action<TechnicalUser>? initialize,
+        Action<TechnicalUser> modify)
     {
-        var companyServiceAccount = new CompanyServiceAccount(
+        var technicalUser = new TechnicalUser(
             id,
             version,
             null!,
             null!,
             default,
             default);
-        initialize?.Invoke(companyServiceAccount);
-        portalDbContext.Attach(companyServiceAccount);
-        modify(companyServiceAccount);
-        companyServiceAccount.UpdateVersion();
+        initialize?.Invoke(technicalUser);
+        portalDbContext.Attach(technicalUser);
+        modify(technicalUser);
+        technicalUser.UpdateVersion();
     }
 
     public Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId) =>
-        portalDbContext.CompanyServiceAccounts
+        portalDbContext.TechnicalUsers
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId
                 && serviceAccount.Identity!.UserStatusId == UserStatusId.ACTIVE
@@ -82,8 +82,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                     serviceAccount.Name,
                     serviceAccount.Description,
                     serviceAccount.ClientClientId,
-                    serviceAccount.CompanyServiceAccountTypeId,
-                    serviceAccount.CompanyServiceAccountKindId,
+                    serviceAccount.TechnicalUserTypeId,
+                    serviceAccount.TechnicalUserKindId,
                     serviceAccount.OfferSubscriptionId,
                     serviceAccount.Identity!.UserStatusId,
                     serviceAccount.Identity!.IdentityAssignedRoles
@@ -95,7 +95,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
             .SingleOrDefaultAsync();
 
     public Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter) =>
-        portalDbContext.CompanyServiceAccounts
+        portalDbContext.TechnicalUsers
             .Where(serviceAccount =>
                 serviceAccount.Id == serviceAccountId)
             .Select(sa => new OwnServiceAccountData(
@@ -108,7 +108,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 sa.ClientClientId,
                 sa.Connector!.StatusId,
                 sa.OfferSubscription!.OfferSubscriptionStatusId,
-                sa.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL,
+                sa.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL,
                 sa.DimUserCreationData!.Process!.ProcessSteps
                         .Any(ps =>
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
@@ -117,7 +117,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
             .SingleOrDefaultAsync();
 
     public Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId) =>
-        portalDbContext.CompanyServiceAccounts
+        portalDbContext.TechnicalUsers
             .AsNoTracking()
             .Select(serviceAccount => new
             {
@@ -126,7 +126,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 serviceAccount.Connector,
                 serviceAccount.OfferSubscription,
                 serviceAccount.Identity!.LastEditor,
-                serviceAccount.DimCompanyServiceAccount,
+                serviceAccount.ExternalTechnicalUser,
                 serviceAccount.CompaniesLinkedServiceAccount
             })
             .Where(x =>
@@ -145,8 +145,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                         userRole!.Id,
                         userRole.Offer!.AppInstances.First().IamClient!.ClientClientId,
                         userRole.UserRoleText)),
-                x.ServiceAccount.CompanyServiceAccountTypeId,
-                x.ServiceAccount.CompanyServiceAccountKindId,
+                x.ServiceAccount.TechnicalUserTypeId,
+                x.ServiceAccount.TechnicalUserKindId,
                 x.Connector == null
                     ? null
                     : new ConnectorResponseData(
@@ -164,22 +164,22 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                     : new CompanyLastEditorData(
                         x.LastEditor!.IdentityTypeId == IdentityTypeId.COMPANY_USER
                             ? x.LastEditor.CompanyUser!.Lastname
-                            : x.LastEditor.CompanyServiceAccount!.Name,
+                            : x.LastEditor.TechnicalUser!.Name,
                         x.LastEditor.Company!.Name),
-                x.ServiceAccount.DimCompanyServiceAccount == null
+                x.ServiceAccount.ExternalTechnicalUser == null
                     ? null
                     : new DimServiceAccountData(
-                        x.DimCompanyServiceAccount!.AuthenticationServiceUrl,
-                        x.DimCompanyServiceAccount!.ClientSecret,
-                        x.DimCompanyServiceAccount.InitializationVector,
-                        x.DimCompanyServiceAccount.EncryptionMode)))
+                        x.ExternalTechnicalUser!.AuthenticationServiceUrl,
+                        x.ExternalTechnicalUser!.ClientSecret,
+                        x.ExternalTechnicalUser.InitializationVector,
+                        x.ExternalTechnicalUser.EncryptionMode)))
             .SingleOrDefaultAsync();
 
     public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
-            portalDbContext.CompanyServiceAccounts
+            portalDbContext.TechnicalUsers
                 .AsNoTracking()
                 .Select(serviceAccount => new
                 {
@@ -199,8 +199,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
                 x.ServiceAccount.Id,
                 x.ServiceAccount.ClientClientId,
                 x.ServiceAccount.Name,
-                x.ServiceAccount.CompanyServiceAccountKindId,
-                x.ServiceAccount.CompanyServiceAccountTypeId,
+                x.ServiceAccount.TechnicalUserKindId,
+                x.ServiceAccount.TechnicalUserTypeId,
                 x.ServiceAccount.Identity!.UserStatusId,
                 x.IsOwner,
                 x.IsProvider,
@@ -221,7 +221,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
 
     /// <inheritdoc />
     public Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId) =>
-        portalDbContext.CompanyServiceAccounts
+        portalDbContext.TechnicalUsers
             .Where(sa =>
                 sa.Id == technicalUserId &&
                 (sa.Identity!.UserStatusId == UserStatusId.ACTIVE || sa.Identity!.UserStatusId == UserStatusId.PENDING) &&
@@ -229,7 +229,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
             .AnyAsync();
 
     public Task<(Guid IdentityId, Guid CompanyId)> GetServiceAccountDataByClientId(string clientId) =>
-        portalDbContext.CompanyServiceAccounts
+        portalDbContext.TechnicalUsers
             .Where(sa => sa.ClientClientId == clientId)
             .Select(sa => new ValueTuple<Guid, Guid>(
                 sa.Id,
@@ -237,7 +237,7 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
             .SingleOrDefaultAsync();
 
     public void CreateDimCompanyServiceAccount(Guid serviceAccountId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode) =>
-        portalDbContext.DimCompanyServiceAccounts.Add(new DimCompanyServiceAccount(serviceAccountId, authenticationServiceUrl, secret, initializationVector, encryptionMode));
+        portalDbContext.ExternalTechnicalUsers.Add(new ExternalTechnicalUser(serviceAccountId, authenticationServiceUrl, secret, initializationVector, encryptionMode));
 
     public void CreateDimUserCreationData(Guid serviceAccountId, Guid processId) =>
          portalDbContext.DimUserCreationData.Add(new DimUserCreationData(Guid.NewGuid(), serviceAccountId, processId));
@@ -247,8 +247,8 @@ public class ServiceAccountRepository(PortalDbContext portalDbContext) : IServic
             .Where(x => x.Id == dimServiceAccountId)
             .Select(x => new ValueTuple<bool, string?, string>(
                 true,
-                x.ServiceAccount!.Identity!.Company!.BusinessPartnerNumber,
-                x.ServiceAccount!.Name))
+                x.TechnicalUser!.Identity!.Company!.BusinessPartnerNumber,
+                x.TechnicalUser!.Name))
             .SingleOrDefaultAsync();
 
     public Task<Guid> GetDimServiceAccountIdForProcess(Guid processId) =>

@@ -185,7 +185,7 @@ public class OfferSetupService : IOfferSetupService
                 serviceAccountCreationInfo,
                 data.CompanyId,
                 data.Bpn == null ? Enumerable.Empty<string>() : Enumerable.Repeat(data.Bpn, 1),
-                CompanyServiceAccountTypeId.MANAGED,
+                TechnicalUserTypeId.MANAGED,
                 data.EnhanceTechnicalUserName,
                 data.Enabled,
                 new ServiceAccountCreationProcessData(ProcessTypeId.OFFER_SUBSCRIPTION, processId),
@@ -280,7 +280,7 @@ public class OfferSetupService : IOfferSetupService
                     creationInfo,
                     data.CompanyId,
                     data.Bpn == null ? Enumerable.Empty<string>() : [data.Bpn],
-                    CompanyServiceAccountTypeId.MANAGED,
+                    TechnicalUserTypeId.MANAGED,
                     data.EnhanceTechnicalUserName,
                     data.Enabled,
                     new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null))

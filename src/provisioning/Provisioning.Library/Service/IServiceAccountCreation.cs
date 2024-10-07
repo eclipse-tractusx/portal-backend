@@ -41,9 +41,9 @@ public interface IServiceAccountCreation
             ServiceAccountCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
-            CompanyServiceAccountTypeId companyServiceAccountTypeId,
+            TechnicalUserTypeId technicalUserTypeId,
             bool enhanceTechnicalUserName,
             bool enabled,
             ServiceAccountCreationProcessData? processData,
-            Action<CompanyServiceAccount>? setOptionalParameter = null);
+            Action<TechnicalUser>? setOptionalParameter = null);
 }

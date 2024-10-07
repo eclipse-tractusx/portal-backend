@@ -26,18 +26,18 @@ public class AppInstanceAssignedCompanyServiceAccount
     {
     }
 
-    public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid companyServiceAccountId)
+    public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid technicalUserId)
         : this()
     {
         AppInstanceId = appInstanceId;
-        CompanyServiceAccountId = companyServiceAccountId;
+        TechnicalUserId = technicalUserId;
     }
 
     public Guid AppInstanceId { get; private set; }
 
-    public Guid CompanyServiceAccountId { get; private set; }
+    public Guid TechnicalUserId { get; private set; }
 
     public virtual AppInstance? AppInstance { get; set; }
 
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    public virtual TechnicalUser? TechnicalUser { get; set; }
 }

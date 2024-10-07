@@ -51,7 +51,7 @@ public class AuditConnector20240814 : IAuditEntityV1
 
     public DateTimeOffset? DateLastChanged { get; private set; }
 
-    public Guid? CompanyServiceAccountId { get; set; }
+    public Guid? TechnicalUserId { get; set; }
 
     public Guid? SdCreationProcessId { get; set; }
 

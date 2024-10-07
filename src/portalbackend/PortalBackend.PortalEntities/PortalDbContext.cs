@@ -119,9 +119,9 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CompanyRoleAssignedRoleCollection> CompanyRoleAssignedRoleCollections { get; set; } = default!;
     public virtual DbSet<CompanyRoleDescription> CompanyRoleDescriptions { get; set; } = default!;
     public virtual DbSet<CompanyRole> CompanyRoles { get; set; } = default!;
-    public virtual DbSet<CompanyServiceAccount> CompanyServiceAccounts { get; set; } = default!;
-    public virtual DbSet<CompanyServiceAccountType> CompanyServiceAccountTypes { get; set; } = default!;
-    public virtual DbSet<CompanyServiceAccountKind> CompanyServiceAccountKindes { get; set; } = default!;
+    public virtual DbSet<TechnicalUser> TechnicalUsers { get; set; } = default!;
+    public virtual DbSet<TechnicalUserType> TechnicalUserTypes { get; set; } = default!;
+    public virtual DbSet<TechnicalUserKind> TechnicalUserKinds { get; set; } = default!;
     public virtual DbSet<CompanyStatus> CompanyStatuses { get; set; } = default!;
     public virtual DbSet<CompanyUser> CompanyUsers { get; set; } = default!;
     public virtual DbSet<CompanyUserAssignedAppFavourite> CompanyUserAssignedAppFavourites { get; set; } = default!;
@@ -139,7 +139,7 @@ public class PortalDbContext : DbContext
     public virtual DbSet<CountryLongName> CountryLongNames { get; set; } = default!;
     public virtual DbSet<Country> Countries { get; set; } = default!;
     public virtual DbSet<CountryAssignedIdentifier> CountryAssignedIdentifiers { get; set; } = default!;
-    public virtual DbSet<DimCompanyServiceAccount> DimCompanyServiceAccounts { get; set; } = default!;
+    public virtual DbSet<ExternalTechnicalUser> ExternalTechnicalUsers { get; set; } = default!;
     public virtual DbSet<DimUserCreationData> DimUserCreationData { get; set; } = default!;
     public virtual DbSet<Document> Documents { get; set; } = default!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = default!;
@@ -469,14 +469,14 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<AppInstanceAssignedCompanyServiceAccount>(entity =>
         {
-            entity.HasKey(x => new { x.AppInstanceId, x.CompanyServiceAccountId });
+            entity.HasKey(x => new { x.AppInstanceId, x.TechnicalUserId });
             entity.HasOne(x => x.AppInstance)
                 .WithMany(x => x.ServiceAccounts)
                 .HasForeignKey(x => x.AppInstanceId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
-            entity.HasOne(x => x.CompanyServiceAccount)
+            entity.HasOne(x => x.TechnicalUser)
                 .WithMany(x => x.AppInstances)
-                .HasForeignKey(x => x.CompanyServiceAccountId)
+                .HasForeignKey(x => x.TechnicalUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
@@ -781,18 +781,18 @@ public class PortalDbContext : DbContext
                     .Select(e => new CompanyStatus(e))
             );
 
-        modelBuilder.Entity<CompanyServiceAccountType>()
+        modelBuilder.Entity<TechnicalUserType>()
             .HasData(
-                Enum.GetValues(typeof(CompanyServiceAccountTypeId))
-                    .Cast<CompanyServiceAccountTypeId>()
-                    .Select(e => new CompanyServiceAccountType(e))
+                Enum.GetValues(typeof(TechnicalUserTypeId))
+                    .Cast<TechnicalUserTypeId>()
+                    .Select(e => new TechnicalUserType(e))
             );
 
-        modelBuilder.Entity<CompanyServiceAccountKind>()
+        modelBuilder.Entity<TechnicalUserKind>()
             .HasData(
-                Enum.GetValues(typeof(CompanyServiceAccountKindId))
-                    .Cast<CompanyServiceAccountKindId>()
-                    .Select(e => new CompanyServiceAccountKind(e))
+                Enum.GetValues(typeof(TechnicalUserKindId))
+                    .Cast<TechnicalUserKindId>()
+                    .Select(e => new TechnicalUserKind(e))
             );
 
         modelBuilder.Entity<IdentityType>()
@@ -859,38 +859,38 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyUserAssignedProcess>()
             .HasKey(e => new { e.CompanyUserId, e.ProcessId });
 
-        modelBuilder.Entity<CompanyServiceAccount>(entity =>
+        modelBuilder.Entity<TechnicalUser>(entity =>
         {
             entity.HasOne(x => x.Identity)
-                .WithOne(x => x.CompanyServiceAccount)
-                .HasForeignKey<CompanyServiceAccount>(x => x.Id);
+                .WithOne(x => x.TechnicalUser)
+                .HasForeignKey<TechnicalUser>(x => x.Id);
 
-            entity.HasOne(d => d.CompanyServiceAccountType)
-                .WithMany(p => p.CompanyServiceAccounts)
-                .HasForeignKey(d => d.CompanyServiceAccountTypeId);
+            entity.HasOne(d => d.TechnicalUserType)
+                .WithMany(p => p.TechnicalUsers)
+                .HasForeignKey(d => d.TechnicalUserTypeId);
 
-            entity.HasOne(d => d.CompanyServiceAccountKind)
-                .WithMany(p => p.CompanyServiceAccounts)
-                .HasForeignKey(d => d.CompanyServiceAccountKindId);
+            entity.HasOne(d => d.TechnicalUserKind)
+                .WithMany(p => p.TechnicalUsers)
+                .HasForeignKey(d => d.TechnicalUserKindId);
 
             entity.HasOne(d => d.OfferSubscription)
-                .WithMany(p => p.CompanyServiceAccounts)
+                .WithMany(p => p.Technicalusers)
                 .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasIndex(x => x.ClientClientId)
                 .HasFilter("client_client_id is not null AND company_service_account_kind_id = 1");
 
-            entity.ToTable("company_service_accounts");
+            entity.ToTable("technical_users");
         });
 
-        modelBuilder.Entity<DimCompanyServiceAccount>(entity =>
+        modelBuilder.Entity<ExternalTechnicalUser>(entity =>
         {
-            entity.HasOne(x => x.CompanyServiceAccount)
-                .WithOne(x => x.DimCompanyServiceAccount)
-                .HasForeignKey<DimCompanyServiceAccount>(x => x.Id);
+            entity.HasOne(x => x.TechnicalUser)
+                .WithOne(x => x.ExternalTechnicalUser)
+                .HasForeignKey<ExternalTechnicalUser>(x => x.Id);
 
-            entity.ToTable("dim_company_service_accounts");
+            entity.ToTable("external_technical_users");
         });
 
         modelBuilder.Entity<IdentityAssignedRole>(entity =>
@@ -1113,9 +1113,9 @@ public class PortalDbContext : DbContext
             entity.HasOne(d => d.Host)
                 .WithMany(p => p.HostedConnectors);
 
-            entity.HasOne(d => d.CompanyServiceAccount)
+            entity.HasOne(d => d.TechnicalUser)
                 .WithOne(p => p.Connector)
-                .HasForeignKey<Connector>(d => d.CompanyServiceAccountId)
+                .HasForeignKey<Connector>(d => d.TechnicalUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.SdCreationProcess)
@@ -1368,7 +1368,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<CompaniesLinkedServiceAccount>()
             .ToView("company_linked_service_accounts", "portal")
-            .HasKey(x => x.ServiceAccountId);
+            .HasKey(x => x.TechnicalUserId);
 
         modelBuilder.Entity<ConnectorAssignedOfferSubscription>(entity =>
         {
@@ -1400,11 +1400,11 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<CompanyRoleCollectionRolesView>()
             .ToView("companyrole_collectionroles_view", "portal")
             .HasNoKey();
-        modelBuilder.Entity<CompanyServiceAccount>(entity =>
+        modelBuilder.Entity<TechnicalUser>(entity =>
         {
             entity.HasOne(x => x.CompaniesLinkedServiceAccount)
-                  .WithOne(x => x.CompanyServiceAccount)
-                  .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.ServiceAccountId);
+                  .WithOne(x => x.TechnicalUser)
+                  .HasForeignKey<CompaniesLinkedServiceAccount>(x => x.TechnicalUserId);
         });
 
         modelBuilder.Entity<OnboardingServiceProviderDetail>()
@@ -1504,9 +1504,9 @@ public class PortalDbContext : DbContext
                 .HasForeignKey<DimUserCreationData>(x => x.ProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(x => x.ServiceAccount)
+            entity.HasOne(x => x.TechnicalUser)
                 .WithOne(x => x.DimUserCreationData)
-                .HasForeignKey<DimUserCreationData>(x => x.ServiceAccountId)
+                .HasForeignKey<DimUserCreationData>(x => x.TechnicalUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

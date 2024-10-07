@@ -141,7 +141,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             }
             technicalUserInfoData = new CallbackTechnicalUserInfoData(
                 serviceAccount.TechnicalUserId,
-                serviceAccount.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL
+                serviceAccount.TechnicalUserKindId == TechnicalUserKindId.INTERNAL
                     ? await GetServiceAccountSecret(serviceAccount.TechnicalClientId).ConfigureAwait(ConfigureAwaitOptions.None)
                     : null,
                 serviceAccount.TechnicalClientId);

@@ -19,13 +19,13 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class DimUserCreationData(Guid id, Guid serviceAccountId, Guid processId)
+public class DimUserCreationData(Guid id, Guid technicalUserId, Guid processId)
 {
     public Guid Id { get; private set; } = id;
-    public Guid ServiceAccountId { get; set; } = serviceAccountId;
+    public Guid TechnicalUserId { get; set; } = technicalUserId;
     public Guid ProcessId { get; private set; } = processId;
 
     // Navigational Properties
-    public CompanyServiceAccount? ServiceAccount { get; private set; }
+    public TechnicalUser? TechnicalUser { get; private set; }
     public Process? Process { get; private set; }
 }

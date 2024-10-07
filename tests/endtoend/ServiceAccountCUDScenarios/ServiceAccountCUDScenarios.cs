@@ -67,10 +67,10 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
 
                 if (!existingServiceAccounts.IsNullOrEmpty())
                 {
-                    newServiceAccounts.Any(newAccount => existingServiceAccounts!.Any(existing => existing.ServiceAccountId == newAccount.ServiceAccountId)).Should().BeFalse();
+                    newServiceAccounts.Any(newAccount => existingServiceAccounts!.Any(existing => existing.TechnicalUserId == newAccount.TechnicalUserId)).Should().BeFalse();
                 }
 
-                newServiceAccounts.All(newAccount => updatedServiceAccounts!.Any(updated => updated.ServiceAccountId == newAccount.ServiceAccountId)).Should().BeTrue("New service account could not be found in the list of service accounts");
+                newServiceAccounts.All(newAccount => updatedServiceAccounts!.Any(updated => updated.TechnicalUserId == newAccount.TechnicalUserId)).Should().BeTrue("New service account could not be found in the list of service accounts");
             }
             catch (Exception)
             {
@@ -89,7 +89,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
                     var jwtSecurityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
                     jwtSecurityToken.Payload.Should().ContainKey("bpn", "Attribute BPN in user token was not found");
                     var result = await AdministrationEndpointHelper.DeleteServiceAccount(
-                            newServiceAccount.ServiceAccountId.ToString());
+                            newServiceAccount.TechnicalUserId.ToString());
                     result.Should().BeTrue("Created service account could not be deleted");
                 }
             }
@@ -112,15 +112,15 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         var newDescription = "This is an updated description for a technical user via test automation e2e tests";
         foreach (var newServiceAccount in newServiceAccounts.Where(account => account.Status == PortalBackend.PortalEntities.Enums.UserStatusId.ACTIVE))
         {
-            await AdministrationEndpointHelper.UpdateServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString(),
+            await AdministrationEndpointHelper.UpdateServiceAccountDetailsById(newServiceAccount.TechnicalUserId.ToString(),
                 newTechUserName, newDescription);
 
             //check if the change of the serviceAccount got successfully saved
-            var updatedServiceAccount = await AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.ServiceAccountId.ToString());
+            var updatedServiceAccount = await AdministrationEndpointHelper.GetServiceAccountDetailsById(newServiceAccount.TechnicalUserId.ToString());
 
             updatedServiceAccount.Name.Should().Be(newTechUserName, "Updated technical user name was not stored correctly.");
             updatedServiceAccount.Description.Should().Be(newDescription, "Updated description of service account was not stored correctly");
-            var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString());
+            var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.TechnicalUserId.ToString());
             result.Should().BeTrue("Created service account could not be deleted.");
         }
     }
@@ -141,7 +141,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
             //reset service account credentials
             var updatedServiceAccount =
                 await AdministrationEndpointHelper.ResetServiceAccountCredentialsById(
-                    newServiceAccount.ServiceAccountId.ToString());
+                    newServiceAccount.TechnicalUserId.ToString());
             updatedServiceAccount.Should().NotBeNull();
 
             //check if the resetup of the credentials was successful
@@ -152,7 +152,7 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
             var token = TechTokenRetriever.GetToken(TokenUrl, updatedServiceAccount.ClientId!, updatedServiceAccount.Secret);
 
             token.Should().NotBeNullOrEmpty("Token for new technical user could not be fetched correctly");
-            var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.ServiceAccountId.ToString());
+            var result = await AdministrationEndpointHelper.DeleteServiceAccount(updatedServiceAccount.TechnicalUserId.ToString());
             result.Should().BeTrue("Created service account could not be deleted");
         }
     }
@@ -174,20 +174,20 @@ public class ServiceAccountCUDScenarios : EndToEndTestBase
         foreach (var newServiceAccount in newServiceAccounts)
         {
             var checkAccountIsAvailable =
-                existingServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+                existingServiceAccounts.Where(t => t.TechnicalUserId == newServiceAccount.TechnicalUserId);
             checkAccountIsAvailable.Should().NotBeNullOrEmpty();
 
             //delete the created service account
-            await AdministrationEndpointHelper.DeleteServiceAccount(newServiceAccount.ServiceAccountId.ToString());
+            await AdministrationEndpointHelper.DeleteServiceAccount(newServiceAccount.TechnicalUserId.ToString());
 
             //check the endpoint, the deleted service account should not be available anymore
             var updatedServiceAccounts = await AdministrationEndpointHelper.GetServiceAccounts();
 
             var checkAccountDeleted =
-                updatedServiceAccounts.Where(t => t.ServiceAccountId == newServiceAccount.ServiceAccountId);
+                updatedServiceAccounts.Where(t => t.TechnicalUserId == newServiceAccount.TechnicalUserId);
             checkAccountDeleted.Should().BeEmpty();
 
-            updatedServiceAccounts.Where(item => item.ServiceAccountId == newServiceAccount.ServiceAccountId).Should().BeEmpty();
+            updatedServiceAccounts.Where(item => item.TechnicalUserId == newServiceAccount.TechnicalUserId).Should().BeEmpty();
         }
     }
 
