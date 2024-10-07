@@ -17,9 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.Tests;
 
@@ -27,16 +32,26 @@ public class BpnDidResolveServiceTests
 {
     private const string BPN = "BPNL0000000000XX";
     private readonly IBpnDidResolverService _sut;
-    private readonly IHttpClientFactory _clientFactory;
+    private readonly ITokenService _tokenService;
+    private readonly IOptions<BpnDidResolverSettings> _options;
 
     public BpnDidResolveServiceTests()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.ConfigureFixture();
-
-        _clientFactory = A.Fake<IHttpClientFactory>();
-
-        _sut = new BpnDidResolverService(_clientFactory);
+        _tokenService = A.Fake<ITokenService>();
+        _options = Options.Create(new BpnDidResolverSettings
+        {
+            Password = "passWord",
+            Scope = "test",
+            Username = "user@name",
+            BaseAddress = "https://base.address.com",
+            ClientId = "CatenaX",
+            ClientSecret = "pass@Secret",
+            GrantType = "cred",
+            TokenAddress = "https://key.cloak.com"
+        });
+        _sut = new BpnDidResolverService(_tokenService, _options);
     }
 
     #region ValidateDid
@@ -51,7 +66,8 @@ public class BpnDidResolveServiceTests
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _clientFactory.CreateClient(nameof(BpnDidResolverService))).Returns(httpClient);
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpnDidResolverService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
 
         // Act
         var result = await _sut.TransmitDidAndBpn(did, BPN, CancellationToken.None);
@@ -70,13 +86,15 @@ public class BpnDidResolveServiceTests
         {
             BaseAddress = new Uri("https://base.address.com")
         };
-        A.CallTo(() => _clientFactory.CreateClient(nameof(BpnDidResolverService))).Returns(httpClient);
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpnDidResolverService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
 
         // Act
-        var result = await _sut.TransmitDidAndBpn(did, BPN, CancellationToken.None);
+        async Task Act() => await _sut.TransmitDidAndBpn(did, BPN, CancellationToken.None);
 
         // Assert
-        result.Should().BeFalse();
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     #endregion

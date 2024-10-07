@@ -17,15 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
 
-public class BpnDidResolverSettings
+public class BpnDidResolverSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
-
-    [Required(AllowEmptyStrings = false)]
-    public string ApiKey { get; set; } = null!;
 }
