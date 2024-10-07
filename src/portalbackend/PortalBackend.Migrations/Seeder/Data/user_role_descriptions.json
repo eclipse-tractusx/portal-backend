@@ -268,5 +268,55 @@
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595754",
     "language_short_name": "en",
     "description": "Technical user enabling the invitation API to integrate 3rd party software."
+  },
+  {
+    "user_role_id": "79638264-25f1-46df-89c6-a6e306c69462",
+    "language_short_name": "de",
+    "description": "Vollzugriff auf die Golden Record Tasks."
+  },
+  {
+    "user_role_id": "79638264-25f1-46df-89c6-a6e306c69462",
+    "language_short_name": "en",
+    "description": "Full access to Golden Record Tasks."
+  },
+  {
+    "user_role_id": "77439600-ebfa-4f02-a3f9-cfad6160f8ed",
+    "language_short_name": "de",
+    "description": "Erstelle Golden Record Tasks, lese das Task-Ergebnis und den Status aus."
+  },
+  {
+    "user_role_id": "77439600-ebfa-4f02-a3f9-cfad6160f8ed",
+    "language_short_name": "en",
+    "description": "Create Golden Record Tasks, view task results and status."
+  },
+  {
+    "user_role_id": "16822e29-1b41-4359-9fc4-1aafb1bf8509",
+    "language_short_name": "de",
+    "description": "Reserviere und bearbeitete Golden Record Tasks im Schritt 'Clean'."
+  },
+  {
+    "user_role_id": "16822e29-1b41-4359-9fc4-1aafb1bf8509",
+    "language_short_name": "en",
+    "description": "Reserve and resolve Golden Record Tasks in step 'Clean'."
+  },
+  {
+    "user_role_id": "4c7e1144-0ec5-4874-8439-3afc2e8e71db",
+    "language_short_name": "de",
+    "description": "Reserviere und bearbeitete Golden Record Tasks im Schritt 'Clean And Sync'."
+  },
+  {
+    "user_role_id": "4c7e1144-0ec5-4874-8439-3afc2e8e71db",
+    "language_short_name": "en",
+    "description": "Reserve and resolve Golden Record Tasks in step 'Clean And Sync'."
+  },
+  {
+    "user_role_id": "a53a95be-ea7b-4033-926c-26275dc16e0f",
+    "language_short_name": "de",
+    "description": "Reserve and resolve Golden Record Tasks in step 'Pool'."
+  },
+  {
+    "user_role_id": "a53a95be-ea7b-4033-926c-26275dc16e0f",
+    "language_short_name": "en",
+    "description": "Reserviere und bearbeitete Golden Record Tasks im Schritt 'Pool'."
   }
 ]

@@ -120,5 +120,45 @@
     "user_status_id": 1,
     "user_entity_id": "e8bc6470-28ee-4c40-a2d9-27c6e78f303b",
     "identity_type_id": 2
+  },
+  {
+    "id": "48fb21ad-4439-455b-92bb-8c54801e3eab",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2024-09-27 10:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
+  },
+  {
+    "id": "724fda4d-e0c0-4b90-a36f-f11b75cc53cd",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2024-09-27 10:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
+  },
+  {
+    "id": "d33043a0-ed8f-46b7-9319-8f3f6f052c28",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2024-09-27 10:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
+  },
+  {
+    "id": "fc729705-adf0-499e-91c7-1e04d817bad8",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2024-09-27 10:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
+  },
+  {
+    "id": "c8ab54ea-830e-4f8a-a540-336e0576a619",
+    "company_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
+    "date_created": "2024-09-27 10:01:33.439000 +00:00",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2
   }
 ]

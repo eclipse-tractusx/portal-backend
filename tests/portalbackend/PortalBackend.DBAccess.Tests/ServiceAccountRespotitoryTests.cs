@@ -292,7 +292,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(17);
+        result!.Count.Should().Be(22);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
                 y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
@@ -371,7 +371,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(13);
+        result!.Count.Should().Be(18);
         result.Data.Should().HaveCount(10);
     }
 

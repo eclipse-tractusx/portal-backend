@@ -8,6 +8,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * **Technical User**
   * add Registration Internal as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+  * add BPDM Orchestrator technical user and service accounts [#1048](https://github.com/eclipse-tractusx/portal-backend/pull/1048)
 
 ## 2.3.0-alpha.1
 
