@@ -36,7 +36,7 @@ public static class BpnAccessCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpdmAccessSettings>>();
-        var baseAddress = settings.Value.BaseUrl;
+        var baseAddress = settings.Value.BaseAddress;
         services.AddTransient<LoggingHandler<BpnAccess>>();
         services.AddHttpClient(nameof(BpnAccess), c =>
             {
