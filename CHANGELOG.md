@@ -2,13 +2,43 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## Unreleased
+## 2.3.0-alpha.2
 
 ## Feature
 
+* **Administration Service**
+  * added type flag to user role to display if an external technical user is created in the frontend to endpoint `GET: api/administration/serviceaccount/user/roles` [#1024](https://github.com/eclipse-tractusx/portal-backend/pull/1024)
+  * added flag to display if a technical user is internal or external for endpoint `GET: api/administration/serviceaccount/owncompany/serviceaccounts` [#1028](https://github.com/eclipse-tractusx/portal-backend/pull/1028/files)
 * **Technical User**
-  * add Registration Internal as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
-  * add BPDM Orchestrator technical user and service accounts [#1048](https://github.com/eclipse-tractusx/portal-backend/pull/1048)
+  * added `Registration Internal` as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+  * added BPDM Orchestrator technical user and service accounts [#1048](https://github.com/eclipse-tractusx/portal-backend/pull/1048)
+* **Onboarding Service Provider**
+  * adjusted permission for endpoint `POST: api/administration/registration/network/{externalId}/partnerRegistration` & `GET: api/administration/registration/network/companies` [#1037](https://github.com/eclipse-tractusx/portal-backend/pull/1037)
+* **Keycloak Seeding**
+  * adjusted seeding to allow update of existing urls and secret in client, add credentials to user, allow override of identity providers urls on update, create users by partial-import, fix client protocol-mappers, add seeding of protocol mappers and client scopes, create clients via partial import & allow import of multiple files per realm [#910](https://github.com/eclipse-tractusx/portal-backend/pull/910)
+
+### Technical Support
+
+* **API-Hub**
+  * added process to generate open api specs for portal services [#1030](https://github.com/eclipse-tractusx/portal-backend/pull/1030)
+* **Seeding**
+  * adjusted seeding for initial operator wallet data [#1036](https://github.com/eclipse-tractusx/portal-backend/pull/1036)
+* **Github Workflows**
+  * added external services to workflows [#1058](https://github.com/eclipse-tractusx/portal-backend/pull/1058)
+* **Dependencies**
+  * updated Microsoft nuget packages [#1018](https://github.com/eclipse-tractusx/portal-backend/pull/1018)
+  * update workflow actions [1049](https://github.com/eclipse-tractusx/portal-backend/pull/1049)
+
+### Bugfix
+
+* **Process Worker**
+  * adjusted validation of the did schema [#1055](https://github.com/eclipse-tractusx/portal-backend/pull/1055)
+* **Administration Service**
+  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
+* **Registration Service**
+  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
+* **Process Worker**
+  * adjusted registration for offerProcessSettings [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
 
 ## 2.3.0-alpha.1
 
