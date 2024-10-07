@@ -8,6 +8,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 * **Technical User**
   * add Registration Internal as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+* **Registration**
+  * adjust legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
 
 ## 2.3.0-alpha.1
 

@@ -36,6 +36,11 @@ public class ValidationExpressionsTests
     [InlineData("C", true)] // Minimum valid length
     [InlineData("7-ELEVEN INTERNATIONAL LLC", true)]
     [InlineData("Recht 24/7 Schröder Rechtsanwaltsgesellschaft mbH", true)]
+    [InlineData("ACE 9 SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ", true)]
+    [InlineData("GAMMO Europe Korlátolt Felelősségű Társaság", true)]
+    [InlineData("摩根亚太优势混合型证券投资基金 (QDII)", true)]
+    [InlineData("삼성", true)]
+    [InlineData("三", true)]
     [InlineData("Currency £$€¥¢", true)]
     [InlineData("Brackets []()", true)]
     [InlineData("Punctuation !?,.;:", true)]
@@ -45,6 +50,25 @@ public class ValidationExpressionsTests
     [InlineData("German: ÄÖÜß", true)]
     [InlineData("+SEN Inc.", true)] // leading special character
     [InlineData("Danish: ÆØÅ", true)]
+    [InlineData("Czech: ČĎŇŘŠŤŽŮů", true)]
+    [InlineData("Estonian: ÄÖÜŠŽ", true)]
+    [InlineData("Slovak: ĽĹŔŠŤŽ", true)]
+    [InlineData("Polish: ĄĆĘŁŃÓŚŹŻ", true)]
+    [InlineData("Hungarian: ÁÉÍÓÖŐÚÜŰ", true)]
+    [InlineData("Romanian: ÂÎŞŢ", true)]
+    [InlineData("Bulgarian: ЙЪЬ", true)]
+    [InlineData("Greek: ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ", true)]
+    [InlineData("Turkish: ÇĞİıÖŞÜ", true)]
+    [InlineData("Arabic: ابتثجحخدذرزسشصضطظعغفقكلمنهوي", true)]
+    [InlineData("Hebrew: שלום עולם", true)]
+    [InlineData("Hindi: अआइईउऊऋएऐओऔकखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषस", true)]
+    [InlineData("Tamil: அஆஇஈஉஊஎஏஐஒஓஔகஙசஞடணதநனபமயரலவழளஷஸஹ", true)]
+    [InlineData("Japanese: あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん", true)]
+    [InlineData("Chinese: 你好 世界", true)]
+    [InlineData("Korean: 안녕하세요 세계", true)]
+    [InlineData("Vietnamese: ăâắáấàằầảẳẩãẵẫạặậđêéếèềẻểẽễẹệíìỉĩịôơóốớòồờỏổởõỗỡọộợưúứùừủửũữụựýỳỷỹỵ", true)]
+    [InlineData("Singapore: 你好 世界", true)]
+    [InlineData("Thai: สวัสดีชาวโลก", true)]
     [InlineData("Bayerische Motoren Werke Aktiengesellschaft ", false)] // Ends with whitespace
     [InlineData(" Bayerische Motoren Werke Aktiengesellschaft", false)] // starts with whitespace
     [InlineData("Bayerische  Motoren Werke Aktiengesellschaft", false)] // double whitespace
