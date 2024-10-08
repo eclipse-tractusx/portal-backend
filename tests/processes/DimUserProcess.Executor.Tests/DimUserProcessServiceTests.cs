@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.DimUserCreationProcess.Executor.Te
 public class DimUserProcessServiceTests
 {
     private const string Bpn = "BPNL00000001TEST";
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IDimService _dimService;
     private readonly IDimUserProcessService _sut;
 
@@ -42,12 +42,12 @@ public class DimUserProcessServiceTests
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
+        _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
 
         _dimService = A.Fake<IDimService>();
 
-        A.CallTo(() => portalRepositories.GetInstance<IServiceAccountRepository>())
-            .Returns(_serviceAccountRepository);
+        A.CallTo(() => portalRepositories.GetInstance<ITechnicalUserRepository>())
+            .Returns(_technicalUserRepository);
 
         _sut = new DimUserProcessService(_dimService, portalRepositories);
     }
@@ -61,14 +61,14 @@ public class DimUserProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         var expectedServiceAccountName = "dim-sa-testFooBar";
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(A<Guid>._))
             .Returns((true, Bpn, "dim-sa-test Foo Bar"));
 
         // Act
         var result = await _sut.CreateDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>.That.Matches(x => x.ExternalId == processId && x.Name == expectedServiceAccountName), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
@@ -86,14 +86,14 @@ public class DimUserProcessServiceTests
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
         var expectedServiceAccountName = "dim-sa-testFooBar";
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(A<Guid>._))
             .Returns((true, Bpn, "dim-sa-test Foo Bar"));
 
         // Act
         var result = await _sut.DeleteDimUser(processId, dimServiceAccountId, CancellationToken.None);
 
         // Act
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.DeleteTechnicalUser(Bpn, A<TechnicalUserData>.That.Matches(x => x.ExternalId == processId && x.Name == expectedServiceAccountName), A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
@@ -112,7 +112,7 @@ public class DimUserProcessServiceTests
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(A<Guid>._))
             .Returns(default((bool, string?, string)));
 
         Task Act() => createUser
@@ -124,7 +124,7 @@ public class DimUserProcessServiceTests
 
         // Act
         ex.Message.Should().Be($"DimServiceAccountId {dimServiceAccountId} does not exist");
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
@@ -138,7 +138,7 @@ public class DimUserProcessServiceTests
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(A<Guid>._))
             .Returns((true, null, "foo"));
 
         Task Act() => createUser
@@ -150,7 +150,7 @@ public class DimUserProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Bpn must not be null");
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
             .MustNotHaveHappened();
@@ -164,7 +164,7 @@ public class DimUserProcessServiceTests
         // Arrange
         var dimServiceAccountId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(A<Guid>._))
             .Returns((true, Bpn, "   "));
 
         Task Act() => createUser
@@ -176,7 +176,7 @@ public class DimUserProcessServiceTests
 
         // Act
         ex.Message.Should().Be("Service Account Name must not be empty");
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _dimService.CreateTechnicalUser(Bpn, A<TechnicalUserData>._, A<CancellationToken>._))
             .MustNotHaveHappened();

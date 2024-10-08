@@ -34,7 +34,7 @@ public class MandatoryIdentityClaimHandlerTests
     private readonly IFixture _fixture;
     private readonly IClaimsIdentityDataBuilder _claimsIdentityDataBuilder;
     private readonly IIdentityRepository _identityRepository;
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IMockLogger<MandatoryIdentityClaimHandler> _mockLogger;
     private readonly ILogger<MandatoryIdentityClaimHandler> _logger;
@@ -56,7 +56,7 @@ public class MandatoryIdentityClaimHandlerTests
 
         _claimsIdentityDataBuilder = new ClaimsIdentityDataBuilder();
         _identityRepository = A.Fake<IIdentityRepository>();
-        _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
+        _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
 
         _companyUserId = Guid.Parse("eceefebe-8f34-4d11-85ef-767786a95a92");
@@ -68,13 +68,13 @@ public class MandatoryIdentityClaimHandlerTests
         _subject_service_account = "valid_sub_service_account";
 
         A.CallTo(() => _portalRepositories.GetInstance<IIdentityRepository>()).Returns(_identityRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
 
-        A.CallTo(() => _serviceAccountRepository.GetServiceAccountDataByClientId(A<string>._)).Returns<(Guid, Guid)>(default);
+        A.CallTo(() => _technicalUserRepository.GetTechnicalUserDataByClientId(A<string>._)).Returns<(Guid, Guid)>(default);
         A.CallTo(() => _identityRepository.GetActiveIdentityDataByUserEntityId(A<string>._)).Returns<(Guid, IdentityTypeId, Guid)>(default);
         A.CallTo(() => _identityRepository.GetActiveCompanyIdByIdentityId(A<Guid>._)).Returns(Guid.Empty);
 
-        A.CallTo(() => _serviceAccountRepository.GetServiceAccountDataByClientId(_clientId)).Returns((_serviceAccountId, _serviceAccountCompanyId));
+        A.CallTo(() => _technicalUserRepository.GetTechnicalUserDataByClientId(_clientId)).Returns((_serviceAccountId, _serviceAccountCompanyId));
         A.CallTo(() => _identityRepository.GetActiveIdentityDataByUserEntityId(_subject_company_user)).Returns((_companyUserId, IdentityTypeId.COMPANY_USER, _companyUserCompanyId));
         A.CallTo(() => _identityRepository.GetActiveIdentityDataByUserEntityId(_subject_service_account)).Returns((_serviceAccountId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, _serviceAccountCompanyId));
         A.CallTo(() => _identityRepository.GetActiveCompanyIdByIdentityId(_companyUserId)).Returns(_companyUserCompanyId);

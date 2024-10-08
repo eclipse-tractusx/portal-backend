@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,26 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class AppInstanceAssignedCompanyServiceAccount
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
+
+public class CompaniesLinkedTechnicalUser
 {
-    private AppInstanceAssignedCompanyServiceAccount()
-    {
-    }
-
-    public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid technicalUserId)
-        : this()
-    {
-        AppInstanceId = appInstanceId;
-        TechnicalUserId = technicalUserId;
-    }
-
-    public Guid AppInstanceId { get; private set; }
-
     public Guid TechnicalUserId { get; private set; }
-
-    public virtual AppInstance? AppInstance { get; set; }
-
-    public virtual TechnicalUser? TechnicalUser { get; set; }
+    public Guid Owners { get; private set; }
+    public Guid? Provider { get; private set; }
+    public virtual TechnicalUser? TechnicalUser { get; private set; }
 }

@@ -431,7 +431,7 @@ public class OfferSetupServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        appInstance.ServiceAccounts.Should().HaveCount(1);
+        appInstance.AppInstanceAssignedTechnicalUsers.Should().HaveCount(1);
         A.CallTo(() => _provisioningManager.EnableClient(A<string>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => enumerator.MoveNext())
@@ -1566,10 +1566,10 @@ public class OfferSetupServiceTests
                 .Invokes((IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts) =>
                 {
                     foreach (var i in instanceAccounts.Select(x =>
-                                 new AppInstanceAssignedCompanyServiceAccount(x.AppInstanceId,
+                                 new AppInstanceAssignedTechnicalUser(x.AppInstanceId,
                                      x.CompanyServiceAccountId)))
                     {
-                        appInstance.ServiceAccounts.Add(i);
+                        appInstance.AppInstanceAssignedTechnicalUsers.Add(i);
                     }
                 });
         }

@@ -47,8 +47,8 @@ public class DimUserProcessService(
 
     private async Task<(string Bpn, string DimName)> GetBpnDimName(Guid dimServiceAccountId)
     {
-        var serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
-        var (isValid, bpn, name) = await serviceAccountRepository.GetDimServiceAccountData(dimServiceAccountId)
+        var technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
+        var (isValid, bpn, name) = await technicalUserRepository.GetExternalTechnicalUserData(dimServiceAccountId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!isValid)

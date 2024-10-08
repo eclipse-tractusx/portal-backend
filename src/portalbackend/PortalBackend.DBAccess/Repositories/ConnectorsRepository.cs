@@ -176,11 +176,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     connector.TechnicalUser!.Identity!.IdentityAssignedRoles.Select(r => r.UserRoleId),
                     connector.TechnicalUser.ClientClientId,
                     connector.TechnicalUser.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL,
-                    connector.TechnicalUser.DimUserCreationData!.Process!.ProcessSteps
+                    connector.TechnicalUser.ExternalTechnicalUserCreationData!.Process!.ProcessSteps
                         .Any(ps =>
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
                             processStepsToFilter.Contains(ps.ProcessStepTypeId)),
-                    connector.TechnicalUser.DimUserCreationData == null ? null : connector.TechnicalUser.DimUserCreationData!.ProcessId)
+                    connector.TechnicalUser.ExternalTechnicalUserCreationData == null ? null : connector.TechnicalUser.ExternalTechnicalUserCreationData!.ProcessId)
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />

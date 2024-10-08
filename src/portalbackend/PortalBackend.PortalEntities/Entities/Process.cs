@@ -54,7 +54,7 @@ public class Process : IBaseEntity, ILockableEntity
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
     public virtual MailingInformation? MailingInformation { get; set; }
     public virtual CompanyInvitation? CompanyInvitation { get; set; }
-    public virtual DimUserCreationData? DimUserCreationData { get; set; }
+    public virtual ExternalTechnicalUserCreationData? ExternalTechnicalUserCreationData { get; set; }
     public virtual CompanyUserAssignedProcess? CompanyUserAssignedProcess { get; set; }
     public virtual IdentityProviderAssignedProcess? IdentityProviderAssignedProcess { get; set; }
     public virtual Company? SdCreationCompany { get; set; }

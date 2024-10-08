@@ -23,7 +23,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditConnector20240814 : IAuditEntityV1
+public class AuditConnector20241008 : IAuditEntityV1
 {
     /// <inheritdoc />
     [Key]
@@ -51,7 +51,7 @@ public class AuditConnector20240814 : IAuditEntityV1
 
     public DateTimeOffset? DateLastChanged { get; private set; }
 
-    public Guid? CompanyServiceAccountId { get; set; }
+    public Guid? TechnicalUserId { get; set; }
 
     public Guid? SdCreationProcessId { get; set; }
 

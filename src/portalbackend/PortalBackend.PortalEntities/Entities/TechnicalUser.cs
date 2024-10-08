@@ -35,7 +35,7 @@ public class TechnicalUser : IBaseEntity, IVersionedEntity
         TechnicalUserTypeId = technicalUserTypeId;
         TechnicalUserKindId = technicalUserKindId;
         Version = version;
-        AppInstances = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
+        AppInstanceAssignedTechnicalUsers = new HashSet<AppInstanceAssignedTechnicalUser>();
     }
 
     /// <inheritdoc />
@@ -62,8 +62,8 @@ public class TechnicalUser : IBaseEntity, IVersionedEntity
     public virtual TechnicalUserKind? TechnicalUserKind { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual Connector? Connector { get; set; }
-    public virtual CompaniesLinkedServiceAccount? CompaniesLinkedServiceAccount { get; private set; }
+    public virtual CompaniesLinkedTechnicalUser? CompaniesLinkedTechnicalUser { get; private set; }
     public virtual ExternalTechnicalUser? ExternalTechnicalUser { get; private set; }
-    public virtual DimUserCreationData? DimUserCreationData { get; set; }
-    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> AppInstances { get; private set; }
+    public virtual ExternalTechnicalUserCreationData? ExternalTechnicalUserCreationData { get; set; }
+    public virtual ICollection<AppInstanceAssignedTechnicalUser> AppInstanceAssignedTechnicalUsers { get; private set; }
 }

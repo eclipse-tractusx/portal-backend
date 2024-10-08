@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,12 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyServiceAccountDetailedData(
+public record TechnicalUserDetailedData(
     Guid ServiceAccountId,
     string? ClientClientId,
     string Name,
@@ -35,7 +33,7 @@ public record CompanyServiceAccountDetailedData(
     ConnectorResponseData? ConnectorData,
     OfferResponseData? OfferSubscriptionData,
     CompanyLastEditorData? CompanyLastEditorData,
-    DimServiceAccountData? DimServiceAccountData);
+    ExternalTechnicalUserData? DimServiceAccountData);
 
 public record ConnectorResponseData(Guid Id, string Name);
 
@@ -43,7 +41,7 @@ public record OfferResponseData(Guid Id, OfferTypeId Type, string? Name, Guid? S
 
 public record CompanyLastEditorData(string? Name, string CompanyName);
 
-public record DimServiceAccountData(
+public record ExternalTechnicalUserData(
     string AuthenticationServiceUrl,
     byte[] ClientSecret,
     byte[]? InitializationVector,

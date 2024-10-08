@@ -27,7 +27,7 @@ public class AppInstance : IBaseEntity
     private AppInstance()
     {
         AppSubscriptionDetails = new HashSet<AppSubscriptionDetail>();
-        ServiceAccounts = new HashSet<AppInstanceAssignedCompanyServiceAccount>();
+        AppInstanceAssignedTechnicalUsers = new HashSet<AppInstanceAssignedTechnicalUser>();
     }
 
     public AppInstance(Guid id, Guid appId, Guid iamClientId) : this()
@@ -45,5 +45,5 @@ public class AppInstance : IBaseEntity
     public virtual Offer? App { get; private set; }
     public virtual IamClient? IamClient { get; private set; }
     public virtual ICollection<AppSubscriptionDetail> AppSubscriptionDetails { get; private set; }
-    public virtual ICollection<AppInstanceAssignedCompanyServiceAccount> ServiceAccounts { get; private set; }
+    public virtual ICollection<AppInstanceAssignedTechnicalUser> AppInstanceAssignedTechnicalUsers { get; private set; }
 }

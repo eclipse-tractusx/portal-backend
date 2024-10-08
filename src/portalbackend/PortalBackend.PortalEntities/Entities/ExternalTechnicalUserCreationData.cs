@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,14 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
-
-public class CompaniesLinkedServiceAccount
+public class ExternalTechnicalUserCreationData(Guid id, Guid technicalUserId, Guid processId)
 {
-    public Guid TechnicalUserId { get; private set; }
-    public Guid Owners { get; private set; }
-    public Guid? Provider { get; private set; }
-    public virtual TechnicalUser? TechnicalUser { get; private set; }
+    public Guid Id { get; private set; } = id;
+    public Guid TechnicalUserId { get; set; } = technicalUserId;
+    public Guid ProcessId { get; private set; } = processId;
+
+    // Navigational Properties
+    public TechnicalUser? TechnicalUser { get; private set; }
+    public Process? Process { get; private set; }
 }

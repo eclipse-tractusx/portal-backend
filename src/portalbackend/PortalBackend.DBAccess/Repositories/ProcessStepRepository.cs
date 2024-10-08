@@ -119,8 +119,8 @@ public class ProcessStepRepository(PortalDbContext dbContext) : IProcessStepRepo
                         .Where(step =>
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
-                x.DimUserCreationData!.TechnicalUserId,
-                x.DimUserCreationData.TechnicalUser!.Version)
+                x.ExternalTechnicalUserCreationData!.TechnicalUserId,
+                x.ExternalTechnicalUserCreationData.TechnicalUser!.Version)
             )
             .SingleOrDefaultAsync();
 
@@ -135,7 +135,7 @@ public class ProcessStepRepository(PortalDbContext dbContext) : IProcessStepRepo
                         .Where(step =>
                             (processStepTypeIds == null || processStepTypeIds.Contains(step.ProcessStepTypeId)) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO)),
-                x.DimUserCreationData!.TechnicalUserId)
+                x.ExternalTechnicalUserCreationData!.TechnicalUserId)
             )
             .SingleOrDefaultAsync();
 }

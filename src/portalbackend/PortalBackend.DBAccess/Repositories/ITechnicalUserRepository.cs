@@ -24,9 +24,9 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public interface IServiceAccountRepository
+public interface ITechnicalUserRepository
 {
-    TechnicalUser CreateCompanyServiceAccount(Guid identityId,
+    TechnicalUser CreateTechnicalUser(Guid identityId,
         string name,
         string description,
         string? clientClientId,
@@ -34,15 +34,15 @@ public interface IServiceAccountRepository
         TechnicalUserKindId technicalUserKindId,
         Action<TechnicalUser>? setOptionalParameters = null);
 
-    void AttachAndModifyCompanyServiceAccount(Guid id, Guid version, Action<TechnicalUser>? initialize, Action<TechnicalUser> modify);
-    Task<CompanyServiceAccountWithRoleDataClientId?> GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid serviceAccountId, Guid userCompanyId);
-    Task<OwnServiceAccountData?> GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid serviceAccountId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter);
-    Task<CompanyServiceAccountDetailedData?> GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid serviceAccountId, Guid companyId);
-    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnCompanyServiceAccountsUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
+    void AttachAndModifyTechnicalUser(Guid id, Guid version, Action<TechnicalUser>? initialize, Action<TechnicalUser> modify);
+    Task<TechnicalUserWithRoleDataClientId?> GetTechnicalUserWithRoleDataClientIdAsync(Guid technicalUserId, Guid userCompanyId);
+    Task<OwnTechnicalUserData?> GetOwnTechnicalUserWithIamUserRolesAsync(Guid technicalUserId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter);
+    Task<TechnicalUserDetailedData?> GetOwnTechnicalUserDataUntrackedAsync(Guid technicalUserId, Guid companyId);
+    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsersUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
     Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId);
-    public Task<(Guid IdentityId, Guid CompanyId)> GetServiceAccountDataByClientId(string clientId);
-    void CreateDimCompanyServiceAccount(Guid serviceAccountId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);
-    void CreateDimUserCreationData(Guid serviceAccountId, Guid processId);
-    Task<(bool IsValid, string? Bpn, string Name)> GetDimServiceAccountData(Guid dimServiceAccountId);
-    Task<Guid> GetDimServiceAccountIdForProcess(Guid processId);
+    public Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId);
+    void CreateExternalTechnicalUser(Guid technicalUserId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);
+    void CreateExternalTechnicalUserCreationData(Guid technicalUserId, Guid processId);
+    Task<(bool IsValid, string? Bpn, string Name)> GetExternalTechnicalUserData(Guid externalTechnicalUserId);
+    Task<Guid> GetExternalTechnicalUserIdForProcess(Guid processId);
 }

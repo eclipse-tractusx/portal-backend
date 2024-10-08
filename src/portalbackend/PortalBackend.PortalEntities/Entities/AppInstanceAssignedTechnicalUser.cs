@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,13 +19,24 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class DimUserCreationData(Guid id, Guid technicalUserId, Guid processId)
+public class AppInstanceAssignedTechnicalUser
 {
-    public Guid Id { get; private set; } = id;
-    public Guid TechnicalUserId { get; set; } = technicalUserId;
-    public Guid ProcessId { get; private set; } = processId;
+    private AppInstanceAssignedTechnicalUser()
+    {
+    }
 
-    // Navigational Properties
-    public TechnicalUser? TechnicalUser { get; private set; }
-    public Process? Process { get; private set; }
+    public AppInstanceAssignedTechnicalUser(Guid appInstanceId, Guid technicalUserId)
+        : this()
+    {
+        AppInstanceId = appInstanceId;
+        TechnicalUserId = technicalUserId;
+    }
+
+    public Guid AppInstanceId { get; private set; }
+
+    public Guid TechnicalUserId { get; private set; }
+
+    public virtual AppInstance? AppInstance { get; set; }
+
+    public virtual TechnicalUser? TechnicalUser { get; set; }
 }

@@ -58,8 +58,8 @@ public class DimUserProcessTypeExecutor(
     {
         _dimServiceAccountId = Guid.Empty;
 
-        var result = await portalRepositories.GetInstance<IServiceAccountRepository>()
-            .GetDimServiceAccountIdForProcess(processId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await portalRepositories.GetInstance<ITechnicalUserRepository>()
+            .GetExternalTechnicalUserIdForProcess(processId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == Guid.Empty)
         {
             throw new NotFoundException(

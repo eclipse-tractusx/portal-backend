@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,18 +17,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record CompanyServiceAccountWithRoleDataClientId(
-    Guid ServiceAccountVersion,
-    string Name,
-    string Description,
+public record OwnTechnicalUserData(
+    IEnumerable<Guid> UserRoleIds,
+    Guid TechnicalUserId,
+    UserStatusId TechnicalUserStatus,
+    bool IsOwnerOrProvider,
+    Guid TechnicalUserVersion,
+    Guid? ConnectorId,
     string? ClientClientId,
-    TechnicalUserTypeId TechnicalUserTypeId,
-    TechnicalUserKindId TechnicalUserKindId,
-    Guid? OfferSubscriptionId,
-    UserStatusId UserStatusId,
-    IEnumerable<UserRoleData> UserRoleDatas);
+    ConnectorStatusId? StatusId,
+    OfferSubscriptionStatusId? OfferStatusId,
+    bool IsExternalTechnicalUser,
+    bool CreationProcessInProgress,
+    Guid? ProcessId
+);
