@@ -17,35 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// Basic model for user role data needed to display user roles.
-/// </summary>
-public record UserRoleData(
-        [property: JsonPropertyName("roleId")] Guid UserRoleId,
-        [property: JsonPropertyName("clientId")] string ClientClientId,
-        [property: JsonPropertyName("roleName")] string UserRoleText);
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
 /// <summary>
 /// Basic model for user role data needed to display user roles with description.
 /// </summary>
-public record UserRoleWithDescriptionTransferData(
-        Guid UserRoleId,
-        string UserRoleText,
-        string? RoleDescription,
-        bool External
-);
-
-public record UserRoleInformation(
+public record UserRoleWithDescription(
     [property: JsonPropertyName("roleId")] Guid UserRoleId,
     [property: JsonPropertyName("roleName")] string UserRoleText,
-    [property: JsonPropertyName("type")] UserRoleType RoleType);
-
-public enum UserRoleType
-{
-    Internal = 1,
-    External = 2
-}
+    [property: JsonPropertyName("roleDescription")] string? RoleDescription,
+    [property: JsonPropertyName("roleType")] UserRoleType RoleType
+);

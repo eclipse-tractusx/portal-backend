@@ -699,11 +699,14 @@ public class OfferService(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRoles)
     {
         var companyId = _identityData.CompanyId;
+        var userRoles = await portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleIdsUntrackedAsync(externalUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
         var result = await portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
-            .GetTechnicalUserProfileInformation(offerId, companyId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+            .GetTechnicalUserProfileInformation(offerId, companyId, offerTypeId, userRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");
@@ -714,7 +717,15 @@ public class OfferService(
             throw new ForbiddenException($"Company {companyId} is not the providing company");
         }
 
-        return result.Information;
+        return result.Information
+            .Select(x => new TechnicalUserProfileInformation(
+                x.TechnicalUserProfileId,
+                x.UserRoles
+                    .Select(ur => new UserRoleInformation(
+                        ur.UserRoleId,
+                        ur.UserRoleText,
+                        ur.External ? UserRoleType.External : UserRoleType.Internal))
+            ));
     }
 
     /// <inheritdoc />

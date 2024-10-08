@@ -214,19 +214,19 @@ public class UserRolesRepository : IUserRolesRepository
             .Select(userRole => userRole.UserRoleText)
             .AsAsyncEnumerable();
 
-    IAsyncEnumerable<UserRoleWithDescription> IUserRolesRepository.GetServiceAccountRolesAsync(Guid companyId, string clientId, IEnumerable<Guid> externalRoleIds, string languageShortName) =>
+    IAsyncEnumerable<UserRoleWithDescriptionTransferData> IUserRolesRepository.GetServiceAccountRolesAsync(Guid companyId, string clientId, IEnumerable<Guid> externalRoleIds, string languageShortName) =>
         _dbContext.UserRoles
             .AsNoTracking()
             .Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId) &&
                 ur.UserRoleCollections.Any(urc =>
                     urc.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(car =>
                         car.CompanyId == companyId)))
-            .Select(userRole => new UserRoleWithDescription(
+            .Select(userRole => new UserRoleWithDescriptionTransferData(
                 userRole.Id,
                 userRole.UserRoleText,
                 userRole.UserRoleDescriptions.SingleOrDefault(desc =>
                     desc.LanguageShortName == languageShortName)!.Description,
-                externalRoleIds.Contains(userRole.Id) ? UserRoleType.External : UserRoleType.Internal))
+                externalRoleIds.Contains(userRole.Id)))
             .AsAsyncEnumerable();
 
     /// <inheritdoc />

@@ -656,7 +656,7 @@ public class ServiceAccountBusinessLogicTests
     public async Task GetServiceAccountRolesAsync_GetsExpectedData()
     {
         // Arrange
-        var data = _fixture.CreateMany<UserRoleWithDescription>(15);
+        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15);
 
         A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<IEnumerable<Guid>>._, A<string>._))
             .Returns(data.ToAsyncEnumerable());
@@ -676,7 +676,8 @@ public class ServiceAccountBusinessLogicTests
         // Sonar fix -> Return value of pure method is not used
         result.Should().AllSatisfy(ur =>
         {
-            data.Contains(ur).Should().BeTrue();
+            var transferData = new UserRoleWithDescriptionTransferData(ur.UserRoleId, ur.UserRoleText, ur.RoleDescription, ur.RoleType == UserRoleType.External);
+            data.Contains(transferData).Should().BeTrue();
         });
     }
 

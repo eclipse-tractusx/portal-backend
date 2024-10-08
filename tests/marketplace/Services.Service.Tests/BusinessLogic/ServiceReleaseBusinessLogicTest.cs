@@ -585,7 +585,7 @@ public class ServiceReleaseBusinessLogicTest
     public async Task GetTechnicalUserProfilesForOffer_ReturnsExpected()
     {
         // Arrange
-        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(_existingServiceId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
             .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
         var sut = new ServiceReleaseBusinessLogic(null!, _offerService, _offerDocumentService, _identityService, Options.Create(new ServiceSettings()));
 

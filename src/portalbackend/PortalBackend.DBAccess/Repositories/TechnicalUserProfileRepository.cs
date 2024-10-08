@@ -69,14 +69,17 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     }
 
     /// <inheritdoc />
-    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformation> Information)>
-        GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId) =>
-            _context.Offers
-                .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
-                .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformation>>(
-                    x.ProviderCompanyId == usersCompanyId,
-                    x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformation(
-                        tup.Id,
-                        tup.TechnicalUserProfileAssignedUserRoles.Select(ur => new UserRoleInformation(ur.UserRole!.Id, ur.UserRole.UserRoleText))))))
-                .SingleOrDefaultAsync();
+    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformationTransferData> Information)> GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> externalUserRoles) =>
+        _context.Offers
+            .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
+            .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformationTransferData>>(
+                x.ProviderCompanyId == usersCompanyId,
+                x.TechnicalUserProfiles.Select(tup => new TechnicalUserProfileInformationTransferData(
+                    tup.Id,
+                    tup.TechnicalUserProfileAssignedUserRoles
+                        .Select(ur => new UserRoleInformationTransferData(
+                            ur.UserRole!.Id,
+                            ur.UserRole.UserRoleText,
+                            externalUserRoles.Contains(ur.UserRoleId)))))))
+            .SingleOrDefaultAsync();
 }
