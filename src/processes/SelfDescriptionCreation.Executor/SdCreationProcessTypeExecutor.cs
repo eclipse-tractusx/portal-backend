@@ -19,17 +19,18 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor;
 
 public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositories, ISdFactoryService sdFactoryService, IOptions<SelfDescriptionProcessSettings> options)
-    : IProcessTypeExecutor
+    : IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>
 {
     private readonly SelfDescriptionProcessSettings _settings = options.Value;
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = [ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION, ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION];
@@ -40,13 +41,13 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => ExecutableProcessSteps;
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(false);
 
-    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
         _processId = processId;
-        return await Task.FromResult(new IProcessTypeExecutor.InitializationResult(false, null));
+        return await Task.FromResult(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
     }
 
-    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
     {
         IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
         ProcessStepStatusId stepStatusId;
@@ -68,7 +69,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
             modified = true;
         }
 
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForCompany(CancellationToken cancellationToken)

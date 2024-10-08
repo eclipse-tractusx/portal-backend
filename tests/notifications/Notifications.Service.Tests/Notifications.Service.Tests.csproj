@@ -41,6 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
       <ProjectReference Include="..\..\..\src\notifications\Notifications.Service\Notifications.Service.csproj" />
       <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />

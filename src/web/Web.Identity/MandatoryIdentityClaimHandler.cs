@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Security.Claims;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
@@ -67,8 +66,8 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         {
             PolicyTypeId.ValidIdentity => _identityDataBuilder.IdentityId != Guid.Empty,
             PolicyTypeId.ValidCompany => (await GetCompanyId().ConfigureAwait(false)) != Guid.Empty,
-            PolicyTypeId.CompanyUser => _identityDataBuilder.IdentityTypeId == IdentityTypeId.COMPANY_USER,
-            PolicyTypeId.ServiceAccount => _identityDataBuilder.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
+            PolicyTypeId.CompanyUser => _identityDataBuilder.IdentityTypeId == Framework.Identity.IdentityTypeId.COMPANY_USER,
+            PolicyTypeId.ServiceAccount => _identityDataBuilder.IdentityTypeId == Framework.Identity.IdentityTypeId.COMPANY_SERVICE_ACCOUNT,
             _ => throw new UnexpectedConditionException($"unexpected PolicyTypeId {requirement.PolicyTypeId}")
         })
         {
@@ -86,7 +85,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         if (Guid.TryParse(preferredUserName, out var identityId))
         {
             _identityDataBuilder.AddIdentityId(identityId);
-            _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_USER);
+            _identityDataBuilder.AddIdentityTypeId(Framework.Identity.IdentityTypeId.COMPANY_USER);
             _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Initialized;
             return;
         }
@@ -96,7 +95,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _serviceAccountRepository.GetServiceAccountDataByClientId(clientId).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
             _identityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);
-            _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+            _identityDataBuilder.AddIdentityTypeId(Framework.Identity.IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
             _identityDataBuilder.AddCompanyId(serviceAccountData.CompanyId);
             _identityDataBuilder.Status = IClaimsIdentityDataBuilderStatus.Complete;
             return;
@@ -105,7 +104,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
         var sub = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.Sub)?.Value;
         _logger.LogInformation("Preferred user name {PreferredUserName} couldn't be parsed to uuid for sub {Sub}", preferredUserName, sub);
 
-        (Guid IdentityId, IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
+        (Guid IdentityId, Framework.Identity.IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
         if (!string.IsNullOrWhiteSpace(sub) && (identityData = await _identityRepository.GetActiveIdentityDataByUserEntityId(sub).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
             _identityDataBuilder.AddIdentityId(identityData.IdentityId);

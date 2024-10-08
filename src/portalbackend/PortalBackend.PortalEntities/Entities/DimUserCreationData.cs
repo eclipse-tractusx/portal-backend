@@ -17,6 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class DimUserCreationData(Guid id, Guid serviceAccountId, Guid processId)
@@ -27,5 +30,5 @@ public class DimUserCreationData(Guid id, Guid serviceAccountId, Guid processId)
 
     // Navigational Properties
     public CompanyServiceAccount? ServiceAccount { get; private set; }
-    public Process? Process { get; private set; }
+    public Process<ProcessTypeId, ProcessStepTypeId>? Process { get; private set; }
 }

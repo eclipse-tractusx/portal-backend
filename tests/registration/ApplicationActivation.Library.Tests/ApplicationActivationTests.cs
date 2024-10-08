@@ -23,6 +23,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -63,7 +66,7 @@ public class ApplicationActivationTests
     private readonly IUserBusinessPartnerRepository _businessPartnerRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRolesRepository _rolesRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly List<Notification> _notifications = new();
     private readonly List<Guid> _notifiedUserIds = new();
@@ -90,7 +93,7 @@ public class ApplicationActivationTests
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _custodianService = A.Fake<ICustodianService>();
         _settings = A.Fake<ApplicationActivationSettings>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         var options = A.Fake<IOptions<ApplicationActivationSettings>>();
 
@@ -111,7 +114,7 @@ public class ApplicationActivationTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_businessPartnerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_rolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
         _sut = new ApplicationActivationService(_portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _mailingProcessCreation, options);
@@ -412,7 +415,7 @@ public class ApplicationActivationTests
         };
         var userRoleData = new UserRoleData[] { new(UserRoleId, ClientId, "Company Admin") };
 
-        var processSteps = new List<ProcessStep>();
+        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
         var companyUserAssignedRole = _fixture.Create<IdentityAssignedRole>();
         var companyUserAssignedBusinessPartner = _fixture.Create<CompanyUserAssignedBusinessPartner>();
         var companyApplication = _fixture.Build<CompanyApplication>()
@@ -441,7 +444,7 @@ public class ApplicationActivationTests
                 x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
             {
-                processSteps.AddRange(steps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                processSteps.AddRange(steps.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
             });
 
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(

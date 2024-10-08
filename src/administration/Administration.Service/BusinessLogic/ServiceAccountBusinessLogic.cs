@@ -22,15 +22,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -344,7 +346,7 @@ public class ServiceAccountBusinessLogic(
 
     public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)
     {
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>().GetProcessDataForServiceAccountCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+        var processData = await portalRepositories.GetInstance<IServiceAccountRepository>().GetProcessDataForServiceAccountCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {processId}");
@@ -387,7 +389,7 @@ public class ServiceAccountBusinessLogic(
 
     public async Task HandleServiceAccountDeletionCallback(Guid processId)
     {
-        var processData = await portalRepositories.GetInstance<IProcessStepRepository>()
+        var processData = await portalRepositories.GetInstance<IServiceAccountRepository>()
             .GetProcessDataForServiceAccountDeletionCallback(processId,
                 [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -407,5 +409,5 @@ public class ServiceAccountBusinessLogic(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public Task RetriggerDimTechnicalUser(Guid processId, ProcessStepTypeId processStepTypeId) => processStepTypeId.TriggerProcessStep(processId, portalRepositories);
+    public Task RetriggerDimTechnicalUser(Guid processId, ProcessStepTypeId processStepTypeId) => processStepTypeId.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 }
