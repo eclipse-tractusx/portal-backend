@@ -68,9 +68,6 @@ public interface IUserRolesRepository
     /// <returns></returns>
     IAsyncEnumerable<CompanyUserNameData> GetUserDataByAssignedRoles(Guid companyId, IEnumerable<UserRoleConfig> clientRoles);
 
-    IAsyncEnumerable<(string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)> UserRoles)> GetUserRolesByClientId(IEnumerable<string> iamClientIds);
-
-    IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<Guid> GetRolesForClient(string technicalUserProfileClient);
 
     /// <summary>
@@ -88,4 +85,6 @@ public interface IUserRolesRepository
     /// <param name="languageShortName"></param>
     /// <returns></returns>
     Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName);
+
+    IAsyncEnumerable<(Guid IdentityId, IEnumerable<(string ClientClientId, Guid UserRoleId, string UserRoleText)> InstanceRoleData)> GetUsersWithUserRolesForApplicationId(Guid applicationId, IEnumerable<string> iamClientIds);
 }

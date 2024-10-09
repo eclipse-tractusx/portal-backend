@@ -206,15 +206,15 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> SharedIdpAliase, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
-        portalDbContext.CompanyApplications.Where(companyApplication =>
+    public Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string, string?, IEnumerable<string>, CompanyApplicationTypeId, Guid?>(
+            .Select(ca => new ValueTuple<Guid, string, string?, CompanyApplicationTypeId, Guid?>(
                 ca.CompanyId,
                 ca.Company!.Name,
                 ca.Company.BusinessPartnerNumber,
-                ca.Company.IdentityProviders.Where(x => x.IdentityProviderTypeId == IdentityProviderTypeId.SHARED && x.IamIdentityProvider != null).Select(x => x.IamIdentityProvider!.IamIdpAlias),
                 ca.CompanyApplicationTypeId,
                 ca.CompanyApplicationTypeId == CompanyApplicationTypeId.EXTERNAL ?
                     ca.Company.NetworkRegistration!.ProcessId :
@@ -242,21 +242,30 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.Company.BusinessPartnerNumber))
             .SingleOrDefaultAsync();
 
-    public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId) =>
+    public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersWithoutInitialRoles(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
         portalDbContext.Invitations
-            .AsNoTracking()
             .Where(invitation => invitation.CompanyApplicationId == applicationId)
             .Select(invitation => invitation.CompanyUser)
-            .Where(companyUser => companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE)
+            .Where(companyUser =>
+                companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE &&
+                userRoleIds.Any(x => companyUser.Identity.IdentityAssignedRoles.Select(iar => iar.UserRoleId).Contains(x)))
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
-                companyUser.CompanyUserAssignedBusinessPartners.Select(companyUserAssignedBusinessPartner => companyUserAssignedBusinessPartner.BusinessPartnerNumber),
                 companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
+            .Take(2)
+            .AsAsyncEnumerable();
+
+    public IAsyncEnumerable<Guid> GetInvitedUserDataByApplicationWithoutBpn(Guid applicationId) =>
+        portalDbContext.Invitations
+            .Where(invitation => invitation.CompanyApplicationId == applicationId)
+            .Select(invitation => new { invitation.CompanyUser, invitation.CompanyApplication!.Company!.BusinessPartnerNumber })
+            .Where(x => x.CompanyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE && !x.CompanyUser.CompanyUserAssignedBusinessPartners.Any(cuabp => cuabp.BusinessPartnerNumber == x.BusinessPartnerNumber))
+            .Select(x => x.CompanyUser!.Id)
+            .Take(2)
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications
-            .AsNoTracking()
             .Where(application => application.Id == applicationId)
             .SelectMany(application =>
                 application.Company!.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(x => x.CompanyUser!)
@@ -583,4 +592,17 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                                     document.DocumentStatusId))))
                     : null))
             .SingleOrDefaultAsync();
+
+    public Task<(string CompanyName, string? BusinessPartnerNumber)> GetBpnAndCompanyNameForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(x => x.Id == applicationId)
+            .Select(x => new ValueTuple<string, string?>(x.Company!.Name, x.Company!.BusinessPartnerNumber))
+            .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<string> GetSharedIdpAliasseForApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .Where(x => x.Id == applicationId)
+            .SelectMany(ca => ca.Company!.IdentityProviders.Where(x => x.IdentityProviderTypeId == IdentityProviderTypeId.SHARED && x.IamIdentityProvider != null).Select(x => x.IamIdentityProvider!.IamIdpAlias))
+            .ToAsyncEnumerable()
+    ;
 }

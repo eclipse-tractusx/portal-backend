@@ -38,9 +38,9 @@ public interface IApplicationRepository
     Task<CompanyApplicationDetailData?> GetCompanyApplicationDetailDataAsync(Guid applicationId, Guid userCompanyId, Guid? companyId);
     Task<(string CompanyName, string? FirstName, string? LastName, string? Email, IEnumerable<(Guid ApplicationId, CompanyApplicationStatusId ApplicationStatusId, IEnumerable<(string? FirstName, string? LastName, string? Email)> InvitedUsers)> Applications)> GetCompanyApplicationsDeclineData(Guid companyUserId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds);
     Task<(bool IsValidApplicationId, Guid CompanyId, bool IsSubmitted)> GetCompanyIdSubmissionStatusForApplication(Guid applicationId);
-    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, IEnumerable<string> SharedIdpAliase, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
+    Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber, CompanyApplicationTypeId ApplicationTypeId, Guid? NetworkRegistrationProcessId)> GetCompanyAndApplicationDetailsForApprovalAsync(Guid applicationId);
     Task<(Guid CompanyId, string CompanyName, string? BusinessPartnerNumber)> GetCompanyAndApplicationDetailsForCreateWalletAsync(Guid applicationId);
-    IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersDataByApplicationIdUntrackedAsync(Guid applicationId);
+    IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersWithoutInitialRoles(Guid applicationId, IEnumerable<Guid> userRoleIds);
     IAsyncEnumerable<EmailData> GetEmailDataUntrackedAsync(Guid applicationId);
     IQueryable<CompanyApplication> GetAllCompanyApplicationsDetailsQuery(string? companyName = null);
     Task<CompanyUserRoleWithAddress?> GetCompanyUserRoleWithAddressUntrackedAsync(Guid companyApplicationId, IEnumerable<DocumentTypeId> documentTypeIds);
@@ -105,4 +105,7 @@ public interface IApplicationRepository
     Task<(bool Exists, string? Did, string? Bpn)> GetDidAndBpnForApplicationId(Guid applicationId);
     Task<(bool Exists, string? Did)> GetDidForApplicationId(Guid applicationId);
     Task<(bool IsValidApplicationId, bool IsValidCompany, ApplicationDeclineData? ApplicationDeclineData)> GetDeclineApplicationDataForApplicationId(Guid applicationId, Guid companyId, IEnumerable<CompanyApplicationStatusId> companyApplicationStatusIds);
+    Task<(string CompanyName, string? BusinessPartnerNumber)> GetBpnAndCompanyNameForApplicationId(Guid applicationId);
+    IAsyncEnumerable<string> GetSharedIdpAliasseForApplicationId(Guid applicationId);
+    IAsyncEnumerable<Guid> GetInvitedUserDataByApplicationWithoutBpn(Guid applicationId);
 }

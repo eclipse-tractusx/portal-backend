@@ -605,7 +605,10 @@ public class ChecklistServiceTests
         // Arrange
         var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3);
-        var processSteps = _fixture.CreateMany<ProcessStepTypeId>(100).Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
+        var processSteps = _fixture.CreateMany<ProcessStepTypeId>(97)
+            .Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow))
+            .Concat(processStepTypeIds.Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)))
+            .ToImmutableArray();
 
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
@@ -637,7 +640,7 @@ public class ChecklistServiceTests
             .MustHaveHappened(eligibleSteps.Length, Times.Exactly);
 
         modifiedProcessSteps.Should().HaveCount(eligibleSteps.Length);
-        modifiedProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.SKIPPED).Should().HaveCount(3);
+        modifiedProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.SKIPPED).Should().HaveCount(processSteps.Count(x => processStepTypeIds.Contains(x.ProcessStepTypeId)));
         modifiedProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.DUPLICATE).Should().HaveCount(eligibleSteps.Length - 3);
         var modifiedWithType = modifiedProcessSteps.Join(
             processSteps,

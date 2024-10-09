@@ -147,7 +147,7 @@ public class SdFactoryBusinessLogicTests
         result.ModifyChecklistEntry!.Invoke(entry);
         result.ProcessMessage.Should().Be(clearinghouseConnectDisabled ? "Self description was skipped due to clearinghouse trigger is disabled" : null);
         entry.ApplicationChecklistEntryStatusId.Should().Be(clearinghouseConnectDisabled ? ApplicationChecklistEntryStatusId.SKIPPED : ApplicationChecklistEntryStatusId.IN_PROGRESS);
-        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ACTIVATE_APPLICATION : x.Single() == ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE);
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Match(x => clearinghouseConnectDisabled ? x.Single() == ProcessStepTypeId.ASSIGN_INITIAL_ROLES : x.Single() == ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
         result.StepStatusId.Should().Be(clearinghouseConnectDisabled ? ProcessStepStatusId.SKIPPED : ProcessStepStatusId.DONE);
@@ -223,7 +223,7 @@ public class SdFactoryBusinessLogicTests
         await _sut.ProcessFinishSelfDescriptionLpForApplication(data, company.Id, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.ACTIVATE_APPLICATION) == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.ASSIGN_INITIAL_ROLES) == 1))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.CreateDocument($"SelfDescription_LegalPerson.json", A<byte[]>._, A<byte[]>._, MediaTypeId.JSON, DocumentTypeId.SELF_DESCRIPTION, A<Action<Document>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(company.Id, null, A<Action<Company>>._)).MustHaveHappenedOnceExactly();
 
