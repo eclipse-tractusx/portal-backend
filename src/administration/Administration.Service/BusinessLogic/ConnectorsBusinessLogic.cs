@@ -199,7 +199,7 @@ public class ConnectorsBusinessLogic(
         if (!await portalRepositories.GetInstance<ITechnicalUserRepository>()
                 .CheckActiveServiceAccountExistsForCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, [new("technicalUserId", technicalUserId.Value.ToString()), new("companyId", companyId.ToString())]);
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, [new ErrorParameter("technicalUserId", technicalUserId.Value.ToString()), new ErrorParameter("companyId", companyId.ToString())]);
         }
     }
 
