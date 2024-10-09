@@ -59,7 +59,7 @@ public class ServiceAccountControllerTests
         // Arrange
         var serviceAccountId = Guid.NewGuid();
         var responseData = _fixture.Build<ServiceAccountDetails>()
-            .With(x => x.ServiceAccountId, serviceAccountId)
+            .With(x => x.TechnicalUserId, serviceAccountId)
             .CreateMany(1);
         var data = _fixture.Create<ServiceAccountCreationInfo>();
         A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<ServiceAccountCreationInfo>._))
@@ -71,7 +71,7 @@ public class ServiceAccountControllerTests
         // Assert
         A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(data)).MustHaveHappenedOnceExactly();
 
-        result.Should().ContainSingle(x => x.ServiceAccountId == responseData.First().ServiceAccountId);
+        result.Should().ContainSingle(x => x.TechnicalUserId == responseData.First().TechnicalUserId);
     }
 
     [Fact]

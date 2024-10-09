@@ -3,8 +3,8 @@
     "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2",
     "name": "sa-test",
     "description": "SA for offer subscription",
-    "company_service_account_type_id": 2,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 2,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF",
     "client_client_id":"sa-x-4"
   },
@@ -12,16 +12,16 @@
     "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f3",
     "name": "sa-test",
     "description": "SA with offer subscription",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552"
   },
   {
     "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f4",
     "name": "sa-test",
     "description": "SA with connector",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-1"
   },
@@ -29,16 +29,16 @@
     "id": "93eecd4e-ca47-4dd2-85bf-775ea72eb000",
     "name": "test-user-service-account",
     "description": "test-user-service-account-desc",
-    "company_service_account_kind_id": 1,
-    "company_service_account_type_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5552"
   },
   {
     "id": "93eecd4e-ca47-4dd2-85bf-775ea72eb009",
     "name": "test-user-service-accounts",
     "description": "test-user-service-account-descs",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5562",
     "client_client_id": "sa-x-2"
   },
@@ -46,8 +46,8 @@
     "id": "cd436931-8399-4c1d-bd81-7dffb298c7ca",
     "name": "test-user-service-accounts",
     "description": "test-user-service-account-descs",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-3"
   },
@@ -55,8 +55,8 @@
     "id": "38c92162-6328-40ce-80f3-22e3f3e9b94d",
     "name": "sa-inactive",
     "description": "inactive service account",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-inactive"
   },
@@ -64,8 +64,8 @@
     "id": "38c92162-6328-40ce-80f3-22e3f3e9b94e",
     "name": "test-user-service-account-0",
     "description": "test-user-service-account-desc-0",
-    "company_service_account_type_id": 1,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 1,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-0"
   },
@@ -73,8 +73,8 @@
     "id": "a946f314-f53e-4c72-9124-40b72bcc59aa",
     "name": "offersubscription-sa-0",
     "description": "internal test user for offersubscription",
-    "company_service_account_type_id": 2,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 2,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
     "client_client_id": "sa-os-internal"
   },
@@ -82,8 +82,8 @@
     "id": "4ce1b774-3d00-4e07-9a53-ae1f64193392",
     "name": "offersubscription-sa-0",
     "description": "internal test user for offersubscription",
-    "company_service_account_type_id": 2,
-    "company_service_account_kind_id": 2,
+    "technical_user_type_id": 2,
+    "technical_user_kind_id": 2,
     "offer_subscription_id": "ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba",
     "client_client_id": "sa-os-external"
   },
@@ -91,8 +91,8 @@
     "id": "4ce1b774-3d00-4e07-9a53-ae1f64193394",
     "name": "sa-pending-0",
     "description": "pending service account",
-    "company_service_account_type_id": 2,
-    "company_service_account_kind_id": 1,
+    "technical_user_type_id": 2,
+    "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-4"
   }

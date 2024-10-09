@@ -6349,9 +6349,9 @@ components:
         name:
           type: string
         userType:
-          $ref: '#/components/schemas/CompanyServiceAccountKindId'
+          $ref: '#/components/schemas/TechnicalUserKindId'
         serviceAccountType:
-          $ref: '#/components/schemas/CompanyServiceAccountTypeId'
+          $ref: '#/components/schemas/TechnicalUserTypeId'
         status:
           $ref: '#/components/schemas/UserStatusId'
         isOwner:
@@ -6377,16 +6377,6 @@ components:
           items:
             $ref: '#/components/schemas/CompanyServiceAccountData'
       additionalProperties: false
-    CompanyServiceAccountKindId:
-      enum:
-        - INTERNAL
-        - EXTERNAL
-      type: string
-    CompanyServiceAccountTypeId:
-      enum:
-        - MANAGED
-        - OWN
-      type: string
     CompanyUniqueIdData:
       type: object
       properties:
@@ -7506,9 +7496,9 @@ components:
           items:
             $ref: '#/components/schemas/UserRoleData'
         companyServiceAccountTypeId:
-          $ref: '#/components/schemas/CompanyServiceAccountTypeId'
+          $ref: '#/components/schemas/TechnicalUserTypeId'
         usertype:
-          $ref: '#/components/schemas/CompanyServiceAccountKindId'
+          $ref: '#/components/schemas/TechnicalUserKindId'
         authenticationServiceUrl:
           type: string
         status:
@@ -7564,7 +7554,7 @@ components:
           items:
             $ref: '#/components/schemas/UserRoleData'
         companyServiceAccountTypeId:
-          $ref: '#/components/schemas/CompanyServiceAccountTypeId'
+          $ref: '#/components/schemas/TechnicalUserTypeId'
         secret:
           type: string
           nullable: true
@@ -7600,6 +7590,16 @@ components:
         description:
           type: string
       additionalProperties: false
+    TechnicalUserKindId:
+      enum:
+        - INTERNAL
+        - EXTERNAL
+      type: string
+    TechnicalUserTypeId:
+      enum:
+        - MANAGED
+        - OWN
+      type: string
     UniqueIdentifierId:
       enum:
         - COMMERCIAL_REG_NUMBER

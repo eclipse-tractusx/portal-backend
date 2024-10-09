@@ -17,15 +17,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public class DimUserCreationData(Guid id, Guid serviceAccountId, Guid processId)
-{
-    public Guid Id { get; private set; } = id;
-    public Guid ServiceAccountId { get; set; } = serviceAccountId;
-    public Guid ProcessId { get; private set; } = processId;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-    // Navigational Properties
-    public CompanyServiceAccount? ServiceAccount { get; private set; }
-    public Process? Process { get; private set; }
-}
+public record OwnTechnicalUserData(
+    IEnumerable<Guid> UserRoleIds,
+    Guid TechnicalUserId,
+    UserStatusId TechnicalUserStatus,
+    bool IsOwnerOrProvider,
+    Guid TechnicalUserVersion,
+    Guid? ConnectorId,
+    string? ClientClientId,
+    ConnectorStatusId? StatusId,
+    OfferSubscriptionStatusId? OfferStatusId,
+    bool IsExternalTechnicalUser,
+    bool CreationProcessInProgress,
+    Guid? ProcessId
+);

@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,26 +17,31 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.ComponentModel.DataAnnotations;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class AppInstanceAssignedCompanyServiceAccount
+public class TechnicalUserKind
 {
-    private AppInstanceAssignedCompanyServiceAccount()
+    private TechnicalUserKind()
     {
+        Label = null!;
+        TechnicalUsers = new HashSet<TechnicalUser>();
     }
 
-    public AppInstanceAssignedCompanyServiceAccount(Guid appInstanceId, Guid companyServiceAccountId)
-        : this()
+    public TechnicalUserKind(TechnicalUserKindId technicalUserKindId) : this()
     {
-        AppInstanceId = appInstanceId;
-        CompanyServiceAccountId = companyServiceAccountId;
+        Id = technicalUserKindId;
+        Label = technicalUserKindId.ToString();
     }
 
-    public Guid AppInstanceId { get; private set; }
+    [Key]
+    public TechnicalUserKindId Id { get; private set; }
 
-    public Guid CompanyServiceAccountId { get; private set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-    public virtual AppInstance? AppInstance { get; set; }
-
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; set; }
+    // Navigation properties
+    public virtual ICollection<TechnicalUser> TechnicalUsers { get; private set; }
 }

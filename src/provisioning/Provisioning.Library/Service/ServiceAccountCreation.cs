@@ -48,14 +48,14 @@ public class ServiceAccountCreation(
     async Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
-            CompanyServiceAccountTypeId companyServiceAccountTypeId,
+            TechnicalUserTypeId technicalUserTypeId,
             bool enhanceTechnicalUserName,
             bool enabled,
             ServiceAccountCreationProcessData? processData,
-            Action<CompanyServiceAccount>? setOptionalParameter)
+            Action<TechnicalUser>? setOptionalParameter)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
-        var serviceAccountsRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
+        var technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
 
         var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -68,7 +68,7 @@ public class ServiceAccountCreation(
             {
                 var keycloakRoleData = roleData.ToImmutableList();
                 var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
-                var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, companyServiceAccountTypeId, CompanyServiceAccountKindId.INTERNAL, name, clientId, description, keycloakRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, technicalUserTypeId, TechnicalUserKindId.INTERNAL, name, clientId, description, keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
                 serviceAccounts.Add(new CreatedServiceAccountData(
                     serviceAccountId,
                     enhancedName,
@@ -89,7 +89,7 @@ public class ServiceAccountCreation(
             {
                 var dimRoleData = roleData.ToImmutableList();
                 var dimSaName = $"dim-{name}";
-                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, companyServiceAccountTypeId, CompanyServiceAccountKindId.EXTERNAL, dimSaName, null, description, dimRoleData, serviceAccountsRepository, userRolesRepository, setOptionalParameter);
+                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
                 var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
                 if (processData?.ProcessTypeId is not null)
                 {
@@ -104,7 +104,7 @@ public class ServiceAccountCreation(
                         processId = processData.ProcessId.Value;
                     }
 
-                    portalRepositories.GetInstance<IServiceAccountRepository>().CreateDimUserCreationData(dimServiceAccountId, processId.Value);
+                    portalRepositories.GetInstance<ITechnicalUserRepository>().CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
                 }
 
                 serviceAccounts.Add(new CreatedServiceAccountData(
@@ -136,24 +136,24 @@ public class ServiceAccountCreation(
     private Guid CreateDatabaseServiceAccount(
         Guid companyId,
         UserStatusId userStatusId,
-        CompanyServiceAccountTypeId companyServiceAccountTypeId,
-        CompanyServiceAccountKindId companyServiceAccountKindId,
+        TechnicalUserTypeId technicalUserTypeId,
+        TechnicalUserKindId technicalUserKindId,
         string name,
         string? clientId,
         string description,
         IEnumerable<UserRoleData> userRoleData,
-        IServiceAccountRepository serviceAccountsRepository,
+        ITechnicalUserRepository serviceAccountsRepository,
         IUserRolesRepository userRolesRepository,
-        Action<CompanyServiceAccount>? setOptionalParameter)
+        Action<TechnicalUser>? setOptionalParameter)
     {
         var identity = portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
-        var serviceAccount = serviceAccountsRepository.CreateCompanyServiceAccount(
+        var serviceAccount = serviceAccountsRepository.CreateTechnicalUser(
             identity.Id,
             name,
             description,
             clientId,
-            companyServiceAccountTypeId,
-            companyServiceAccountKindId,
+            technicalUserTypeId,
+            technicalUserKindId,
             setOptionalParameter);
 
         userRolesRepository.CreateIdentityAssignedRoleRange(

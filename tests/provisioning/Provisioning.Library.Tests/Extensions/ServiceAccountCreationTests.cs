@@ -50,7 +50,7 @@ public class ServiceAccountCreationTests
     private readonly Guid _processId = Guid.NewGuid();
     private readonly Guid _processStepId = Guid.NewGuid();
 
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IProcessStepRepository _processStepRepository;
@@ -70,7 +70,7 @@ public class ServiceAccountCreationTests
         _dimClient = fixture.Create<string>();
         _dimRoleText = fixture.Create<string>();
 
-        _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
+        _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
@@ -85,7 +85,7 @@ public class ServiceAccountCreationTests
             DimUserRoles = [new UserRoleConfig(_dimClient, [_dimRoleText])]
         };
 
-        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
@@ -93,7 +93,7 @@ public class ServiceAccountCreationTests
         _sut = new ServiceAccountCreation(_provisioningManager, _portalRepositories, _provisioningDbAccess, Options.Create(settings));
     }
 
-    private void ServiceAccountCreationAction(CompanyServiceAccount _) { }
+    private void ServiceAccountCreationAction(TechnicalUser _) { }
 
     [Fact]
     public async Task CreateServiceAccountAsync_WithInvalidRole_ThrowsNotFoundException()
@@ -103,7 +103,7 @@ public class ServiceAccountCreationTests
         Setup();
 
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), CompanyServiceAccountTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -111,7 +111,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, A<UserStatusId>._, A<IdentityTypeId>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<CompanyServiceAccountKindId>._, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(A<Guid>._, A<string>._, A<string>._, A<string>._, A<TechnicalUserTypeId>._, A<TechnicalUserKindId>._, A<Action<TechnicalUser>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>._))
             .MustNotHaveHappened();
@@ -130,7 +130,7 @@ public class ServiceAccountCreationTests
     public async Task CreateServiceAccountAsync_WithValidData_ReturnsExpected(bool enhance, string serviceAccountName)
     {
         // Arrange
-        var serviceAccounts = new List<CompanyServiceAccount>();
+        var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
         var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId]);
         var bpns = new[]
@@ -140,7 +140,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, enhance, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, enhance, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
 
@@ -158,7 +158,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, "testName", "abc", "sa1", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL, ServiceAccountCreationAction))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "testName", "abc", "sa1", TechnicalUserTypeId.OWN, TechnicalUserKindId.INTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
         var expectedRolesIds = new[] { (_identityId, _validUserRoleId) };
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(expectedRolesIds)))
@@ -182,7 +182,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, UserStatusId.PENDING, A<IdentityTypeId>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, CompanyServiceAccountKindId.EXTERNAL, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(A<Guid>._, A<string>._, A<string>._, A<string>._, A<TechnicalUserTypeId>._, TechnicalUserKindId.EXTERNAL, A<Action<TechnicalUser>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.Matches(x => x.Any(y => y.Item2 != _validUserRoleId))))
             .MustNotHaveHappened();
@@ -190,14 +190,14 @@ public class ServiceAccountCreationTests
             .MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.CreateDimUserCreationData(A<Guid>._, A<Guid>._))
+        A.CallTo(() => _technicalUserRepository.CreateExternalTechnicalUserCreationData(A<Guid>._, A<Guid>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
-        serviceAccounts.Should().ContainSingle().Which.Should().Match<CompanyServiceAccount>(
+        serviceAccounts.Should().ContainSingle().Which.Should().Match<TechnicalUser>(
             x => x.Name == "testName" &&
                  x.ClientClientId == "sa1" &&
-                 x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
+                 x.TechnicalUserKindId == TechnicalUserKindId.INTERNAL);
         identities.Should().ContainSingle().Which.Should().Match<Identity>(
             x => x.CompanyId == _companyId &&
                  x.UserStatusId == UserStatusId.ACTIVE &&
@@ -208,7 +208,7 @@ public class ServiceAccountCreationTests
     public async Task CreateServiceAccountAsync_WithValidDimData_ReturnsExpected()
     {
         // Arrange
-        var serviceAccounts = new List<CompanyServiceAccount>();
+        var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
         var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_dimUserRoleId]);
         var bpns = new[]
@@ -218,7 +218,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
         result.ServiceAccounts.Should().ContainSingle()
@@ -233,7 +233,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, UserStatusId.ACTIVE, A<IdentityTypeId>._, A<Action<Identity>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, CompanyServiceAccountKindId.INTERNAL, A<Action<CompanyServiceAccount>>._))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(A<Guid>._, A<string>._, A<string>._, A<string>._, A<TechnicalUserTypeId>._, TechnicalUserKindId.INTERNAL, A<Action<TechnicalUser>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.Matches(x => x.Any(y => y.Item2 != _dimUserRoleId))))
             .MustNotHaveHappened();
@@ -247,7 +247,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, "dim-testName", "abc", null, CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.EXTERNAL, ServiceAccountCreationAction))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "dim-testName", "abc", null, TechnicalUserTypeId.OWN, TechnicalUserKindId.EXTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
         var expectedRolesIds = new[] { (_identityId, _dimUserRoleId) };
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(expectedRolesIds)))
@@ -256,16 +256,16 @@ public class ServiceAccountCreationTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStep(ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER, ProcessStepStatusId.TODO, A<Guid>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateDimUserCreationData(_identityId, _processId))
+        A.CallTo(() => _technicalUserRepository.CreateExternalTechnicalUserCreationData(_identityId, _processId))
             .MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
 
-        serviceAccounts.Should().ContainSingle().Which.Should().Match<CompanyServiceAccount>(
+        serviceAccounts.Should().ContainSingle().Which.Should().Match<TechnicalUser>(
             x => x.Name == "dim-testName" &&
                  x.ClientClientId == null &&
-                 x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL);
+                 x.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL);
         identities.Should().ContainSingle().Which.Should().Match<Identity>(
             x => x.CompanyId == _companyId &&
                  x.UserStatusId == UserStatusId.PENDING &&
@@ -276,7 +276,7 @@ public class ServiceAccountCreationTests
     public async Task CreateServiceAccountAsync_WithValidDataPlus_ReturnsExpected()
     {
         // Arrange
-        var serviceAccounts = new List<CompanyServiceAccount>();
+        var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
         var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId, _dimUserRoleId]);
         var bpns = new[]
@@ -286,7 +286,7 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, CompanyServiceAccountTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
         result.ServiceAccounts.Should().HaveCount(2)
@@ -307,7 +307,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_identityId, "testName", "abc", "sa1", CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.INTERNAL, ServiceAccountCreationAction))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "testName", "abc", "sa1", TechnicalUserTypeId.OWN, TechnicalUserKindId.INTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
         var expectedRolesIds = new[] { (_identityId, _validUserRoleId) };
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(expectedRolesIds)))
@@ -331,7 +331,7 @@ public class ServiceAccountCreationTests
 
         A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(_secondId, "dim-testName", "abc", null, CompanyServiceAccountTypeId.OWN, CompanyServiceAccountKindId.EXTERNAL, ServiceAccountCreationAction))
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_secondId, "dim-testName", "abc", null, TechnicalUserTypeId.OWN, TechnicalUserKindId.EXTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
         var expectedDimRolesIds = new[] { (_secondId, _dimUserRoleId) };
         A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(expectedDimRolesIds)))
@@ -342,8 +342,8 @@ public class ServiceAccountCreationTests
 
         serviceAccounts.Should().HaveCount(2)
             .And.Satisfy(
-                x => x.Name == "testName" && x.ClientClientId == "sa1" && x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL,
-                x => x.Name == "dim-testName" && x.ClientClientId == null && x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.EXTERNAL
+                x => x.Name == "testName" && x.ClientClientId == "sa1" && x.TechnicalUserKindId == TechnicalUserKindId.INTERNAL,
+                x => x.Name == "dim-testName" && x.ClientClientId == null && x.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL
             );
         identities.Should().HaveCount(2)
             .And.AllSatisfy(x => x.Should().Match<Identity>(x => x.CompanyId == _companyId && x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT))
@@ -355,7 +355,7 @@ public class ServiceAccountCreationTests
 
     #region Setup
 
-    private void Setup(ICollection<CompanyServiceAccount>? serviceAccounts = null, ICollection<Identity>? identities = null)
+    private void Setup(ICollection<TechnicalUser>? serviceAccounts = null, ICollection<Identity>? identities = null)
     {
         A.CallTo(() => _provisioningDbAccess.GetNextClientSequenceAsync())
             .Returns(1).Once();
@@ -379,16 +379,16 @@ public class ServiceAccountCreationTests
                 return identity;
             }).Once();
 
-        A.CallTo(() => _serviceAccountRepository.CreateCompanyServiceAccount(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CompanyServiceAccountTypeId>._, A<CompanyServiceAccountKindId>._, A<Action<CompanyServiceAccount>>._))
-            .ReturnsLazily((Guid identityId, string name, string description, string clientClientId, CompanyServiceAccountTypeId companyServiceAccountTypeId, CompanyServiceAccountKindId companyServiceAccountKindId, Action<CompanyServiceAccount>? setOptionalParameters) =>
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(A<Guid>._, A<string>._, A<string>._, A<string>._, A<TechnicalUserTypeId>._, A<TechnicalUserKindId>._, A<Action<TechnicalUser>>._))
+            .ReturnsLazily((Guid identityId, string name, string description, string clientClientId, TechnicalUserTypeId technicalUserTypeId, TechnicalUserKindId technicalUserKindId, Action<TechnicalUser>? setOptionalParameters) =>
             {
-                var sa = new CompanyServiceAccount(
+                var sa = new TechnicalUser(
                     identityId,
                     Guid.NewGuid(),
                     name,
                     description,
-                    companyServiceAccountTypeId,
-                    companyServiceAccountKindId)
+                    technicalUserTypeId,
+                    technicalUserKindId)
                 {
                     ClientClientId = clientClientId
                 };

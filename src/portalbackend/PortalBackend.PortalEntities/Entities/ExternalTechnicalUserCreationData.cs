@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,31 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccountType
+public class ExternalTechnicalUserCreationData(Guid id, Guid technicalUserId, Guid processId)
 {
-    private CompanyServiceAccountType()
-    {
-        Label = null!;
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
-    }
+    public Guid Id { get; private set; } = id;
+    public Guid TechnicalUserId { get; set; } = technicalUserId;
+    public Guid ProcessId { get; private set; } = processId;
 
-    public CompanyServiceAccountType(CompanyServiceAccountTypeId companyServiceAccountTypeId) : this()
-    {
-        Id = companyServiceAccountTypeId;
-        Label = companyServiceAccountTypeId.ToString();
-    }
-
-    [Key]
-    public CompanyServiceAccountTypeId Id { get; private set; }
-
-    [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    // Navigational Properties
+    public TechnicalUser? TechnicalUser { get; private set; }
+    public Process? Process { get; private set; }
 }

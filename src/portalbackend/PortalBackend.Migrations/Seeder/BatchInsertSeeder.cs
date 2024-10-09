@@ -103,7 +103,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<CompanyIdentifier>("company_identifiers", x => new { x.CompanyId, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CountryAssignedIdentifier>("country_assigned_identifiers", x => new { x.CountryAlpha2Code, x.UniqueIdentifierId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<OfferAssignedPrivacyPolicy>("offer_assigned_privacy_policies", x => new { x.OfferId, x.PrivacyPolicyId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTable<AppInstanceAssignedCompanyServiceAccount>("app_instance_assigned_company_service_accounts", x => new { x.AppInstanceId, x.CompanyServiceAccountId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTable<AppInstanceAssignedTechnicalUser>("app_instance_assigned_technical_users", x => new { x.AppInstanceId, x.TechnicalUserId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<TechnicalUserProfileAssignedUserRole>("technical_user_profile_assigned_user_roles", x => new { x.TechnicalUserProfileId, x.UserRoleId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -125,7 +125,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<CompanyApplication>("company_applications", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<IdentityProvider>("identity_providers", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<UserRoleCollection>("user_role_collections", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTableForBaseEntity<CompanyServiceAccount>("company_service_accounts", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTableForBaseEntity<TechnicalUser>("technical_users", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<UserRole>("user_roles", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<Connector>("connectors", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<Consent>("consents", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

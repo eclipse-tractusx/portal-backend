@@ -151,7 +151,7 @@ public static class AdministrationEndpointHelper
     {
         var serviceAccountDetails = await GetServiceAccountDetailsById(serviceAccountId);
         var updateServiceAccountEditableDetails =
-            new ServiceAccountEditableDetails(serviceAccountDetails.ServiceAccountId, newName, newDescription,
+            new ServiceAccountEditableDetails(serviceAccountDetails.TechnicalUserId, newName, newDescription,
                 serviceAccountDetails.IamClientAuthMethod ?? throw new Exception("IamClientAuthMethod is expected not to be null here"));
         Given()
             .DisableSslCertificateValidation()

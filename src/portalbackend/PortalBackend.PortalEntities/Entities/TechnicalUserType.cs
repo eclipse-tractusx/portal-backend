@@ -1,5 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,26 +23,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyServiceAccountKind
+public class TechnicalUserType
 {
-    private CompanyServiceAccountKind()
+    private TechnicalUserType()
     {
         Label = null!;
-        CompanyServiceAccounts = new HashSet<CompanyServiceAccount>();
+        TechnicalUsers = new HashSet<TechnicalUser>();
     }
 
-    public CompanyServiceAccountKind(CompanyServiceAccountKindId companyServiceAccountKindId) : this()
+    public TechnicalUserType(TechnicalUserTypeId technicalUserTypeId) : this()
     {
-        Id = companyServiceAccountKindId;
-        Label = companyServiceAccountKindId.ToString();
+        Id = technicalUserTypeId;
+        Label = technicalUserTypeId.ToString();
     }
 
     [Key]
-    public CompanyServiceAccountKindId Id { get; private set; }
+    public TechnicalUserTypeId Id { get; private set; }
 
     [MaxLength(255)]
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<CompanyServiceAccount> CompanyServiceAccounts { get; private set; }
+    public virtual ICollection<TechnicalUser> TechnicalUsers { get; private set; }
 }

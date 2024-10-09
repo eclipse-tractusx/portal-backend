@@ -57,7 +57,7 @@ public class PortalRepositories : IPortalRepositories
         CreateTypeEntry<IOfferRepository>(context => new OfferRepository(context)),
         CreateTypeEntry<IOfferSubscriptionsRepository>(context => new OfferSubscriptionsRepository(context)),
         CreateTypeEntry<IProcessStepRepository>(context => new ProcessStepRepository(context)),
-        CreateTypeEntry<IServiceAccountRepository>(context => new ServiceAccountRepository(context)),
+        CreateTypeEntry<ITechnicalUserRepository>(context => new TechnicalUserRepository(context)),
         CreateTypeEntry<IStaticDataRepository>(context => new StaticDataRepository(context)),
         CreateTypeEntry<ITechnicalUserProfileRepository>(context => new TechnicalUserProfileRepository(context)),
         CreateTypeEntry<IUserBusinessPartnerRepository>(context => new UserBusinessPartnerRepository(context)),

@@ -48,8 +48,8 @@ public class AppInstanceRepository : IAppInstanceRepository
     /// <inheritdoc />
     public void CreateAppInstanceAssignedServiceAccounts(
         IEnumerable<(Guid AppInstanceId, Guid CompanyServiceAccountId)> instanceAccounts) =>
-        _portalDbContext.AppInstanceAssignedServiceAccounts.AddRange(instanceAccounts
-            .Select(x => new AppInstanceAssignedCompanyServiceAccount(
+        _portalDbContext.AppInstanceAssignedTechnicalUsers.AddRange(instanceAccounts
+            .Select(x => new AppInstanceAssignedTechnicalUser(
                 x.AppInstanceId,
                 x.CompanyServiceAccountId)));
 
@@ -59,9 +59,9 @@ public class AppInstanceRepository : IAppInstanceRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetAssignedServiceAccounts(Guid appInstanceId) =>
-        _portalDbContext.AppInstanceAssignedServiceAccounts
+        _portalDbContext.AppInstanceAssignedTechnicalUsers
             .Where(x => x.AppInstanceId == appInstanceId)
-            .Select(x => x.CompanyServiceAccountId)
+            .Select(x => x.TechnicalUserId)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />
@@ -72,6 +72,6 @@ public class AppInstanceRepository : IAppInstanceRepository
 
     /// <inheritdoc />
     public void RemoveAppInstanceAssignedServiceAccounts(Guid appInstanceId, IEnumerable<Guid> serviceAccountIds) =>
-        _portalDbContext.AppInstanceAssignedServiceAccounts
-            .RemoveRange(serviceAccountIds.Select(x => new AppInstanceAssignedCompanyServiceAccount(appInstanceId, x)));
+        _portalDbContext.AppInstanceAssignedTechnicalUsers
+            .RemoveRange(serviceAccountIds.Select(x => new AppInstanceAssignedTechnicalUser(appInstanceId, x)));
 }

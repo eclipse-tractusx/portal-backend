@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,10 +21,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;
 
-public class CompaniesLinkedServiceAccount
+public class CompaniesLinkedTechnicalUser
 {
-    public Guid ServiceAccountId { get; private set; }
+    public Guid TechnicalUserId { get; private set; }
     public Guid Owners { get; private set; }
     public Guid? Provider { get; private set; }
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
+    public virtual TechnicalUser? TechnicalUser { get; private set; }
 }

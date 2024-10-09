@@ -28,16 +28,16 @@ using Xunit.Extensions.AssemblyFixture;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
-/// Tests the functionality of the <see cref="ServiceAccountRepository"/>
+/// Tests the functionality of the <see cref="TechnicalUserRepository"/>
 /// </summary>
-public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
+public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _validCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
     private readonly Guid _validSubscriptionId = new("eb98bdf5-14e1-4feb-a954-453eac0b93cd");
     private readonly Guid _validServiceAccountId = new("7e85a0b8-0001-ab67-10d1-0ef508201007");
 
-    public ServiceAccountRepositoryTests(TestDbFixture testDbFixture)
+    public TechnicalUserRepositoryTests(TestDbFixture testDbFixture)
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -56,13 +56,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        var result = sut.CreateCompanyServiceAccount(
+        var result = sut.CreateTechnicalUser(
             _validCompanyId,
             "test",
             "Only a test service account",
             "sa1",
-            CompanyServiceAccountTypeId.MANAGED,
-            CompanyServiceAccountKindId.INTERNAL,
+            TechnicalUserTypeId.MANAGED,
+            TechnicalUserKindId.INTERNAL,
             sa =>
             {
                 sa.OfferSubscriptionId = _validSubscriptionId;
@@ -72,11 +72,11 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         var changedEntries = changeTracker.Entries().ToList();
         result.OfferSubscriptionId.Should().Be(_validSubscriptionId);
-        result.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.MANAGED);
+        result.TechnicalUserTypeId.Should().Be(TechnicalUserTypeId.MANAGED);
         result.ClientClientId.Should().Be("sa1");
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<CompanyServiceAccount>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
+            .Which.Entity.Should().BeOfType<TechnicalUser>().Which.OfferSubscriptionId.Should().Be(_validSubscriptionId);
     }
 
     #endregion
@@ -90,12 +90,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(_validServiceAccountId, _validCompanyId);
+        var result = await sut.GetTechnicalUserWithRoleDataClientIdAsync(_validServiceAccountId, _validCompanyId);
 
         // Assert
-        result.Should().NotBeNull().And.Match<CompanyServiceAccountWithRoleDataClientId>(
-            x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
-                 x.CompanyServiceAccountKindId == CompanyServiceAccountKindId.INTERNAL);
+        result.Should().NotBeNull().And.Match<TechnicalUserWithRoleDataClientId>(
+            x => x.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
+                 x.TechnicalUserKindId == TechnicalUserKindId.INTERNAL);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamClientIdAsync(Guid.NewGuid(), _validCompanyId);
+        var result = await sut.GetTechnicalUserWithRoleDataClientIdAsync(Guid.NewGuid(), _validCompanyId);
 
         // Assert
         result.Should().BeNull();
@@ -122,7 +122,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(_validServiceAccountId, _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
+        var result = await sut.GetOwnTechnicalUserWithIamUserRolesAsync(_validServiceAccountId, _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         result.Should().NotBe(default);
@@ -136,7 +136,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(Guid.NewGuid(), _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
+        var result = await sut.GetOwnTechnicalUserWithIamUserRolesAsync(Guid.NewGuid(), _validCompanyId, Enumerable.Empty<ProcessStepTypeId>());
 
         // Assert
         result.Should().Be(default);
@@ -150,7 +150,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyServiceAccountId = new("93eecd4e-ca47-4dd2-85bf-775ea72eb000");
         Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountWithIamServiceAccountRolesAsync(companyServiceAccountId, companyId, Enumerable.Empty<ProcessStepTypeId>());
+        var result = await sut.GetOwnTechnicalUserWithIamUserRolesAsync(companyServiceAccountId, companyId, Enumerable.Empty<ProcessStepTypeId>());
         // Assert
         result.Should().NotBeNull();
     }
@@ -166,12 +166,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(_validServiceAccountId, _validCompanyId);
+        var result = await sut.GetOwnTechnicalUserDataUntrackedAsync(_validServiceAccountId, _validCompanyId);
 
         // Assert
         result.Should().NotBeNull()
-            .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+            .And.Match<Models.TechnicalUserDetailedData>(x =>
+                x.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 x.Status == UserStatusId.ACTIVE &&
                 x.CompanyLastEditorData != null &&
                 x.CompanyLastEditorData.CompanyName == "CX-Test-Access" &&
@@ -185,7 +185,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(Guid.NewGuid(), _validCompanyId);
+        var result = await sut.GetOwnTechnicalUserDataUntrackedAsync(Guid.NewGuid(), _validCompanyId);
 
         // Assert
         result.Should().BeNull();
@@ -199,7 +199,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyServiceAccountId = new("93eecd4e-ca47-4dd2-85bf-775ea72eb000");
         Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(companyServiceAccountId, companyId);
+        var result = await sut.GetOwnTechnicalUserDataUntrackedAsync(companyServiceAccountId, companyId);
 
         // Assert
         result.Should().NotBeNull();
@@ -213,7 +213,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyServiceAccountId = new("93eecd4e-ca47-4dd2-85bf-775ea72eb000");
         Guid companyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2544");
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(companyServiceAccountId, companyId);
+        var result = await sut.GetOwnTechnicalUserDataUntrackedAsync(companyServiceAccountId, companyId);
 
         // Assert
         result.Should().BeNull();
@@ -227,13 +227,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         Guid companyServiceAccountId = new("38c92162-6328-40ce-80f3-22e3f3e9b94d");
         Guid companyId = new("729e0af2-6723-4a7f-85a1-833d84b39bdf");
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountDetailedDataUntrackedAsync(companyServiceAccountId, companyId);
+        var result = await sut.GetOwnTechnicalUserDataUntrackedAsync(companyServiceAccountId, companyId);
 
         // Assert
         result.Should().NotBeNull()
-            .And.Match<Models.CompanyServiceAccountDetailedData>(x =>
+            .And.Match<Models.TechnicalUserDetailedData>(x =>
                 x.ClientClientId == "sa-x-inactive" &&
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 x.Status == UserStatusId.INACTIVE);
     }
 
@@ -250,7 +250,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var newvalidCompanyId = new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         var (sut, _) = await CreateSut();
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(newvalidCompanyId, null, null, [UserStatusId.ACTIVE])(page, size);
+        var result = await sut.GetOwnTechnicalUsersUntracked(newvalidCompanyId, null, null, [UserStatusId.ACTIVE])(page, size);
 
         // Assert
         result.Should().NotBeNull()
@@ -260,7 +260,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         if (expected > 0)
         {
             result!.Data.First().Should().Match<Models.CompanyServiceAccountData>(y =>
-                y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                y.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 y.IsOwner &&
                 !y.IsProvider);
         }
@@ -273,12 +273,12 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-2", true, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl5-custodian-2", true, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN);
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.OWN);
     }
 
     [Fact]
@@ -288,27 +288,27 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, true, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, null, true, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(22);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
-                y.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.OWN &&
+                y.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 y.UserStatusId == UserStatusId.ACTIVE))
             .And.BeInAscendingOrder(x => x.Name)
             .And.Satisfy(
-                x => x.ServiceAccountId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"),
-                x => x.ServiceAccountId == new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
-                x => x.ServiceAccountId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
-                x => x.ServiceAccountId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
-                x => x.ServiceAccountId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"));
+                x => x.TechnicalUserId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"),
+                x => x.TechnicalUserId == new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201029"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201026"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201027"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201030"),
+                x => x.TechnicalUserId == new Guid("f3498fe6-e0e5-413b-a725-39bf5c7c1959"),
+                x => x.TechnicalUserId == new Guid("ab7f01ea-cbb9-4d58-9efa-ea992395f997"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201031"),
+                x => x.TechnicalUserId == new Guid("7e85a0b8-0001-ab67-10d1-0ef508201032"));
     }
 
     [Fact]
@@ -318,13 +318,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED
                 && !x.IsOwner && x.IsProvider);
     }
 
@@ -335,13 +335,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().HaveCount(1)
-            .And.Satisfy(x => x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED);
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED);
     }
 
     [Fact]
@@ -351,13 +351,13 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl5-custodian-2", null, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl5-custodian-2", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().ContainSingle()
-            .Which.CompanyServiceAccountTypeId.Should().Be(CompanyServiceAccountTypeId.OWN);
+            .Which.TechnicalUserTypeId.Should().Be(TechnicalUserTypeId.OWN);
     }
 
     [Fact]
@@ -367,7 +367,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(_validCompanyId, "sa-cl", null, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -382,16 +382,16 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.INACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.INACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().ContainSingle()
             .Which.Should().Match<Models.CompanyServiceAccountData>(x =>
-                x.ServiceAccountId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
+                x.TechnicalUserId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
                 x.ClientId == "sa-x-inactive" &&
-                x.CompanyServiceAccountTypeId == CompanyServiceAccountTypeId.MANAGED &&
+                x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 x.UserStatusId == UserStatusId.INACTIVE);
     }
 
@@ -402,7 +402,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(new("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -416,7 +416,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnCompanyServiceAccountsUntracked(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+        var result = await sut.GetOwnTechnicalUsersUntracked(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
 
         // Assert
         result.Should().BeNull();
@@ -476,7 +476,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        sut.CreateDimCompanyServiceAccount(
+        sut.CreateExternalTechnicalUser(
             _validServiceAccountId,
             "https://example.org/auth",
             "test"u8.ToArray(),
@@ -488,7 +488,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<DimCompanyServiceAccount>()
+            .Which.Entity.Should().BeOfType<ExternalTechnicalUser>()
             .Which.EncryptionMode.Should().Be(0);
     }
 
@@ -504,7 +504,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        sut.CreateDimUserCreationData(
+        sut.CreateExternalTechnicalUserCreationData(
             _validServiceAccountId,
             processId
         );
@@ -513,7 +513,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<DimUserCreationData>()
+            .Which.Entity.Should().BeOfType<ExternalTechnicalUserCreationData>()
             .Which.ProcessId.Should().Be(processId);
     }
 
@@ -531,7 +531,7 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        sut.AttachAndModifyCompanyServiceAccount(id, version,
+        sut.AttachAndModifyTechnicalUser(id, version,
             x =>
             {
                 x.Description = "test";
@@ -543,8 +543,8 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
         var changeTracker = context.ChangeTracker;
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().Should().ContainSingle()
-            .Which.Entity.Should().BeOfType<CompanyServiceAccount>()
-            .Which.Should().Match<CompanyServiceAccount>(
+            .Which.Entity.Should().BeOfType<TechnicalUser>()
+            .Which.Should().Match<TechnicalUser>(
                 x => x.Id == id && x.Version != version && x.Description == "test" && x.ClientClientId == "bar"
             );
     }
@@ -553,10 +553,10 @@ public class ServiceAccountRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region Setup
 
-    private async Task<(ServiceAccountRepository, PortalDbContext)> CreateSut()
+    private async Task<(TechnicalUserRepository, PortalDbContext)> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();
-        var sut = new ServiceAccountRepository(context);
+        var sut = new TechnicalUserRepository(context);
         return (sut, context);
     }
 

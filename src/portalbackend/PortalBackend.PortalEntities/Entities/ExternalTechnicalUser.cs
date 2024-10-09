@@ -21,7 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class DimCompanyServiceAccount(Guid id, string authenticationServiceUrl, byte[] clientSecret, byte[]? initializationVector, int encryptionMode)
+public class ExternalTechnicalUser(Guid id, string authenticationServiceUrl, byte[] clientSecret, byte[]? initializationVector, int encryptionMode)
     : IBaseEntity
 {
     /// <inheritdoc />
@@ -34,5 +34,5 @@ public class DimCompanyServiceAccount(Guid id, string authenticationServiceUrl, 
     public int EncryptionMode { get; set; } = encryptionMode;
 
     // Navigation properties
-    public virtual CompanyServiceAccount? CompanyServiceAccount { get; private set; }
+    public virtual TechnicalUser? TechnicalUser { get; private set; }
 }

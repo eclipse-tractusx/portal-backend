@@ -159,7 +159,7 @@ public interface IOfferSubscriptionsRepository
     Task<VerifyProcessData?> GetProcessStepData(Guid offerSubscriptionId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<OfferSubscriptionClientCreationData?> GetClientCreationData(Guid offerSubscriptionId);
     Task<OfferSubscriptionTechnicalUserCreationData?> GetTechnicalUserCreationData(Guid offerSubscriptionId);
-    Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, CompanyServiceAccountKindId CompanyServiceAccountKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
+    Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, TechnicalUserKindId TechnicalUserKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId);
     OfferSubscriptionProcessData CreateOfferSubscriptionProcessData(Guid offerSubscriptionId, string offerUrl);
     void RemoveOfferSubscriptionProcessData(Guid offerSubscriptionProcessDataId);
     IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId);

@@ -62,7 +62,7 @@ public class ConnectorsBusinessLogicTests
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
     private readonly ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IIdentityService _identityService;
     private readonly IServiceAccountManagement _serviceAccountManagement;
 
@@ -77,7 +77,7 @@ public class ConnectorsBusinessLogicTests
         _userRepository = A.Fake<IUserRepository>();
         _sdFactoryBusinessLogic = A.Fake<ISdFactoryBusinessLogic>();
         _serviceAccountManagement = A.Fake<IServiceAccountManagement>();
-        _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
+        _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _identityService = A.Fake<IIdentityService>();
         _processStepRepository = A.Fake<IProcessStepRepository>();
@@ -1414,13 +1414,13 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((_fixture.Create<ConnectorInformationData>(), false));
 
-        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ValidCompanyId))
+        A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ValidCompanyId))
             .Returns(true);
 
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IServiceAccountRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
@@ -1433,7 +1433,7 @@ public class ConnectorsBusinessLogicTests
 
     private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
     {
-        A.CallTo(() => _serviceAccountRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
+        A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
             .Returns(true);
     }
 

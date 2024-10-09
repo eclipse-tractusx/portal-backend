@@ -176,7 +176,7 @@ public class AppInstanceRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().NotBeEmpty();
         changedEntries.Should().HaveCount(1);
         var entry = changedEntries.Single();
-        entry.Entity.Should().BeOfType<AppInstanceAssignedCompanyServiceAccount>();
+        entry.Entity.Should().BeOfType<AppInstanceAssignedTechnicalUser>();
         entry.State.Should().Be(EntityState.Deleted);
     }
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,17 +21,13 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record OwnServiceAccountData(
-    IEnumerable<Guid> UserRoleIds,
-    Guid ServiceAccountId,
-    UserStatusId ServiceAccountStatus,
-    bool IsOwnerOrProvider,
-    Guid ServiceAccountVersion,
-    Guid? ConnectorId,
+public record TechnicalUserWithRoleDataClientId(
+    Guid TechnicalUserVersion,
+    string Name,
+    string Description,
     string? ClientClientId,
-    ConnectorStatusId? StatusId,
-    OfferSubscriptionStatusId? OfferStatusId,
-    bool IsDimServiceAccount,
-    bool CreationProcessInProgress,
-    Guid? ProcessId
-);
+    TechnicalUserTypeId TechnicalUserTypeId,
+    TechnicalUserKindId TechnicalUserKindId,
+    Guid? OfferSubscriptionId,
+    UserStatusId UserStatusId,
+    IEnumerable<UserRoleData> UserRoleDatas);

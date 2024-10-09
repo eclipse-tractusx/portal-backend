@@ -29,7 +29,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.DimUserCreationProcess.Executor.Te
 public class DimUserProcessTypeExecutorTests
 {
     private readonly Guid _dimServiceAccountId = Guid.NewGuid();
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IDimUserProcessService _dimUserProcessService;
     private readonly DimUserProcessTypeExecutor _executor;
     private readonly IFixture _fixture;
@@ -43,12 +43,12 @@ public class DimUserProcessTypeExecutorTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        _serviceAccountRepository = A.Fake<IServiceAccountRepository>();
+        _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
 
         _dimUserProcessService = A.Fake<IDimUserProcessService>();
 
-        A.CallTo(() => portalRepositories.GetInstance<IServiceAccountRepository>())
-            .Returns(_serviceAccountRepository);
+        A.CallTo(() => portalRepositories.GetInstance<ITechnicalUserRepository>())
+            .Returns(_technicalUserRepository);
 
         _executor = new DimUserProcessTypeExecutor(
             portalRepositories,
@@ -68,7 +68,7 @@ public class DimUserProcessTypeExecutorTests
         // Arrange
         var processId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(_dimServiceAccountId);
 
         // Act
@@ -86,7 +86,7 @@ public class DimUserProcessTypeExecutorTests
         // Arrange
         var processId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(Guid.Empty);
 
         // Act
@@ -123,7 +123,7 @@ public class DimUserProcessTypeExecutorTests
         // Arrange initialize
         var processId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(_dimServiceAccountId);
 
         // Act initialize
@@ -153,7 +153,7 @@ public class DimUserProcessTypeExecutorTests
         // Arrange initialize
         var processId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(_dimServiceAccountId);
 
         // Act initialize
@@ -184,7 +184,7 @@ public class DimUserProcessTypeExecutorTests
         var processId = Guid.NewGuid();
         var dimServiceAccountId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(dimServiceAccountId);
 
         // Act initialize
@@ -221,7 +221,7 @@ public class DimUserProcessTypeExecutorTests
         var processId = Guid.NewGuid();
         var dimServiceAccountId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(dimServiceAccountId);
 
         // Act initialize
@@ -257,7 +257,7 @@ public class DimUserProcessTypeExecutorTests
         var processId = Guid.NewGuid();
         var dimServiceAccountId = Guid.NewGuid();
 
-        A.CallTo(() => _serviceAccountRepository.GetDimServiceAccountIdForProcess(processId))
+        A.CallTo(() => _technicalUserRepository.GetExternalTechnicalUserIdForProcess(processId))
             .Returns(dimServiceAccountId);
 
         // Act initialize

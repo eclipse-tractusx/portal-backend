@@ -19,7 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-public enum CompanyServiceAccountKindId
+public enum TechnicalUserKindId
 {
     INTERNAL = 1,
     EXTERNAL = 2

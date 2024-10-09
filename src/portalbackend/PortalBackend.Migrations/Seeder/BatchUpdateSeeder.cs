@@ -132,7 +132,7 @@ public class BatchUpdateSeeder : ICustomSeeder
                 dbEntry.Value = entry.Value;
             }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await SeedTable<CompanyServiceAccount>("company_service_accounts",
+        await SeedTable<TechnicalUser>("technical_users",
             x => x.Id,
             x => x.dataEntity.Description != x.dbEntity.Description || x.dataEntity.Name != x.dbEntity.Name || x.dataEntity.ClientClientId != x.dbEntity.ClientClientId,
             (dbEntry, entry) =>

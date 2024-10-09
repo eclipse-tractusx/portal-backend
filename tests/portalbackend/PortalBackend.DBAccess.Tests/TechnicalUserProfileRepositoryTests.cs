@@ -29,7 +29,7 @@ using Xunit.Extensions.AssemblyFixture;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
 
 /// <summary>
-/// Tests the functionality of the <see cref="ServiceAccountRepository"/>
+/// Tests the functionality of the <see cref="TechnicalUserRepository"/>
 /// </summary>
 public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixture>
 {

@@ -196,10 +196,10 @@ public class ConnectorsBusinessLogic(
             return;
         }
 
-        if (!await portalRepositories.GetInstance<IServiceAccountRepository>()
+        if (!await portalRepositories.GetInstance<ITechnicalUserRepository>()
                 .CheckActiveServiceAccountExistsForCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, new ErrorParameter[] { new("technicalUserId", technicalUserId.Value.ToString()), new("companyId", companyId.ToString()) });
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, [new("technicalUserId", technicalUserId.Value.ToString()), new("companyId", companyId.ToString())]);
         }
     }
 
@@ -232,7 +232,7 @@ public class ConnectorsBusinessLogic(
                 connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
                 if (technicalUserId != null)
                 {
-                    connector.CompanyServiceAccountId = technicalUserId;
+                    connector.TechnicalUserId = technicalUserId;
                 }
             });
 
@@ -305,7 +305,7 @@ public class ConnectorsBusinessLogic(
     {
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
         {
-            con.CompanyServiceAccountId = null;
+            con.TechnicalUserId = null;
             con.StatusId = ConnectorStatusId.INACTIVE;
             con.DateLastChanged = DateTimeOffset.UtcNow;
         });

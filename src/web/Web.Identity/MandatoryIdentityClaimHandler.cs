@@ -40,7 +40,7 @@ public class MandatoryIdentityClaimRequirement : IAuthorizationRequirement
 public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdentityClaimRequirement>
 {
     private readonly IIdentityRepository _identityRepository;
-    private readonly IServiceAccountRepository _serviceAccountRepository;
+    private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IClaimsIdentityDataBuilder _identityDataBuilder;
     private readonly ILogger<MandatoryIdentityClaimHandler> _logger;
 
@@ -48,7 +48,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
     {
         _identityDataBuilder = claimsIdentityDataBuilder;
         _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
-        _serviceAccountRepository = portalRepositories.GetInstance<IServiceAccountRepository>();
+        _technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
         _logger = logger;
     }
 
@@ -93,7 +93,7 @@ public class MandatoryIdentityClaimHandler : AuthorizationHandler<MandatoryIdent
 
         (Guid IdentityId, Guid CompanyId) serviceAccountData;
         var clientId = principal.Claims.SingleOrDefault(x => x.Type == PortalClaimTypes.ClientId)?.Value;
-        if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _serviceAccountRepository.GetServiceAccountDataByClientId(clientId).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
+        if (!string.IsNullOrWhiteSpace(clientId) && (serviceAccountData = await _technicalUserRepository.GetTechnicalUserDataByClientId(clientId).ConfigureAwait(ConfigureAwaitOptions.None)) != default)
         {
             _identityDataBuilder.AddIdentityId(serviceAccountData.IdentityId);
             _identityDataBuilder.AddIdentityTypeId(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
