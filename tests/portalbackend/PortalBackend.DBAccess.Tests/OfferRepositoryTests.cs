@@ -444,9 +444,12 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             .And.AllSatisfy(
                 x => x.DocumentTypeId.Should().Be(DocumentTypeId.ADDITIONAL_DETAILS)
             );
-        offerDetail.TechnicalUserProfile.Should().NotBeEmpty().And.HaveCount(2)
-        .And.Satisfy(x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 1,
-        x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 2);
+        offerDetail.TechnicalUserProfile.Should()
+            .HaveCount(2)
+            .And.Satisfy(
+                x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 1,
+                x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 2);
+        offerDetail.LeadPictureId.Should().Be(new Guid("9685f744-9d90-4102-a949-fcd0bb86f951"));
     }
 
     #endregion
@@ -467,8 +470,11 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         offerDetail.Should().NotBeNull();
         offerDetail.OfferStatus.Should().Be(OfferStatusId.ACTIVE);
-        offerDetail.ActiveDocumentStatusDatas.Should().ContainSingle().And.Satisfy(
-            x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") && x.StatusId == DocumentStatusId.LOCKED);
+        offerDetail.ActiveDocumentStatusDatas.Should()
+            .HaveCount(2)
+            .And.Satisfy(
+                x => x.DocumentId == new Guid("0d68c68c-d689-474c-a3be-8493f99feab2") && x.StatusId == DocumentStatusId.LOCKED,
+                x => x.DocumentId == new Guid("9685f744-9d90-4102-a949-fcd0bb86f951") && x.StatusId == DocumentStatusId.LOCKED);
     }
 
     #endregion

@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Id">ID of the service.</param>
 /// <param name="Title">Title or name of the service.</param>
 /// <param name="Provider">Provider of the service.</param>
-/// <param name="LeadPictureUri">Uri to service's lead picture.</param>
+/// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
 /// <param name="LicenseType">License TypeId for offer.</param>
@@ -37,6 +37,7 @@ public record ServiceOverviewData(
     Guid Id,
     string? Title,
     string Provider,
+    Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
     LicenseTypeId LicenseType,
