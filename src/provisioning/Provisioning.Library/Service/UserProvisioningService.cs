@@ -337,4 +337,11 @@ public class UserProvisioningService : IUserProvisioningService
             throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{string.Join(", ", invalid)}]");
         }
     }
+
+    public async Task UpdateCompanyNameInIdentityProvider(Guid identityId, string companyName)
+    {
+        var (aliasData, _) = await GetCompanyNameSharedIdpAliasData(identityId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _provisioningManager.UpdateSharedIdentityProviderAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
+        await _provisioningManager.UpdateCentralIdentityProviderMapperAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
+    }
 }
