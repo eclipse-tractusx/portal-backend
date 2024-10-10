@@ -24,16 +24,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 
 public class Attributes
 {
-    [JsonProperty("consent.screen.text")]
+    [JsonPropertyName("consent.screen.text")]
     public string? ConsentScreenText { get; set; }
-    [JsonProperty("display.on.consent.screen")]
+    [JsonPropertyName("display.on.consent.screen")]
     public string? DisplayOnConsentScreen { get; set; }
-    [JsonProperty("include.in.token.scope")]
+    [JsonPropertyName("include.in.token.scope")]
     public string? IncludeInTokenScope { get; set; }
 }

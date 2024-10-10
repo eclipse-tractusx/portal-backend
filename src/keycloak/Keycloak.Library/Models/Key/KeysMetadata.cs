@@ -24,14 +24,14 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Key;
 
 public class KeysMetadata
 {
-    [JsonProperty("active")]
+    [JsonPropertyName("active")]
     public Active Active { get; set; }
-    [JsonProperty("keys")]
+    [JsonPropertyName("keys")]
     public IEnumerable<Key> Keys { get; set; }
 }

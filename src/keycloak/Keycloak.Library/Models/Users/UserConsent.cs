@@ -24,20 +24,20 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class UserConsent
 {
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string? ClientId { get; set; }
-    [JsonProperty("grantedClientScopes")]
+    [JsonPropertyName("grantedClientScopes")]
     public IEnumerable<string>? GrantedClientScopes { get; set; }
-    [JsonProperty("createdDate")]
+    [JsonPropertyName("createdDate")]
     public long? CreatedDate { get; set; }
-    [JsonProperty("lastUpdatedDate")]
+    [JsonPropertyName("lastUpdatedDate")]
     public long? LastUpdatedDate { get; set; }
-    [JsonProperty("additionalGrants")]
+    [JsonPropertyName("additionalGrants")]
     public IEnumerable<string>? AdditionalGrants { get; set; }
 }

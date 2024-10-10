@@ -166,7 +166,7 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .PostJsonAsync(roles, cancellationToken)
+            .PostJsonAsync(roles, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetClientRolesScopeMappingsForClientAsync(string realm, string clientId, string scopeClientId, CancellationToken cancellationToken = default) =>
@@ -177,7 +177,7 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<Role>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task RemoveClientRolesFromClientScopeForClientAsync(string realm, string clientId, string scopeClientId, IEnumerable<Role> roles, CancellationToken cancellationToken = default) =>
@@ -188,7 +188,7 @@ public partial class KeycloakClient
             .AppendPathSegment(clientId, true)
             .AppendPathSegment("/scope-mappings/clients/")
             .AppendPathSegment(scopeClientId, true)
-            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken)
+            .SendJsonAsync(HttpMethod.Delete, roles, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task<IEnumerable<Role>> GetAvailableClientRolesForClientScopeForClientAsync(string realm, string clientId, string scopeClientId) =>

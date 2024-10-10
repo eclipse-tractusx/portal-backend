@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ExportProviders
 {
-    [JsonProperty("singleFile")]
+    [JsonPropertyName("singleFile")]
     public HasOrder SingleFile { get; set; }
 
-    [JsonProperty("dir")]
+    [JsonPropertyName("dir")]
     public HasOrder Dir { get; set; }
 }

@@ -23,16 +23,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticationExecution : AuthenticationExecutionBase
 {
-    [JsonProperty("flowId")]
+    [JsonPropertyName("flowId")]
     public string FlowId { get; set; }
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
-    [JsonProperty("parentFlow")]
+    [JsonPropertyName("parentFlow")]
     public string ParentFlow { get; set; }
 }

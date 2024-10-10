@@ -24,24 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Saml
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("protocol")]
+    [JsonPropertyName("protocol")]
     public Protocol Protocol { get; set; }
 
-    [JsonProperty("protocolMapper")]
+    [JsonPropertyName("protocolMapper")]
     public string ProtocolMapper { get; set; }
 
-    [JsonProperty("consentRequired")]
+    [JsonPropertyName("consentRequired")]
     public bool? ConsentRequired { get; set; }
 
-    [JsonProperty("config")]
+    [JsonPropertyName("config")]
     public SamlConfig Config { get; set; }
 }

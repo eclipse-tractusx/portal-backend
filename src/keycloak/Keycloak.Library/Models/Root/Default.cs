@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Default
 {
-    [JsonProperty("order")]
+    [JsonPropertyName("order")]
     public long Order { get; set; }
 
-    [JsonProperty("operationalInfo")]
+    [JsonPropertyName("operationalInfo")]
     public OperationalInfo OperationalInfo { get; set; }
 }

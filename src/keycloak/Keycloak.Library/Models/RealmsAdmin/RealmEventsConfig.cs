@@ -24,22 +24,22 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class RealmEventsConfig
 {
-    [JsonProperty("adminEventsDetailsEnabled")]
+    [JsonPropertyName("adminEventsDetailsEnabled")]
     public bool? AdminEventsDetailsEnabled { get; set; }
-    [JsonProperty("adminEventsEnabled")]
+    [JsonPropertyName("adminEventsEnabled")]
     public bool? AdminEventsEnabled { get; set; }
-    [JsonProperty("enabledEventsTypes")]
+    [JsonPropertyName("enabledEventsTypes")]
     public IEnumerable<string> EnabledEventsTypes { get; set; }
-    [JsonProperty("eventsEnabled")]
+    [JsonPropertyName("eventsEnabled")]
     public bool? EventsEnabled { get; set; }
-    [JsonProperty("eventsExpiration")]
+    [JsonPropertyName("eventsExpiration")]
     public long? EventsExpiration { get; set; }
-    [JsonProperty("eventsListeners")]
+    [JsonPropertyName("eventsListeners")]
     public IEnumerable<string> EventsListeners { get; set; }
 }

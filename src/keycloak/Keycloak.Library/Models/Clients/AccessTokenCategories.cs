@@ -24,13 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
+using System.Runtime.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public enum AccessTokenCategories
 {
+    [EnumMember(Value = "INTERNAL")]
     Internal,
+
+    [EnumMember(Value = "ACCESS")]
     Access,
+
+    [EnumMember(Value = "ID")]
     Id,
+
+    [EnumMember(Value = "ADMIN")]
     Admin,
+
+    [EnumMember(Value = "USERINFO")]
     Userinfo
 }

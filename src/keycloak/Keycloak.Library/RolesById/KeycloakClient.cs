@@ -27,6 +27,7 @@ using Flurl.Http;
 using Flurl.Http.Content;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -47,7 +48,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/roles-by-id/")
             .AppendPathSegment(roleId, true)
-            .PutJsonAsync(role, cancellationToken)
+            .PutJsonAsync(role, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task DeleteRoleByIdAsync(string realm, string roleId, CancellationToken cancellationToken = default) =>
@@ -56,7 +57,7 @@ public partial class KeycloakClient
             .AppendPathSegment(realm, true)
             .AppendPathSegment("/roles-by-id/")
             .AppendPathSegment(roleId, true)
-            .DeleteAsync(cancellationToken)
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
     public async Task MakeRoleCompositeAsync(string realm, string roleId, IEnumerable<Role> roles) =>
@@ -76,21 +77,8 @@ public partial class KeycloakClient
             .AppendPathSegment("/roles-by-id/")
             .AppendPathSegment(roleId, true)
             .AppendPathSegment("/composites")
-            .GetJsonAsync<IEnumerable<Role>>(cancellationToken)
+            .GetJsonAsync<IEnumerable<Role>>(cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-
-    public async Task RemoveRolesFromCompositeAsync(string realm, string roleId, IEnumerable<Role> roles)
-    {
-        using var jsonContent = new CapturedJsonContent(_serializer.Serialize(roles));
-        await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))
-            .AppendPathSegment("/admin/realms/")
-            .AppendPathSegment(realm, true)
-            .AppendPathSegment("/roles-by-id/")
-            .AppendPathSegment(roleId, true)
-            .AppendPathSegment("/composites")
-            .SendJsonAsync(HttpMethod.Delete, jsonContent)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-    }
 
     public async Task<IEnumerable<Role>> GetClientRolesForCompositeByIdAsync(string realm, string roleId, string clientId) =>
         await (await GetBaseUrlAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None))

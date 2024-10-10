@@ -24,24 +24,24 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class BrowserSecurityHeaders
 {
-    [JsonProperty("contentSecurityPolicyReportOnly")]
+    [JsonPropertyName("contentSecurityPolicyReportOnly")]
     public string? ContentSecurityPolicyReportOnly { get; set; }
-    [JsonProperty("xContentTypeOptions")]
+    [JsonPropertyName("xContentTypeOptions")]
     public string? XContentTypeOptions { get; set; }
-    [JsonProperty("xRobotsTag")]
+    [JsonPropertyName("xRobotsTag")]
     public string? XRobotsTag { get; set; }
-    [JsonProperty("xFrameOptions")]
+    [JsonPropertyName("xFrameOptions")]
     public string? XFrameOptions { get; set; }
-    [JsonProperty("xXSSProtection")]
+    [JsonPropertyName("xXSSProtection")]
     public string? XXssProtection { get; set; }
-    [JsonProperty("contentSecurityPolicy")]
+    [JsonPropertyName("contentSecurityPolicy")]
     public string? ContentSecurityPolicy { get; set; }
-    [JsonProperty("strictTransportSecurity")]
+    [JsonPropertyName("strictTransportSecurity")]
     public string? StrictTransportSecurity { get; set; }
 }

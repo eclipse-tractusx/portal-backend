@@ -24,20 +24,20 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class UserAccess
 {
-    [JsonProperty("manageGroupMembership")]
+    [JsonPropertyName("manageGroupMembership")]
     public bool? ManageGroupMembership { get; set; }
-    [JsonProperty("view")]
+    [JsonPropertyName("view")]
     public bool? View { get; set; }
-    [JsonProperty("mapRoles")]
+    [JsonPropertyName("mapRoles")]
     public bool? MapRoles { get; set; }
-    [JsonProperty("impersonate")]
+    [JsonPropertyName("impersonate")]
     public bool? Impersonate { get; set; }
-    [JsonProperty("manage")]
+    [JsonPropertyName("manage")]
     public bool? Manage { get; set; }
 }

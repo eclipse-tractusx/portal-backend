@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Flurl.Util;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -64,11 +63,8 @@ public static class WebApplicationBuildRunner
                 if (healthCheckPaths != null)
                 {
                     configuration
-                        .Filter.ByExcluding(le =>
-                        {
-                            return le.Properties.TryGetValue("RequestPath", out var logProperty) &&
-                                   logProperty.ToKeyValuePairs().Any(x => healthCheckPaths.Contains(x.Value));
-                        });
+                        .Filter.ByExcluding(le => le.Properties.TryGetValue("RequestPath", out var logProperty) &&
+                                                  healthCheckPaths.Contains(logProperty.ToString()));
                 }
             });
             builder.Services
