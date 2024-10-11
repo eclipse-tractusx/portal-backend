@@ -836,8 +836,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
     #region GetOfferReleaseDataById
 
     [Theory]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "Catena-X", false)]
-    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "Catena-X", true)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA9", "Test App", "CX-Operator", false)]
+    [InlineData("99C5FD12-8085-4DE2-ABFD-215E1EE4BAA7", "Latest App", "CX-Operator", true)]
     public async Task GetOfferReleaseDataByIdAsync_ReturnsExpected(Guid offerId, string name, string companyName, bool hasPrivacyPolicies)
     {
         // Arrange
@@ -1194,7 +1194,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().HaveCount(4)
-            .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "Catena-X", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
+            .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "CX-Operator", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
     }
 
     #endregion

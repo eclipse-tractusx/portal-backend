@@ -71,7 +71,7 @@ public class ServiceRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Title.Should().Be("Consulting Service - Data Readiness");
         result.ContactEmail.Should().BeNull();
-        result.Provider.Should<string>().Be("Catena-X");
+        result.Provider.Should<string>().Be("CX-Operator");
     }
 
     #endregion
