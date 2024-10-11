@@ -1,6 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2023 Microsoft and BMW Group AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Microsoft and BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-public interface IBpnAccess
-{
-    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
-
-    Task<BpdmPartnerNetworkData> FetchPartnerNetworkData(int page, int size, IEnumerable<string> bpnl, string legalName, string token, CancellationToken cancellationToken);
-}
+public record BpdmPartnerNetworkData(
+    [property: JsonPropertyName("content")] IEnumerable<BpdmLegalEntityDto> Content,
+    [property: JsonPropertyName("contentSize")] int ContentSize,
+    [property: JsonPropertyName("page")] int Page,
+    [property: JsonPropertyName("totalElements")] int TotalElements,
+    [property: JsonPropertyName("totalPages")] int TotalPages
+);

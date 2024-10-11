@@ -19,6 +19,9 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Controllers;
 
@@ -37,6 +40,9 @@ public class PartnerNetworkControllerTest
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _logic = A.Fake<IPartnerNetworkBusinessLogic>();
         _controller = new PartnerNetworkController(_logic);
+        var identity = A.Fake<IIdentityData>();
+        A.CallTo(() => identity.IdentityId).Returns(Guid.NewGuid());
+        _controller.AddControllerContextWithClaimAndBearer("ac-token", identity);
     }
 
     [Theory]
@@ -58,5 +64,20 @@ public class PartnerNetworkControllerTest
         A.CallTo(() => _logic.GetAllMemberCompaniesBPNAsync(A<IEnumerable<string>?>.That.IsSameAs(bpn))).MustHaveHappenedOnceExactly();
 
         result.Should().HaveSameCount(data).And.ContainInOrder(data);
+    }
+
+    [Fact]
+    public async Task GetPartnerNetworkDataAsync_ReturnsExpected()
+    {
+        //Arrange
+        var request = new PartnerNetworkRequest(_fixture.CreateMany<string>(3), "");
+        var page = 0;
+        var size = 1;
+
+        // Act
+        await _controller.GetPartnerNetworkDataAsync(request, page, size, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _logic.GetPartnerNetworkDataAsync(page, size, request, "ac-token", A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 }

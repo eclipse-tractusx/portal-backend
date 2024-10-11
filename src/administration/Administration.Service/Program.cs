@@ -21,6 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
@@ -79,6 +80,8 @@ await WebAppHelper
 
         builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
                         .AddOfferSubscriptionProcess();
+
+        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
 
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
             .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));

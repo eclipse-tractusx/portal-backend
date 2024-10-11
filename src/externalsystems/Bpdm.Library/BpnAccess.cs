@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
@@ -46,6 +47,38 @@ public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
             }
 
             return legalEntityResponse;
+        }
+        catch (JsonException je)
+        {
+            throw new ServiceException($"Access to external system bpdm did not return a valid json response: {je.Message}");
+        }
+    }
+
+    public async Task<BpdmPartnerNetworkData> FetchPartnerNetworkData(int page, int size, IEnumerable<string> bpnl, string legalName, string token, CancellationToken cancellationToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var uri = new UriBuilder
+        {
+            Path = $"members/legal-entities/search",
+            Query = $"page={page}&size={size}"
+        }.Uri;
+        var request = new BpdmPartnerNetworkRequest(bpnl, legalName);
+        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
+            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
+
+        var result = await _httpClient.PostAsync(uri.PathAndQuery.TrimStart('/'), content, cancellationToken)
+            .CatchingIntoServiceExceptionFor("fetch-partner-network", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage)
+            .ConfigureAwait(false);
+        try
+        {
+            var response = await result.Content.ReadFromJsonAsync<BpdmPartnerNetworkData>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (response == null || response.Content == null)
+            {
+                throw new ServiceException("Access to external system bpdm did not return a valid legal entity response");
+            }
+            return response;
         }
         catch (JsonException je)
         {
