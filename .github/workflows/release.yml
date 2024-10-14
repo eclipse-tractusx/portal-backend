@@ -165,7 +165,7 @@ jobs:
 
       - name: Get token
         id: get_workflow_token
-        uses: peter-murray/workflow-application-token-action@dc0413987a085fa17d19df9e47d4677cf81ffef3 # v3.0.0
+        uses: peter-murray/workflow-application-token-action@baa1ef2638c3d9e5967b7c8b86219f8fc919e1bb # v3.0.1
         with:
           application_id: ${{ secrets.ORG_PORTAL_DISPATCH_APPID }}
           application_private_key: ${{ secrets.ORG_PORTAL_DISPATCH_KEY }}
