@@ -2,6 +2,13 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## Unreleased
+
+## Feature
+
+* **Registration**
+  * adjust legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
+
 ## 2.3.0-alpha.2
 
 ## Feature
