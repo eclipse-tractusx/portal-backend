@@ -398,7 +398,7 @@ public class AppsController : ControllerBase
     /// <response code="403">User's company does not provide the app.</response>
     /// <response code="404">No app or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "subscribe_apps")]
+    [Authorize(Roles = "view_subscription")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/subscription/{subscriptionId}/subscriber")]
     [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
