@@ -23,76 +23,77 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ProtocolMappers;
+using System.Text.Json.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Client
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string? Id { get; set; }
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string? ClientId { get; set; }
-    [JsonProperty("rootUrl")]
+    [JsonPropertyName("rootUrl")]
     public string? RootUrl { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string? Description { get; set; }
-    [JsonProperty("baseUrl")]
+    [JsonPropertyName("baseUrl")]
     public string? BaseUrl { get; set; }
-    [JsonProperty("surrogateAuthRequired")]
+    [JsonPropertyName("surrogateAuthRequired")]
     public bool? SurrogateAuthRequired { get; set; }
-    [JsonProperty("enabled")]
+    [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
-    [JsonProperty("alwaysDisplayInConsole")]
+    [JsonPropertyName("alwaysDisplayInConsole")]
     public bool? AlwaysDisplayInConsole { get; set; }
-    [JsonProperty("clientAuthenticatorType")]
+    [JsonPropertyName("clientAuthenticatorType")]
     public string? ClientAuthenticatorType { get; set; }
-    [JsonProperty("redirectUris")]
+    [JsonPropertyName("redirectUris")]
     public IEnumerable<string>? RedirectUris { get; set; }
-    [JsonProperty("webOrigins")]
+    [JsonPropertyName("webOrigins")]
     public IEnumerable<string>? WebOrigins { get; set; }
-    [JsonProperty("notBefore")]
+    [JsonPropertyName("notBefore")]
     public int? NotBefore { get; set; }
-    [JsonProperty("bearerOnly")]
+    [JsonPropertyName("bearerOnly")]
     public bool? BearerOnly { get; set; }
-    [JsonProperty("consentRequired")]
+    [JsonPropertyName("consentRequired")]
     public bool? ConsentRequired { get; set; }
-    [JsonProperty("standardFlowEnabled")]
+    [JsonPropertyName("standardFlowEnabled")]
     public bool? StandardFlowEnabled { get; set; }
-    [JsonProperty("implicitFlowEnabled")]
+    [JsonPropertyName("implicitFlowEnabled")]
     public bool? ImplicitFlowEnabled { get; set; }
-    [JsonProperty("directAccessGrantsEnabled")]
+    [JsonPropertyName("directAccessGrantsEnabled")]
     public bool? DirectAccessGrantsEnabled { get; set; }
-    [JsonProperty("serviceAccountsEnabled")]
+    [JsonPropertyName("serviceAccountsEnabled")]
     public bool? ServiceAccountsEnabled { get; set; }
-    [JsonProperty("publicClient")]
+    [JsonPropertyName("publicClient")]
     public bool? PublicClient { get; set; }
-    [JsonProperty("frontchannelLogout")]
+    [JsonPropertyName("frontchannelLogout")]
     public bool? FrontChannelLogout { get; set; }
-    [JsonProperty("protocol")]
+    [JsonPropertyName("protocol")]
     public string? Protocol { get; set; }
-    [JsonProperty("attributes")]
+    [JsonPropertyName("attributes")]
     public IDictionary<string, string>? Attributes { get; set; }
-    [JsonProperty("authenticationFlowBindingOverrides")]
+    [JsonPropertyName("authenticationFlowBindingOverrides")]
     public IDictionary<string, string>? AuthenticationFlowBindingOverrides { get; set; }
-    [JsonProperty("fullScopeAllowed")]
+    [JsonPropertyName("fullScopeAllowed")]
     public bool? FullScopeAllowed { get; set; }
-    [JsonProperty("nodeReRegistrationTimeout")]
+    [JsonPropertyName("nodeReRegistrationTimeout")]
     public int? NodeReregistrationTimeout { get; set; }
-    [JsonProperty("protocolMappers")]
+    [JsonPropertyName("protocolMappers")]
     public IEnumerable<ProtocolMapper>? ProtocolMappers { get; set; }
-    [JsonProperty("defaultClientScopes")]
+    [JsonPropertyName("defaultClientScopes")]
     public IEnumerable<string>? DefaultClientScopes { get; set; }
-    [JsonProperty("optionalClientScopes")]
+    [JsonPropertyName("optionalClientScopes")]
     public IEnumerable<string>? OptionalClientScopes { get; set; }
-    [JsonProperty("access")]
+    [JsonPropertyName("access")]
     public ClientAccess? Access { get; set; }
-    [JsonProperty("secret")]
+    [JsonPropertyName("secret")]
     public string? Secret { get; set; }
-    [JsonProperty("authorizationServicesEnabled")]
+    [JsonPropertyName("authorizationServicesEnabled")]
     public bool? AuthorizationServicesEnabled { get; set; }
-    [JsonProperty("adminUrl")]
+    [JsonPropertyName("adminUrl")]
     public string? AdminUrl { get; set; }
 }

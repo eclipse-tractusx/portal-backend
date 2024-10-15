@@ -20,7 +20,6 @@
 
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.JsonHelper;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
@@ -31,7 +30,7 @@ public static class SeederHelper
 {
     private static readonly JsonSerializerOptions Options = new()
     {
-        PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         Converters = { new JsonDateTimeOffsetConverter() }
     };
 

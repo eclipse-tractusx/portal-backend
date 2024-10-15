@@ -24,16 +24,16 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticatorConfig
 {
-    [JsonProperty("alias")]
+    [JsonPropertyName("alias")]
     public string? Alias { get; set; }
-    [JsonProperty("config")]
+    [JsonPropertyName("config")]
     public IDictionary<string, string>? Config { get; set; }
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string? Id { get; set; }
 }

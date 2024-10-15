@@ -24,19 +24,19 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientAttributeCertificate;
 
 public class Certificate
 {
-    [JsonProperty("certificate")]
+    [JsonPropertyName("certificate")]
     // ReSharper disable once InconsistentNaming
     public string _Certificate { get; set; }
-    [JsonProperty("kid")]
+    [JsonPropertyName("kid")]
     public string Kid { get; set; }
-    [JsonProperty("privateKey")]
+    [JsonPropertyName("privateKey")]
     public string PrivateKey { get; set; }
-    [JsonProperty("publicKey")]
+    [JsonPropertyName("publicKey")]
     public string PublicKey { get; set; }
 }

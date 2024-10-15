@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class Enums
 {
-    [JsonProperty("operationType")]
+    [JsonPropertyName("operationType")]
     public List<string> OperationType { get; set; }
 
-    [JsonProperty("eventType")]
+    [JsonPropertyName("eventType")]
     public List<string> EventType { get; set; }
 
-    [JsonProperty("resourceType")]
+    [JsonPropertyName("resourceType")]
     public List<string> ResourceType { get; set; }
 }

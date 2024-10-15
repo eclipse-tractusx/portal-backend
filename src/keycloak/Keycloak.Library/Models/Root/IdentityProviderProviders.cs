@@ -24,18 +24,18 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class IdentityProviderProviders
 {
-    [JsonProperty("saml")]
+    [JsonPropertyName("saml")]
     public HasOrder Saml { get; set; }
 
-    [JsonProperty("oidc")]
+    [JsonPropertyName("oidc")]
     public HasOrder Oidc { get; set; }
 
-    [JsonProperty("keycloak-oidc")]
+    [JsonPropertyName("keycloak-oidc")]
     public HasOrder KeycloakOidc { get; set; }
 }

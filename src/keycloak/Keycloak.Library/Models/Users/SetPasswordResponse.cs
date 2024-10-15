@@ -24,15 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
 
 public class SetPasswordResponse
 {
     public bool Success { get; set; }
-    [JsonProperty("error")]
+    [JsonPropertyName("error")]
     public string Error { get; set; }
-    [JsonProperty("error_description")]
+    [JsonPropertyName("error_description")]
     public string ErrorDescription { get; set; }
 }

@@ -24,82 +24,96 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationPermissions;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 
 public class Policy
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
 
-    [JsonConverter(typeof(PolicyTypeConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<PolicyType>))]
     public PolicyType Type { get; set; }
 
-    [JsonConverter(typeof(PolicyDecisionLogicConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<PolicyDecisionLogic>))]
     public PolicyDecisionLogic Logic { get; set; }
 
-    [JsonConverter(typeof(DecisionStrategiesConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<DecisionStrategy>))]
     public DecisionStrategy DecisionStrategy { get; set; }
 
-    [JsonProperty("config")]
+    [JsonPropertyName("config")]
     public PolicyConfig Config { get; set; }
 }
 
 public class RolePolicy
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
 
-    [JsonConverter(typeof(PolicyTypeConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<PolicyType>))]
     public PolicyType Type { get; set; } = PolicyType.Role;
 
-    [JsonConverter(typeof(PolicyDecisionLogicConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<PolicyDecisionLogic>))]
     public PolicyDecisionLogic Logic { get; set; }
 
-    [JsonConverter(typeof(DecisionStrategiesConverter))]
+    [JsonConverter(typeof(EnumMemberConverter<DecisionStrategy>))]
     public DecisionStrategy DecisionStrategy { get; set; }
 
-    [JsonProperty("roles")]
+    [JsonPropertyName("roles")]
     public IEnumerable<RoleConfig> RoleConfigs { get; set; }
 }
 
 public class RoleConfig
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("required")]
+    [JsonPropertyName("required")]
     public bool Required { get; set; }
 }
 
 public enum PolicyType
 {
+    [EnumMember(Value = "role")]
     Role,
+
+    [EnumMember(Value = "client")]
     Client,
+
+    [EnumMember(Value = "time")]
     Time,
+
+    [EnumMember(Value = "user")]
     User,
+
+    [EnumMember(Value = "aggregate")]
     Aggregate,
+
+    [EnumMember(Value = "group")]
     Group,
+
+    [EnumMember(Value = "js")]
     Js
 }
 
 public class PolicyConfig
 {
-    [JsonProperty("roles")]
+    [JsonPropertyName("roles")]
     public IEnumerable<RoleConfig> RoleConfigs { get; set; }
 }

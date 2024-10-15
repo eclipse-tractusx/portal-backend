@@ -24,12 +24,12 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class ScriptingProviders
 {
-    [JsonProperty("script-based-auth")]
+    [JsonPropertyName("script-based-auth")]
     public HasOrder ScriptBasedAuth { get; set; }
 }

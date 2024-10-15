@@ -24,36 +24,36 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
 public class LdapMapperProviders
 {
-    [JsonProperty("msad-lds-user-account-control-mapper")]
+    [JsonPropertyName("msad-lds-user-account-control-mapper")]
     public HasOrder MsadLdsUserAccountControlMapper { get; set; }
 
-    [JsonProperty("msad-user-account-control-mapper")]
+    [JsonPropertyName("msad-user-account-control-mapper")]
     public HasOrder MsadUserAccountControlMapper { get; set; }
 
-    [JsonProperty("group-ldap-mapper")]
+    [JsonPropertyName("group-ldap-mapper")]
     public HasOrder GroupLdapMapper { get; set; }
 
-    [JsonProperty("user-attribute-ldap-mapper")]
+    [JsonPropertyName("user-attribute-ldap-mapper")]
     public HasOrder UserAttributeLdapMapper { get; set; }
 
-    [JsonProperty("role-ldap-mapper")]
+    [JsonPropertyName("role-ldap-mapper")]
     public HasOrder RoleLdapMapper { get; set; }
 
-    [JsonProperty("hardcoded-ldap-role-mapper")]
+    [JsonPropertyName("hardcoded-ldap-role-mapper")]
     public HasOrder HardcodedLdapRoleMapper { get; set; }
 
-    [JsonProperty("full-name-ldap-mapper")]
+    [JsonPropertyName("full-name-ldap-mapper")]
     public HasOrder FullNameLdapMapper { get; set; }
 
-    [JsonProperty("hardcoded-ldap-attribute-mapper")]
+    [JsonPropertyName("hardcoded-ldap-attribute-mapper")]
     public HasOrder HardcodedLdapAttributeMapper { get; set; }
 
-    [JsonProperty("hardcoded-ldap-group-mapper")]
+    [JsonPropertyName("hardcoded-ldap-group-mapper")]
     public HasOrder HardcodedLdapGroupMapper { get; set; }
 }

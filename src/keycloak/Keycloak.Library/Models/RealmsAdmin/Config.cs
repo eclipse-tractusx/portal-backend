@@ -24,20 +24,20 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 
 public class Config
 {
-    [JsonProperty("hideOnLoginPage")]
+    [JsonPropertyName("hideOnLoginPage")]
     public string? HideOnLoginPage { get; set; }
-    [JsonProperty("clientSecret")]
+    [JsonPropertyName("clientSecret")]
     public string? ClientSecret { get; set; }
-    [JsonProperty("clientId")]
+    [JsonPropertyName("clientId")]
     public string? ClientId { get; set; }
-    [JsonProperty("disableUserInfo")]
+    [JsonPropertyName("disableUserInfo")]
     public string? DisableUserInfo { get; set; }
-    [JsonProperty("useJwksUrl")]
+    [JsonPropertyName("useJwksUrl")]
     public string? UseJwksUrl { get; set; }
 }

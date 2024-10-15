@@ -24,19 +24,19 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthenticationManagement;
 
 public class AuthenticatorConfigInfo
 {
-    [JsonProperty("helpText")]
+    [JsonPropertyName("helpText")]
     public string HelpText { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("properties")]
+    [JsonPropertyName("properties")]
     public IEnumerable<ConfigProperty> Properties { get; set; }
-    [JsonProperty("providerId")]
+    [JsonPropertyName("providerId")]
     public string ProviderId { get; set; }
 }

@@ -24,14 +24,15 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Converters;
+using System.Runtime.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 
-[JsonConverter(typeof(GroupNameConverter))]
 public enum GroupName
 {
+    [EnumMember(Value = "social")]
     Social,
+
+    [EnumMember(Value = "userdefined")]
     UserDefined
 }

@@ -24,26 +24,26 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 
 public class Role
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string? Id { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string? Description { get; set; }
-    [JsonProperty("composite")]
+    [JsonPropertyName("composite")]
     public bool? Composite { get; set; }
-    [JsonProperty("composites")]
+    [JsonPropertyName("composites")]
     public RoleComposite? Composites { get; set; }
-    [JsonProperty("clientRole")]
+    [JsonPropertyName("clientRole")]
     public bool? ClientRole { get; set; }
-    [JsonProperty("containerId")]
+    [JsonPropertyName("containerId")]
     public string? ContainerId { get; set; }
-    [JsonProperty("attributes")]
+    [JsonPropertyName("attributes")]
     public IDictionary<string, IEnumerable<string>>? Attributes { get; set; }
 }

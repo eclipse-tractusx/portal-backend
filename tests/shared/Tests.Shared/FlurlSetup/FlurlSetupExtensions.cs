@@ -20,11 +20,14 @@
 using Flurl.Http;
 using Flurl.Http.Testing;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfiguration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Net;
+using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin.IdentityProvider;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.FlurlSetup;
 
@@ -127,8 +130,16 @@ public static class FlurlSetupExtensions
                 HttpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "/test"),
                 Request = new FlurlRequest(new Uri("https://test.de")),
                 HttpResponseMessage = new HttpResponseMessage(statusCode) { ReasonPhrase = "test" },
-                Response = new FlurlResponse(new HttpResponseMessage(statusCode))
+                Response = new FlurlResponse(new FlurlCall { HttpResponseMessage = new HttpResponseMessage(statusCode) })
             }));
+        return testClient;
+    }
+
+    public static HttpTest WithIdentityProviderMappersAsync(this HttpTest testClient, IEnumerable<IdentityProviderMapper> idpMappers)
+    {
+        testClient.ForCallsTo("*/admin/realms/*/identity-provider/instances/*/mappers")
+            .WithVerb(HttpMethod.Get)
+            .RespondWithJson(idpMappers);
         return testClient;
     }
 }

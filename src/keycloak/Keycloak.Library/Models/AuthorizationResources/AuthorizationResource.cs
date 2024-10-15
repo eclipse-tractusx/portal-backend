@@ -24,27 +24,27 @@
  * SOFTWARE.
  ********************************************************************************/
 
-using Newtonsoft.Json;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationScopes;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.AuthorizationResources;
 
 public class AuthorizationResource
 {
-    [JsonProperty("_id")]
+    [JsonPropertyName("_id")]
     public string Id { get; set; }
-    [JsonProperty("scopes")]
+    [JsonPropertyName("scopes")]
     public IEnumerable<AuthorizationScope> Scopes { get; set; }
-    [JsonProperty("attributes")]
+    [JsonPropertyName("attributes")]
     public Dictionary<string, IEnumerable<string>> Attributes { get; set; }
-    [JsonProperty("uris")]
+    [JsonPropertyName("uris")]
     public IEnumerable<string> Uris { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("ownerManagedAccess")]
+    [JsonPropertyName("ownerManagedAccess")]
     public bool? OwnerManagedAccess { get; set; }
-    [JsonProperty("displayName")]
+    [JsonPropertyName("displayName")]
     public string DisplayName { get; set; }
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
 }
