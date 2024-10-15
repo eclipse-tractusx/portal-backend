@@ -8,7 +8,7 @@ public static class SeedingExtensions
 
     public static bool UpdateCompanyNeeded(this (Company dataEntity, Company dbEntity) data) =>
         (data.dbEntity.SelfDescriptionDocumentId == null &&
-         data.dataEntity.SelfDescriptionDocumentId != data.dbEntity.SelfDescriptionDocumentId) ||
+         data.dataEntity.SelfDescriptionDocumentId != null) ||
         data.dbEntity.BusinessPartnerNumber != data.dataEntity.BusinessPartnerNumber ||
         data.dbEntity.Shortname != data.dataEntity.Shortname ||
         data.dbEntity.Name != data.dataEntity.Name;
@@ -16,25 +16,14 @@ public static class SeedingExtensions
     public static void UpdateCompany(this Company dbEntry, Company entry)
     {
         if (dbEntry.SelfDescriptionDocumentId == null &&
-            entry.SelfDescriptionDocumentId != dbEntry.SelfDescriptionDocumentId)
+            entry.SelfDescriptionDocumentId != null)
         {
             dbEntry.SelfDescriptionDocumentId = entry.SelfDescriptionDocumentId;
         }
 
-        if (entry.BusinessPartnerNumber != dbEntry.BusinessPartnerNumber)
-        {
-            dbEntry.BusinessPartnerNumber = entry.BusinessPartnerNumber;
-        }
-
-        if (entry.Shortname != dbEntry.Shortname)
-        {
-            dbEntry.Shortname = entry.Shortname;
-        }
-
-        if (entry.Name != dbEntry.Name)
-        {
-            dbEntry.Name = entry.Name;
-        }
+        dbEntry.BusinessPartnerNumber = entry.BusinessPartnerNumber;
+        dbEntry.Shortname = entry.Shortname;
+        dbEntry.Name = entry.Name;
     }
 
     #endregion
@@ -52,40 +41,13 @@ public static class SeedingExtensions
 
     public static void UpdateAddress(this Address dbEntry, Address entry)
     {
-        if (entry.City != dbEntry.City)
-        {
-            dbEntry.City = entry.City;
-        }
-
-        if (entry.Region != dbEntry.Region)
-        {
-            dbEntry.Region = entry.Region;
-        }
-
-        if (entry.Streetadditional != dbEntry.Streetadditional)
-        {
-            dbEntry.Streetadditional = entry.Streetadditional;
-        }
-
-        if (entry.Streetname != dbEntry.Streetname)
-        {
-            dbEntry.Streetname = entry.Streetname;
-        }
-
-        if (entry.Streetnumber != dbEntry.Streetnumber)
-        {
-            dbEntry.Streetnumber = entry.Streetnumber;
-        }
-
-        if (entry.Zipcode != dbEntry.Zipcode)
-        {
-            dbEntry.Zipcode = entry.Zipcode;
-        }
-
-        if (entry.CountryAlpha2Code != dbEntry.CountryAlpha2Code)
-        {
-            dbEntry.CountryAlpha2Code = entry.CountryAlpha2Code;
-        }
+        dbEntry.City = entry.City;
+        dbEntry.Region = entry.Region;
+        dbEntry.Streetadditional = entry.Streetadditional;
+        dbEntry.Streetname = entry.Streetname;
+        dbEntry.Streetnumber = entry.Streetnumber;
+        dbEntry.Zipcode = entry.Zipcode;
+        dbEntry.CountryAlpha2Code = entry.CountryAlpha2Code;
     }
 
     #endregion
