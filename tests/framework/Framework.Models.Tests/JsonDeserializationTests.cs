@@ -24,7 +24,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests;
 
 public class JsonDeserializationTests
 {
-    private readonly JsonSerializerOptions _jsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -46,7 +46,7 @@ public class JsonDeserializationTests
         };
 
         // Act
-        var serialized = JsonSerializer.Serialize(test, _jsonOptions);
+        var serialized = JsonSerializer.Serialize(test, JsonOptions);
 
         // Assert
         serialized.Should().Be("""{"testDict":{"TestUpper":"testValue","testSnakeCase":"test","testalllower":"testValue","TESTALLUPPER":"testValue"}}""");
@@ -58,7 +58,7 @@ public class JsonDeserializationTests
         const string Json = """{"testDict":{"TestUpper":"testValue","testSnakeCase":"test","testalllower":"test","TESTALLUPPER":"test"}}""";
 
         // Act
-        var serialized = JsonSerializer.Deserialize<TestClass>(Json, _jsonOptions);
+        var serialized = JsonSerializer.Deserialize<TestClass>(Json, JsonOptions);
 
         // Assert
         serialized.Should().NotBeNull();
