@@ -168,9 +168,14 @@ public class RegistrationBusinessLogic(
             throw new NotFoundException($"document {documentId} does not exist.");
         }
 
-        if (!documentDetails.IsSameUser)
+        if (!documentDetails.IsSameUser && !documentDetails.IsRoleOperator)
         {
             throw new ForbiddenException($"The user is not permitted to access document {documentId}.");
+        }
+
+        if (!documentDetails.IsStatusConfirmed)
+        {
+            throw new ForbiddenException($"Documents not accessible as onboarding process finished {documentId}.");
         }
 
         var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
