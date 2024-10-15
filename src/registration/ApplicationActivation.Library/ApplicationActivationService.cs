@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using System.Collections.Immutable;
@@ -303,7 +304,7 @@ public class ApplicationActivationService(
             throw new ConflictException($"CompanyApplication {context.ApplicationId} is not in status SUBMITTED");
         }
 
-        var (companyId, companyName, businessPartnerNumber, applicationTypeId, networkRegistrationProcessId) = result;
+        var (companyId, companyName, businessPartnerNumber, applicationTypeId, networkRegistrationProcessData) = result;
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException(
@@ -323,16 +324,13 @@ public class ApplicationActivationService(
 
         if (applicationTypeId == CompanyApplicationTypeId.EXTERNAL)
         {
-            if (networkRegistrationProcessId == null)
+            if (networkRegistrationProcessData == null)
             {
                 throw new ConflictException("ProcessId should be set for external applications");
             }
-
-            portalRepositories.GetInstance<IProcessStepRepository>().CreateProcessStepRange(
-                Enumerable.Repeat(
-                    new ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>(
-                        ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED, ProcessStepStatusId.TODO,
-                        networkRegistrationProcessId.Value), 1));
+            var networkRegistrationContext = networkRegistrationProcessData.CreateManualProcessData(null, portalRepositories, () => "NetworkRegistration");
+            networkRegistrationContext.ScheduleProcessSteps([ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED]);
+            networkRegistrationContext.FinalizeProcessStep();
         }
 
         var notifications = _settings.WelcomeNotificationTypeIds.Select(x => (default(string), x));

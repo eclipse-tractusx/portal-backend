@@ -703,7 +703,7 @@ public class ApplicationActivationTests
             .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, ProcessId));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, new(new(ProcessId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()), [])));
         A.CallTo(() =>
                 _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
@@ -775,7 +775,7 @@ public class ApplicationActivationTests
             Enumerable.Empty<ProcessStepTypeId>());
 
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(applicationId))
-            .Returns<(Guid, string, string?, CompanyApplicationTypeId, Guid?)>(default);
+            .Returns<(Guid, string, string?, CompanyApplicationTypeId, VerifyProcessData?)>(default);
 
         //Act
         async Task Action() => await _sut.SaveApplicationActivationToDatabase(context, CancellationToken.None);
