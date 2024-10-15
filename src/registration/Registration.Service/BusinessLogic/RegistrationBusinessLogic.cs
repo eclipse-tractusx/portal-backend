@@ -173,7 +173,7 @@ public class RegistrationBusinessLogic(
             throw new ForbiddenException($"The user is not permitted to access document {documentId}.");
         }
 
-        if (!documentDetails.IsStatusConfirmed)
+        if (documentDetails.IsStatusConfirmed)
         {
             throw new ForbiddenException($"Documents not accessible as onboarding process finished {documentId}.");
         }
