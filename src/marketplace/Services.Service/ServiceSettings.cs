@@ -164,6 +164,15 @@ public class ServiceSettings
     /// </summary>
     [Required(AllowEmptyStrings = false)]
     public string OfferDetailAddress { get; init; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

@@ -265,11 +265,11 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "service_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/provider")]
-    [ProducesResponseType(typeof(ProviderSubscriptionDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER)]
-    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
+    public Task<OfferProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid serviceId, [FromRoute] Guid subscriptionId) =>
         _serviceBusinessLogic.GetSubscriptionDetailForProvider(serviceId, subscriptionId);
 
     /// <summary>

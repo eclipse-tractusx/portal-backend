@@ -213,16 +213,6 @@ public interface IOfferService
     Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string technicalUserProfileClient);
 
     /// <summary>
-    /// Gets the information for the subscription for the provider
-    /// </summary>
-    /// <param name="offerId">Id of the offer</param>
-    /// <param name="subscriptionId">Id of the subscription</param>
-    /// <param name="offerTypeId">Offer type</param>
-    /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
-    /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles);
-
-    /// <summary>
     /// Gets the information for the subscription for the subscriber
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
@@ -253,7 +243,7 @@ public interface IOfferService
     /// <param name="contactUserRoles">The roles of the users that will be listed as contact</param>
     /// <param name="walletData">The information for the external service data</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData);
+    Task<OfferProviderSubscriptionDetailData> GetOfferSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData);
 
     /// <summary>
     /// Unsubscribe the Offer subscription by subscriptionId

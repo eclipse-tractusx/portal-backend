@@ -117,7 +117,7 @@ public interface IServiceBusinessLogic
     /// <param name="serviceId">Id of the app</param>
     /// <param name="subscriptionId">Id of the subscription</param>
     /// <returns>Returns the details of the subscription</returns>
-    Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId);
+    Task<OfferProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId);
 
     /// <summary>
     /// Gets the information for the subscription

@@ -379,7 +379,7 @@ public class AppsControllerTests
         // Arrange
         var appId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
+        var data = _fixture.Create<OfferProviderSubscriptionDetailData>();
         A.CallTo(() => _logic.GetSubscriptionDetailForProvider(appId, subscriptionId))
             .Returns(data);
 

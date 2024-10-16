@@ -777,16 +777,12 @@ public class OfferService(
     }
 
     /// <inheritdoc />
-    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles) =>
-        GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetSubscriptionDetailsForProviderAsync);
-
-    /// <inheritdoc />
-    public async Task<AppProviderSubscriptionDetailData> GetAppSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData)
+    public async Task<OfferProviderSubscriptionDetailData> GetOfferSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> contactUserRoles, WalletConfigData walletData)
     {
-        var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetAppSubscriptionDetailsForProviderAsync)
+        var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOfferSubscriptionDetailsForProviderAsync)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return new AppProviderSubscriptionDetailData(
+        return new OfferProviderSubscriptionDetailData(
             data.Id,
             data.OfferSubscriptionStatus,
             data.Name,

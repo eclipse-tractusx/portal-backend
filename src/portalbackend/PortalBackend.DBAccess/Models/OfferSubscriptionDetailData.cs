@@ -39,29 +39,9 @@ public record SubscriptionTechnicalUserData(
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>
-public record ProviderSubscriptionDetailData(
-    Guid Id,
-    OfferSubscriptionStatusId OfferSubscriptionStatus,
-    string? Name,
-    string Customer,
-    string? Bpn,
-    IEnumerable<string> Contact,
-    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData
-);
-
-/// <summary>
-/// Detail data for a offer subscription
-/// </summary>
-/// <param name="Id">Id of the Offer</param>
-/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
-/// <param name="Name">Name of the Offer</param>
-/// <param name="Customer">Name of the company subscribing the offer</param>
-/// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
-/// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
-/// <param name="TechnicalUserData">Information about the technical user</param>
 /// <param name="TenantUrl">Url of Tenant</param>
 /// <param name="AppInstanceId">Id of the app instance</param>
-public record AppProviderSubscriptionDetailData(
+public record OfferProviderSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
@@ -127,7 +107,7 @@ public record SubscriptionAssignedConnectorData(
 /// <param name="TechnicalUserData">Information about the technical user</param>
 /// <param name="TenantUrl">Url of Tenant</param>
 /// <param name="AppInstanceId">Id of the app instance</param>
-public record AppProviderSubscriptionDetail(
+public record OfferProviderSubscriptionDetail(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
