@@ -69,6 +69,15 @@ jobs:
         run: dotnet restore src
       - name: Build
         run: dotnet build src --configuration Release --no-restore
+      - name: Check for uncommitted files in working directory # refers to updated api specifications, please refer to /docs/api/README.md
+        run: |
+          git_status=$(git status --porcelain)
+          if [ -n "$git_status" ]; then
+            echo "Please commit the file(s) in your working directory after executing the build command"
+            exit 1
+          else
+            echo "No modified files found in the working directory."
+          fi
       - name: Check Format
         run: dotnet format src --verify-no-changes --no-restore
       - name: Test
