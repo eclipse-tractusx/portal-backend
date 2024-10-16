@@ -2522,7 +2522,7 @@ components:
           description: Price.
         leadPictureId:
           type: string
-          description: Lead pircture Id.
+          description: Lead picture Id.
           format: uuid
         useCases:
           type: array
