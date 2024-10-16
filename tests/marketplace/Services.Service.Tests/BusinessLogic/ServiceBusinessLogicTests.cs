@@ -524,7 +524,7 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var data = _fixture.Create<OfferProviderSubscriptionDetailData>();
         var settings = new ServiceSettings
         {
             CompanyAdminRoles = new[]
@@ -532,7 +532,7 @@ public class ServiceBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .Returns(data);
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
 
@@ -541,6 +541,8 @@ public class ServiceBusinessLogicTests
 
         // Assert
         result.Should().Be(data);
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

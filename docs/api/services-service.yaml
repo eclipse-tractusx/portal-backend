@@ -1327,7 +1327,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProviderSubscriptionDetailData'
+                $ref: '#/components/schemas/OfferProviderSubscriptionDetailData'
         '403':
           description: User's company does not provide the service.
           content:
@@ -2031,6 +2031,44 @@ components:
             items:
               type: string
       additionalProperties: false
+    OfferProviderSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        customer:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+        tenantUrl:
+          type: string
+          nullable: true
+        appInstanceId:
+          type: string
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+        externalService:
+          $ref: '#/components/schemas/SubscriptionExternalServiceData'
+      additionalProperties: false
     OfferSorting:
       enum:
         - DateAsc
@@ -2211,31 +2249,6 @@ components:
         - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
         - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
       type: string
-    ProviderSubscriptionDetailData:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        offerSubscriptionStatus:
-          $ref: '#/components/schemas/OfferSubscriptionStatusId'
-        name:
-          type: string
-          nullable: true
-        customer:
-          type: string
-        bpn:
-          type: string
-          nullable: true
-        contact:
-          type: array
-          items:
-            type: string
-        technicalUserData:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
-      additionalProperties: false
     ServiceData:
       type: object
       properties:
@@ -2765,6 +2778,25 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    SubscriptionExternalServiceData:
+      type: object
+      properties:
+        trusted_issuer:
+          type: string
+        participant_id:
+          type: string
+          nullable: true
+        iatp_id:
+          type: string
+          nullable: true
+        did_resolver:
+          type: string
+        decentralIdentityManagementAuthUrl:
+          type: string
+        decentralIdentityManagementServiceUrl:
+          type: string
+          nullable: true
       additionalProperties: false
     SubscriptionStatusSorting:
       enum:
