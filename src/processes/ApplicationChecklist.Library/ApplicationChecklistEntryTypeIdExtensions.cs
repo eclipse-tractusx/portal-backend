@@ -24,12 +24,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public static class ApplicationChecklistEntryTypeIdExtensions
 {
-    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>> ManualProcessStepIds = new (ApplicationChecklistEntryTypeId EntryTypeId, IEnumerable<ProcessStepTypeId> StepTypeIds)[] {
-            (ApplicationChecklistEntryTypeId.CLEARING_HOUSE, new[] { ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE }),
-            (ApplicationChecklistEntryTypeId.IDENTITY_WALLET, new[] { ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT }),
-            (ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, new[] { ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP }),
-            (ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, new[] { ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL }),
-        }.ToImmutableDictionary(x => x.EntryTypeId, x => x.StepTypeIds);
+    private static readonly ImmutableDictionary<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>> ManualProcessStepIds = ImmutableDictionary.CreateRange<ApplicationChecklistEntryTypeId, IEnumerable<ProcessStepTypeId>>([
+        new(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, [ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE, ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE]),
+        new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, [ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT]),
+        new(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, [ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP]),
+        new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, [ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL]),
+        new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, [ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES, ProcessStepTypeId.RETRIGGER_SET_THEME, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP])
+    ]);
 
     public static IEnumerable<ProcessStepTypeId> GetManualTriggerProcessStepIds(this ApplicationChecklistEntryTypeId entryTypeId) =>
         ManualProcessStepIds.TryGetValue(entryTypeId, out var stepTypeIds)
@@ -50,6 +51,11 @@ public static class ApplicationChecklistEntryTypeIdExtensions
             ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH => (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH, ApplicationChecklistEntryStatusId.TO_DO),
             ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL => (ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE => (ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO),
+            ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES => (ProcessStepTypeId.ASSIGN_INITIAL_ROLES, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS => (ProcessStepTypeId.ASSIGN_BPN_TO_USERS, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES => (ProcessStepTypeId.REMOVE_REGISTRATION_ROLES, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            ProcessStepTypeId.RETRIGGER_SET_THEME => (ProcessStepTypeId.SET_THEME, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP => (ProcessStepTypeId.SET_MEMBERSHIP, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             _ => default,
         };
 }

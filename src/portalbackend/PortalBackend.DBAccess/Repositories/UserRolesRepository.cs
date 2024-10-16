@@ -259,24 +259,29 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-    public IAsyncEnumerable<(string ClientClientId, IEnumerable<(Guid UserRoleId, string UserRoleText)> UserRoles)> GetUserRolesByClientId(IEnumerable<string> iamClientIds) =>
-        _dbContext.AppInstances
-            .AsNoTracking()
-            .Where(instance => iamClientIds.Contains(instance.IamClient!.ClientClientId))
-            .Select(instance => new ValueTuple<string, IEnumerable<(Guid, string)>>(
-                instance.IamClient!.ClientClientId,
-                instance.App!.UserRoles.Select(role => new ValueTuple<Guid, string>(role.Id, role.UserRoleText))))
-            .ToAsyncEnumerable();
-
-    public IAsyncEnumerable<(Guid CompanyUserId, IEnumerable<Guid> UserRoleIds)> GetUserWithUserRolesForApplicationId(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
-        _dbContext.CompanyApplications
-            .AsNoTracking()
-            .Where(application => application.Id == applicationId)
-            .SelectMany(application => application.Company!.Identities)
-            .Where(user => user.IdentityAssignedRoles.Any(assigned => userRoleIds.Contains(assigned.UserRoleId)))
-            .Select(user => new ValueTuple<Guid, IEnumerable<Guid>>(
-                user.Id,
-                user.IdentityAssignedRoles.Where(assigned => userRoleIds.Contains(assigned.UserRoleId)).Select(assigned => assigned.UserRoleId)))
+    public IAsyncEnumerable<(Guid IdentityId, IEnumerable<(string ClientClientId, Guid UserRoleId, string UserRoleText)> InstanceRoleData)> GetUsersWithUserRolesForApplicationId(Guid applicationId, IEnumerable<string> iamClientIds) =>
+        _dbContext.Identities
+            .Where(identity => identity.Company!.CompanyApplications.Any(companyApplication => companyApplication.Id == applicationId))
+            .Select(identity => new
+            {
+                Identity = identity,
+                RoleData = identity.IdentityAssignedRoles.SelectMany(identityAssignedRole =>
+                    identityAssignedRole.UserRole!.Offer!.AppInstances
+                        .Where(instance => iamClientIds.Contains(instance.IamClient!.ClientClientId))
+                        .Select(appInstance => new
+                        {
+                            AppInstance = appInstance,
+                            UserRole = identityAssignedRole.UserRole
+                        }))
+            })
+            .Where(x => x.RoleData.Any())
+            .Select(x => new ValueTuple<Guid, IEnumerable<(string, Guid, string)>>(
+                x.Identity.Id,
+                x.RoleData.Select(roleData => new ValueTuple<string, Guid, string>(
+                            roleData.AppInstance.IamClient!.ClientClientId,
+                            roleData.UserRole.Id,
+                            roleData.UserRole.UserRoleText))))
+            .Take(2)
             .ToAsyncEnumerable();
 
     /// <inheritdoc />

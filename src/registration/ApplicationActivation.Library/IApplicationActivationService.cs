@@ -29,5 +29,11 @@ public interface IApplicationActivationService
     /// </summary>
     /// <param name="context">The context for the application activation</param>
     /// <param name="cancellationToken">The cancellation Token</param>
-    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartApplicationActivation(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> AssignRoles(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> AssignBpn(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> RemoveRegistrationRoles(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SetTheme(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SetMembership(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
+    Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SaveApplicationActivationToDatabase(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
 }

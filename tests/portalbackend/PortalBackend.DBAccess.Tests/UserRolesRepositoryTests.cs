@@ -67,41 +67,15 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
     [Fact]
     public async Task GetUserWithUserRolesForApplicationId_WithValidData_ReturnsExpected()
     {
-        var userRoleIds = new[] {
-            new Guid("7410693c-c893-409e-852f-9ee886ce94a6"),
-            new Guid("7410693c-c893-409e-852f-9ee886ce94a7"),
-            new Guid("ceec23fd-6b26-485c-a4bb-90571a29e148"),
-        };
-
         // Arrange
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetUserWithUserRolesForApplicationId(ApplicationWithBpn, userRoleIds).ToListAsync();
+        var data = await sut.GetUsersWithUserRolesForApplicationId(ApplicationWithBpn, Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync();
 
         // Assert
         data.Should().HaveCount(2);
-        data.Should().AllSatisfy(((Guid, IEnumerable<Guid> UserRoleIds) userData) => userData.UserRoleIds.Should().NotBeEmpty().And.AllSatisfy(userRoleId => userRoleIds.Should().Contain(userRoleId)));
-    }
-
-    #endregion
-
-    #region GetUserRolesByClientId
-
-    [Fact]
-    public async Task GetUserRolesByClientId_WithValidData_ReturnsExpected()
-    {
-        // Arrange
-        var sut = await CreateSut();
-
-        // Act
-        var data = await sut.GetUserRolesByClientId(Enumerable.Repeat("Cl1-CX-Registration", 1)).ToListAsync();
-
-        // Assert
-        data.Should().HaveCount(1);
-        var clientData = data.Single();
-        clientData.ClientClientId.Should().Be("Cl1-CX-Registration");
-        clientData.UserRoles.Should().HaveCount(3);
+        data.Should().AllSatisfy(((Guid, IEnumerable<(string, Guid, string)> UserRoleIds) userData) => userData.UserRoleIds.Should().ContainSingle());
     }
 
     #endregion

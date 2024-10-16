@@ -22,5 +22,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyInvitedUserData(
     Guid CompanyUserId,
-    IEnumerable<string> BusinessPartnerNumbers,
     IEnumerable<Guid> RoleIds);
