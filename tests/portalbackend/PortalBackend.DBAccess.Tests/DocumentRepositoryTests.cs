@@ -174,6 +174,57 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDocumentIdWithCompanyUserCheckAsync
+
+    [Fact]
+    public async Task GetDocumentIdWithCompanyUserCheckAsync_With_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetDocumentIdWithCompanyUserCheckAsync(new Guid("00000000-0000-0000-0000-000000000001"), new("ac1cf001-7fbc-1f2f-817f-bce058020006"));
+
+        // Assert
+        result.Should().NotBe(default);
+        result.IsSameUser.Should().BeTrue();
+        result.IsRoleOperator.Should().BeTrue();
+        result.IsStatusConfirmed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetDocumentIdWithCompanyUserCheckAsync_WithWrongUserData_ReturnsIsRoleOperatorFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetDocumentIdWithCompanyUserCheckAsync(new Guid("5adbdf90-c6ef-47a5-b596-2f00a731c39a"), new("ac1cf001-7fbc-1f2f-817f-bce058019992"));
+
+        // Assert
+        result.Should().NotBe(default);
+        result.IsSameUser.Should().BeTrue();
+        result.IsRoleOperator.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetDocumentIdWithCompanyUserCheckAsync_WithCompanyApplicationIsStatusConfirmed()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetDocumentIdWithCompanyUserCheckAsync(new Guid("ec12dc7e-a8fa-4aa5-945a-f7e64be30841"), new("8b42e6de-7b59-4217-a63c-198e83d93776"));
+
+        // Assert
+        result.Should().NotBe(default);
+        result.IsSameUser.Should().BeTrue();
+        result.IsStatusConfirmed.Should().BeTrue();
+
+    }
+
+    #endregion
+
     #region GetDocumentDataAndIsCompanyUserAsync_ReturnsExpectedDocuments
 
     [Fact]
