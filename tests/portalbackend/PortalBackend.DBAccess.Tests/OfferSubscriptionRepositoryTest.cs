@@ -182,7 +182,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "catena")(0, 15);
+        var results = await sut.GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(_userCompanyId, OfferTypeId.SERVICE, SubscriptionStatusSorting.CompanyNameAsc, new[] { OfferSubscriptionStatusId.ACTIVE, OfferSubscriptionStatusId.PENDING }, null, "operator")(0, 15);
 
         // Assert
         results.Should().NotBeNull();
@@ -210,7 +210,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
-        result.CompanyName.Should().Be("Catena-X");
+        result.CompanyName.Should().Be("CX-Operator");
         result.IsProviderCompany.Should().BeTrue();
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Trace-X");
@@ -233,7 +233,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result!.OfferId.Should().Be(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfae"));
         result.Status.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
-        result.CompanyName.Should().Be("Catena-X");
+        result.CompanyName.Should().Be("CX-Operator");
         result.IsProviderCompany.Should().BeTrue();
         result.Bpn.Should().Be("BPNL00000003CRHK");
         result.OfferName.Should().Be("Service Test 123");
@@ -259,7 +259,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.IsUserOfCompany.Should().BeTrue();
         result.Details.Should().NotBeNull().And.Match<ProviderSubscriptionDetailData>(x =>
             x.Name == "SDE with EDC" &&
-            x.Customer == "Catena-X" &&
+            x.Customer == "CX-Operator" &&
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
             x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE
             && x.TechnicalUserData.All(x => x.Id == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2") && x.Name == "sa-x-4"));
@@ -313,7 +313,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.IsUserOfCompany.Should().BeTrue();
         result.Details.Should().NotBeNull().And.Match<AppProviderSubscriptionDetail>(x =>
             x.Name == "SDE with EDC" &&
-            x.Customer == "Catena-X" &&
+            x.Customer == "CX-Operator" &&
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
             x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
             x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
@@ -869,13 +869,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
                     x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                         x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                         x.OfferName == "Trace-X" &&
-                        x.Provider == "Catena-X" &&
+                        x.Provider == "CX-Operator" &&
                         x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba") &&
                         x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1"),
                     x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                         x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING &&
                         x.OfferName == "Trace-X" &&
-                        x.Provider == "Catena-X" &&
+                        x.Provider == "CX-Operator" &&
                         x.OfferSubscriptionId == new Guid("e8886159-9258-44a5-88d8-f5735a197a09") &&
                         x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
                 );
@@ -920,7 +920,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                 x.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 x.OfferName == "Trace-X" &&
-                x.Provider == "Catena-X" &&
+                x.Provider == "CX-Operator" &&
                 x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba") &&
                 x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1")
         );
@@ -1070,7 +1070,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         result.Should().HaveCount(1).And.Satisfy(
             x => x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007") &&
                 x.OfferName == "Trace-X" &&
-                x.Provider == "Catena-X" &&
+                x.Provider == "CX-Operator" &&
                 x.DocumentId == new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b1") &&
                 x.OfferSubscriptionId == new Guid("ed4de48d-fd4b-4384-a72f-ecae3c6cc5ba"));
     }
