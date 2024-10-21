@@ -4,10 +4,36 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.3.0-alpha.3
+
 ## Feature
 
 * **Registration**
-  * adjust legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
+  * adjusted legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
+* **Application Activation**
+  * split application activation to enable retrigger [#1004](https://github.com/eclipse-tractusx/portal-backend/pull/1004)
+
+## Change
+
+* **Technical User**
+  * added internal external flag to profiles [#1038](https://github.com/eclipse-tractusx/portal-backend/pull/1038)
+  * renamed company service account related tables [#1060](https://github.com/eclipse-tractusx/portal-backend/pull/1060)
+* **Registration Documents**
+  * added check for OPERATOR and confirmed status to GET /api/registration/documents/{documentId} [#1075](https://github.com/eclipse-tractusx/portal-backend/pull/1075)
+* **Seeding**
+  * moved company and address to overwrite directory to prepare possible overwrite in helm chart [#1067](https://github.com/eclipse-tractusx/portal-backend/pull/1067)
+
+### Technical Support
+
+* **Dependencies**
+  * upgraded Flurl packages [#1053](https://github.com/eclipse-tractusx/portal-backend/pull/1053)
+* **Pre Checks**
+  * added  step to check for uncommitted files [#1077](https://github.com/eclipse-tractusx/portal-backend/pull/1077)
+
+### Bugfixes
+
+* **Services**
+  * fixed response for leadPictureId [#1042](https://github.com/eclipse-tractusx/portal-backend/pull/1042)
 
 ## 2.3.0-alpha.2
 
@@ -36,7 +62,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * updated Microsoft nuget packages [#1018](https://github.com/eclipse-tractusx/portal-backend/pull/1018)
   * update workflow actions [1049](https://github.com/eclipse-tractusx/portal-backend/pull/1049)
 
-### Bugfix
+### Bugfixes
 
 * **Process Worker**
   * adjusted validation of the did schema [#1055](https://github.com/eclipse-tractusx/portal-backend/pull/1055)
