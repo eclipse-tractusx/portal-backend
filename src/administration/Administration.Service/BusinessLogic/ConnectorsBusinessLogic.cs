@@ -410,7 +410,7 @@ public class ConnectorsBusinessLogic(
 
         if (connector == null)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, [new("connectorId", connectorId.ToString())]);
         }
 
         if (connector.ConnectorUrl == data.ConnectorUrl)
@@ -418,14 +418,14 @@ public class ConnectorsBusinessLogic(
             return;
         }
 
-        if (!connector.IsHostCompany)
+        if (!connector.IsProviderCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY, [new("companyId", _identityData.CompanyId.ToString()), new("connectorId", connectorId.ToString())]);
         }
 
         if (connector.Status == ConnectorStatusId.INACTIVE)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("connectorStatusId", ConnectorStatusId.INACTIVE.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, [new("connectorId", connectorId.ToString()), new("connectorStatusId", ConnectorStatusId.INACTIVE.ToString())]);
         }
 
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
@@ -435,7 +435,7 @@ public class ConnectorsBusinessLogic(
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         if (string.IsNullOrWhiteSpace(bpn))
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, [new("companyId", _identityData.CompanyId.ToString())]);
         }
 
         connectorsRepository.AttachAndModifyConnector(connectorId, null, con =>
