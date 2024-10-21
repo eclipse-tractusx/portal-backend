@@ -56,7 +56,8 @@ public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
 
     public async Task<BpdmPartnerNetworkData> FetchPartnerNetworkData(int page, int size, IEnumerable<string> bpnl, string legalName, string token, CancellationToken cancellationToken)
     {
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using var httpClient = httpFactory.CreateClient(nameof(BpnAccess));
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var uri = new UriBuilder
         {
             Path = $"members/legal-entities/search",
@@ -68,7 +69,7 @@ public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
 
-        var result = await _httpClient.PostAsync(uri.PathAndQuery.TrimStart('/'), content, cancellationToken)
+        var result = await httpClient.PostAsync(uri.PathAndQuery.TrimStart('/'), content, cancellationToken)
             .CatchingIntoServiceExceptionFor("fetch-partner-network", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage)
             .ConfigureAwait(false);
         try

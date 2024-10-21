@@ -81,8 +81,6 @@ await WebAppHelper
         builder.Services.AddApplicationChecklist(builder.Configuration.GetSection("ApplicationChecklist"))
                         .AddOfferSubscriptionProcess();
 
-        builder.Services.AddBpnAccess(builder.Configuration.GetValue<string>("BPN_Address") ?? throw new ConfigurationException("BPN_Address is not configured"));
-
         builder.Services.AddTransient<IConnectorsBusinessLogic, ConnectorsBusinessLogic>()
             .ConfigureConnectorsSettings(builder.Configuration.GetSection("Connectors"));
 
