@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20241015171331_913-SplitActivationActivation")]
-    partial class _913SplitActivationActivation
+    [Migration("20241021154921_2.3.0-alpha.3")]
+    partial class _230alpha3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
