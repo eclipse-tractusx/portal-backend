@@ -64,7 +64,7 @@ public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
             Query = $"page={page}&size={size}"
         }.Uri;
         var request = new BpdmPartnerNetworkRequest(bpnl, legalName);
-        var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        using var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
