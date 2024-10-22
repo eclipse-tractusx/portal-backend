@@ -975,7 +975,7 @@ public class ConnectorsBusinessLogicTests
             .Returns<ConnectorUpdateInformation?>(null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"));
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -994,7 +994,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"));
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://test.de"), CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1013,7 +1013,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
@@ -1034,7 +1034,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1057,7 +1057,7 @@ public class ConnectorsBusinessLogicTests
             .Returns(data);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1082,7 +1082,7 @@ public class ConnectorsBusinessLogicTests
             .Returns<string?>(null);
 
         // Act
-        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
@@ -1093,7 +1093,9 @@ public class ConnectorsBusinessLogicTests
     public async Task UpdateConnectorUrl_WithValidData_CallsExpected()
     {
         // Arrange
+        var documentId = Guid.NewGuid();
         var connectorId = Guid.NewGuid();
+        var document = new Document(documentId, null!, null!, null!, default, default, DocumentStatusId.PENDING, default);
         var connector = _fixture.Build<Connector>()
             .With(x => x.ConnectorUrl, "https://old.de")
             .Create();
@@ -1103,7 +1105,10 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
+            .With(x => x.SelfDescriptionDocumentId, documentId)
+            .With(x => x.SelfDescriptionCompanyDocumentId, Guid.NewGuid())
             .Create();
+
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._))
@@ -1112,14 +1117,23 @@ public class ConnectorsBusinessLogicTests
                 initialize?.Invoke(connector);
                 setOptionalProperties.Invoke(connector);
             });
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
+           .Invokes((Guid documentId, Action<Document>? initialize, Action<Document> modify)
+               =>
+           {
+               initialize?.Invoke(document);
+               modify(document);
+           });
 
         // Act
-        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"));
+        await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
 
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _documentRepository.AttachAndModifyDocument((Guid)data.SelfDescriptionDocumentId!, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
         connector.ConnectorUrl.Should().Be("https://new.de");
+        document.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
     }
 
     #endregion

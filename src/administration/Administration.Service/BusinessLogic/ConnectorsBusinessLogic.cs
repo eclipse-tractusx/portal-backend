@@ -384,16 +384,18 @@ public class ConnectorsBusinessLogic(
     }
 
     /// <inheritdoc />
-    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data)
+    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
         data.ConnectorUrl.EnsureValidHttpUrl(() => nameof(data.ConnectorUrl));
-        return UpdateConnectorUrlInternal(connectorId, data);
+        return UpdateConnectorUrlInternal(connectorId, data, cancellationToken);
     }
 
-    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data)
+    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
         var connectorsRepository = portalRepositories
             .GetInstance<IConnectorsRepository>();
+        var documentRepository = portalRepositories
+           .GetInstance<IDocumentRepository>();
         var connector = await connectorsRepository
             .GetConnectorUpdateInformation(connectorId, _identityData.CompanyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -432,6 +434,19 @@ public class ConnectorsBusinessLogic(
         {
             con.ConnectorUrl = data.ConnectorUrl;
         });
+
+        if (connector.SelfDescriptionDocumentId != Guid.Empty)
+        {
+            documentRepository.AttachAndModifyDocument((Guid)connector.SelfDescriptionDocumentId!, null, doc =>
+            {
+                doc.DocumentStatusId = DocumentStatusId.INACTIVE;
+            });
+        }
+
+        var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
+        await sdFactoryBusinessLogic
+            .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, connector.Bpn!, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
