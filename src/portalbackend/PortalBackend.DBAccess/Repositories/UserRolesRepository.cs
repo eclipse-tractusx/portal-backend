@@ -270,15 +270,15 @@ public class UserRolesRepository : IUserRolesRepository
                         .Where(instance => iamClientIds.Contains(instance.IamClient!.ClientClientId))
                         .Select(appInstance => new
                         {
-                            AppInstance = appInstance,
-                            UserRole = identityAssignedRole.UserRole
+                            appInstance.IamClient!.ClientClientId,
+                            identityAssignedRole.UserRole
                         }))
             })
             .Where(x => x.RoleData.Any())
             .Select(x => new ValueTuple<Guid, IEnumerable<(string, Guid, string)>>(
                 x.Identity.Id,
                 x.RoleData.Select(roleData => new ValueTuple<string, Guid, string>(
-                            roleData.AppInstance.IamClient!.ClientClientId,
+                            roleData.ClientClientId,
                             roleData.UserRole.Id,
                             roleData.UserRole.UserRoleText))))
             .Take(2)
