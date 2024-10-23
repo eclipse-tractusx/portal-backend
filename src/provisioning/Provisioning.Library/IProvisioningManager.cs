@@ -72,5 +72,5 @@ public interface IProvisioningManager
     Task<string?> GetIdentityProviderDisplayName(string alias);
     Task DeleteSharedRealmAsync(string alias);
     Task DeleteIdpSharedServiceAccount(string alias);
-    ValueTask UpdateCentralIdentityProviderMapperAsync(string idpAlias, string companyName);
+    ValueTask UpdateCentralIdentityProviderOrganisationMapperAsync(string idpAlias, string companyName);
 }

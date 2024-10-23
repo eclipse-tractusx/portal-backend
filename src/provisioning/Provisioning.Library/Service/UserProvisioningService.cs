@@ -342,6 +342,6 @@ public class UserProvisioningService : IUserProvisioningService
     {
         var (aliasData, _) = await GetCompanyNameSharedIdpAliasData(identityId).ConfigureAwait(ConfigureAwaitOptions.None);
         await _provisioningManager.UpdateSharedIdentityProviderAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
-        await _provisioningManager.UpdateCentralIdentityProviderMapperAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
+        await _provisioningManager.UpdateCentralIdentityProviderOrganisationMapperAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
     }
 }
