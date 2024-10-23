@@ -216,16 +216,16 @@ public class ApplicationActivationService(
                 throw new UnexpectedConditionException("userRoleIds should never be empty here");
             }
 
-            var iamUserId =
-                await provisioningManager.GetUserByUserName(userData.IdentityId.ToString())
-                    .ConfigureAwait(ConfigureAwaitOptions.None) ??
-                throw new ConflictException($"user {userData.IdentityId} not found in keycloak");
-
             var roleNamesToDelete = userData.InstanceRoleData
                 .GroupBy(clientRoleData => clientRoleData.ClientClientId)
                 .ToImmutableDictionary(
                     clientRoleDataGroup => clientRoleDataGroup.Key,
                     clientRoleData => clientRoleData.Select(y => y.UserRoleText));
+
+            var iamUserId =
+                await provisioningManager.GetUserByUserName(userData.IdentityId.ToString())
+                    .ConfigureAwait(ConfigureAwaitOptions.None) ??
+                throw new ConflictException($"user {userData.IdentityId} not found in keycloak");
 
             await provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
                 .ConfigureAwait(ConfigureAwaitOptions.None);

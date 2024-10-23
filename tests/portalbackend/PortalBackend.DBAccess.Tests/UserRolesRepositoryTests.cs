@@ -75,7 +75,8 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         data.Should().HaveCount(2);
-        data.Should().AllSatisfy(((Guid, IEnumerable<(string, Guid, string)> UserRoleIds) userData) => userData.UserRoleIds.Should().ContainSingle());
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract - null could happen if the database doesn't have the include
+        data.Should().AllSatisfy(((Guid, IEnumerable<(string, Guid, string)> UserRoleIds) userData) => userData.UserRoleIds.Should().ContainSingle().And.Satisfy(x => x.Item1 != null));
     }
 
     #endregion
