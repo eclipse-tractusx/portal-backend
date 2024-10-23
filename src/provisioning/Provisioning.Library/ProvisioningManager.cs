@@ -187,7 +187,14 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var mappers = await _centralIdp.GetIdentityProviderMappersAsync(_settings.CentralRealm, idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
         var organisationMapperId = mappers.FirstOrDefault(z => z.Name == $"{_settings.MappedCompanyAttribute}-mapper")?.Id ?? string.Empty;
-        await UpdateAttributeInIdentityProvider(idpAlias, organisationMapperId, _settings.MappedCompanyAttribute, companyName);
+        if (!string.IsNullOrEmpty(organisationMapperId))
+        {
+            await UpdateAttributeInIdentityProvider(idpAlias, organisationMapperId, _settings.MappedCompanyAttribute, companyName);
+        }
+        else
+        {
+            await CreateCentralIdentityProviderOrganisationMapperAsync(idpAlias, companyName);
+        }
     }
 
     private async Task UpdateAttributeInIdentityProvider(string alias, string mapperId, string attributeName, string value) => await _centralIdp.UpdateIdentityProviderMapperAsync(
