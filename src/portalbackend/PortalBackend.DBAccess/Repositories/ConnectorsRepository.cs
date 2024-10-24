@@ -192,8 +192,9 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 c.TypeId,
                 c.HostId == companyId,
                 c.ConnectorUrl,
-                c.Provider!.BusinessPartnerNumber
-            ))
+                c.Provider!.BusinessPartnerNumber,
+                c.SelfDescriptionDocumentId,
+                c.Host!.SelfDescriptionDocumentId))
             .SingleOrDefaultAsync();
 
     public void DeleteConnector(Guid connectorId) =>

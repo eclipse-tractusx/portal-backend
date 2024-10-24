@@ -219,10 +219,10 @@ public class ConnectorsControllerTests
         var data = new ConnectorUpdateRequest("https://test.com");
 
         // Act
-        var result = await _controller.UpdateConnectorUrl(connectorId, data);
+        var result = await _controller.UpdateConnectorUrl(connectorId, data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _logic.UpdateConnectorUrl(connectorId, data)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.UpdateConnectorUrl(connectorId, data, CancellationToken.None)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
 

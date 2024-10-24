@@ -384,16 +384,18 @@ public class ConnectorsBusinessLogic(
     }
 
     /// <inheritdoc />
-    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data)
+    public Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
         data.ConnectorUrl.EnsureValidHttpUrl(() => nameof(data.ConnectorUrl));
-        return UpdateConnectorUrlInternal(connectorId, data);
+        return UpdateConnectorUrlInternal(connectorId, data, cancellationToken);
     }
 
-    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data)
+    private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
         var connectorsRepository = portalRepositories
             .GetInstance<IConnectorsRepository>();
+        var documentRepository = portalRepositories
+           .GetInstance<IDocumentRepository>();
         var connector = await connectorsRepository
             .GetConnectorUpdateInformation(connectorId, _identityData.CompanyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -432,6 +434,24 @@ public class ConnectorsBusinessLogic(
         {
             con.ConnectorUrl = data.ConnectorUrl;
         });
+
+        if (connector.SelfDescriptionDocumentId != null)
+        {
+            documentRepository.AttachAndModifyDocument(connector.SelfDescriptionDocumentId.Value, null, doc =>
+            {
+                doc.DocumentStatusId = DocumentStatusId.INACTIVE;
+            });
+        }
+
+        if (connector.SelfDescriptionCompanyDocumentId is null)
+        {
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new("connectorId", connectorId.ToString())]);
+        }
+
+        var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
+        await sdFactoryBusinessLogic
+            .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, bpn, cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

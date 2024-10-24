@@ -30,4 +30,6 @@ public record ConnectorUpdateInformation(
     ConnectorTypeId Type,
     bool IsHostCompany,
     string ConnectorUrl,
-    string? Bpn);
+    string? Bpn,
+    Guid? SelfDescriptionDocumentId,
+    Guid? SelfDescriptionCompanyDocumentId);

@@ -89,7 +89,8 @@ public interface IConnectorsBusinessLogic
     /// </summary>
     /// <param name="connectorId">Id of the connector</param>
     /// <param name="data">Update data for the connector</param>
-    Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data);
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task UpdateConnectorUrl(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the offer subscription data
