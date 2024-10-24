@@ -353,6 +353,7 @@ public class ServiceAccountBusinessLogic(
         {
             throw new ConflictException($"ServiceAccountId must be set for process {processId}");
         }
+
         if (processData.ServiceAccountVersion is null)
         {
             throw new UnexpectedConditionException("ServiceAccountVersion or IdentityVersion should never be null here");

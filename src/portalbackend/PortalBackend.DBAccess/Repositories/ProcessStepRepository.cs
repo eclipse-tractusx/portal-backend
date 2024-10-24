@@ -110,6 +110,7 @@ public class ProcessStepRepository(PortalDbContext dbContext) : IProcessStepRepo
 
     public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId, Guid? ServiceAccountVersion)> GetProcessDataForServiceAccountCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         dbContext.Processes
+            .AsNoTracking()
             .Where(x => x.Id == processId)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?, Guid?>(
                 x.ProcessTypeId,
@@ -126,6 +127,7 @@ public class ProcessStepRepository(PortalDbContext dbContext) : IProcessStepRepo
 
     public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData ProcessData, Guid? ServiceAccountId)> GetProcessDataForServiceAccountDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
         dbContext.Processes
+            .AsNoTracking()
             .Where(x => x.Id == processId && x.ProcessTypeId == ProcessTypeId.DIM_TECHNICAL_USER)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData, Guid?>(
                 x.ProcessTypeId,
