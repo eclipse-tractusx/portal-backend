@@ -1132,8 +1132,33 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument((Guid)data.SelfDescriptionDocumentId!, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         connector.ConnectorUrl.Should().Be("https://new.de");
         document.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
+    }
+
+    [Fact]
+    public async Task UpdateConnectorUrl_WithSelfDescriptionCompanyIdNotSet_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = _fixture.Build<ConnectorUpdateInformation>()
+            .With(x => x.ConnectorUrl, "https://old.de")
+            .With(x => x.IsHostCompany, true)
+            .With(x => x.Status, ConnectorStatusId.ACTIVE)
+            .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+            .With(x => x.Bpn, "BPNL123456789")
+            .With(x => x.SelfDescriptionCompanyDocumentId, default(Guid?))
+            .Create();
+        A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
+            .Returns(data);
+
+        // Act
+        async Task Act() => await _logic.UpdateConnectorUrl(connectorId, new ConnectorUpdateRequest("https://new.de"), CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION.ToString());
     }
 
     #endregion
