@@ -190,7 +190,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
             .Select(c => new ConnectorUpdateInformation(
                 c.StatusId,
                 c.TypeId,
-                c.HostId == companyId,
+                c.ProviderId == companyId,
                 c.ConnectorUrl,
                 c.Provider!.BusinessPartnerNumber
             ))
