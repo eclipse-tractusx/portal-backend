@@ -2189,7 +2189,7 @@ paths:
     get:
       tags:
         - Apps
-      summary: 'Retrieves the details of a subscription (Authorization required - Roles: subscribe_apps)'
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: view_subscription)'
       description: 'Example: GET: /api/apps/{appId}/subscription/{subscriptionId}/subscriber'
       parameters:
         - name: appId
