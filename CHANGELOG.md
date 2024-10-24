@@ -4,6 +4,15 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.3.0-RC1
+
+### Bugfixes
+
+* **Technical User**
+  * fixed the callback of external technical user creation and deletion [#1113](https://github.com/eclipse-tractusx/portal-backend/pull/1113)
+* **Application Activation**
+  * fixed the process worker for the application activation [#1109](https://github.com/eclipse-tractusx/portal-backend/pull/1109)
+
 ## 2.3.0-alpha.3
 
 ## Feature
