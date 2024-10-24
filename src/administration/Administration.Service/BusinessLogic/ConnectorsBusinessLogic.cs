@@ -435,7 +435,7 @@ public class ConnectorsBusinessLogic(
             con.ConnectorUrl = data.ConnectorUrl;
         });
 
-        if (connector.SelfDescriptionDocumentId != Guid.Empty)
+        if (connector.SelfDescriptionDocumentId != null)
         {
             documentRepository.AttachAndModifyDocument(connector.SelfDescriptionDocumentId.Value, null, doc =>
             {
