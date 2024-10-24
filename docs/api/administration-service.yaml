@@ -3182,6 +3182,52 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+  /api/administration/PartnerNetwork/legalEntities/search:
+    post:
+      tags:
+        - PartnerNetwork
+      summary: 'Gets partner network data from BPN Pool (Authorization required - Roles: view_partner_network)'
+      description: 'Example: Get: /api/registration/legalEntities/search?page=0&size=10&bpnl='
+      parameters:
+        - name: page
+          in: query
+          description: 'The page of partner network data, default is 0.'
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: 'Amount of partner network data, default is 10.'
+          schema:
+            type: integer
+            format: int32
+            default: 10
+          example: 10
+      requestBody:
+        description: The bpnls to get the selected record
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerNetworkRequest'
+      responses:
+        '200':
+          description: Returns the list of partner networks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerNetworkResponse'
+        '503':
+          description: The requested service responded with the given error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   '/api/administration/registration/application/{applicationId}/companyDetailsWithAddress':
     get:
       tags:
@@ -5997,6 +6043,276 @@ components:
         clientSecret:
           type: string
       additionalProperties: false
+    BpdmAdministrativeAreaLevelData:
+      type: object
+      properties:
+        countryCode:
+          type: string
+          nullable: true
+        regionName:
+          type: string
+          nullable: true
+        regionCode:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmAlternativePostalAddressData:
+      type: object
+      properties:
+        geographicCoordinates:
+          $ref: '#/components/schemas/BpdmGeographicCoordinatesData'
+        country:
+          $ref: '#/components/schemas/BpdmCountryData'
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        administrativeAreaLevel1:
+          $ref: '#/components/schemas/BpdmAdministrativeAreaLevelData'
+        deliveryServiceNumber:
+          type: string
+          nullable: true
+        deliveryServiceType:
+          type: string
+          nullable: true
+        deliveryServiceQualifier:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmConfidenceCriteriaData:
+      type: object
+      properties:
+        sharedByOwner:
+          type: boolean
+        checkedByExternalDataSource:
+          type: boolean
+        numberOfSharingMembers:
+          type: integer
+          format: int32
+        lastConfidenceCheckAt:
+          type: string
+          format: date-time
+        nextConfidenceCheckAt:
+          type: string
+          format: date-time
+        confidenceLevel:
+          type: integer
+          format: int32
+      additionalProperties: false
+    BpdmCountryData:
+      type: object
+      properties:
+        technicalKey:
+          type: string
+        name:
+          type: string
+      additionalProperties: false
+    BpdmGeographicCoordinatesData:
+      type: object
+      properties:
+        longitude:
+          type: number
+          format: double
+        latitude:
+          type: number
+          format: double
+        altitude:
+          type: number
+          format: double
+          nullable: true
+      additionalProperties: false
+    BpdmIdentifierData:
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKeyData'
+        issuingBody:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmLegalEntityAddressData:
+      type: object
+      properties:
+        bpna:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        bpnLegalEntity:
+          type: string
+          nullable: true
+        bpnSite:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        addressType:
+          type: string
+        states:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmLegalEntityAddressStateData'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmLegalEntityAddressIdentifierData'
+        physicalPostalAddress:
+          $ref: '#/components/schemas/BpdmPhysicalPostalAddressData'
+        alternativePostalAddress:
+          $ref: '#/components/schemas/BpdmAlternativePostalAddressData'
+        confidenceCriteria:
+          $ref: '#/components/schemas/BpdmConfidenceCriteriaData'
+        isCatenaXMemberData:
+          type: boolean
+      additionalProperties: false
+    BpdmLegalEntityAddressIdentifierData:
+      type: object
+      properties:
+        value:
+          type: string
+          nullable: true
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKeyData'
+      additionalProperties: false
+    BpdmLegalEntityAddressStateData:
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        validFrom:
+          type: string
+          format: date-time
+          nullable: true
+        validTo:
+          type: string
+          format: date-time
+          nullable: true
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKeyData'
+      additionalProperties: false
+    BpdmLegalFormData:
+      type: object
+      properties:
+        technicalKey:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        abbreviation:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmPhysicalPostalAddressData:
+      type: object
+      properties:
+        geographicCoordinates:
+          $ref: '#/components/schemas/BpdmGeographicCoordinatesData'
+        country:
+          $ref: '#/components/schemas/BpdmCountryData'
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        street:
+          $ref: '#/components/schemas/BpdmStreetData'
+        administrativeAreaLevel1:
+          $ref: '#/components/schemas/BpdmAdministrativeAreaLevelData'
+        administrativeAreaLevel2:
+          type: string
+          nullable: true
+        administrativeAreaLevel3:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        companyPostalCode:
+          type: string
+          nullable: true
+        industrialZone:
+          type: string
+          nullable: true
+        building:
+          type: string
+          nullable: true
+        floor:
+          type: string
+          nullable: true
+        door:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmRelationData:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKeyData'
+        startBpnl:
+          type: string
+          nullable: true
+        endBpnl:
+          type: string
+          nullable: true
+        validFrom:
+          type: string
+          format: date-time
+          nullable: true
+        validTo:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    BpdmStatusData:
+      type: object
+      properties:
+        validFrom:
+          type: string
+          format: date-time
+          nullable: true
+        validTo:
+          type: string
+          format: date-time
+          nullable: true
+        type:
+          $ref: '#/components/schemas/BpdmTechnicalKeyData'
+      additionalProperties: false
+    BpdmStreetData:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        houseNumber:
+          type: string
+          nullable: true
+        milestone:
+          type: string
+          nullable: true
+        direction:
+          type: string
+          nullable: true
+      additionalProperties: false
+    BpdmTechnicalKeyData:
+      type: object
+      properties:
+        technicalKey:
+          type: string
+        name:
+          type: string
+      additionalProperties: false
     CertificateSorting:
       enum:
         - CertificateTypeAsc
@@ -7440,6 +7756,77 @@ components:
           format: email
           default: string
           nullable: true
+      additionalProperties: false
+    PartnerNetworkData:
+      type: object
+      properties:
+        bpn:
+          type: string
+        legalName:
+          type: string
+          nullable: true
+        legalShortName:
+          type: string
+          nullable: true
+        currentness:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmIdentifierData'
+        legalForm:
+          $ref: '#/components/schemas/BpdmLegalFormData'
+        states:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmStatusData'
+        confidenceCriteria:
+          $ref: '#/components/schemas/BpdmConfidenceCriteriaData'
+        isCatenaXMemberData:
+          type: boolean
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/BpdmRelationData'
+        legalEntityAddress:
+          $ref: '#/components/schemas/BpdmLegalEntityAddressData'
+      additionalProperties: false
+    PartnerNetworkRequest:
+      type: object
+      properties:
+        bpnls:
+          type: array
+          items:
+            type: string
+        legalName:
+          type: string
+      additionalProperties: false
+    PartnerNetworkResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerNetworkData'
+        contentSize:
+          type: integer
+          format: int32
+        page:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
       additionalProperties: false
     PartnerRegistrationData:
       type: object
