@@ -44,4 +44,12 @@ public interface IBpdmService
     Task<bool> SetSharingStateToReady(string externalId, CancellationToken cancellationToken);
     Task<BpdmLegalEntityOutputData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken);
     Task<BpdmSharingState> GetSharingState(Guid applicationId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Send membership information to the BPDM Pool
+    /// </summary>
+    /// <param name="businessPartnerNumber">The BPN to set Cx Membership</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>Returns <c>true</c> if the service call was successful, otherwise <c>false</c></returns>
+    Task<bool> SetCxMembership(string businessPartnerNumber, CancellationToken cancellationToken);
 }

@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -87,6 +88,7 @@ public class ApplicationActivationTests
     private readonly ApplicationActivationService _sut;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ICustodianService _custodianService;
+    private readonly IBpdmService _bpdmService;
 
     public ApplicationActivationTests()
     {
@@ -103,6 +105,7 @@ public class ApplicationActivationTests
         _notificationService = A.Fake<INotificationService>();
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _custodianService = A.Fake<ICustodianService>();
+        _bpdmService = A.Fake<IBpdmService>();
         _settings = A.Fake<ApplicationActivationSettings>();
         _processStepRepository = A.Fake<IPortalProcessStepRepository>();
 
@@ -129,7 +132,7 @@ public class ApplicationActivationTests
         A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
         A.CallTo(() => options.Value).Returns(_settings);
 
-        _sut = new ApplicationActivationService(portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _mailingProcessCreation, options);
+        _sut = new ApplicationActivationService(portalRepositories, _notificationService, _provisioningManager, _dateTimeProvider, _custodianService, _bpdmService, _mailingProcessCreation, options);
     }
 
     #endregion
@@ -604,11 +607,44 @@ public class ApplicationActivationTests
         //Assert
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle()
-            .And.Satisfy(x => x == ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION);
+            .And.Satisfy(x => x == ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM);
         result.ModifyChecklistEntry?.Should().NotBeNull();
         result.ModifyChecklistEntry?.Invoke(applicationChecklistEntry);
         applicationChecklistEntry.Comment.Should()
             .Be("testMessage");
+        result.SkipStepTypeIds.Should().BeNull();
+        result.Modified.Should().BeTrue();
+        result.ProcessMessage.Should().BeNull();
+    }
+
+    #endregion
+
+    #region SET_CX_MEMBERSHIP_IN_BPDM
+
+    [Fact]
+    public async Task SetCxMembership_WithValid_ReturnsExpected()
+    {
+        //Arrange
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(
+            Id,
+            default,
+            Checklist,
+            Enumerable.Empty<ProcessStepTypeId>());
+        var applicationChecklistEntry = new ApplicationChecklistEntry(Id, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        A.CallTo(() => _applicationRepository.GetBpnForApplicationIdAsync(Id))
+            .Returns(BusinessPartnerNumber);
+        A.CallTo(() => _bpdmService.SetCxMembership(BusinessPartnerNumber, A<CancellationToken>._))
+            .Returns(true);
+
+        //Act
+        var result = await _sut.SetCxMembership(context, CancellationToken.None);
+
+        //Assert
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle()
+            .And.Satisfy(x => x == ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION);
+        result.ModifyChecklistEntry?.Should().NotBeNull();
+        result.ModifyChecklistEntry?.Invoke(applicationChecklistEntry);
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeTrue();
         result.ProcessMessage.Should().BeNull();

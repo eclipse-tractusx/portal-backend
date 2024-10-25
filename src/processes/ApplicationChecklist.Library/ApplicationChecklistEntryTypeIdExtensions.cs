@@ -29,7 +29,7 @@ public static class ApplicationChecklistEntryTypeIdExtensions
         new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, [ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET, ProcessStepTypeId.RETRIGGER_CREATE_DIM_WALLET, ProcessStepTypeId.RETRIGGER_VALIDATE_DID_DOCUMENT]),
         new(ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, [ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP]),
         new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, [ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH, ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL]),
-        new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, [ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES, ProcessStepTypeId.RETRIGGER_SET_THEME, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP])
+        new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, [ProcessStepTypeId.RETRIGGER_ASSIGN_INITIAL_ROLES, ProcessStepTypeId.RETRIGGER_ASSIGN_BPN_TO_USERS, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES, ProcessStepTypeId.RETRIGGER_SET_THEME, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP, ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM])
     ]);
 
     public static IEnumerable<ProcessStepTypeId> GetManualTriggerProcessStepIds(this ApplicationChecklistEntryTypeId entryTypeId) =>
@@ -56,6 +56,7 @@ public static class ApplicationChecklistEntryTypeIdExtensions
             ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES => (ProcessStepTypeId.REMOVE_REGISTRATION_ROLES, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             ProcessStepTypeId.RETRIGGER_SET_THEME => (ProcessStepTypeId.SET_THEME, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP => (ProcessStepTypeId.SET_MEMBERSHIP, ApplicationChecklistEntryStatusId.IN_PROGRESS),
+            ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM => (ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM, ApplicationChecklistEntryStatusId.IN_PROGRESS),
             _ => default,
         };
 }

@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
@@ -44,6 +45,7 @@ public class ApplicationActivationService(
     IProvisioningManager provisioningManager,
     IDateTimeProvider dateTime,
     ICustodianService custodianService,
+    IBpdmService bpdmService,
     IMailingProcessCreation mailingProcessCreation,
     IOptions<ApplicationActivationSettings> options)
     : IApplicationActivationService
@@ -289,6 +291,26 @@ public class ApplicationActivationService(
             {
                 entry.Comment = resultMessage;
             },
+            Enumerable.Repeat(ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM, 1),
+            null,
+            true,
+            null);
+    }
+
+    public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> SetCxMembership(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
+    {
+        var businessPartnerNumber = await portalRepositories.GetInstance<IApplicationRepository>()
+            .GetBpnForApplicationIdAsync(context.ApplicationId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (businessPartnerNumber is null)
+        {
+            throw new ConflictException("BusinessPartnerNumber must be set");
+        }
+
+        var resultMessage = await bpdmService.SetCxMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
+            ProcessStepStatusId.DONE,
+            null,
             Enumerable.Repeat(ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION, 1),
             null,
             true,
