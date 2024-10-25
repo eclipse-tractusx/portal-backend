@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -175,5 +176,24 @@ public class BpdmService : IBpdmService
         {
             throw new ServiceException($"Access to sharing state did not return a valid json response: {je.Message}");
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> SetCxMembership(string businessPartnerNumber, CancellationToken cancellationToken)
+    {
+        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        var requestData = new BpdmCxMembership(
+            new BpdmCxMembershipDto[]{
+                new(businessPartnerNumber, true)
+            }.AsEnumerable()
+        );
+
+        async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
+            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
+
+        await httpClient.PutAsJsonAsync("v6/cx-memberships", requestData, Options, cancellationToken)
+            .CatchingIntoServiceExceptionFor("bpdm-put-cx-membership", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
+        return true;
     }
 }
