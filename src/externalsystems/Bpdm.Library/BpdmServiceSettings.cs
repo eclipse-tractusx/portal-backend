@@ -34,4 +34,7 @@ public class BpdmServiceSettings : KeyVaultAuthSettings
     public bool UseDimWallet { get; set; }
 
     public bool StartSharingStateAsReady { get; set; }
+
+    [Required(AllowEmptyStrings = false)]
+    public string BusinessPartnerPoolBaseAddress { get; set; } = null!;
 }
