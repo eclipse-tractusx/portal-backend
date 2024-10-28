@@ -48,6 +48,7 @@ public class BpdmServiceTests
             Scope = "test",
             Username = "user@name",
             BaseAddress = "https://base.address.com",
+            BusinessPartnerPoolBaseAddress = "https://business.partner.pool.base.address.com",
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
@@ -673,7 +674,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
@@ -694,7 +695,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
         var sut = new BpdmService(_tokenService, _options);
