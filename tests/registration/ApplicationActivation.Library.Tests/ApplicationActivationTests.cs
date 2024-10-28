@@ -557,7 +557,7 @@ public class ApplicationActivationTests
 
         //Assert
         var expectedProcessStepTypeId =
-            useDimWallet ? ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION : ProcessStepTypeId.SET_MEMBERSHIP;
+            useDimWallet ? ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM : ProcessStepTypeId.SET_MEMBERSHIP;
         A.CallTo(() => _provisioningManager.UpdateSharedRealmTheme("idp1", _settings.LoginTheme)).MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle()

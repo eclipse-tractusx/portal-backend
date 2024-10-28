@@ -183,6 +183,10 @@ public class BpdmService : IBpdmService
     {
         using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
+        // Same User (which we have for BPDM service) can be used to call Business Partner Pool
+        // But BaseAddress of Business Partner Pool is different as its deployed on another server.
+        httpClient.BaseAddress = new Uri(_settings.BusinessPartnerPoolBaseAddress);
+
         var requestData = new BpdmCxMembership(
             new BpdmCxMembershipDto[]{
                 new(businessPartnerNumber, true)

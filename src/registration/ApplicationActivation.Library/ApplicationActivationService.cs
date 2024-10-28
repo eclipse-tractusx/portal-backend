@@ -268,7 +268,7 @@ public class ApplicationActivationService(
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             null,
-            Enumerable.Repeat(_settings.UseDimWallet ? ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION : ProcessStepTypeId.SET_MEMBERSHIP, 1),
+            Enumerable.Repeat(_settings.UseDimWallet ? ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM : ProcessStepTypeId.SET_MEMBERSHIP, 1),
             null,
             true,
             null);
@@ -307,7 +307,7 @@ public class ApplicationActivationService(
             throw new ConflictException("BusinessPartnerNumber must be set");
         }
 
-        var resultMessage = await bpdmService.SetCxMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await bpdmService.SetCxMembership(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
             null,
