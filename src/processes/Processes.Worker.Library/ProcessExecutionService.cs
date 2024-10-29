@@ -106,12 +106,12 @@ public class ProcessExecutionService
                     }
                     _logger.LogInformation("finished processing process {processId}", process.Id);
                 }
-                catch (SystemException ex)
+                catch (SystemException ex) when (ex is not OutOfMemoryException)
                 {
                     _logger.LogCritical(ex, "Critical error : processing process {processId} type {processType}: {message}", process.Id, process.ProcessTypeId, ex.Message);
                     executorRepositories.Clear();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not SystemException)
                 {
                     _logger.LogInformation(ex, "error processing process {processId} type {processType}: {message}", process.Id, process.ProcessTypeId, ex.Message);
                     executorRepositories.Clear();
