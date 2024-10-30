@@ -87,7 +87,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
     public Task<ConnectorData?> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
         dbContext.Connectors
             .AsNoTracking()
-            .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
+            .Where(connector => connector.HostId == companyId && connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
             .Select(connector => new ConnectorData(
                     connector.Name,
                     connector.Location!.Alpha2Code,
