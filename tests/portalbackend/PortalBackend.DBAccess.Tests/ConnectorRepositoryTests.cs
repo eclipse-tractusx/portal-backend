@@ -170,10 +170,9 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.IsProviderCompany.Should().BeTrue();
-        result.ConnectorData.Name.Should().Be("Test Connector 1");
-        result.ConnectorData.TechnicalUser.Should().BeNull();
-        result.ConnectorData.ConnectorUrl.Should().Be("www.connector1.de");
+        result!.Name.Should().Be("Test Connector 1");
+        result!.TechnicalUser.Should().BeNull();
+        result!.ConnectorUrl.Should().Be("www.connector1.de");
     }
 
     [Fact]
@@ -187,20 +186,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().Be(default);
-    }
-
-    [Fact]
-    public async Task GetConnectorByIdForIamUser_WithoutMatchingUser_ReturnsIsProviderUserFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut();
-
-        // Act
-        var result = await sut.GetConnectorByIdForCompany(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), Guid.NewGuid());
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsProviderCompany.Should().BeFalse();
     }
 
     #endregion

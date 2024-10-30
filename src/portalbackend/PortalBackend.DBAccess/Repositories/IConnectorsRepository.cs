@@ -43,7 +43,7 @@ public interface IConnectorsRepository
     /// <returns>Pagination.Source of connectors that allows transformation.</returns>
     Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId);
 
-    Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId);
+    Task<ConnectorData?> GetConnectorByIdForCompany(Guid connectorId, Guid companyId);
 
     Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId);
 
