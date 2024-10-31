@@ -99,6 +99,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             result.Description,
             result.LicenseTypeId,
             result.Price,
+            result.ProviderUri,
             result.OfferSubscriptionDetailData,
             result.ServiceTypeIds,
             result.Documents.GroupBy(doc => doc.DocumentTypeId).ToDictionary(d => d.Key, d => d.Select(x => new DocumentData(x.DocumentId, x.DocumentName))),

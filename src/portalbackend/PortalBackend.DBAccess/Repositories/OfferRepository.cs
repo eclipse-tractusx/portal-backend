@@ -278,6 +278,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
+                offer.MarketingUrl,
                 offer.OfferSubscriptions
                     .Where(os => os.CompanyId == userCompanyId)
                     .Select(x => new OfferSubscriptionStateDetailData(x.Id, x.OfferSubscriptionStatusId)),
