@@ -295,6 +295,7 @@ public class ServiceBusinessLogicTests
         result.TechnicalUserProfile.Should().ContainSingle().Which.Should().Match<KeyValuePair<Guid, IEnumerable<string>>>(
             x => x.Value.SequenceEqual(new[] { "role1", "role2" }));
         result.LeadPictureId.Should().NotBeEmpty();
+        result.ProviderUri.Should().NotBeEmpty();
     }
 
     [Fact]
