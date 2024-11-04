@@ -84,11 +84,12 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     c.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
-    public Task<ConnectorData?> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
+    public Task<(ConnectorData ConnectorData, bool IsProvidingOrHostCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
         dbContext.Connectors
             .AsNoTracking()
-            .Where(connector => connector.HostId == companyId && connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
-            .Select(connector => new ConnectorData(
+            .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
+            .Select(connector => new ValueTuple<ConnectorData, bool>(
+                new ConnectorData(
                     connector.Name,
                     connector.Location!.Alpha2Code,
                     connector.Id,
@@ -102,8 +103,10 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                         connector.TechnicalUser.Name,
                         connector.TechnicalUser.ClientClientId,
                         connector.TechnicalUser.Description),
-                    connector.ConnectorUrl)
-            ).SingleOrDefaultAsync();
+                    connector.ConnectorUrl),
+                connector.ProviderId == companyId || connector.HostId == companyId
+            ))
+            .SingleOrDefaultAsync();
 
     public Task<(ConnectorInformationData ConnectorInformationData, bool IsProviderUser)> GetConnectorInformationByIdForIamUser(Guid connectorId, Guid userCompanyId) =>
         dbContext.Connectors
