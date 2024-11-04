@@ -55,6 +55,7 @@ public class RegistrationBusinessLogicTest
 {
     private readonly IFixture _fixture;
     private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IIdentityProviderProvisioningService _identityProviderProvisioningService;
     private readonly IInvitationRepository _invitationRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly IUserRepository _userRepository;
@@ -91,6 +92,7 @@ public class RegistrationBusinessLogicTest
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _userProvisioningService = A.Fake<IUserProvisioningService>();
+        _identityProviderProvisioningService = A.Fake<IIdentityProviderProvisioningService>();
         _invitationRepository = A.Fake<IInvitationRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _userRepository = A.Fake<IUserRepository>();
@@ -155,6 +157,7 @@ public class RegistrationBusinessLogicTest
 
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -236,6 +239,7 @@ public class RegistrationBusinessLogicTest
             bpnAccess,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -282,6 +286,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _identityService,
             _dateTimeProvider,
             _mailingProcessCreation);
@@ -310,6 +315,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -381,6 +387,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -410,6 +417,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -436,6 +444,7 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -490,6 +499,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _identityService,
             _dateTimeProvider,
             _mailingProcessCreation);
@@ -514,6 +524,7 @@ public class RegistrationBusinessLogicTest
         var companyId = Guid.NewGuid();
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -556,6 +567,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -592,6 +604,7 @@ public class RegistrationBusinessLogicTest
 
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -633,6 +646,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
            _userProvisioningService,
+           _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -694,6 +708,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -708,7 +723,6 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
             .Returns(existingData);
-        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
 
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
@@ -725,7 +739,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(identityData.CompanyId, companyData.Name)).MustHaveHappenedOnceExactly();
 
         company.Should().NotBeNull();
         company.Should().Match<Company>(c =>
@@ -758,6 +772,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -772,7 +787,6 @@ public class RegistrationBusinessLogicTest
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
             .Returns(existingData);
-        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
 
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
@@ -789,7 +803,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name)).MustNotHaveHappened();
+        A.CallTo(() => _identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(identityData.CompanyId, companyData.Name)).MustNotHaveHappened();
 
         company.Should().NotBeNull();
         company.Should().Match<Company>(c =>
@@ -829,6 +843,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -846,7 +861,7 @@ public class RegistrationBusinessLogicTest
                 initialize?.Invoke(company);
                 modify(company);
             });
-        A.CallTo(() => _userProvisioningService.UpdateCompanyNameInIdentityProvider(identityData.IdentityId, companyData.Name));
+
         // Act
         await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
@@ -905,6 +920,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -994,6 +1010,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
            _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1102,7 +1119,8 @@ public class RegistrationBusinessLogicTest
         var sut = new RegistrationBusinessLogic(
             _options,
             null!,
-           _userProvisioningService,
+            _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1173,6 +1191,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1215,6 +1234,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1253,6 +1273,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1279,6 +1300,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -1311,6 +1333,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -1370,6 +1393,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1411,6 +1435,7 @@ public class RegistrationBusinessLogicTest
             .Returns(companyRolesRepository);
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -1502,6 +1527,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1565,6 +1591,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1600,6 +1627,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1630,6 +1658,7 @@ public class RegistrationBusinessLogicTest
         };
         var sut = new RegistrationBusinessLogic(
             Options.Create(settings),
+            null!,
             null!,
             null!,
             null!,
@@ -1672,6 +1701,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1705,6 +1735,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1735,6 +1766,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1770,6 +1802,7 @@ public class RegistrationBusinessLogicTest
             _options,
             null!,
             _userProvisioningService,
+            _identityProviderProvisioningService,
             null!,
             _portalRepositories,
             null!,
@@ -1810,6 +1843,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1837,6 +1871,7 @@ public class RegistrationBusinessLogicTest
 
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -1871,6 +1906,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -1897,7 +1933,7 @@ public class RegistrationBusinessLogicTest
         var notExistingId = _fixture.Create<Guid>();
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(notExistingId))
             .Returns<CompanyRoleAgreementConsentData?>(null);
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRoleConsentAsync(notExistingId, _fixture.Create<CompanyRoleAgreementConsents>());
@@ -1916,7 +1952,7 @@ public class RegistrationBusinessLogicTest
         var data = new CompanyRoleAgreementConsentData(Guid.NewGuid(), applicationStatusId, _fixture.CreateMany<CompanyRoleId>(2), _fixture.CreateMany<ConsentData>(5));
         A.CallTo(() => _companyRolesRepository.GetCompanyRoleAgreementConsentDataAsync(applicationId))
             .Returns(data);
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>());
@@ -1945,7 +1981,7 @@ public class RegistrationBusinessLogicTest
             .Returns(data);
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(roleIds))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRoleConsentAsync(applicationId, _fixture.Create<CompanyRoleAgreementConsents>());
@@ -1981,7 +2017,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
 
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRoleConsentAsync(applicationId, consents);
@@ -2063,7 +2099,7 @@ public class RegistrationBusinessLogicTest
                 removedCompanyRoleIds = companyRoleIds;
             });
 
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         await sut.SubmitRoleConsentAsync(applicationId, consents);
@@ -2116,7 +2152,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(A<IEnumerable<CompanyRoleId>>._))
             .Returns(companyRoleAssignedAgreements.ToAsyncEnumerable());
 
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRoleConsentAsync(applicationId, consents);
@@ -2143,7 +2179,7 @@ public class RegistrationBusinessLogicTest
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns<CompanyApplicationUserEmailData?>(null);
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(notExistingId);
@@ -2233,7 +2269,7 @@ public class RegistrationBusinessLogicTest
                 DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT
             ]
         };
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         await sut.SubmitRegistrationAsync(applicationId);
@@ -2324,7 +2360,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(statusId, true, _fixture.Create<string>(), documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2369,7 +2405,7 @@ public class RegistrationBusinessLogicTest
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(statusId, true, _fixture.Create<string>(), documents, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2407,7 +2443,7 @@ public class RegistrationBusinessLogicTest
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(A<Guid>._, A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, false, null, null!, companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2445,7 +2481,7 @@ public class RegistrationBusinessLogicTest
         };
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2475,7 +2511,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", null, "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2505,7 +2541,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData(string.Empty, Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2535,7 +2571,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIdentifierData, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2565,7 +2601,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIdData);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2592,7 +2628,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2622,7 +2658,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", string.Empty, "Germany", uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2653,7 +2689,7 @@ public class RegistrationBusinessLogicTest
         var companyData = new CompanyData("Test Company", Guid.NewGuid(), "Strabe Street", "Munich", string.Empty, uniqueIds, companyRoleIds);
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new CompanyApplicationUserEmailData(CompanyApplicationStatusId.VERIFY, true, _fixture.Create<string>(), Enumerable.Empty<DocumentStatusData>(), companyData, agreementConsents));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.SubmitRegistrationAsync(applicationId);
@@ -2697,7 +2733,7 @@ public class RegistrationBusinessLogicTest
             {
                 setOptionalFields.Invoke(application);
             });
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId);
@@ -2747,7 +2783,7 @@ public class RegistrationBusinessLogicTest
             {
                 setOptionalFields.Invoke(application);
             });
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, A.Fake<ILogger<RegistrationBusinessLogic>>(), _portalRepositories, _checklistService, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.SubmitRegistrationAsync(applicationId);
@@ -2778,6 +2814,7 @@ public class RegistrationBusinessLogicTest
 
         var sut = new RegistrationBusinessLogic(
             _options,
+            null!,
             null!,
             null!,
             null!,
@@ -2812,6 +2849,7 @@ public class RegistrationBusinessLogicTest
             null!,
             null!,
             null!,
+            null!,
             _portalRepositories,
             null!,
             _identityService,
@@ -2840,7 +2878,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(_existingApplicationId, _identity.CompanyId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((true, true, data));
 
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.GetRegistrationDataAsync(_existingApplicationId);
@@ -2885,7 +2923,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((false, false, data));
 
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetRegistrationDataAsync(applicationId);
@@ -2904,7 +2942,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((true, false, data));
 
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetRegistrationDataAsync(applicationId);
@@ -2923,7 +2961,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetRegistrationDataUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((true, true, null));
 
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetRegistrationDataAsync(applicationId);
@@ -2943,7 +2981,7 @@ public class RegistrationBusinessLogicTest
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((content, "test.json", true, MediaTypeId.JSON));
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         //Act
         var result = await sut.GetRegistrationDocumentAsync(documentId);
@@ -2962,7 +3000,7 @@ public class RegistrationBusinessLogicTest
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .Returns((content, "test.json", false, MediaTypeId.JSON));
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         //Act
         Task Act() => sut.GetRegistrationDocumentAsync(documentId);
@@ -2979,7 +3017,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentAsync(documentId, A<IEnumerable<DocumentTypeId>>._))
             .Returns<(byte[], string, bool, MediaTypeId)>(default);
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         //Act
         Task Act() => sut.GetRegistrationDocumentAsync(documentId);
@@ -3001,7 +3039,7 @@ public class RegistrationBusinessLogicTest
             .Returns((documentId, true, true, false));
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
             .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.GetDocumentContentAsync(documentId);
@@ -3019,7 +3057,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((Guid.Empty, false, false, false));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetDocumentContentAsync(documentId);
@@ -3036,7 +3074,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((documentId, false, false, false));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetDocumentContentAsync(documentId);
@@ -3053,7 +3091,7 @@ public class RegistrationBusinessLogicTest
         var documentId = Guid.NewGuid();
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((documentId, true, true, true));
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.GetDocumentContentAsync(documentId);
@@ -3090,7 +3128,7 @@ public class RegistrationBusinessLogicTest
             });
         A.CallTo(() => _portalRepositories.SaveAsync()).Returns(retval);
 
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.SetInvitationStatusAsync();
@@ -3109,7 +3147,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         A.CallTo(() => _invitationRepository.GetInvitationStatusAsync(A<Guid>._))
             .Returns<Invitation?>(null);
-        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(_options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         //Act
         Task Act() => sut.SetInvitationStatusAsync();
@@ -3163,7 +3201,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds))
             .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationIds));
 
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         var result = await sut.DeleteRegistrationDocumentAsync(documentId);
@@ -3201,7 +3239,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identity.CompanyId, settings.ApplicationStatusIds))
             .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CONFORMITY_APPROVAL_BUSINESS_APPS, false, applicationId));
 
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(documentId);
@@ -3218,7 +3256,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns<(Guid, DocumentStatusId, bool, DocumentTypeId, bool, IEnumerable<Guid>)>(default);
 
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(_fixture.Create<Guid>());
@@ -3249,7 +3287,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns((documentId, DocumentStatusId.PENDING, true, DocumentTypeId.CX_FRAME_CONTRACT, true, applicationId));
 
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(documentId);
@@ -3280,7 +3318,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns((documentId, DocumentStatusId.PENDING, false, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationId));
 
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(documentId);
@@ -3311,7 +3349,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns((documentId, DocumentStatusId.LOCKED, true, DocumentTypeId.CX_FRAME_CONTRACT, false, applicationId));
 
-        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(settings), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(documentId);
@@ -3325,7 +3363,7 @@ public class RegistrationBusinessLogicTest
     public async Task DeleteRegistrationDocumentAsync_Throws_ControllerArgumentException()
     {
         // Arrange;
-        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeleteRegistrationDocumentAsync(default);
@@ -3409,7 +3447,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .ReturnsLazily((IEnumerable<UserRoleConfig> clientRoles) => clientRoles.SelectMany(r => r.UserRoleNames.Select(role => _fixture.Build<UserRoleData>().With(x => x.UserRoleText, role).Create())).ToAsyncEnumerable());
 
-        A.CallTo(() => _userProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
+        A.CallTo(() => _identityProviderProvisioningService.GetIdentityProviderDisplayName(A<string>._)).Returns(_displayName);
 
         A.CallTo(() => _userProvisioningService.GetCompanyNameSharedIdpAliasData(A<Guid>._, A<Guid?>._)).Returns(
             (
@@ -3448,7 +3486,7 @@ public class RegistrationBusinessLogicTest
             ApplicationDeclineStatusIds = [CompanyApplicationStatusId.CREATED]
         });
 
-        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
 
         // Act
         var result = await sut.GetApplicationsDeclineData();
@@ -3581,7 +3619,7 @@ public class RegistrationBusinessLogicTest
                 }
             });
 
-        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
 
         // Act
         await sut.DeclineApplicationRegistrationAsync(applicationId);
@@ -3755,7 +3793,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _applicationRepository.GetDeclineApplicationDataForApplicationId(A<Guid>._, A<Guid>._, A<IEnumerable<CompanyApplicationStatusId>>._))
             .Returns<(bool, bool, ApplicationDeclineData?)>(default);
 
-        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
+        var sut = new RegistrationBusinessLogic(options, null!, null!, null!, null!, _portalRepositories, null!, _identityService, null!, _mailingProcessCreation);
 
         // Act
         Task Act() => sut.DeclineApplicationRegistrationAsync(applicationId);

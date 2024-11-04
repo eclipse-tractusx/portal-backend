@@ -247,9 +247,6 @@ public class UserProvisioningService : IUserProvisioningService
         return (new CompanyNameIdpAliasData(company.CompanyId, company.CompanyName, company.BusinessPartnerNumber, idpAlias.Alias, idpAlias.IdentityProviderId, true), createdByName);
     }
 
-    public Task<string?> GetIdentityProviderDisplayName(string idpAlias) =>
-        _provisioningManager.GetCentralIdentityProviderDisplayName(idpAlias);
-
     private async Task<Guid> ValidateDuplicateIdpUsersAsync(IUserRepository userRepository, string alias, UserCreationRoleDataIdpInfo user, Guid companyId)
     {
         var existingCompanyUserId = Guid.Empty;
@@ -336,12 +333,5 @@ public class UserProvisioningService : IUserProvisioningService
         {
             throw new ControllerArgumentException($"invalid roles: clientId: '{clientId}', roles: [{string.Join(", ", invalid)}]");
         }
-    }
-
-    public async Task UpdateCompanyNameInIdentityProvider(Guid identityId, string companyName)
-    {
-        var (aliasData, _) = await GetCompanyNameSharedIdpAliasData(identityId).ConfigureAwait(ConfigureAwaitOptions.None);
-        await _provisioningManager.UpdateSharedIdentityProviderAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
-        await _provisioningManager.UpdateCentralIdentityProviderOrganisationMapperAsync(aliasData.IdpAlias, companyName).ConfigureAwait(false);
     }
 }

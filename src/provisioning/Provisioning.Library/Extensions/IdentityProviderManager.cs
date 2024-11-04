@@ -143,6 +143,39 @@ public partial class ProvisioningManager
     public async Task<string?> GetIdentityProviderDisplayName(string alias) =>
         (await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None)).DisplayName;
 
+    public async Task UpdateOrCreateCentralIdentityProviderOrganisationMapperAsync(string idpAlias, string organisationName)
+    {
+        var mapperName = _settings.MappedCompanyAttribute + "-mapper";
+        IdentityProviderMapper? mapper;
+        try
+        {
+            mapper = (await _centralIdp.GetIdentityProviderMappersAsync(_settings.CentralRealm, idpAlias).ConfigureAwait(ConfigureAwaitOptions.None))
+                .SingleOrDefault(z => z.Name == mapperName);
+        }
+        catch (InvalidOperationException)
+        {
+            throw new KeycloakEntityConflictException($"idp {idpAlias} attribute-mapper {mapperName} is ambigous in keycloak");
+        }
+        if (mapper is null)
+        {
+            await CreateCentralIdentityProviderOrganisationMapperAsync(idpAlias, organisationName);
+        }
+        else
+        {
+            mapper.Config ??= new Dictionary<string, string>
+            {
+                ["syncMode"] = "INHERIT",
+                ["attribute"] = _settings.MappedCompanyAttribute,
+            };
+            mapper.Config["attribute.value"] = organisationName;
+            await _centralIdp.UpdateIdentityProviderMapperAsync(
+                _settings.CentralRealm,
+                idpAlias,
+                mapper.Id ?? throw new KeycloakEntityConflictException($"idp {idpAlias} attribute-mapper {mapperName} has no Id"),
+                mapper).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
     private async ValueTask<string> GetCentralBrokerEndpointOIDCAsync(string alias)
     {
         var openidconfig = await _centralIdp.GetOpenIDConfigurationAsync(_settings.CentralRealm).ConfigureAwait(ConfigureAwaitOptions.None);

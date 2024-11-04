@@ -21,7 +21,6 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.IdentityProviders;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -183,37 +182,6 @@ public partial class ProvisioningManager : IProvisioningManager
         await UpdateCentralIdentityProviderAsync(alias, identityProvider).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async ValueTask UpdateCentralIdentityProviderOrganisationMapperAsync(string idpAlias, string companyName)
-    {
-        var mappers = await _centralIdp.GetIdentityProviderMappersAsync(_settings.CentralRealm, idpAlias).ConfigureAwait(ConfigureAwaitOptions.None);
-        var organisationMapperId = mappers.FirstOrDefault(z => z.Name == $"{_settings.MappedCompanyAttribute}-mapper")?.Id ?? string.Empty;
-        if (!string.IsNullOrEmpty(organisationMapperId))
-        {
-            await UpdateAttributeInIdentityProvider(idpAlias, organisationMapperId, _settings.MappedCompanyAttribute, companyName);
-        }
-        else
-        {
-            await CreateCentralIdentityProviderOrganisationMapperAsync(idpAlias, companyName);
-        }
-    }
-
-    private async Task UpdateAttributeInIdentityProvider(string alias, string mapperId, string attributeName, string value) => await _centralIdp.UpdateIdentityProviderMapperAsync(
-                     _settings.CentralRealm,
-                     alias,
-                     mapperId,
-                      new IdentityProviderMapper
-                      {
-                          Id = mapperId,
-                          Name = attributeName + "-mapper",
-                          _IdentityProviderMapper = "hardcoded-attribute-idp-mapper",
-                          IdentityProviderAlias = alias,
-                          Config = new Dictionary<string, string>
-                          {
-                              ["syncMode"] = "INHERIT",
-                              ["attribute"] = attributeName,
-                              ["attribute.value"] = value
-                          }
-                      }).ConfigureAwait(ConfigureAwaitOptions.None);
     public async ValueTask UpdateSharedRealmTheme(string alias, string loginTheme)
     {
         var identityProvider = await GetCentralIdentityProviderAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
