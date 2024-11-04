@@ -174,10 +174,10 @@ public class BPNAccessTest
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage, requestMessage => request = requestMessage);
 
         var businessPartnerNumber = _fixture.Create<string>();
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
         //Act
-        var result = await sut.FetchLegalEntityByBpn(businessPartnerNumber, _fixture.Create<string>(), CancellationToken.None);
+        var result = await sut.FetchLegalEntityByBpn(businessPartnerNumber, CancellationToken.None);
 
         //Assert
         request.Should().NotBeNull();
@@ -203,9 +203,9 @@ public class BPNAccessTest
         };
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
-        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), CancellationToken.None);
 
         //Act
         var result = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -227,9 +227,9 @@ public class BPNAccessTest
         };
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
-        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), CancellationToken.None);
 
         //Act
         var result = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -249,9 +249,9 @@ public class BPNAccessTest
         };
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
-        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), CancellationToken.None);
 
         //Act
         var result = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -273,9 +273,9 @@ public class BPNAccessTest
         };
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
-        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), CancellationToken.None);
 
         //Act
         var result = await Assert.ThrowsAsync<ServiceException>(Act);
@@ -297,9 +297,9 @@ public class BPNAccessTest
         };
         _fixture.ConfigureHttpClientFactoryFixture("bpn", responseMessage);
 
-        var sut = _fixture.Create<BpnAccess>();
+        var sut = _fixture.Create<BpdmAccessService>();
 
-        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), _fixture.Create<string>(), CancellationToken.None);
+        var Act = () => sut.FetchLegalEntityByBpn(_fixture.Create<string>(), CancellationToken.None);
 
         //Act
         var result = await Assert.ThrowsAsync<ServiceException>(Act);

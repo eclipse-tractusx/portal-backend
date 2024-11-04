@@ -21,7 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 /// <summary>
 /// Settings used in business logic concerning connectors.
