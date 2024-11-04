@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
@@ -28,10 +29,11 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
-public class BpdmService : IBpdmService
+public class BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
+    : IBpdmService
 {
-    private readonly ITokenService _tokenService;
-    private readonly BpdmServiceSettings _settings;
+    private readonly BpdmServiceSettings _settings = options.Value;
+
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -42,16 +44,10 @@ public class BpdmService : IBpdmService
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public BpdmService(ITokenService tokenService, IOptions<BpdmServiceSettings> options)
-    {
-        _tokenService = tokenService;
-        _settings = options.Value;
-    }
-
     /// <inheritdoc />
     public async Task<bool> PutInputLegalEntity(BpdmTransferData data, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestData = new BpdmLegalEntityData[]
         {
@@ -119,7 +115,7 @@ public class BpdmService : IBpdmService
 
     public async Task<bool> SetSharingStateToReady(string externalId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var content = new { externalIds = Enumerable.Repeat(externalId, 1) };
         await httpClient.PostAsJsonAsync("sharing-state/ready", content, Options, cancellationToken)
@@ -129,7 +125,7 @@ public class BpdmService : IBpdmService
 
     public async Task<BpdmLegalEntityOutputData> FetchInputLegalEntity(string externalId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var data = Enumerable.Repeat(externalId, 1);
         var result = await httpClient.PostAsJsonAsync("output/business-partners/search", data, Options, cancellationToken)
@@ -154,7 +150,7 @@ public class BpdmService : IBpdmService
 
     public async Task<BpdmSharingState> GetSharingState(Guid applicationId, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var url = $"sharing-state?externalIds={applicationId}";
         var result = await httpClient.GetAsync(url, cancellationToken)

@@ -57,7 +57,7 @@ public class User
     [JsonPropertyName("access")]
     public UserAccess? Access { get; set; }
     [JsonPropertyName("attributes")]
-    public IDictionary<string, IEnumerable<string>>? Attributes { get; set; }
+    public IDictionary<string, IEnumerable<string>?>? Attributes { get; set; }
     [JsonPropertyName("clientConsents")]
     public IEnumerable<UserConsent>? ClientConsents { get; set; }
     [JsonPropertyName("clientRoles")]

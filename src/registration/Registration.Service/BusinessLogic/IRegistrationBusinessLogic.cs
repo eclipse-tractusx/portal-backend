@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 {
     public interface IRegistrationBusinessLogic
     {
-        Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken);
+        Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, CancellationToken cancellationToken);
         IAsyncEnumerable<string> GetClientRolesCompositeAsync();
         Task UploadDocumentAsync(Guid applicationId, IFormFile document, DocumentTypeId documentTypeId, CancellationToken cancellationToken);
 

@@ -124,7 +124,7 @@ public class RegistrationBusinessLogicTest
         });
         _fixture.Inject(options);
         _fixture.Inject(_mailingProcessCreation);
-        _fixture.Inject(A.Fake<IBpnAccess>());
+        _fixture.Inject(A.Fake<IBpdmAccessService>());
         _fixture.Inject(A.Fake<ILogger<RegistrationBusinessLogic>>());
 
         _options = _fixture.Create<IOptions<RegistrationSettings>>();
@@ -184,9 +184,8 @@ public class RegistrationBusinessLogicTest
     public async Task GetCompanyBpdmDetailDataByBusinessPartnerNumber_WithValidBpn_ReturnsExpected()
     {
         //Arrange
-        var bpnAccess = A.Fake<IBpnAccess>();
+        var bpnAccess = A.Fake<IBpdmAccessService>();
         var businessPartnerNumber = "THISBPNISVALID12";
-        var token = _fixture.Create<string>();
         var country = "XY";
 
         var uniqueIdSeed = _fixture
@@ -227,7 +226,7 @@ public class RegistrationBusinessLogicTest
                 .Create()))
             .With(x => x.LegalEntityAddress, bpdmAddress)
             .Create();
-        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, A<CancellationToken>._))
             .Returns(legalEntity);
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
                 A<IEnumerable<BpdmIdentifierId>>.That.Matches(ids =>
@@ -248,9 +247,9 @@ public class RegistrationBusinessLogicTest
 
         // Act
         var result = await sut
-            .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, token, CancellationToken.None);
+            .GetCompanyBpdmDetailDataByBusinessPartnerNumber(businessPartnerNumber, CancellationToken.None);
 
-        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, A<CancellationToken>._))
+        A.CallTo(() => bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _staticDataRepository.GetCountryAssignedIdentifiers(
                 A<IEnumerable<BpdmIdentifierId>>.That.Matches(ids =>
@@ -292,7 +291,7 @@ public class RegistrationBusinessLogicTest
             _mailingProcessCreation);
 
         // Act
-        Task Act() => sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", "justatoken", CancellationToken.None);
+        Task Act() => sut.GetCompanyBpdmDetailDataByBusinessPartnerNumber("NotLongEnough", CancellationToken.None);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
