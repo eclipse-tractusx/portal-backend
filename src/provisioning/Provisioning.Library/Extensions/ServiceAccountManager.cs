@@ -68,7 +68,7 @@ public partial class ProvisioningManager
     private async Task<(string ClientId, string Secret)> GetSharedIdpServiceAccountSecretAsync(string realm)
     {
         var clientId = GetServiceAccountClientId(realm);
-        var sharedIdp = _factory.CreateKeycloakClient("shared");
+        var sharedIdp = keycloakFactory.CreateKeycloakClient("shared");
         var internalClientId = await GetInternalClientIdOfSharedIdpServiceAccount(sharedIdp, clientId).ConfigureAwait(ConfigureAwaitOptions.None);
         var credentials = await sharedIdp.GetClientSecretAsync(MasterRealm, internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
         return new ValueTuple<string, string>(clientId, credentials.Value);

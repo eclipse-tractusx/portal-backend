@@ -1,5 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 BMW Group AG
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +18,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
-public class BpdmAccessSettings
+/// <summary>
+/// Settings used in business logic concerning connectors.
+/// </summary>
+public class BpdmServiceSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
+
+    public bool UseDimWallet { get; set; }
+
+    public bool StartSharingStateAsReady { get; set; }
 }

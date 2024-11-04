@@ -23,12 +23,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -50,7 +53,7 @@ public class UserBusinessLogic(
     IIdentityService identityService,
     IMailingProcessCreation mailingProcessCreation,
     ILogger<UserBusinessLogic> logger,
-    IBpnAccess bpnAccess,
+    IBpdmAccessService bpdmAccessService,
     IOptions<UserSettings> options) : IUserBusinessLogic
 {
     private readonly UserSettings _settings = options.Value;
@@ -267,74 +270,38 @@ public class UserBusinessLogic(
             details.Email);
     }
 
-    public async Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
+    public async Task AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken)
     {
         var companyId = _identityData.CompanyId;
+
+        var invalidBpns = businessPartnerNumbers.Where(bpn => bpn.Length > 20);
+        if (invalidBpns.Any())
+        {
+            throw new ControllerArgumentException($"BusinessPartnerNumbers {string.Join(",", invalidBpns)} must not exceed 20 characters");
+        }
+
         var (assignedBusinessPartnerNumbers, isValidUser) = await portalRepositories.GetInstance<IUserRepository>().GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidUser)
         {
             throw new NotFoundException($"user {userId} not found in company {companyId}");
         }
 
-        var iamUserId = await provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ??
-                        throw new ConflictException($"user {userId} not found in keycloak");
-
-        var (successfulBpns, unsuccessfulBpns) = await businessPartnerNumbers.AggregateAwait(
-            (SuccessfulBpns: ImmutableList.CreateBuilder<string>(), UnsuccessfulBpns: ImmutableList.CreateBuilder<UnsuccessfulBpns>()),
-            async (acc, bpn) =>
-            {
-                var (bpns, error) = await CompanyUsersBpnCheck(bpn, token, cancellationToken).ConfigureAwait(false);
-                if (error == null)
-                {
-                    acc.SuccessfulBpns.Add(bpns);
-                }
-                else
-                {
-                    acc.UnsuccessfulBpns.Add(new UnsuccessfulBpns(bpns, error.Message));
-                }
-                return acc;
-            },
-            acc => (acc.SuccessfulBpns.ToImmutable(), acc.UnsuccessfulBpns.ToImmutable()),
-            cancellationToken
-        ).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (successfulBpns.Count != 0)
+        Action<CompanyUserAssignedBusinessPartner> CreateProcess()
         {
-            await provisioningManager.AddBpnAttributetoUserAsync(iamUserId, successfulBpns).ConfigureAwait(false);
-            successfulBpns.Except(assignedBusinessPartnerNumbers).IfAny(businessPartnersToAdd =>
-                portalRepositories.GetInstance<IUserBusinessPartnerRepository>().CreateCompanyUserAssignedBusinessPartners(businessPartnersToAdd.Select(bpn => (userId, bpn))));
+            var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+            var processId = processStepRepository.CreateProcess(ProcessTypeId.USER_BPN).Id;
+            processStepRepository.CreateProcessStep(ProcessStepTypeId.CHECK_LEGAL_ENTITY_DATA, ProcessStepStatusId.TODO, processId);
+            return x => x.ProcessId = processId;
         }
 
-        await portalRepositories.SaveAsync();
-        return new CompanyUsersBpnDetails(successfulBpns, unsuccessfulBpns);
+        portalRepositories.GetInstance<IUserBusinessPartnerRepository>()
+            .CreateCompanyUserAssignedBusinessPartners(businessPartnerNumbers.Except(assignedBusinessPartnerNumbers).Select(bpn => (userId, bpn, CreateProcess())));
+
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private async ValueTask<(string bpns, Exception? error)> CompanyUsersBpnCheck(string bpn, string token, CancellationToken cancellationToken)
-    {
-        Exception? error = null;
-        try
-        {
-            if (bpn.Length > 20)
-            {
-                throw new ControllerArgumentException("BusinessPartnerNumbers must not exceed 20 characters");
-            }
-
-            var legalEntity = await bpnAccess.FetchLegalEntityByBpn(bpn, token, cancellationToken).ConfigureAwait(false);
-            if (!bpn.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
-            }
-        }
-        catch (Exception ex)
-        {
-            error = ex;
-        }
-
-        return (bpn, error);
-    }
-
-    public Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken) =>
-        AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, Enumerable.Repeat(businessPartnerNumber, 1), cancellationToken);
+    public Task AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber, CancellationToken cancellationToken) =>
+        AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, Enumerable.Repeat(businessPartnerNumber, 1), cancellationToken);
 
     public async Task<CompanyOwnUserDetails> GetOwnUserDetails()
     {
@@ -576,12 +543,10 @@ public class UserBusinessLogic(
                 new[] { UserStatusId.ACTIVE, UserStatusId.INACTIVE },
                 filter));
 
-    public async Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber)
+    public async Task DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber)
     {
         var userBusinessPartnerRepository = portalRepositories.GetInstance<IUserBusinessPartnerRepository>();
-
         var (isValidUser, isAssignedBusinessPartner, isSameCompany) = await userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(userId, _identityData.CompanyId, businessPartnerNumber.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None);
-
         if (!isValidUser)
         {
             throw new NotFoundException($"user {userId} does not exist");
@@ -597,12 +562,21 @@ public class UserBusinessLogic(
             throw new ForbiddenException($"userId {userId} and adminUserId {_identityData.IdentityId} do not belong to same company");
         }
 
-        var iamUserId = await provisioningManager.GetUserByUserName(userId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException($"user {userId} is not associated with a user in keycloak");
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+        var processId = processStepRepository.CreateProcess(ProcessTypeId.USER_BPN).Id;
+        processStepRepository.CreateProcessStep(ProcessStepTypeId.DELETE_BPN_FROM_CENTRAL_USER, ProcessStepStatusId.TODO, processId);
+        userBusinessPartnerRepository.AttachAndModifyCompanyUserAssignedBusinessPartner(userId, businessPartnerNumber, c => c.ProcessId = processId);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 
-        userBusinessPartnerRepository.DeleteCompanyUserAssignedBusinessPartner(userId, businessPartnerNumber.ToUpper());
+    public Task RetriggerUserBpnProcess(Guid processId, ProcessStepTypeId processStepTypeId)
+    {
+        var (processType, _) = ProcessTypeExtensions.GetProcessStepForRetrigger(processStepTypeId);
+        if (processType != ProcessTypeId.USER_BPN)
+        {
+            throw new ConflictException($"{processStepTypeId} can't be retriggered for Process {processId}");
+        }
 
-        await provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(iamUserId, businessPartnerNumber.ToUpper()).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        return await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return processStepTypeId.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
     }
 }

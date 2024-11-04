@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
@@ -32,8 +33,8 @@ public interface IUserBusinessLogic
     Task<Guid> CreateOwnCompanyIdpUserAsync(Guid identityProviderId, UserCreationInfoIdp userCreationInfo);
     Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(int page, int size, GetOwnCompanyUsersFilter filter);
     Task<CompanyUserDetailData> GetOwnCompanyUserDetailsAsync(Guid userId);
-    Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, string token, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken);
-    Task<CompanyUsersBpnDetails> AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string token, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task AddOwnCompanyUsersBusinessPartnerNumbersAsync(Guid userId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken);
+    Task AddOwnCompanyUsersBusinessPartnerNumberAsync(Guid userId, string businessPartnerNumber, CancellationToken cancellationToken);
     Task<CompanyOwnUserDetails> GetOwnUserDetails();
     Task<CompanyUserDetails> UpdateOwnUserDetails(Guid companyUserId, OwnCompanyUserEditableDetails ownCompanyUserEditableDetails);
 
@@ -46,5 +47,6 @@ public interface IUserBusinessLogic
     IAsyncEnumerable<Guid> DeleteOwnCompanyUsersAsync(IEnumerable<Guid> userIds);
     Task<bool> ExecuteOwnCompanyUserPasswordReset(Guid companyUserId);
     Task<Pagination.Response<CompanyAppUserDetails>> GetOwnCompanyAppUsersAsync(Guid appId, int page, int size, CompanyUserFilter filter);
-    Task<int> DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber);
+    Task DeleteOwnUserBusinessPartnerNumbersAsync(Guid userId, string businessPartnerNumber);
+    Task RetriggerUserBpnProcess(Guid processId, ProcessStepTypeId processStepTypeId);
 }

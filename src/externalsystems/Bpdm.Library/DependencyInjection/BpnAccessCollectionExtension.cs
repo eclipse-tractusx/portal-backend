@@ -28,22 +28,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
 public static class BpnAccessCollectionExtension
 {
-    public static IServiceCollection AddBpnAccess(this IServiceCollection services, IConfigurationSection configSection)
+    public static IServiceCollection AddBpnAccess(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<BpdmAccessSettings>()
-            .Bind(configSection)
-            .EnvironmentalValidation(configSection);
+            .Bind(section)
+            .EnvironmentalValidation(section);
+        services.AddTransient<LoggingHandler<BpdmAccessService>>();
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpdmAccessSettings>>();
         var baseAddress = settings.Value.BaseAddress;
-        services.AddTransient<LoggingHandler<BpnAccess>>();
-        services.AddHttpClient(nameof(BpnAccess), c =>
-            {
-                c.BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
-            })
-            .AddHttpMessageHandler<LoggingHandler<BpnAccess>>();
-        services.AddTransient<IBpnAccess, BpnAccess>();
+        services
+            .AddCustomHttpClientWithAuthentication<BpdmAccessService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
+        services.AddTransient<IBpdmAccessService, BpdmAccessService>();
 
         return services;
     }

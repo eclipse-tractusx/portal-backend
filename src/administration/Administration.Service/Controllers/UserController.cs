@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Identity;
 
@@ -261,11 +262,11 @@ public class UserController : ControllerBase
     [Authorize(Roles = "modify_user_account")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}/businessPartnerNumbers")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<CompanyUsersBpnDetails> AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken) =>
-        this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, token, businessPartnerNumbers, cancellationToken));
+    public Task AddOwnCompanyUserBusinessPartnerNumbers(Guid companyUserId, IEnumerable<string> businessPartnerNumbers, CancellationToken cancellationToken) =>
+        _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumbers, cancellationToken);
 
     /// <summary>
     /// Adds the given business partner number to the user for the given id.
@@ -284,13 +285,13 @@ public class UserController : ControllerBase
     [Authorize(Roles = "modify_user_account")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/users/{companyUserId}/businessPartnerNumbers/{businessPartnerNumber}")]
-    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status502BadGateway)]
-    public Task<CompanyUsersBpnDetails> AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber, CancellationToken cancellationToken) =>
-        this.WithBearerToken(token => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, token, businessPartnerNumber, cancellationToken));
+    public Task AddOwnCompanyUserBusinessPartnerNumber(Guid companyUserId, string businessPartnerNumber, CancellationToken cancellationToken) =>
+        _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(companyUserId, businessPartnerNumber, cancellationToken);
 
     /// <summary>
     /// Deletes the users with the given ids.
@@ -483,6 +484,28 @@ public class UserController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-    public Task<int> DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
+    public Task DeleteOwnCompanyUserBusinessPartnerNumber([FromRoute] Guid companyUserId, [FromRoute] string businessPartnerNumber) =>
         _logic.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber);
+
+    /// <summary>
+    /// Retriggers the last failed step
+    /// </summary>
+    /// <param name="processId" example="251e4596-5ff0-4176-b544-840b04ebeb93">Id of the process that should be triggered</param>
+    /// <param name="processStepTypeId" example="ProcessStepTypeId.DELETE_BPN_FROM_CENTRAL_USER">Id of the process step type which should be retriggered</param>
+    /// <returns>NoContent</returns>
+    /// Example: POST: api/user/{processId}/retrigger-user-bpn-process?processStepTypeId=904
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "modify_user_account")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("{processId}/retrigger-user-bpn-process")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerUserBpnProcess([FromRoute] Guid processId, [FromQuery] ProcessStepTypeId processStepTypeId)
+    {
+        await _logic.RetriggerUserBpnProcess(processId, processStepTypeId).ConfigureAwait(false);
+        return NoContent();
+    }
 }

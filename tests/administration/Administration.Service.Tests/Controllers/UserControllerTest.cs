@@ -69,16 +69,12 @@ public class UserControllerTest
     {
         //Arrange
         var bpns = _fixture.CreateMany<string>();
-        var data = _fixture.Create<CompanyUsersBpnDetails>();
-        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(A<Guid>._, A<string>._, A<IEnumerable<string>>._, CancellationToken.None))
-            .Returns(data);
 
         // Act
-        var result = await this._controller.AddOwnCompanyUserBusinessPartnerNumbers(_identity.IdentityId, bpns, CancellationToken.None);
+        await this._controller.AddOwnCompanyUserBusinessPartnerNumbers(_identity.IdentityId, bpns, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(A<Guid>._, A<string>._, A<IEnumerable<string>>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
-        result.Should().Be(data);
+        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumbersAsync(A<Guid>._, A<IEnumerable<string>>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -86,15 +82,11 @@ public class UserControllerTest
     {
         //Arrange
         var bpn = _fixture.Create<string>();
-        var data = _fixture.Create<CompanyUsersBpnDetails>();
-        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(A<Guid>._, A<string>._, A<string>._, CancellationToken.None))
-            .Returns(data);
 
         // Act
-        var result = await this._controller.AddOwnCompanyUserBusinessPartnerNumber(_identity.IdentityId, bpn, CancellationToken.None);
+        await this._controller.AddOwnCompanyUserBusinessPartnerNumber(_identity.IdentityId, bpn, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(A<Guid>._, A<string>._, A<string>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
-        result.Should().Be(data);
+        A.CallTo(() => _logic.AddOwnCompanyUsersBusinessPartnerNumberAsync(A<Guid>._, A<string>._, CancellationToken.None)).MustHaveHappenedOnceExactly();
     }
 }

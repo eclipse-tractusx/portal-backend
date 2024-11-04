@@ -27,6 +27,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -82,7 +84,8 @@ public class UserBusinessLogicTests
     private readonly Exception _error;
     private readonly UserSettings _settings;
     private readonly IIdentityService _identityService;
-    private readonly IBpnAccess _bpnAccess;
+    private readonly IBpdmAccessService _bpdmAccessService;
+    private readonly IPortalProcessStepRepository _processStepRepository;
 
     public UserBusinessLogicTests()
     {
@@ -98,6 +101,7 @@ public class UserBusinessLogicTests
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _notificationRepository = A.Fake<INotificationRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _companyUser = A.Fake<CompanyUser>();
         _offerRepository = A.Fake<IOfferRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
@@ -129,7 +133,7 @@ public class UserBusinessLogicTests
 
         _identity = A.Fake<IIdentityData>();
         _identityService = A.Fake<IIdentityService>();
-        _bpnAccess = A.Fake<IBpnAccess>();
+        _bpdmAccessService = A.Fake<IBpdmAccessService>();
 
         A.CallTo(() => _identity.IdentityId).Returns(_companyUserId);
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -149,6 +153,7 @@ public class UserBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INotificationRepository>()).Returns(_notificationRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     #region CreateOwnCompanyUsersAsync
@@ -1236,7 +1241,7 @@ public class UserBusinessLogicTests
     #region DeleteOwnUserBusinessPartnerNumbers
 
     [Fact]
-    public async Task GetOwnCompanyAppUsersAsync_WithNonExistingCompanyUser_ThrowsNotFoundException()
+    public async Task DeleteOwnUserBusinessPartnerNumbers_WithNonExistingCompanyUser_ThrowsNotFoundException()
     {
         // Arrange
         var companyUserId = Guid.NewGuid();
@@ -1258,7 +1263,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetOwnCompanyAppUsersAsync_WithUnassignedBusinessPartner_ThrowsForbiddenEception()
+    public async Task DeleteOwnUserBusinessPartnerNumbers_WithUnassignedBusinessPartner_ThrowsForbiddenEception()
     {
         // Arrange
         var companyUserId = _fixture.Create<Guid>();
@@ -1276,29 +1281,6 @@ public class UserBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Contain("is not assigned to user");
-    }
-
-    [Fact]
-    public async Task GetOwnCompanyAppUsersAsync_WithoutUserForBpn_ThrowsArgumentException()
-    {
-        // Arrange
-        var companyUserId = _fixture.Create<Guid>();
-        var businessPartnerNumber = _fixture.Create<string>();
-        A.CallTo(() => _identity.IdentityId).Returns(companyUserId);
-        A.CallTo(() => _identity.CompanyId).Returns(_adminCompanyId);
-        A.CallTo(() => _provisioningManager.GetUserByUserName(companyUserId.ToString()))
-            .Returns<string?>(null);
-        A.CallTo(() => _userBusinessPartnerRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(companyUserId, _adminCompanyId, businessPartnerNumber.ToUpper()))
-            .Returns((true, true, true));
-        A.CallTo(() => _portalRepositories.GetInstance<IUserBusinessPartnerRepository>()).Returns(_userBusinessPartnerRepository);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, null!, null!, A.Fake<IOptions<UserSettings>>());
-
-        // Act
-        async Task Act() => await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber);
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain("is not associated with a user in keycloak");
     }
 
     [Fact]
@@ -1323,7 +1305,7 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async Task GetOwnCompanyAppUsersAsync_WithValidData_ThrowsForbiddenException()
+    public async Task DeleteOwnUserBusinessPartnerNumbers_WithValidData_ThrowsForbiddenException()
     {
         // Arrange
         var companyUserId = _fixture.Create<Guid>();
@@ -1341,7 +1323,6 @@ public class UserBusinessLogicTests
         await sut.DeleteOwnUserBusinessPartnerNumbersAsync(companyUserId, businessPartnerNumber.ToUpper());
 
         // Assert
-        A.CallTo(() => _provisioningManager.DeleteCentralUserBusinessPartnerNumberAsync(iamUserId, businessPartnerNumber.ToUpper())).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
@@ -1463,59 +1444,53 @@ public class UserBusinessLogicTests
     public async Task AddOwnCompanyUsersBusinessPartnerNumbers_ReturnsExpected()
     {
         // Arrange
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
+        var cuAssigneBpns = new List<CompanyUserAssignedBusinessPartner>();
         var userId = _identity.IdentityId;
         var companyId = _identity.CompanyId;
-        var assignedBusinessPartnerNumbers = new[] { "THISBPNISVALID18" };
+        var assignedBusinessPartnerNumbers = new[] { "THISBPNISVALID11" };
         var businessPartnerNumbers = new[] {
             "THISBPNISVALID11",
             "THISBPNISVALID12",
             "THISBPNISVALID13",
             "THISBPNISVALID14",
             "THISBPNISVALID15",
-            "THISBPNISVALID16",
-            "THISBPNISVALID17",
-            "THISBPNISVALID18",
-            "THISISINVALIDBPNID111" };
-        var successfullBpns = new[] {
-            "THISBPNISVALID12",
-            "THISBPNISVALID13",
-            "THISBPNISVALID14",
-            "THISBPNISVALID16",
-            "THISBPNISVALID18" };
-        var token = _fixture.Create<string>();
-        foreach (var bpns in successfullBpns)
-        {
-            var legalEntity = _fixture.Build<BpdmLegalEntityDto>()
-                .With(x => x.Bpn, bpns)
-                .Create();
-            A.CallTo(() => _bpnAccess.FetchLegalEntityByBpn(bpns, token, A<CancellationToken>._))
-                .Returns(legalEntity);
-        }
-
+            "THISBPNISVALID16" };
         A.CallTo(() => _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId))
             .Returns((assignedBusinessPartnerNumbers, true));
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .Invokes((ProcessTypeId processTypeId) =>
+            {
+                processes.Add(new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid()));
+            });
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
+            .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
+            {
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+            });
+        A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber, Action<CompanyUserAssignedBusinessPartner> SetOptional)>>._))
+            .Invokes((IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber, Action<CompanyUserAssignedBusinessPartner> SetOptional)> parameter) =>
+                {
+                    cuAssigneBpns.AddRange(parameter.Select(x =>
+                    {
+                        var y = new CompanyUserAssignedBusinessPartner(x.CompanyUserId, x.BusinessPartnerNumber);
+                        x.SetOptional(y);
+                        return y;
+                    }));
+                });
         A.CallTo(() => _provisioningManager.GetUserByUserName(userId.ToString()))
             .Returns(_iamUserId);
-
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpnAccess, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpdmAccessService, _options);
 
         // Act
-        var result = await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, businessPartnerNumbers, CancellationToken.None);
+        await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, businessPartnerNumbers, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(A<Guid>._, A<Guid>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.GetUserByUserName(A<string>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _provisioningManager.AddBpnAttributetoUserAsync(A<string>._, A<IEnumerable<string>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _userBusinessPartnerRepository.CreateCompanyUserAssignedBusinessPartners(A<IEnumerable<(Guid, string)>>.That.Matches(x => x.Count() == 4))).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _bpnAccess.FetchLegalEntityByBpn(A<string>._, A<string>._, CancellationToken.None)).MustHaveHappened(8, Times.Exactly);
-        result.Should().NotBeNull();
-        result.SuccessfulBpns.Should().HaveCount(successfullBpns.Count());
-        result.UnsuccessfulBpns.Should().HaveCount(4).And.Satisfy(
-            x => x.Bpns == "THISBPNISVALID11" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.Bpns == "THISBPNISVALID15" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.Bpns == "THISBPNISVALID17" && x.ErrorMessage == "Bpdm did return incorrect bpn legal-entity-data",
-            x => x.Bpns == "THISISINVALIDBPNID111" && x.ErrorMessage == "BusinessPartnerNumbers must not exceed 20 characters"
-        );
+        processes.Should().HaveCount(businessPartnerNumbers.Length - 1);
+        processSteps.Should().HaveCount(businessPartnerNumbers.Length - 1);
+        cuAssigneBpns.Should().HaveCount(businessPartnerNumbers.Length - 1);
     }
 
     [Fact]
@@ -1524,14 +1499,13 @@ public class UserBusinessLogicTests
         // Arrange
         var userId = _identity.IdentityId;
         var companyId = _identity.CompanyId;
-        var businessPartnerNumbers = _fixture.CreateMany<string>();
-        var token = _fixture.Create<string>();
+        var businessPartnerNumbers = new[] { "THISBPNISVALID11", "THISBPNISVALID12" };
         A.CallTo(() => _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId))
             .Returns((Enumerable.Empty<string>(), false));
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpnAccess, _options);
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpdmAccessService, _options);
 
         // Act
-        async Task Act() => await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, businessPartnerNumbers, CancellationToken.None);
+        async Task Act() => await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, businessPartnerNumbers, CancellationToken.None);
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -1539,26 +1513,19 @@ public class UserBusinessLogicTests
     }
 
     [Fact]
-    public async Task AddOwnCompanyUsersBusinessPartnerNumbers_ConflictException()
+    public async Task AddOwnCompanyUsersBusinessPartnerNumbers_WithInvalidBpns_ThrowsControllerArgumentException()
     {
         // Arrange
         var userId = _identity.IdentityId;
-        var companyId = _identity.CompanyId;
-        var assignedBusinessPartnerNumbers = _fixture.CreateMany<string>();
-        var businessPartnerNumbers = _fixture.CreateMany<string>();
-        var token = _fixture.Create<string>();
-        A.CallTo(() => _userRepository.GetOwnCompanyUserWithAssignedBusinessPartnerNumbersUntrackedAsync(userId, companyId))
-            .Returns((assignedBusinessPartnerNumbers, true));
-        A.CallTo(() => _provisioningManager.GetUserByUserName(userId.ToString()))
-            .Returns((string)null!);
-        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpnAccess, _options);
+        var businessPartnerNumbers = new[] { "THISBPNISVALID11", "THISISINVALIDBPNID111" };
+        var sut = new UserBusinessLogic(_provisioningManager, null!, null!, null!, _portalRepositories, _identityService, null!, _logger, _bpdmAccessService, _options);
 
         // Act
-        async Task Act() => await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, token, businessPartnerNumbers, CancellationToken.None);
+        async Task Act() => await sut.AddOwnCompanyUsersBusinessPartnerNumbersAsync(userId, businessPartnerNumbers, CancellationToken.None);
 
         // Assert
-        var error = await Assert.ThrowsAsync<ConflictException>(Act);
-        error.Message.Should().Be($"user {userId} not found in keycloak");
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        error.Message.Should().Be($"BusinessPartnerNumbers THISISINVALIDBPNID111 must not exceed 20 characters");
     }
 
     #endregion
