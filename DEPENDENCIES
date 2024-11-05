@@ -11,9 +11,9 @@ nuget/nuget/-/Flurl.Http.Signed/4.0.2, MIT, approved, #16447
 nuget/nuget/-/Flurl.Signed/4.0.0, MIT, approved, #16448
 nuget/nuget/-/HtmlAgilityPack/1.11.67, MIT, approved, #9293
 nuget/nuget/-/Humanizer.Core/2.14.1, MIT, approved, #10060
-nuget/nuget/-/Json.More.Net/2.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
-nuget/nuget/-/JsonPointer.Net/4.0.0, MIT, approved, clearlydefined
-nuget/nuget/-/JsonSchema.Net/6.1.2, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #14591
+nuget/nuget/-/Json.More.Net/2.0.1.2, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
+nuget/nuget/-/JsonPointer.Net/5.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15172
+nuget/nuget/-/JsonSchema.Net/7.2.3, MIT AND CC-BY-SA-4.0 AND OFL-1.1, approved, #16329
 nuget/nuget/-/Laraue.EfCoreTriggers.Common/8.1.2, MIT, approved, #16234
 nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/8.1.2, MIT, approved, #16240
 nuget/nuget/-/MailKit/4.8.0, MIT AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust), approved, #16444
@@ -56,15 +56,17 @@ nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/6.9.0, MIT AND Apache-2.0, approved
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.9.0, MIT AND Apache-2.0, approved, #16820
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.9.0, MIT AND Apache-2.0, approved, #16818
 nuget/nuget/-/Swashbuckle.AspNetCore/6.9.0, MIT AND Apache-2.0, approved, #16816
-nuget/nuget/-/Testcontainers.PostgreSql/3.10.0, MIT, approved, #16241
-nuget/nuget/-/Testcontainers/3.10.0, MIT, approved, #16236
+nuget/nuget/-/Testcontainers.PostgreSql/4.0.0, MIT, approved, #17048
+nuget/nuget/-/Testcontainers/4.0.0, MIT, approved, #17049
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.4.1, MIT, approved, #3502
 nuget/nuget/-/coverlet.collector/6.0.2, MIT, approved, #10075
+nuget/nuget/-/xunit.abstractions/2.0.1, Apache-2.0, approved, clearlydefined
 nuget/nuget/-/xunit.abstractions/2.0.3, Apache-2.0, approved, clearlydefined
-nuget/nuget/-/xunit.analyzers/1.11.0, Apache-2.0 AND MIT, approved, #14197
-nuget/nuget/-/xunit.assert/2.7.0, Apache-2.0 AND MIT, approved, #13971
-nuget/nuget/-/xunit.core/2.7.0, Apache-2.0, approved, #13979
-nuget/nuget/-/xunit.extensibility.core/2.7.0, Apache-2.0 AND MIT, approved, #13974
-nuget/nuget/-/xunit.extensibility.execution/2.7.0, Apache-2.0, approved, #13977
+nuget/nuget/-/xunit.analyzers/1.16.0, Apache-2.0 AND MIT, approved, #16332
+nuget/nuget/-/xunit.assert/2.9.1, Apache-2.0, approved, #16331
+nuget/nuget/-/xunit.core/2.9.1, Apache-2.0, approved, #16330
+nuget/nuget/-/xunit.extensibility.core/2.2.0, Apache-2.0, approved, clearlydefined
+nuget/nuget/-/xunit.extensibility.core/2.9.1, Apache-2.0 AND MIT, approved, #16334
+nuget/nuget/-/xunit.extensibility.execution/2.9.1, Apache-2.0 AND MIT, approved, #16333
 nuget/nuget/-/xunit.runner.visualstudio/2.5.7, Apache-2.0 AND MIT, approved, #10065
-nuget/nuget/-/xunit/2.7.0, Apache-2.0 AND MIT, approved, #13969
+nuget/nuget/-/xunit/2.9.1, Apache-2.0 AND MIT, approved, #16327

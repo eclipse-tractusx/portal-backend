@@ -25,11 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Tests;
 
 public class CryptoHelperTests
 {
-    private readonly IFixture _fixture;
-    public CryptoHelperTests()
-    {
-        _fixture = new Fixture();
-    }
+    private readonly IFixture _fixture = new Fixture();
 
     [Theory]
     [InlineData(PaddingMode.ANSIX923)]
