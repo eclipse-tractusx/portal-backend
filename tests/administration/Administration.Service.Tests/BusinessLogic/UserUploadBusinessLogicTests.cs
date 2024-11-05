@@ -39,6 +39,7 @@ public class UserUploadBusinessLogicTests
 {
     private readonly IFixture _fixture;
     private readonly IUserProvisioningService _userProvisioningService;
+    private readonly IIdentityProviderProvisioningService _identityProviderProvisioningService;
     private readonly IOptions<UserSettings> _options;
     private readonly IFormFile _document;
     private readonly Guid _identityProviderId;
@@ -62,6 +63,7 @@ public class UserUploadBusinessLogicTests
         _random = new Random();
 
         _userProvisioningService = A.Fake<IUserProvisioningService>();
+        _identityProviderProvisioningService = A.Fake<IIdentityProviderProvisioningService>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
 
         _options = A.Fake<IOptions<UserSettings>>();
@@ -94,7 +96,7 @@ public class UserUploadBusinessLogicTests
     {
         SetupFakes([HeaderLine()]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -120,7 +122,7 @@ public class UserUploadBusinessLogicTests
             NextLine()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -147,7 +149,7 @@ public class UserUploadBusinessLogicTests
             NextLine()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         async Task Act() => await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -180,7 +182,7 @@ public class UserUploadBusinessLogicTests
                     .With(x => x.Error, detailError)
                     .Create());
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -222,7 +224,7 @@ public class UserUploadBusinessLogicTests
             NextLine()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -250,7 +252,7 @@ public class UserUploadBusinessLogicTests
             NextLine()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -280,7 +282,7 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatches(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .Throws(_error);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanyIdpUsersAsync(_identityProviderId, _document, CancellationToken.None);
 
@@ -304,7 +306,7 @@ public class UserUploadBusinessLogicTests
     {
         SetupFakes([HeaderLineSharedIdp()]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -328,7 +330,7 @@ public class UserUploadBusinessLogicTests
             NextLineSharedIdp()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -357,7 +359,7 @@ public class UserUploadBusinessLogicTests
             NextLineSharedIdp()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         async Task Act() => await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -383,7 +385,7 @@ public class UserUploadBusinessLogicTests
             NextLineSharedIdp(),
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -425,7 +427,7 @@ public class UserUploadBusinessLogicTests
                     .With(x => x.Error, detailError)
                     .Create());
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -465,7 +467,7 @@ public class UserUploadBusinessLogicTests
             NextLineSharedIdp()
         ]);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 
@@ -498,7 +500,7 @@ public class UserUploadBusinessLogicTests
         A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
             .Throws(_error);
 
-        var sut = new UserUploadBusinessLogic(_userProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
 
         var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
 

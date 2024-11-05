@@ -48,6 +48,7 @@ public class RegistrationBusinessLogic(
     IOptions<RegistrationSettings> settings,
     IBpnAccess bpnAccess,
     IUserProvisioningService userProvisioningService,
+    IIdentityProviderProvisioningService identityProviderProvisioningService,
     ILogger<RegistrationBusinessLogic> logger,
     IPortalRepositories portalRepositories,
     IApplicationChecklistCreationService checklistService,
@@ -254,7 +255,7 @@ public class RegistrationBusinessLogic(
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
 
         var companyApplicationData = await GetAndValidateApplicationData(applicationId, companyDetails, applicationRepository).ConfigureAwait(ConfigureAwaitOptions.None);
-
+        var existingCompanyName = companyApplicationData.Name;
         var addressId = CreateOrModifyAddress(companyApplicationData, companyDetails, companyRepository);
 
         ModifyCompany(addressId, companyApplicationData, companyDetails, companyRepository);
@@ -262,7 +263,10 @@ public class RegistrationBusinessLogic(
         companyRepository.CreateUpdateDeleteIdentifiers(companyDetails.CompanyId, companyApplicationData.UniqueIds, companyDetails.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));
 
         UpdateApplicationStatus(applicationId, companyApplicationData.ApplicationStatusId, UpdateApplicationSteps.CompanyWithAddress, applicationRepository, dateTimeProvider);
-
+        if (existingCompanyName != companyDetails.Name)
+        {
+            await identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(_identityData.CompanyId, companyDetails.Name).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -409,7 +413,7 @@ public class RegistrationBusinessLogic(
 
         var modified = await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var companyDisplayName = await userProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
+        var companyDisplayName = await identityProviderProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
         var mailParameters = ImmutableDictionary.CreateRange(new[]
         {
             KeyValuePair.Create("password", password),
