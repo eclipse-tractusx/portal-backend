@@ -318,5 +318,15 @@
     "user_role_id": "a53a95be-ea7b-4033-926c-26275dc16e0f",
     "language_short_name": "en",
     "description": "Reserviere und bearbeitete Golden Record Tasks im Schritt 'Pool'."
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53212",
+    "language_short_name": "en",
+    "description": "Create and manage BPN/DID records inside the service BDRS."
+  },
+  {
+    "user_role_id": "c01818be-4978-41f4-bf63-fa6d2de53212",
+    "language_short_name": "de",
+    "description": "Erstellen und verwalten Sie BPN/DID-Datensätze im BDRS Service."
   }
 ]

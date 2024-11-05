@@ -164,5 +164,13 @@
     "technical_user_type_id": 2,
     "technical_user_kind_id": 1,
     "client_client_id": "sa-cl25-cx-3"
+  },
+  {
+    "id": "b28aaf44-acd6-4b77-879b-398fdec28c8b",
+    "name": "sa-cl25-01",
+    "description": "This client/technical user will be used to communicate between portal and BDRS to store new BPNL/DID connections.",
+    "technical_user_type_id": 2,
+    "technical_user_kind_id": 1,
+    "client_client_id": "sa-cl25-01"
   }
 ]
