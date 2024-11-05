@@ -208,6 +208,7 @@ public class ConnectorsController(IConnectorsBusinessLogic logic)
     /// </summary>
     /// <param name="connectorId" example="5636F9B9-C3DE-4BA5-8027-00D17A2FECFB">Id of the connector to trigger the daps call.</param>
     /// <param name="data">The update data</param>
+    /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>NoContent Result.</returns>
     /// <remarks>Example: PUT: /api/administration/connectors/{connectorId}/connectorUrl</remarks>
     /// <response code="204">Url was successfully updated.</response>
@@ -224,9 +225,9 @@ public class ConnectorsController(IConnectorsBusinessLogic logic)
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data)
+    public async Task<NoContentResult> UpdateConnectorUrl([FromRoute] Guid connectorId, [FromBody] ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
-        await logic.UpdateConnectorUrl(connectorId, data)
+        await logic.UpdateConnectorUrl(connectorId, data, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
