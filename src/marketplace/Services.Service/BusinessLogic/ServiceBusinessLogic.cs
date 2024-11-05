@@ -210,8 +210,22 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<OfferProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId) =>
-        _offerService.GetOfferSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles, new WalletConfigData(_settings.IssuerDid, _settings.BpnDidResolverUrl, _settings.DecentralIdentityManagementAuthUrl));
+    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId)
+    {
+        var offerSubscriptionDetails = await _offerService.GetOfferSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles, new WalletConfigData(_settings.IssuerDid, _settings.BpnDidResolverUrl, _settings.DecentralIdentityManagementAuthUrl)).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new(
+            offerSubscriptionDetails.Id,
+            offerSubscriptionDetails.OfferSubscriptionStatus,
+            offerSubscriptionDetails.Name,
+            offerSubscriptionDetails.Customer,
+            offerSubscriptionDetails.Bpn,
+            offerSubscriptionDetails.Contact,
+            offerSubscriptionDetails.TechnicalUserData,
+            offerSubscriptionDetails.ConnectorData,
+            offerSubscriptionDetails.ProcessStepTypeId,
+            offerSubscriptionDetails.ExternalService
+        );
+    }
 
     /// <inheritdoc />
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId) =>

@@ -1327,7 +1327,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OfferProviderSubscriptionDetailData'
+                $ref: '#/components/schemas/ProviderSubscriptionDetailData'
         '403':
           description: User's company does not provide the service.
           content:
@@ -2031,44 +2031,6 @@ components:
             items:
               type: string
       additionalProperties: false
-    OfferProviderSubscriptionDetailData:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        offerSubscriptionStatus:
-          $ref: '#/components/schemas/OfferSubscriptionStatusId'
-        name:
-          type: string
-          nullable: true
-        customer:
-          type: string
-        bpn:
-          type: string
-          nullable: true
-        contact:
-          type: array
-          items:
-            type: string
-        technicalUserData:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
-        connectorData:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
-        tenantUrl:
-          type: string
-          nullable: true
-        appInstanceId:
-          type: string
-        processStepTypeId:
-          $ref: '#/components/schemas/ProcessStepTypeId'
-        externalService:
-          $ref: '#/components/schemas/SubscriptionExternalServiceData'
-      additionalProperties: false
     OfferSorting:
       enum:
         - DateAsc
@@ -2249,6 +2211,47 @@ components:
         - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
         - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
       type: string
+    ProviderSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the Offer
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          description: Name of the Offer
+          nullable: true
+        customer:
+          type: string
+          description: Name of the company subscribing the offer
+        bpn:
+          type: string
+          description: 'When called from /provider bpn of the company subscribing the offer, otherwise the provider company''s bpn'
+          nullable: true
+        contact:
+          type: array
+          items:
+            type: string
+          description: 'When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider'
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+          description: Information about the technical user
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+          description: ''
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+        externalService:
+          $ref: '#/components/schemas/SubscriptionExternalServiceData'
+      additionalProperties: false
+      description: Detail data for a offer subscription
     ServiceData:
       type: object
       properties:

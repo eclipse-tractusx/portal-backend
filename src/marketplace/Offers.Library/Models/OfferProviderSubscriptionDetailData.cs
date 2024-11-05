@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,46 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record SubscriptionTechnicalUserData(
-    Guid Id,
-    string? Name,
-    IEnumerable<string> Permissions
-);
-
-/// <summary>
-/// Detail data for a offer subscription
-/// </summary>
-/// <param name="Id">Id of the Offer</param>
-/// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
-/// <param name="Name">Name of the Offer</param>
-/// <param name="Provider">The provider company's name</param>
-/// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
-/// <param name="TechnicalUserData">Information about the technical user</param>
-public record SubscriberSubscriptionDetailData(
-    Guid Id,
-    OfferSubscriptionStatusId OfferSubscriptionStatus,
-    string? Name,
-    string Provider,
-    IEnumerable<string> Contact,
-    IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
-    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData
-);
-
-/// <summary>
-/// offer subscription assigned connector data details
-/// </summary>
-/// <param name="ConnectorId">Id of the connector</param>
-/// <param name="ConnectorName">Name of the connector</param>
-/// <param name="ConnectorUrl">Url of the connector</param>
-public record SubscriptionAssignedConnectorData(
-    [property: JsonPropertyName("id")] Guid ConnectorId,
-    [property: JsonPropertyName("name")] string ConnectorName,
-    [property: JsonPropertyName("endpoint")] string ConnectorUrl);
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Detail data for a offer subscription
@@ -71,7 +35,7 @@ public record SubscriptionAssignedConnectorData(
 /// <param name="TechnicalUserData">Information about the technical user</param>
 /// <param name="TenantUrl">Url of Tenant</param>
 /// <param name="AppInstanceId">Id of the app instance</param>
-public record OfferProviderSubscriptionDetail(
+public record OfferProviderSubscriptionDetailData(
     Guid Id,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
@@ -79,15 +43,17 @@ public record OfferProviderSubscriptionDetail(
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
+    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData,
     string? TenantUrl,
     string? AppInstanceId,
-    IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps,
-    IEnumerable<SubscriptionAssignedConnectorData> ConnectorData,
-    ExternalServiceData? ExternalServiceData
+    ProcessStepTypeId? ProcessStepTypeId,
+    SubscriptionExternalServiceData ExternalService
 );
-
-public record ExternalServiceData(
+public record SubscriptionExternalServiceData(
     [property: JsonPropertyName("trusted_issuer")] string TrustedIssuer,
     [property: JsonPropertyName("participant_id")] string? ParticipantId,
-    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string DecentralIdentityManagementServiceUrl
+    [property: JsonPropertyName("iatp_id")] string? IatpId,
+    [property: JsonPropertyName("did_resolver")] string DidResolver,
+    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string DecentralIdentityManagementAuthUrl,
+    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string? DecentralIdentityManagementServiceUrl
 );

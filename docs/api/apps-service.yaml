@@ -3430,6 +3430,7 @@ components:
           nullable: true
         appInstanceId:
           type: string
+          nullable: true
         processStepTypeId:
           $ref: '#/components/schemas/ProcessStepTypeId'
         externalService:
