@@ -21,7 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.IO.Tests;
 
 public class CancelableStreamTest
 {
-    private readonly IFixture _fixture;
     private readonly Stream _stream;
     private readonly Memory<byte> _memory;
     private readonly int _numBytesFirstRead;
@@ -32,24 +31,24 @@ public class CancelableStreamTest
 
     public CancelableStreamTest()
     {
-        _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
+        fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => fixture.Behaviors.Remove(b));
+        fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _stream = A.Fake<Stream>();
-        _memory = _fixture.Create<Memory<byte>>();
-        _numBytesFirstRead = _fixture.Create<int>();
-        _numBytesSecondRead = _fixture.Create<int>();
+        _memory = fixture.Create<Memory<byte>>();
+        _numBytesFirstRead = fixture.Create<int>();
+        _numBytesSecondRead = fixture.Create<int>();
         _getNumBytes = A.Fake<Func<int>>();
-        _sourceTokenCanceledException = _fixture.Create<OperationCanceledException>();
-        _otherTokenCanceledException = _fixture.Create<OperationCanceledException>();
+        _sourceTokenCanceledException = fixture.Create<OperationCanceledException>();
+        _otherTokenCanceledException = fixture.Create<OperationCanceledException>();
     }
 
     #region Tests
 
     [Fact]
-    public async void TestReadAsyncNoOtherTokenSuccess()
+    public async Task TestReadAsyncNoOtherTokenSuccess()
     {
         var (sut, source) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory);
@@ -60,7 +59,7 @@ public class CancelableStreamTest
     }
 
     [Fact]
-    public async void TestReadAsyncWithUncancelledOtherTokenSuccess()
+    public async Task TestReadAsyncWithUncancelledOtherTokenSuccess()
     {
         var (sut, source) = SetupForRead();
         using var firstSource = new CancellationTokenSource();
@@ -73,7 +72,7 @@ public class CancelableStreamTest
     }
 
     [Fact]
-    public async void TestReadAsyncSourceCancelledWithUncancelledOtherTokenSuccess()
+    public async Task TestReadAsyncSourceCancelledWithUncancelledOtherTokenSuccess()
     {
         var (sut, source) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory);
@@ -86,7 +85,7 @@ public class CancelableStreamTest
     }
 
     [Fact]
-    public async void TestReadAsyncWithCancelledOtherTokenThrows()
+    public async Task TestReadAsyncWithCancelledOtherTokenThrows()
     {
         var (sut, source) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory);
@@ -100,7 +99,7 @@ public class CancelableStreamTest
     }
 
     [Fact]
-    public async void TestReadAsyncSourceCancelledThrows()
+    public async Task TestReadAsyncSourceCancelledThrows()
     {
         var (sut, source) = SetupForRead();
         var firstResult = await sut.ReadAsync(_memory);

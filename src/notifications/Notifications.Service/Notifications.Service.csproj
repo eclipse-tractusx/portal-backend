@@ -19,16 +19,17 @@
 
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</AssemblyName>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <DockerfileContext>..\..\..</DockerfileContext>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <UserSecretsId>53be9d36-5a45-441f-8f48-772ae6e64ca2</UserSecretsId>
-        <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</RootNamespace>
+  <PropertyGroup>
+      <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</AssemblyName>
+      <RootNamespace>Org.Eclipse.TractusX.Portal.Backend.Notifications.Service</RootNamespace>
+      <TargetFramework>net8.0</TargetFramework>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+      <DockerfileContext>..\..\..</DockerfileContext>
+      <GenerateDocumentationFile>True</GenerateDocumentationFile>
+      <UserSecretsId>53be9d36-5a45-441f-8f48-772ae6e64ca2</UserSecretsId>
+      <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
   
     <Target Name="openapi" AfterTargets="Build">

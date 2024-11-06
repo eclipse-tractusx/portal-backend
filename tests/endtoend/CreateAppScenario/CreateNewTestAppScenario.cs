@@ -32,7 +32,7 @@ using Xunit.Abstractions;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 [assembly: TestCollectionOrderer(
     ordererTypeName: "Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.DisplayNameOrderer",
-    ordererAssemblyName: "EndToEnd.Tests")]
+    ordererAssemblyName: "Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests")]
 
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 

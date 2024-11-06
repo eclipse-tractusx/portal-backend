@@ -54,7 +54,7 @@ public class AsyncEnumerableStringStreamTest
     }
 
     [Fact]
-    public async void TestAsyncCopyToSuccess()
+    public async Task TestAsyncCopyToSuccess()
     {
         using var expected = GetExpected();
 
