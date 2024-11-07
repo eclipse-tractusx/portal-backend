@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JsonSchema.Net" Version="6.1.2" />
+    <PackageReference Include="JsonSchema.Net" Version="7.2.3" />
   </ItemGroup>
 
 </Project>

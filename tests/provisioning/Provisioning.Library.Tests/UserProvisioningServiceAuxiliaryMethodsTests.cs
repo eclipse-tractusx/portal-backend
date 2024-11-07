@@ -63,7 +63,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     #region GetCompanyNameIdpAliasData
 
     [Fact]
-    public async void TestCompanyNameIdpAliasDataFixtureSetup()
+    public async Task TestCompanyNameIdpAliasDataFixtureSetup()
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
@@ -73,7 +73,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestCompanyNameIdpAliaswithNullCompanyNameAndEmailDataFixtureSetup()
+    public async Task TestCompanyNameIdpAliaswithNullCompanyNameAndEmailDataFixtureSetup()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(_resultComposer.With(
@@ -93,7 +93,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestCompanyNameIdpAliasDataNotFound()
+    public async Task TestCompanyNameIdpAliasDataNotFound()
     {
         ((Guid, string?, string?), (Guid, string?, string?, string?), (string?, bool)) notfound = default;
 
@@ -109,7 +109,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestCompanyNameIdpAliasDataIdpAliasNullThrows()
+    public async Task TestCompanyNameIdpAliasDataIdpAliasNullThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliasUntrackedAsync(A<Guid>._, A<Guid>._))
             .Returns(_resultComposer.With(
@@ -128,7 +128,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestCompanyNameIdpAliasDataCompanyNameNullThrows()
+    public async Task TestCompanyNameIdpAliasDataCompanyNameNullThrows()
     {
         var companyId = _fixture.Create<Guid>();
 
@@ -154,7 +154,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     #region GetCompanyNameIdpAliasData
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataFixtureSetup()
+    public async Task TestGetCompanyNameSharedIdpAliasDataFixtureSetup()
     {
         var sut = new UserProvisioningService(null!, _portalRepositories);
 
@@ -164,7 +164,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
+    public async Task TestGetCompanyNameSharedIdpwithNullCompanyNameAndEmailAliasDataFixtureSetup()
     {
         // Arrange
         var data = (
@@ -185,8 +185,9 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
         result.Should().NotBeNull();
         result.NameCreatedBy.Should().Be("Dear User");
     }
+
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataNotFound()
+    public async Task TestGetCompanyNameSharedIdpAliasDataNotFound()
     {
         var notfound = default(((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>));
 
@@ -202,7 +203,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
+    public async Task TestGetCompanyNameSharedIdpAliasDataForApplicationIdNotFound()
     {
         var notfound = default(((Guid, string?, string?), (Guid, string?, string?, string?), IEnumerable<(Guid Id, string Alias)>));
 
@@ -220,7 +221,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
+    public async Task TestGetCompanyNameSharedIdpAliasDataNoIdpAliasThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, Enumerable.Empty<(Guid Id, string Alias)>()).Create());
@@ -234,7 +235,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
+    public async Task TestGetCompanyNameSharedIdpAliasDataMultipleIdpAliaseThrows()
     {
         A.CallTo(() => _identityProviderRepository.GetCompanyNameIdpAliaseUntrackedAsync(A<Guid>._, A<Guid?>._, A<IdentityProviderCategoryId>._, A<IdentityProviderTypeId>._))
             .Returns(_sharedIdpComposer.With(x => x.IdpAliase, _fixture.CreateMany<(Guid Id, string Alias)>(2)).Create());
@@ -248,7 +249,7 @@ public class UserProvisioningServiceAuxiliaryMethodsTests
     }
 
     [Fact]
-    public async void TestGetCompanyNameSharedIdpAliasDataCompanyNameNullThrows()
+    public async Task TestGetCompanyNameSharedIdpAliasDataCompanyNameNullThrows()
     {
         var companyId = _fixture.Create<Guid>();
 
