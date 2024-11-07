@@ -80,7 +80,7 @@ public class ConnectorsBusinessLogic(
 
         if (!result.IsProvidingOrHostCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
         }
 
         return result.ConnectorData;

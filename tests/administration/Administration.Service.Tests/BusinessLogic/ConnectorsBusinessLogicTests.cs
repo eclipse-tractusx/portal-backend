@@ -1277,7 +1277,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY.ToString());
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST.ToString());
     }
 
     [Fact]
