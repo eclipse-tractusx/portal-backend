@@ -249,7 +249,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Select(invitation => invitation.CompanyUser)
             .Where(companyUser =>
                 companyUser!.Identity!.UserStatusId == UserStatusId.ACTIVE &&
-                userRoleIds.Any(x => companyUser.Identity.IdentityAssignedRoles.Select(iar => iar.UserRoleId).Contains(x)))
+                userRoleIds.Any(x => !companyUser.Identity.IdentityAssignedRoles.Any(iar => iar.UserRoleId == x)))
             .Select(companyUser => new CompanyInvitedUserData(
                 companyUser!.Id,
                 companyUser.Identity!.IdentityAssignedRoles.Select(companyUserAssignedRole => companyUserAssignedRole.UserRoleId)))
