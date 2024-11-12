@@ -36,7 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 {
     private readonly IUserProvisioningService _userProvisioningService;
-    private readonly IIdentityProviderProvisioningService _identityProviderProvisioningServcie;
+    private readonly IIdentityProviderProvisioningService _identityProviderProvisioningService;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly UserSettings _settings;
     private readonly IIdentityData _identityData;
@@ -60,7 +60,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         IOptions<UserSettings> settings)
     {
         _userProvisioningService = userProvisioningService;
-        _identityProviderProvisioningServcie = identityProviderProvisioningService;
+        _identityProviderProvisioningService = identityProviderProvisioningService;
         _mailingProcessCreation = mailingProcessCreation;
         _identityData = identityService.IdentityData;
         _errorMessageService = errorMessageService;
@@ -83,7 +83,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
 
         var displayName = companyNameIdpAliasData.IsSharedIdp
             ? null
-            : await _identityProviderProvisioningServcie.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
+            : await _identityProviderProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
 
         var (numCreated, numLines, errors) = await CsvParser.ProcessCsvAsync(
             stream,
@@ -166,7 +166,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
         using var stream = document.OpenReadStream();
 
         var (companyNameIdpAliasData, nameCreatedBy) = await _userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
-        var displayName = await _identityProviderProvisioningServcie.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
+        var displayName = await _identityProviderProvisioningService.GetIdentityProviderDisplayName(companyNameIdpAliasData.IdpAlias).ConfigureAwait(ConfigureAwaitOptions.None) ?? companyNameIdpAliasData.IdpAlias;
 
         var validRoleData = new List<UserRoleData>();
 
