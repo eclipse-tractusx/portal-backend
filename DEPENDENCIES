@@ -6,7 +6,7 @@ nuget/nuget/-/Castle.Core/5.1.1, Apache-2.0, approved, #13966
 nuget/nuget/-/EFCore.NamingConventions/8.0.3, Apache-2.0, approved, #13983
 nuget/nuget/-/FakeItEasy/8.3.0, MIT, approved, #16328
 nuget/nuget/-/Fare/2.1.1, MIT, approved, clearlydefined
-nuget/nuget/-/FluentAssertions/6.12.1, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
+nuget/nuget/-/FluentAssertions/6.12.2, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
 nuget/nuget/-/Flurl.Http.Signed/4.0.2, MIT, approved, #16447
 nuget/nuget/-/Flurl.Signed/4.0.0, MIT, approved, #16448
 nuget/nuget/-/HtmlAgilityPack/1.11.67, MIT, approved, #9293
