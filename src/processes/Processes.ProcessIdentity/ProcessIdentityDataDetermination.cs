@@ -24,25 +24,21 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 
-public class ProcessIdentityDataDetermination : IProcessIdentityDataDetermination
+public class ProcessIdentityDataDetermination(
+    IPortalRepositories portalRepositories,
+    IProcessIdentityDataBuilder processIdentityDataBuilder)
+    : IProcessIdentityDataDetermination
 {
-    private readonly IIdentityRepository _identityRepository;
-    private readonly IProcessIdentityDataBuilder _processIdentityDataBuilder;
-
-    public ProcessIdentityDataDetermination(IPortalRepositories portalRepositories, IProcessIdentityDataBuilder processIdentityDataBuilder)
-    {
-        _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
-        _processIdentityDataBuilder = processIdentityDataBuilder;
-    }
+    private readonly IIdentityRepository _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
 
     /// <inheritdoc />
     public async Task GetIdentityData()
     {
         (IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
 
-        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(_processIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)) == default)
-            throw new ConflictException($"Identity {_processIdentityDataBuilder.IdentityId} could not be found");
+        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(processIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)) == default)
+            throw new ConflictException($"Identity {processIdentityDataBuilder.IdentityId} could not be found");
 
-        _processIdentityDataBuilder.AddIdentityData(identityData.IdentityTypeId, identityData.CompanyId);
+        processIdentityDataBuilder.AddIdentityData(identityData.IdentityTypeId, identityData.CompanyId);
     }
 }

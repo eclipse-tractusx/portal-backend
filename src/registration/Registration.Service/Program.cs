@@ -44,6 +44,7 @@ await WebAppHelper
         builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
         builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
         builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+            .AddTransient<IIdentityProviderProvisioningService, IdentityProviderProvisioningService>()
             .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
             .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
 

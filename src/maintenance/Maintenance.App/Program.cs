@@ -21,11 +21,17 @@
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 using Serilog;
 
@@ -41,8 +47,14 @@ try
                 .AddMaintenanceService()
                 .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
                 .AddBatchDelete(hostContext.Configuration.GetSection("BatchDelete"))
+                .AddTransient<ITokenService, TokenService>()
+                .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>()
+                .AddTransient<ICustodianService, CustodianService>()
+                .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
+                .AddTransient<IProcessIdentityDataDetermination, ProcessIdentityDataDetermination>()
                 .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"))
                 .AddDbAuditing()
+                .AddPortalRepositories(hostContext.Configuration)
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"))
                         .UsePostgreSqlTriggers());
