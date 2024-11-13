@@ -524,7 +524,10 @@ public class ServiceBusinessLogicTests
         // Arrange
         var offerId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<ProviderSubscriptionDetailData>();
+        var data = _fixture.Build<OfferProviderSubscriptionDetailData>()
+            .With(x => x.AppInstanceId, default(string?))
+            .With(x => x.TenantUrl, default(string?))
+            .Create();
         var settings = new ServiceSettings
         {
             CompanyAdminRoles = new[]
@@ -532,7 +535,7 @@ public class ServiceBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .Returns(data);
         var sut = new ServiceBusinessLogic(null!, _offerService, null!, null!, _identityService, Options.Create(settings));
 
@@ -540,7 +543,21 @@ public class ServiceBusinessLogicTests
         var result = await sut.GetSubscriptionDetailForProvider(offerId, subscriptionId);
 
         // Assert
-        result.Should().Be(data);
+        result.Should().Match<ProviderSubscriptionDetailData>(x =>
+            x.Id == data.Id &&
+            x.OfferSubscriptionStatus == data.OfferSubscriptionStatus &&
+            x.Name == data.Name &&
+            x.Customer == data.Customer &&
+            x.Bpn == data.Bpn &&
+            x.Contact.SequenceEqual(data.Contact) &&
+            x.TechnicalUserData.SequenceEqual(data.TechnicalUserData) &&
+            x.ConnectorData.SequenceEqual(data.ConnectorData) &&
+            x.ProcessStepTypeId == data.ProcessStepTypeId &&
+            x.ExternalService == data.ExternalService
+        );
+
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(offerId, subscriptionId, OfferTypeId.SERVICE, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion

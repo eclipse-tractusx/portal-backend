@@ -381,11 +381,11 @@ public class AppsController : ControllerBase
     [Authorize(Roles = "app_management")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{appId}/subscription/{subscriptionId}/provider")]
-    [ProducesResponseType(typeof(AppProviderSubscriptionDetailData), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfferProviderSubscriptionDetailData), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [PublicUrl(CompanyRoleId.APP_PROVIDER)]
-    public Task<AppProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
+    public Task<OfferProviderSubscriptionDetailData> GetSubscriptionDetailForProvider([FromRoute] Guid appId, [FromRoute] Guid subscriptionId) =>
         _appsBusinessLogic.GetSubscriptionDetailForProvider(appId, subscriptionId);
 
     /// <summary>

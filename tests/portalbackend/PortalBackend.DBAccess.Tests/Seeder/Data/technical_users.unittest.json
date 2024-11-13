@@ -1,14 +1,5 @@
 [
   {
-    "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2",
-    "name": "sa-test",
-    "description": "SA for offer subscription",
-    "technical_user_type_id": 2,
-    "technical_user_kind_id": 1,
-    "offer_subscription_id": "3DE6A31F-A5D1-4F60-AA3A-4B1A769BECBF",
-    "client_client_id":"sa-x-4"
-  },
-  {
     "id": "d0c8ae19-d4f3-49cc-9cb4-6c766d4680f3",
     "name": "sa-test",
     "description": "SA with offer subscription",

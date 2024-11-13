@@ -168,6 +168,15 @@ public class ServiceSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string DecentralIdentityManagementAuthUrl { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string IssuerDid { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = true)]
+    public string BpnDidResolverUrl { get; set; } = null!;
 }
 
 public static class ServiceSettingsExtension

@@ -292,9 +292,9 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(22);
+        result!.Count.Should().Be(21);
         result.Data.Should().HaveCount(10)
-            .And.AllSatisfy(x => x.Should().Match<Models.CompanyServiceAccountData>(y =>
+            .And.AllSatisfy(x => x.Should().Match<CompanyServiceAccountData>(y =>
                 y.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 y.UserStatusId == UserStatusId.ACTIVE))
             .And.BeInAscendingOrder(x => x.Name)

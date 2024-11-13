@@ -495,7 +495,7 @@ public class AppBusinessLogicTests
         // Arrange
         var appId = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
-        var data = _fixture.Create<AppProviderSubscriptionDetailData>();
+        var data = _fixture.Create<OfferProviderSubscriptionDetailData>();
         var settings = new AppsSettings
         {
             CompanyAdminRoles = new[]
@@ -503,7 +503,7 @@ public class AppBusinessLogicTests
                 new UserRoleConfig("ClientTest", new[] {"Test"})
             }
         };
-        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .Returns(data);
         var sut = new AppsBusinessLogic(null!, null!, _offerService, null!, Options.Create(settings), _identityService);
 
@@ -512,7 +512,7 @@ public class AppBusinessLogicTests
 
         // Assert
         result.Should().Be(data);
-        A.CallTo(() => _offerService.GetAppSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
+        A.CallTo(() => _offerService.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._, A<WalletConfigData>._))
             .MustHaveHappenedOnceExactly();
     }
 
