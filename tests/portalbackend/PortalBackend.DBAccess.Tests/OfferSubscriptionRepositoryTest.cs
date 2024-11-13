@@ -122,13 +122,13 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("ac1cf001-7fbc-1f2f-817f-bce058020006")).ToListAsync();
+        var result = await sut.GetAllBusinessAppDataForUserIdAsync(new("8b42e6de-7b59-4217-a63c-198e83d93776")).ToListAsync();
 
         // Assert
-        result.Should().NotBeNullOrEmpty();
-        result.Should().HaveCount(1);
-        result.First().SubscriptionUrl.Should().Be("https://ec-qas.d13fe27.kyma.ondemand.com");
-        result.First().OfferId.Should().Be(new Guid("a16e73b9-5277-4b69-9f8d-3b227495dfea"));
+        result.Should().ContainSingle().Which.Should().Match<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)>(x =>
+            x.SubscriptionUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
+            x.OfferId == new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b")
+        );
     }
 
     #endregion
@@ -246,7 +246,30 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     #region GetOfferSubscriptionDetailForProviderAsync
 
     [Fact]
-    public async Task GetOfferSubscriptionDetailForProviderAsync_ReturnsExpected()
+    public async Task GetOfferSubscriptionDetailForAppProviderAsync_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetOfferSubscriptionDetailsForProviderAsync(new Guid("ac1cf001-7fbc-1f2f-817f-bce05744000b"), new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"), OfferTypeId.APP, new[] { new Guid("7410693c-c893-409e-852f-9ee886ce94a6") });
+
+        // Assert
+        result.Exists.Should().BeTrue();
+        result.IsUserOfCompany.Should().BeTrue();
+        result.Details.Should().NotBeNull().And.Match<OfferProviderSubscriptionDetail>(x =>
+            x.Name == "Project Implementation: Earth Commerce" &&
+            x.Customer == "Bayerische Motorenwerke AG" &&
+            x.Bpn == "BPNL00000003AYRE" &&
+            x.Contact.SequenceEqual(new[] { "test@email.com" }) &&
+            x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
+            x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
+            x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com" &&
+            x.ProcessSteps.Count() == 0);
+    }
+
+    [Fact]
+    public async Task GetOfferSubscriptionDetailForServiceProviderAsync_ReturnsExpected()
     {
         // Arrange
         var (sut, _) = await CreateSut();
@@ -262,8 +285,8 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.Customer == "CX-Operator" &&
             x.Contact.SequenceEqual(new[] { "tobeadded@cx.com" }) &&
             x.OfferSubscriptionStatus == OfferSubscriptionStatusId.ACTIVE &&
-            x.TenantUrl == "https://ec-qas.d13fe27.kyma.ondemand.com" &&
-            x.AppInstanceId == "https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com" &&
+            x.TenantUrl == null &&
+            x.AppInstanceId == null &&
             x.ProcessSteps.Count() == 3 &&
             x.ProcessSteps.Count(y => y.ProcessStepTypeId == ProcessStepTypeId.AWAIT_START_AUTOSETUP && y.ProcessStepStatusId == ProcessStepStatusId.TODO) == 1);
     }

@@ -166,9 +166,10 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
     /// <inheritdoc />
     public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
         dbContext.CompanyUsers.AsNoTracking()
-            .Where(user => user.Id == userId)
+            .Where(user => user.Id == userId && user.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)
             .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
-                subscription.Offer!.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(cu => cu.IdentityId == user.Id && cu.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)) &&
+                subscription.Offer!.OfferTypeId == OfferTypeId.APP &&
+                subscription.Offer.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(iar => iar.IdentityId == userId)) &&
                 subscription.AppSubscriptionDetail!.AppInstance != null &&
                 subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
             .Select(offerSubscription => new ValueTuple<Guid, Guid, string?, string, Guid, string>(

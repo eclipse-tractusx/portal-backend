@@ -56,16 +56,20 @@ public class OfferSubscriptionViewTests : IAssemblyFixture<TestDbFixture>
     public async Task OfferSubscriptionView_GetSpecific_ReturnsExpected()
     {
         // Arrange
-        var subscriptionId = new Guid("3de6a31f-a5d1-4f60-aa3a-4b1a769becbf");
+        var subscriptionId = new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552");
         var sut = await CreateContext();
 
         // Act
-        var result = await sut.OfferSubscriptionView.SingleOrDefaultAsync(x => x.SubscriptionId == subscriptionId);
-        result.Should().NotBeNull();
-        result!.SubscriptionId.Should().Be(subscriptionId);
-        result.OfferTypeId.Should().Be(OfferTypeId.SERVICE);
-        result.TechnicalUser.Should().Be(new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f2"));
-        result.AppInstance.Should().Be(new Guid("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5b"));
+        var result = await sut.OfferSubscriptionView.Where(x => x.SubscriptionId == subscriptionId).ToListAsync();
+        result.Should().HaveCount(2)
+            .And.AllSatisfy(x =>
+                x.Should().Match<PortalEntities.Views.OfferSubscriptionView>(x =>
+                    x.SubscriptionId == subscriptionId &&
+                    x.OfferTypeId == OfferTypeId.APP &&
+                    x.AppInstance == new Guid("ab25c218-9ab3-4f1a-b6f4-6394fbc33c5a")))
+            .And.Satisfy(
+                x => x.TechnicalUser == new Guid("93eecd4e-ca47-4dd2-85bf-775ea72eb000"),
+                x => x.TechnicalUser == new Guid("d0c8ae19-d4f3-49cc-9cb4-6c766d4680f3"));
     }
 
     #endregion

@@ -268,7 +268,7 @@ public class ServiceControllerTest
         // Arrange
         var serviceId = _fixture.Create<Guid>();
         var subscriptionId = _fixture.Create<Guid>();
-        var data = _fixture.Create<OfferProviderSubscriptionDetailData>();
+        var data = _fixture.Create<ProviderSubscriptionDetailData>();
         A.CallTo(() => _logic.GetSubscriptionDetailForProvider(serviceId, subscriptionId))
             .Returns(data);
 
