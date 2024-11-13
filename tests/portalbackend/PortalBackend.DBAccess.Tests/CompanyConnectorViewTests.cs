@@ -46,7 +46,7 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
 
         // Act
         var result = await sut.CompanyConnectorView.ToListAsync();
-        result.Should().HaveCount(10);
+        result.Should().HaveCount(11);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class CompanyConnectorViewTests : IAssemblyFixture<TestDbFixture>
         result!.CompanyId.Should().Be(companyId);
         result.CompanyName.Should().Be("CX-Test-Access");
         result.ConnectorStatus.Should().Be("PENDING");
-        result.ConnectorUrl.Should().Be("www.google.de");
+        result.ConnectorUrl.Should().Be("www.connector123.de");
     }
 
     private async Task<PortalDbContext> CreateContext()

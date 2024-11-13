@@ -376,7 +376,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
             x.ConnectorData.SequenceEqual(new[]{ new SubscriptionAssignedConnectorData(
                 new Guid("bd644d9c-ca12-4488-ae38-6eb902c9bec0"),
                 "Test Connector 123",
-                "www.google.de")}));
+                "www.connector123.de")}));
     }
 
     [Fact]
