@@ -20,25 +20,18 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-public class ProcessIdentityDataDetermination(
-    IPortalRepositories portalRepositories,
-    IProcessIdentityDataBuilder processIdentityDataBuilder)
-    : IProcessIdentityDataDetermination
+public class IdentityProviderProvisioningService(IPortalRepositories portalRepositories, IProvisioningManager provisioningManager) : IIdentityProviderProvisioningService
 {
-    private readonly IIdentityRepository _identityRepository = portalRepositories.GetInstance<IIdentityRepository>();
+    public Task<string?> GetIdentityProviderDisplayName(string idpAlias) =>
+        provisioningManager.GetCentralIdentityProviderDisplayName(idpAlias);
 
-    /// <inheritdoc />
-    public async Task GetIdentityData()
+    public async Task UpdateCompanyNameInSharedIdentityProvider(Guid companyId, string companyName)
     {
-        (IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
-
-        if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(processIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)) == default)
-            throw new ConflictException($"Identity {processIdentityDataBuilder.IdentityId} could not be found");
-
-        processIdentityDataBuilder.AddIdentityData(identityData.IdentityTypeId, identityData.CompanyId);
+        var idpAlias = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetSharedIdentityProviderIamAliasDataUntrackedAsync(companyId).ConfigureAwait(false) ?? throw new ConflictException($"company {companyId} is not associated with any shared idp");
+        await provisioningManager.UpdateSharedIdentityProviderAsync(idpAlias, companyName).ConfigureAwait(false);
+        await provisioningManager.UpdateOrCreateCentralIdentityProviderOrganisationMapperAsync(idpAlias, companyName).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

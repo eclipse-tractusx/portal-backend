@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,18 +17,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-/// <summary>
-/// View model for connectors.
-/// </summary>
-public record ConnectorUpdateInformation(
-    ConnectorStatusId Status,
-    ConnectorTypeId Type,
-    bool IsHostCompany,
-    string ConnectorUrl,
-    string? Bpn,
-    Guid? SelfDescriptionDocumentId,
-    Guid? SelfDescriptionCompanyDocumentId);
+public interface IIdentityProviderProvisioningService
+{
+    Task<string?> GetIdentityProviderDisplayName(string idpAlias);
+    Task UpdateCompanyNameInSharedIdentityProvider(Guid companyId, string companyName);
+}
