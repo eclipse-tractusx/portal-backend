@@ -63,6 +63,9 @@ jobs:
           vuln-type: "os,library"
           skip-files: "/src/portalbackend/PortalBackend.Migrations/Seeder/Data/documents.consortia.json"
           timeout: "3600s"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
@@ -95,6 +98,10 @@ jobs:
           format: "sarif"
           output: "trivy-results3.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -127,6 +134,10 @@ jobs:
           format: "sarif"
           output: "trivy-results4.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -159,6 +170,10 @@ jobs:
           format: "sarif"
           output: "trivy-results5.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -191,6 +206,10 @@ jobs:
           format: "sarif"
           output: "trivy-results6.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -223,6 +242,10 @@ jobs:
           format: "sarif"
           output: "trivy-results7.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -255,6 +278,10 @@ jobs:
           format: "sarif"
           output: "trivy-results8.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -287,6 +314,10 @@ jobs:
           format: "sarif"
           output: "trivy-results9.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -319,6 +350,10 @@ jobs:
           format: "sarif"
           output: "trivy-results10.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
@@ -351,7 +386,10 @@ jobs:
           format: "sarif"
           output: "trivy-results11.sarif"
           vuln-type: "os,library"
-
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@f779452ac5af1c261dce0346a8f964149f49322b # v3.26.13
@@ -383,6 +421,10 @@ jobs:
           format: "sarif"
           output: "trivy-results12.sarif"
           vuln-type: "os,library"
+          severity: "CRITICAL,HIGH" # While vulnerabilities of all severities are reported in the SARIF output, the exit code and workflow failure are triggered only by these specified severities (CRITICAL or HIGH).
+          hide-progress: false
+          exit-code: "1" # Trivy exits with code 1 if vulnerabilities are found, causing the workflow step to fail.
+          limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
