@@ -130,9 +130,10 @@ public interface IServiceBusinessLogic
     /// <summary>
     /// Retrieves subscription statuses of subscribed Service of the provided user's company.
     /// </summary>
-    /// <param name ="page">page</param>
-    /// <param name ="size">size</param>
-    /// <param name="statusId"></param>
+    /// <param name="page">page</param>
+    /// <param name="size">size</param>
+    /// <param name="statusId">optional status to filter by</param>
+    /// <param name="name">optional name to filter by</param>
     /// <returns>Returns the details of the subscription status for Service user</returns>
     Task<Pagination.Response<OfferSubscriptionStatusDetailData>> GetCompanySubscribedServiceSubscriptionStatusesForUserAsync(int page, int size, OfferSubscriptionStatusId? statusId, string? name);
 

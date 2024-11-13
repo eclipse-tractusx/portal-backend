@@ -6,14 +6,14 @@ nuget/nuget/-/Castle.Core/5.1.1, Apache-2.0, approved, #13966
 nuget/nuget/-/EFCore.NamingConventions/8.0.3, Apache-2.0, approved, #13983
 nuget/nuget/-/FakeItEasy/8.3.0, MIT, approved, #16328
 nuget/nuget/-/Fare/2.1.1, MIT, approved, clearlydefined
-nuget/nuget/-/FluentAssertions/6.12.1, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
+nuget/nuget/-/FluentAssertions/6.12.2, MIT AND Apache-2.0 AND BSD-3-Clause AND CC-BY-3.0-US AND (GPL-2.0-only OR MIT) AND OFL-1.1 AND WTFPL, approved, #13976
 nuget/nuget/-/Flurl.Http.Signed/4.0.2, MIT, approved, #16447
 nuget/nuget/-/Flurl.Signed/4.0.0, MIT, approved, #16448
 nuget/nuget/-/HtmlAgilityPack/1.11.67, MIT, approved, #9293
 nuget/nuget/-/Humanizer.Core/2.14.1, MIT, approved, #10060
-nuget/nuget/-/Json.More.Net/2.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
-nuget/nuget/-/JsonPointer.Net/4.0.0, MIT, approved, clearlydefined
-nuget/nuget/-/JsonSchema.Net/6.1.2, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #14591
+nuget/nuget/-/Json.More.Net/2.0.1.2, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
+nuget/nuget/-/JsonPointer.Net/5.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15172
+nuget/nuget/-/JsonSchema.Net/7.2.3, MIT AND CC-BY-SA-4.0 AND OFL-1.1, approved, #16329
 nuget/nuget/-/Laraue.EfCoreTriggers.Common/8.1.2, MIT, approved, #16234
 nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/8.1.2, MIT, approved, #16240
 nuget/nuget/-/MailKit/4.8.0, MIT AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust), approved, #16444
@@ -35,19 +35,20 @@ nuget/nuget/-/RestAssured.Net/4.4.0, Apache-2.0, approved, #16855
 nuget/nuget/-/SSH.NET/2023.0.0, MIT AND (MIT AND MS-PL) AND ISC, approved, #13965
 nuget/nuget/-/Serilog.AspNetCore/8.0.3, Apache-2.0 AND MIT, approved, #13967
 nuget/nuget/-/Serilog.Enrichers.CorrelationId/3.0.1, MIT, approved, clearlydefined
-nuget/nuget/-/Serilog.Enrichers.Environment/2.3.0, Apache-2.0, approved, #13959
-nuget/nuget/-/Serilog.Enrichers.Process/2.0.2, Apache-2.0, approved, clearlydefined
+nuget/nuget/-/Serilog.Enrichers.Environment/3.0.1, Apache-2.0, approved, #17052
+nuget/nuget/-/Serilog.Enrichers.Process/3.0.0, Apache-2.0, approved, #17053
 nuget/nuget/-/Serilog.Enrichers.Sensitive/1.7.3, MIT, approved, clearlydefined
-nuget/nuget/-/Serilog.Enrichers.Thread/3.1.0, Apache-2.0, approved, clearlydefined
+nuget/nuget/-/Serilog.Enrichers.Thread/4.0.0, Apache-2.0, approved, #17050
 nuget/nuget/-/Serilog.Extensions.Hosting/8.0.0, Apache-2.0, approved, #13962
 nuget/nuget/-/Serilog.Extensions.Logging/8.0.0, Apache-2.0, approved, #13985
 nuget/nuget/-/Serilog.Formatting.Compact/2.0.0, Apache-2.0, approved, #13981
 nuget/nuget/-/Serilog.Settings.Configuration/8.0.4, Apache-2.0, approved, #13988
 nuget/nuget/-/Serilog.Sinks.Console/5.0.0, Apache-2.0, approved, #13980
-nuget/nuget/-/Serilog.Sinks.Console/5.0.1, Apache-2.0, approved, #13980
+nuget/nuget/-/Serilog.Sinks.Console/6.0.0, Apache-2.0, approved, #17054
 nuget/nuget/-/Serilog.Sinks.Debug/2.0.0, Apache-2.0, approved, clearlydefined
 nuget/nuget/-/Serilog.Sinks.File/5.0.0, Apache-2.0, approved, #11116
 nuget/nuget/-/Serilog/3.1.1, Apache-2.0, approved, #13978
+nuget/nuget/-/Serilog/4.1.0, Apache-2.0, approved, #17051
 nuget/nuget/-/SharpZipLib/1.4.2, MIT AND GFDL-1.3-or-later AND (Apache-2.0 AND MIT) AND WTFPL AND bzip2-1.0.6 AND LicenseRef-Permissive-license-with-conditions AND LicenseRef-Permission-Notice, approved, #10058
 nuget/nuget/-/SshNet.Security.Cryptography/1.3.0, MIT, approved, clearlydefined
 nuget/nuget/-/Stubble.Core/1.10.8, MIT AND BSD-2-Clause, approved, #9297
@@ -56,15 +57,15 @@ nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/6.9.0, MIT AND Apache-2.0, approved
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/6.9.0, MIT AND Apache-2.0, approved, #16820
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerUI/6.9.0, MIT AND Apache-2.0, approved, #16818
 nuget/nuget/-/Swashbuckle.AspNetCore/6.9.0, MIT AND Apache-2.0, approved, #16816
-nuget/nuget/-/Testcontainers.PostgreSql/3.10.0, MIT, approved, #16241
-nuget/nuget/-/Testcontainers/3.10.0, MIT, approved, #16236
-nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.4.1, MIT, approved, #3502
+nuget/nuget/-/Testcontainers.PostgreSql/4.0.0, MIT, approved, #17048
+nuget/nuget/-/Testcontainers/4.0.0, MIT, approved, #17049
+nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.6.0, MIT, approved, #17055
 nuget/nuget/-/coverlet.collector/6.0.2, MIT, approved, #10075
 nuget/nuget/-/xunit.abstractions/2.0.3, Apache-2.0, approved, clearlydefined
-nuget/nuget/-/xunit.analyzers/1.11.0, Apache-2.0 AND MIT, approved, #14197
-nuget/nuget/-/xunit.assert/2.7.0, Apache-2.0 AND MIT, approved, #13971
-nuget/nuget/-/xunit.core/2.7.0, Apache-2.0, approved, #13979
-nuget/nuget/-/xunit.extensibility.core/2.7.0, Apache-2.0 AND MIT, approved, #13974
-nuget/nuget/-/xunit.extensibility.execution/2.7.0, Apache-2.0, approved, #13977
-nuget/nuget/-/xunit.runner.visualstudio/2.5.7, Apache-2.0 AND MIT, approved, #10065
-nuget/nuget/-/xunit/2.7.0, Apache-2.0 AND MIT, approved, #13969
+nuget/nuget/-/xunit.analyzers/1.16.0, Apache-2.0 AND MIT, approved, #16332
+nuget/nuget/-/xunit.assert/2.9.2, Apache-2.0, approved, #16331
+nuget/nuget/-/xunit.core/2.9.2, Apache-2.0, approved, #16330
+nuget/nuget/-/xunit.extensibility.core/2.9.2, Apache-2.0 AND MIT, approved, #16334
+nuget/nuget/-/xunit.extensibility.execution/2.9.2, Apache-2.0 AND MIT, approved, #16333
+nuget/nuget/-/xunit.runner.visualstudio/2.8.2, Apache-2.0 AND MIT, approved, #15181
+nuget/nuget/-/xunit/2.9.2, Apache-2.0 AND MIT, approved, #16327

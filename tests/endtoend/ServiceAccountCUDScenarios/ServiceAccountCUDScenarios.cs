@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
 [Trait("Category", "Portal")]
 [TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer",
-    "EndToEnd.Tests")]
+    "Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests")]
 [Collection("Portal")]
 public class ServiceAccountCUDScenarios : EndToEndTestBase
 {
