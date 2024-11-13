@@ -4,6 +4,19 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.3.0-RC2
+
+### Change
+
+* **Connectors**: enhanced PUT api/administration/Connectors/{connectorId}/connectorUrl endpoint logic [#1094](https://github.com/eclipse-tractusx/portal-backend/pull/1094)
+
+### Bugfixes
+
+* **Application Activation**
+  * fixed initial roles not being added to invited users [#1135](https://github.com/eclipse-tractusx/portal-backend/pull/1135)
+* **Registration**
+  * fixed company name change not reflecting consistently [#1010](https://github.com/eclipse-tractusx/portal-backend/pull/1010), [#1145](https://github.com/eclipse-tractusx/portal-backend/pull/1145), [#1147](https://github.com/eclipse-tractusx/portal-backend/pull/1147)
+
 ## 2.3.0-RC1
 
 ### Bugfixes
