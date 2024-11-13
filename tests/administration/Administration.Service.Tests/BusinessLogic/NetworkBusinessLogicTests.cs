@@ -363,6 +363,7 @@ public class NetworkBusinessLogicTests
         var data = new PartnerRegistrationData(
             Guid.NewGuid().ToString(),
             "Test N2N",
+            null,
             Bpn,
             "Munich",
             "Street",
@@ -398,6 +399,7 @@ public class NetworkBusinessLogicTests
         var data = new PartnerRegistrationData(
             Guid.NewGuid().ToString(),
             "Test N2N",
+            "N2N",
             Bpn,
             "Munich",
             "Street",
@@ -438,6 +440,7 @@ public class NetworkBusinessLogicTests
         var data = new PartnerRegistrationData(
             Guid.NewGuid().ToString(),
             "Test N2N",
+            null,
             Bpn,
             "Munich",
             "Street",
@@ -522,6 +525,7 @@ public class NetworkBusinessLogicTests
         companies.Should().ContainSingle()
             .Which.Should().Match<Company>(x =>
                 x.Name == data.Name &&
+                x.Shortname == data.ShortName &&
                 x.CompanyStatusId == CompanyStatusId.PENDING);
         processes.Should().ContainSingle()
             .Which.Should().Match<Process>(
@@ -572,6 +576,7 @@ public class NetworkBusinessLogicTests
         var data = new PartnerRegistrationData(
             Guid.NewGuid().ToString(),
             "Test N2N",
+            "N2N",
             businessPartnerNumber,
             "Munich",
             "Street",
@@ -661,6 +666,7 @@ public class NetworkBusinessLogicTests
         companies.Should().ContainSingle()
             .Which.Should().Match<Company>(x =>
                 x.Name == data.Name &&
+                x.Shortname == data.ShortName &&
                 x.CompanyStatusId == CompanyStatusId.PENDING);
         processes.Should().ContainSingle()
             .Which.Should().Match<Process>(x =>
