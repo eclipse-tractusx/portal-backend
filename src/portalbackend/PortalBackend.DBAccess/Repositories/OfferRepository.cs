@@ -68,6 +68,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
         dbContext.Offers.AsNoTracking()
             .AsSplitQuery()
             .Where(offer => offer.DateReleased.HasValue && offer.DateReleased <= DateTime.UtcNow && offer.OfferTypeId == OfferTypeId.APP && offer.OfferStatusId == OfferStatusId.ACTIVE)
+            .OrderByDescending(x => x.DateReleased)
             .Select(a => new ActiveAppData(
                 a.Id,
                 a.Name,
