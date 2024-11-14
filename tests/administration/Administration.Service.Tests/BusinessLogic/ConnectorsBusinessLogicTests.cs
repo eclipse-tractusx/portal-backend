@@ -1261,7 +1261,7 @@ public class ConnectorsBusinessLogicTests
 
     #endregion
 
-    #region GetCompanyConnectorData
+    #region GetCompanyConnectorData   
 
     [Fact]
     public async Task GetCompanyConnectorData_WithInvalid_ThrowsForbiddenException()
@@ -1277,7 +1277,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY.ToString());
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST.ToString());
     }
 
     [Fact]
@@ -1286,7 +1286,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
-            .Returns<(ConnectorData, bool)>(default);
+           .Returns<(ConnectorData, bool)>(default);
 
         // Act
         async Task Act() => await _logic.GetCompanyConnectorData(connectorId);
@@ -1305,7 +1305,7 @@ public class ConnectorsBusinessLogicTests
             .With(x => x.Name, "Test Connector")
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorByIdForCompany(connectorId, _identity.CompanyId))
-            .Returns((connectorData, true));
+             .Returns((connectorData, true));
 
         // Act
         var result = await _logic.GetCompanyConnectorData(connectorId);
