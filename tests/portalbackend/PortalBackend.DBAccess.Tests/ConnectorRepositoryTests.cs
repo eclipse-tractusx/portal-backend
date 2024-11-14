@@ -159,21 +159,24 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #region GetConnectorByIdForIamUser
 
-    [Fact]
-    public async Task GetConnectorByIdForIamUser_ReturnsExpectedAppCount()
+    [Theory]
+    [InlineData("7e86a0b8-6903-496b-96d1-0ef508206839", "41fd2ab8-71cd-4546-9bef-a388d91b2542", true)]
+    [InlineData("7e86a0b8-6903-496b-96d1-0ef508206839", "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87", true)]
+    [InlineData("7e86a0b8-6903-496b-96d1-0ef508206839", "deadbeef-dead-beef-dead-beefdeadbeef", false)]
+    public async Task GetConnectorByIdForIamUser_ReturnsExpected(Guid connectorId, Guid companyId, bool isProviderOrHost)
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetConnectorByIdForCompany(new Guid("7e86a0b8-6903-496b-96d1-0ef508206833"), _userCompanyId);
+        var result = await sut.GetConnectorByIdForCompany(connectorId, companyId);
 
         // Assert
         result.Should().NotBeNull();
-        result.IsProvidingOrHostCompany.Should().BeTrue();
-        result.ConnectorData.Name.Should().Be("Test Connector 1");
+        result.IsProvidingOrHostCompany.Should().Be(isProviderOrHost);
+        result.ConnectorData.Name.Should().Be("Test Connector 2");
         result.ConnectorData.TechnicalUser.Should().BeNull();
-        result.ConnectorData.ConnectorUrl.Should().Be("www.connector1.de");
+        result.ConnectorData.ConnectorUrl.Should().Be("www.connector2.de");
     }
 
     [Fact]
@@ -187,20 +190,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().Be(default);
-    }
-
-    [Fact]
-    public async Task GetConnectorByIdForIamUser_WithoutMatchingUser_ReturnsIsProviderUserFalse()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut();
-
-        // Act
-        var result = await sut.GetConnectorByIdForCompany(new Guid("5aea3711-cc54-47b4-b7eb-ba9f3bf1cb15"), Guid.NewGuid());
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsProvidingOrHostCompany.Should().BeFalse();
     }
 
     #endregion
