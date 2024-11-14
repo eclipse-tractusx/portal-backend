@@ -442,7 +442,10 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result?.IsProviderCompany.Should().BeTrue();
+        if (result != null)
+        {
+            result.IsProviderCompany.Should().BeTrue();
+        }
     }
 
     [Fact]
@@ -456,7 +459,10 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result?.IsProviderCompany.Should().BeFalse();
+        if (result != null)
+        {
+            result.IsProviderCompany.Should().BeFalse();
+        }
     }
 
     #endregion
