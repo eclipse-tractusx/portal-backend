@@ -2396,6 +2396,10 @@ components:
         price:
           type: string
           description: Pricing information of the app.
+        providerUri:
+          type: string
+          description: Provider's homepage url or marketing url
+          nullable: true
         offerSubscriptionDetailData:
           type: array
           items:

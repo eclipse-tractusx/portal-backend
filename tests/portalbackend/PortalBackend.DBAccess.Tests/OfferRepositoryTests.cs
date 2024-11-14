@@ -450,6 +450,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
                 x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 1,
                 x => technicalUserRoleDatas.Single(t => t.TechnicalUserProfileId == x.TechnicalUserProfileId).UserRoles.Count() == 2);
         offerDetail.LeadPictureId.Should().Be(new Guid("9685f744-9d90-4102-a949-fcd0bb86f951"));
+        offerDetail.ProviderUri.Should().Be("https://google.com");
     }
 
     #endregion
