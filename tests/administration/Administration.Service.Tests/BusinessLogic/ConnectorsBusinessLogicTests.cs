@@ -1186,7 +1186,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
