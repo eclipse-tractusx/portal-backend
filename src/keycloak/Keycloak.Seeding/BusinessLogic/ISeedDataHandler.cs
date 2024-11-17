@@ -49,6 +49,9 @@ public interface ISeedDataHandler
 
     IEnumerable<(string ClientId, IEnumerable<ClientScopeMappingModel> ClientScopeMappingModels)> ClientScopeMappings { get; }
 
+    IEnumerable<(string ProviderType, ComponentModel ComponentModel)> RealmComponents { get; }
+    IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> RealmLocalizations { get; }
+
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
 
     string GetIdOfClient(string clientId);

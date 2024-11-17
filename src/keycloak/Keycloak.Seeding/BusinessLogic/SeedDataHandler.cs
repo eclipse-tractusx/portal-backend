@@ -125,6 +125,16 @@ public class SeedDataHandler : ISeedDataHandler
         get => _keycloakRealm?.ClientScopeMappings?.FilterNotNullValues().Select(x => (x.Key, x.Value)) ?? Enumerable.Empty<(string, IEnumerable<ClientScopeMappingModel>)>();
     }
 
+    public IEnumerable<(string ProviderType, ComponentModel ComponentModel)> RealmComponents
+    {
+        get => _keycloakRealm?.Components?.FilterNotNullValues().SelectMany(x => x.Value.Select(v => (x.Key, v))) ?? Enumerable.Empty<(string, ComponentModel)>();
+    }
+
+    public IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> RealmLocalizations
+    {
+        get => _keycloakRealm?.LocalizationTexts?.FilterNotNullValues().Select(x => (x.Key, x.Value.Select(kvp => kvp))) ?? Enumerable.Empty<(string, IEnumerable<KeyValuePair<string, string>>)>();
+    }
+
     public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)
     {
         var clientIds = new Dictionary<string, string>();

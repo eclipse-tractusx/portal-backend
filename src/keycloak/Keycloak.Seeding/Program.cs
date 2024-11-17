@@ -45,6 +45,8 @@ try
                 .AddTransient<IClientScopesUpdater, ClientScopesUpdater>()
                 .AddTransient<IAuthenticationFlowsUpdater, AuthenticationFlowsUpdater>()
                 .AddTransient<IClientScopeMapperUpdater, ClientScopeMapperUpdater>()
+                .AddTransient<ILocalizationsUpdater, LocalizationsUpdater>()
+                .AddTransient<IUserProfileUpdater, UserProfileUpdater>()
                 .AddTransient<IKeycloakFactory, KeycloakFactory>()
                 .ConfigureKeycloakSettingsMap(hostContext.Configuration.GetSection("Keycloak"))
                 .AddTransient<IKeycloakSeeder, KeycloakSeeder>()

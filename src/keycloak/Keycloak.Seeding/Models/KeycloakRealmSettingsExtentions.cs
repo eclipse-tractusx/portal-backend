@@ -86,6 +86,7 @@ public static class KeycloakRealmSettingsExtentions
             OtpPolicyPeriod = keycloakRealmSettings.OtpPolicyPeriod,
             OtpSupportedApplications = keycloakRealmSettings.OtpSupportedApplications,
             PasswordPolicy = keycloakRealmSettings.PasswordPolicy,
+            LocalizationTexts = keycloakRealmSettings.LocalizationTexts,
             WebAuthnPolicyRpEntityName = keycloakRealmSettings.WebAuthnPolicyRpEntityName,
             WebAuthnPolicySignatureAlgorithms = keycloakRealmSettings.WebAuthnPolicySignatureAlgorithms,
             WebAuthnPolicyRpId = keycloakRealmSettings.WebAuthnPolicyRpId,
@@ -269,6 +270,7 @@ public static class KeycloakRealmSettingsExtentions
     private static ClientScopeMappingModel ToModel(ClientScopeMappingSettings clientScopeMappingSettings) =>
         new(clientScopeMappingSettings.Client,
             clientScopeMappingSettings.Roles);
+
     private static KeyValuePair<string, IEnumerable<ClientScopeMappingModel>?> ToModel(ClientScopeMappingSettingsEntry clientScopeMappingSettingsEntry) =>
         KeyValuePair.Create(
             clientScopeMappingSettingsEntry.ClientId ?? throw new ConfigurationException("clientScopeMappingsEntry ClientId name must not be null"),

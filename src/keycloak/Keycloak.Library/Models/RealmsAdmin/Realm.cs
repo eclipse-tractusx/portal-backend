@@ -176,4 +176,8 @@ public class Realm
     public bool? UserManagedAccessAllowed { get; set; }
     [JsonPropertyName("passwordPolicy")]
     public string? PasswordPolicy { get; set; }
+    [JsonPropertyName("defaultLocale")]
+    public string? DefaultLocale { get; set; }
+    [JsonPropertyName("localizationTexts")]
+    public IDictionary<string, IDictionary<string, string>?>? LocalizationTexts { get; set; }
 }

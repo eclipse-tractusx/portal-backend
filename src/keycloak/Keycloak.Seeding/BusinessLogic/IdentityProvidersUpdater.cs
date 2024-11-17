@@ -27,23 +27,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class IdentityProvidersUpdater : IIdentityProvidersUpdater
+public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
+    : IIdentityProvidersUpdater
 {
-    private readonly IKeycloakFactory _keycloakFactory;
-    private readonly ISeedDataHandler _seedData;
-
-    public IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
-    {
-        _keycloakFactory = keycloakFactory;
-        _seedData = seedDataHandler;
-    }
-
     public async Task UpdateIdentityProviders(string keycloakInstanceName, CancellationToken cancellationToken)
     {
-        var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-        var realm = _seedData.Realm;
+        var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
+        var realm = seedDataHandler.Realm;
 
-        foreach (var updateIdentityProvider in _seedData.IdentityProviders)
+        foreach (var updateIdentityProvider in seedDataHandler.IdentityProviders)
         {
             if (updateIdentityProvider.Alias == null)
                 throw new ConflictException($"identityProvider alias must not be null: {updateIdentityProvider.InternalId} {updateIdentityProvider.DisplayName}");
@@ -64,7 +56,7 @@ public class IdentityProvidersUpdater : IIdentityProvidersUpdater
                 await keycloak.CreateIdentityProviderAsync(realm, identityProvider, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
 
-            var updateMappers = _seedData.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
+            var updateMappers = seedDataHandler.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
             var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

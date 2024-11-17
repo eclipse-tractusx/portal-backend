@@ -94,6 +94,7 @@ public class KeycloakRealmSettings
     [DistinctValues]
     public IEnumerable<string>? OtpSupportedApplications { get; set; }
     public string? PasswordPolicy { get; set; }
+    public IDictionary<string, IDictionary<string, string>?>? LocalizationTexts { get; set; }
     public string? WebAuthnPolicyRpEntityName { get; set; }
     [DistinctValues]
     public IEnumerable<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
