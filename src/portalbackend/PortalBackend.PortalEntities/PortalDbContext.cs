@@ -221,12 +221,12 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Agreement>(entity =>
         {
             entity.HasOne(d => d.AgreementCategory)
-                .WithMany(p => p!.Agreements)
+                .WithMany(p => p.Agreements)
                 .HasForeignKey(d => d.AgreementCategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.IssuerCompany)
-                .WithMany(p => p!.Agreements)
+                .WithMany(p => p.Agreements)
                 .HasForeignKey(d => d.IssuerCompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -242,12 +242,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.AgreementId, e.CompanyRoleId });
 
             entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.AgreementAssignedCompanyRoles)
+                .WithMany(p => p.AgreementAssignedCompanyRoles)
                 .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.CompanyRole)
-                .WithMany(p => p!.AgreementAssignedCompanyRoles!)
+                .WithMany(p => p.AgreementAssignedCompanyRoles)
                 .HasForeignKey(d => d.CompanyRoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -257,12 +257,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.AgreementId, e.OfferId });
 
             entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.AgreementAssignedOffers)
+                .WithMany(p => p.AgreementAssignedOffers)
                 .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Offer)
-                .WithMany(p => p!.AgreementAssignedOffers!)
+                .WithMany(p => p.AgreementAssignedOffers)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -272,7 +272,7 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.AgreementId, e.OfferTypeId });
 
             entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.AgreementAssignedOfferTypes)
+                .WithMany(p => p.AgreementAssignedOfferTypes)
                 .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -294,12 +294,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.ConsentId, e.OfferId });
 
             entity.HasOne(d => d.Consent)
-                .WithMany(p => p!.ConsentAssignedOffers)
+                .WithMany(p => p.ConsentAssignedOffers)
                 .HasForeignKey(d => d.ConsentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Offer)
-                .WithMany(p => p!.ConsentAssignedOffers!)
+                .WithMany(p => p.ConsentAssignedOffers)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -307,14 +307,14 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Offer>(entity =>
         {
             entity.HasOne(d => d.ProviderCompany)
-                .WithMany(p => p!.ProvidedOffers);
+                .WithMany(p => p.ProvidedOffers);
 
             entity.HasOne(x => x.SalesManager)
-                .WithMany(x => x!.SalesManagerOfOffers)
+                .WithMany(x => x.SalesManagerOfOffers)
                 .HasForeignKey(x => x.SalesManagerId);
 
             entity.HasOne(x => x.OfferType)
-                .WithMany(x => x!.Offers)
+                .WithMany(x => x.Offers)
                 .HasForeignKey(x => x.OfferTypeId);
 
             entity.HasMany(p => p.Companies)
@@ -495,12 +495,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { AppId = e.OfferId, e.LanguageShortName });
 
             entity.HasOne(d => d.Offer)
-                .WithMany(p => p!.OfferDescriptions)
+                .WithMany(p => p.OfferDescriptions)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Language)
-                .WithMany(p => p!.AppDescriptions)
+                .WithMany(p => p.AppDescriptions)
                 .HasForeignKey(d => d.LanguageShortName)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -517,7 +517,7 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { AppId = e.OfferId, e.Name });
 
             entity.HasOne(d => d.Offer)
-                .WithMany(p => p!.Tags)
+                .WithMany(p => p.Tags)
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -926,22 +926,22 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Consent>(entity =>
         {
             entity.HasOne(d => d.Agreement)
-                .WithMany(p => p!.Consents)
+                .WithMany(p => p.Consents)
                 .HasForeignKey(d => d.AgreementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Company)
-                .WithMany(p => p!.Consents)
+                .WithMany(p => p.Consents)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.CompanyUser)
-                .WithMany(p => p!.Consents)
+                .WithMany(p => p.Consents)
                 .HasForeignKey(d => d.CompanyUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.ConsentStatus)
-                .WithMany(p => p!.Consents)
+                .WithMany(p => p.Consents)
                 .HasForeignKey(d => d.ConsentStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -953,12 +953,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.ConsentId, e.OfferSubscriptionId });
 
             entity.HasOne(d => d.Consent)
-                .WithMany(p => p!.ConsentAssignedOfferSubscriptions)
+                .WithMany(p => p.ConsentAssignedOfferSubscriptions)
                 .HasForeignKey(d => d.ConsentId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.OfferSubscription)
-                .WithMany(p => p!.ConsentAssignedOfferSubscriptions)
+                .WithMany(p => p.ConsentAssignedOfferSubscriptions)
                 .HasForeignKey(d => d.OfferSubscriptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -998,12 +998,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.CountryAlpha2Code, e.UniqueIdentifierId });
 
             entity.HasOne(d => d.Country)
-                .WithMany(p => p!.CountryAssignedIdentifiers)
+                .WithMany(p => p.CountryAssignedIdentifiers)
                 .HasForeignKey(d => d.CountryAlpha2Code)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.UniqueIdentifier)
-                .WithMany(p => p!.CountryAssignedIdentifiers)
+                .WithMany(p => p.CountryAssignedIdentifiers)
                 .HasForeignKey(d => d.UniqueIdentifierId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -1033,7 +1033,7 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<IamIdentityProvider>()
             .HasOne(d => d.IdentityProvider)
-                .WithOne(p => p!.IamIdentityProvider!)
+                .WithOne(p => p.IamIdentityProvider!)
                 .HasForeignKey<IamIdentityProvider>(d => d.IdentityProviderId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -1075,12 +1075,12 @@ public class PortalDbContext : DbContext
         modelBuilder.Entity<Invitation>(entity =>
         {
             entity.HasOne(d => d.CompanyUser)
-                .WithMany(p => p!.Invitations)
+                .WithMany(p => p.Invitations)
                 .HasForeignKey(d => d.CompanyUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.InvitationStatus)
-                .WithMany(p => p!.Invitations)
+                .WithMany(p => p.Invitations)
                 .HasForeignKey(d => d.InvitationStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -1236,12 +1236,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.CompanyId, e.UniqueIdentifierId });
 
             entity.HasOne(d => d.Company)
-                .WithMany(p => p!.CompanyIdentifiers)
+                .WithMany(p => p.CompanyIdentifiers)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.UniqueIdentifier)
-                .WithMany(p => p!.CompanyIdentifiers)
+                .WithMany(p => p.CompanyIdentifiers)
                 .HasForeignKey(d => d.UniqueIdentifierId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -1255,13 +1255,13 @@ public class PortalDbContext : DbContext
 
         modelBuilder.Entity<Process>()
             .HasOne(d => d.ProcessType)
-            .WithMany(p => p!.Processes)
+            .WithMany(p => p.Processes)
             .HasForeignKey(d => d.ProcessTypeId)
             .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<ProcessStep>()
             .HasOne(d => d.Process)
-            .WithMany(p => p!.ProcessSteps)
+            .WithMany(p => p.ProcessSteps)
             .HasForeignKey(d => d.ProcessId)
             .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -1343,12 +1343,12 @@ public class PortalDbContext : DbContext
             entity.HasKey(e => new { e.TechnicalUserProfileId, e.UserRoleId });
 
             entity.HasOne(d => d.TechnicalUserProfile)
-                .WithMany(p => p!.TechnicalUserProfileAssignedUserRoles)
+                .WithMany(p => p.TechnicalUserProfileAssignedUserRoles)
                 .HasForeignKey(d => d.TechnicalUserProfileId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.UserRole)
-                .WithMany(p => p!.TechnicalUserProfileAssignedUserRole)
+                .WithMany(p => p.TechnicalUserProfileAssignedUserRole)
                 .HasForeignKey(d => d.UserRoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
