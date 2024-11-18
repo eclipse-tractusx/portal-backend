@@ -45,7 +45,7 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     strategy:
       matrix:
-        dotnet-version: [ '8.0' ]
+        dotnet-version: [ '9.0' ]
 
     steps:
       - name: Checkout

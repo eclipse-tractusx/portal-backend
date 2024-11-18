@@ -92,7 +92,7 @@ public class CancelableStreamTest
         firstResult.Should().Be(_numBytesFirstRead);
 
         var exception = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await sut.ReadAsync(_memory, new CancellationToken(true))
+            await sut.ReadExactlyAsync(_memory, new CancellationToken(true))
         );
         exception.Should().Be(_otherTokenCanceledException);
         source.Dispose();
@@ -107,7 +107,7 @@ public class CancelableStreamTest
 
         source.Cancel();
         var exception = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await sut.ReadAsync(_memory)
+            await sut.ReadExactlyAsync(_memory)
         );
         exception.Should().Be(_sourceTokenCanceledException);
         source.Dispose();
