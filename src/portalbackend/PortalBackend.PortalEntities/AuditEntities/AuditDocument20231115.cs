@@ -45,6 +45,8 @@ public class AuditDocument20231115 : IAuditEntityV1
 
     public DocumentStatusId? DocumentStatusId { get; set; }
 
+    public long? DocumentSize { get; set; }
+
     public Guid? CompanyUserId { get; set; }
     public DateTimeOffset? DateLastChanged { get; set; }
     public Guid? LastEditorId { get; private set; }

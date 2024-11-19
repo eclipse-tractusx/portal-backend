@@ -707,14 +707,14 @@ public class OfferServiceTests
             {
                 initial = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Initialize?.Invoke(document);
                         return document;
                     }
                 ).ToImmutableArray();
                 modified = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Modify(document);
                         return document;
                     }
@@ -978,7 +978,7 @@ public class OfferServiceTests
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 =>
             {
-                var document = new Document(docId, null!, null!, null!, default, default, default, default);
+                var document = new Document(docId, null!, null!, null!, default, default, default, default, default);
                 initialize?.Invoke(document);
                 modify(document);
             });
@@ -991,14 +991,14 @@ public class OfferServiceTests
             {
                 initial = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Initialize?.Invoke(document);
                         return document;
                     }
                 ).ToImmutableArray();
                 modified = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Modify(document);
                         return document;
                     }
@@ -1144,14 +1144,14 @@ public class OfferServiceTests
             {
                 initial = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Initialize?.Invoke(document);
                         return document;
                     }
                 ).ToImmutableArray();
                 modified = data.Select(x =>
                     {
-                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                        var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                         x.Modify(document);
                         return document;
                     }

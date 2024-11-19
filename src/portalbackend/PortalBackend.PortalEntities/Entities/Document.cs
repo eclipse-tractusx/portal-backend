@@ -41,7 +41,7 @@ public class Document : IAuditableV1, IBaseEntity
         CompanyCertificates = new HashSet<CompanyCertificate>();
     }
 
-    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId)
+    public Document(Guid id, byte[] documentContent, byte[] documentHash, string documentName, MediaTypeId mediaTypeId, DateTimeOffset dateCreated, DocumentStatusId documentStatusId, DocumentTypeId documentTypeId, long documentSize)
         : this()
     {
         Id = id;
@@ -52,6 +52,7 @@ public class Document : IAuditableV1, IBaseEntity
         DocumentStatusId = documentStatusId;
         DocumentTypeId = documentTypeId;
         MediaTypeId = mediaTypeId;
+        DocumentSize = documentSize;
     }
 
     public Guid Id { get; private set; }
@@ -84,6 +85,8 @@ public class Document : IAuditableV1, IBaseEntity
     public virtual DocumentType? DocumentType { get; set; }
     public virtual MediaType? MediaType { get; set; }
     public virtual DocumentStatus? DocumentStatus { get; set; }
+
+    public long DocumentSize { get; set; }
 
     /// <summary>
     /// Mapping to an optional the connector

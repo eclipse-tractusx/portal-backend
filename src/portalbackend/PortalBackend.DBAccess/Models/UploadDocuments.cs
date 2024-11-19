@@ -19,4 +19,5 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record UploadDocuments(Guid DocumentId, string DocumentName);
+public record UploadDocuments(Guid DocumentId, string DocumentName, long DocumentSize);
+

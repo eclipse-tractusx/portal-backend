@@ -1640,6 +1640,9 @@ components:
           format: uuid
         documentName:
           type: string
+        documentSize:
+          type: integer
+          format: int64
       additionalProperties: false
     UrlInformation:
       type: object

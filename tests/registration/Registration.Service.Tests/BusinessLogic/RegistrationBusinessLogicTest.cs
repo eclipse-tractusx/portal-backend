@@ -1510,10 +1510,10 @@ public class RegistrationBusinessLogicTest
             ]
         };
         A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<Action<Document>?>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? action) =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, A<MediaTypeId>._, A<DocumentTypeId>._, A<long>._, A<Action<Document>?>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, long documentSize, Action<Document>? action) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.PENDING, documentTypeId, documentSize);
                 action?.Invoke(document);
                 documents.Add(document);
             });
@@ -2221,9 +2221,9 @@ public class RegistrationBusinessLogicTest
             {
                 foreach (var x in documentKeyActions)
                 {
-                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                     x.Initialize?.Invoke(initial);
-                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                     x.Modify(modified);
                     modifiedDocuments.Add((initial, modified));
                 }
@@ -3038,7 +3038,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((documentId, true, true, false));
         A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
-            .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT));
+            .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT, content.Length));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
         // Act
@@ -3584,9 +3584,9 @@ public class RegistrationBusinessLogicTest
             {
                 foreach (var x in documentKeyActions)
                 {
-                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    var initial = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                     x.Initialize?.Invoke(initial);
-                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                    var modified = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                     x.Modify(modified);
                     modifiedDocumentsBuilder.Add((initial, modified));
                 }

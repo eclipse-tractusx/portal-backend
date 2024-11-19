@@ -31,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositorie
 public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 {
     /// <inheritdoc />
-    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields)
+    public Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, long documentLength, Action<Document>? setupOptionalFields)
     {
         var document = new Document(
             Guid.NewGuid(),
@@ -41,7 +41,8 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
             mediaTypeId,
             DateTimeOffset.UtcNow,
             DocumentStatusId.PENDING,
-            documentTypeId);
+            documentTypeId,
+            documentLength / 1024);
 
         setupOptionalFields?.Invoke(document);
         return dbContext.Documents.Add(document).Entity;
@@ -77,7 +78,8 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
                         .Select(document =>
                             new UploadDocuments(
                                 document!.Id,
-                                document!.DocumentName))))
+                                document!.DocumentName,
+                                document!.DocumentSize))))
             )
             .SingleOrDefaultAsync();
 
@@ -113,7 +115,7 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 
     /// <inheritdoc />
     public void RemoveDocument(Guid documentId) =>
-        dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default));
+        dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default, default));
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
@@ -141,7 +143,7 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
     /// <inheritdoc />
     public void AttachAndModifyDocument(Guid documentId, Action<Document>? initialize, Action<Document> modify)
     {
-        var document = new Document(documentId, null!, null!, null!, default, default, default, default);
+        var document = new Document(documentId, null!, null!, null!, default, default, default, default, default);
         initialize?.Invoke(document);
         dbContext.Attach(document);
         modify(document);
@@ -151,7 +153,7 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
     {
         var initial = documentData.Select(x =>
             {
-                var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default);
+                var document = new Document(x.DocumentId, null!, null!, null!, default, default, default, default, default);
                 x.Initialize?.Invoke(document);
                 return (Document: document, x.Modify);
             }
@@ -231,7 +233,7 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 
     /// <inheritdoc />
     public void RemoveDocuments(IEnumerable<Guid> documentIds) =>
-        dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default)));
+        dbContext.Documents.RemoveRange(documentIds.Select(documentId => new Document(documentId, null!, null!, null!, default, default, default, default, default)));
 
     public Task<(byte[] Content, string FileName, bool IsDocumentTypeMatch, MediaTypeId MediaTypeId)> GetDocumentAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         dbContext.Documents

@@ -96,7 +96,7 @@ public class OfferDocumentService : IOfferDocumentService
 
         var documentData = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentData.Content, documentData.Hash, mediaTypeId, documentTypeId, x =>
+        var doc = _portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentData.Content, documentData.Hash, mediaTypeId, documentTypeId, document.Length, x =>
         {
             x.CompanyUserId = _identityData.IdentityId;
         });
