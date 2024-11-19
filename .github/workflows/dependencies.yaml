@@ -22,8 +22,22 @@ name: Check Dependencies
 on:
   push:
     branches: [main]
+    paths:
+      # all csproj files which include the external packages
+      - '**.csproj'
+      # dependencies file
+      - 'DEPENDENCIES'
+      # workflow file
+      - '.github/workflows/dependencies.yaml'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+      # all csproj files which include the external packages
+      - '**.csproj'
+      # dependencies file
+      - 'DEPENDENCIES'
+      # workflow file
+      - '.github/workflows/dependencies.yaml'
   workflow_dispatch:
 
 jobs:
