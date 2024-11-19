@@ -88,31 +88,32 @@ public partial class ProvisioningManager
             switch (key)
             {
                 case "userInfoUrl":
-                    changed.Config.UserInfoUrl = value as string;
+                    changed.Config.UserInfoUrl = value.ToString();
                     break;
                 case "validateSignature":
-                    changed.Config.ValidateSignature = value as string;
+                    changed.Config.ValidateSignature = value.ToString();
                     break;
                 case "tokenUrl":
-                    changed.Config.TokenUrl = value as string;
+                    changed.Config.TokenUrl = value.ToString();
                     break;
                 case "authorizationUrl":
-                    changed.Config.AuthorizationUrl = value as string;
+                    changed.Config.AuthorizationUrl = value.ToString();
                     break;
                 case "jwksUrl":
-                    changed.Config.JwksUrl = value as string;
+                    changed.Config.JwksUrl = value.ToString();
                     break;
                 case "logoutUrl":
-                    changed.Config.LogoutUrl = value as string;
+                    changed.Config.LogoutUrl = value.ToString();
                     break;
                 case "issuer":
-                    changed.Config.Issuer = value as string;
+                    changed.Config.Issuer = value.ToString();
                     break;
                 case "useJwksUrl":
-                    changed.Config.UseJwksUrl = value as string;
+                    changed.Config.UseJwksUrl = value.ToString();
                     break;
             }
         }
+
         return changed;
     }
 

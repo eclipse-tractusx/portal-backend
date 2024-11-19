@@ -304,6 +304,7 @@ public class IdentityProviderBusinessLogic(
                 alias,
                 iamIdentityProvider => iamIdentityProvider.MetadataUrl = metadataUrl,
                 iamIdentityProvider => iamIdentityProvider.MetadataUrl = details.Oidc.MetadataUrl);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async ValueTask UpdateIdentityProviderSaml(string alias, IdentityProviderEditableDetails details)
@@ -323,6 +324,7 @@ public class IdentityProviderBusinessLogic(
                 details.Saml.ServiceProviderEntityId,
                 details.Saml.SingleSignOnServiceUrl))
             .ConfigureAwait(false);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async ValueTask UpdateIdentityProviderShared(string alias, IdentityProviderEditableDetails details)

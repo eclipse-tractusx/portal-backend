@@ -1688,6 +1688,7 @@ public class IdentityProviderBusinessLogicTests
         modifiedIamIdentityProvider.Should().Match<IamIdentityProvider>(x =>
             x.IamIdpAlias == "cl1" &&
             x.MetadataUrl == "http://new");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -1781,6 +1782,7 @@ public class IdentityProviderBusinessLogicTests
         result.Mappers.Should().HaveCount(2);
         result.DisplayName.Should().Be("dis-saml");
         result.Enabled.Should().BeTrue();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
