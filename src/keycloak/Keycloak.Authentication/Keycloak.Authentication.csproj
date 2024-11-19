@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
-    <PackageReference Include="System.Json" Version="4.7.1" />
+    <PackageReference Include="System.Json" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>
