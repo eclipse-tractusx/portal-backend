@@ -27,6 +27,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 public static class RegistrationValidation
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex CommercialRegNumRegex = new(ValidationExpressions.COMMERCIAL_REG_NUMBER, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex VatIdRegex = new(ValidationExpressions.VAT_ID, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex LeiCodeRegex = new(ValidationExpressions.LEI_CODE, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex ViesRegex = new(ValidationExpressions.VIES, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex EoriRegex = new(ValidationExpressions.EORI, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public static void ValidateData(this RegistrationData data)
     {
@@ -72,6 +77,14 @@ public static class RegistrationValidation
                 $"uniqueIds must not contain duplicate types: '{string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))}'",
                 nameof(data.UniqueIds));
         }
+
+        var invalidUniqueIdentifiersValues = data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId));
+        if (invalidUniqueIdentifiersValues.Any())
+        {
+            throw new ControllerArgumentException(
+                $"Invalid value of uniqueIds: '{string.Join(", ", invalidUniqueIdentifiersValues.Select(uniqueId => uniqueId.UniqueIdentifierId))}'",
+                nameof(data.UniqueIds));
+        }
     }
 
     public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers, bool checkBpnAlreadyExists)
@@ -105,4 +118,15 @@ public static class RegistrationValidation
             }
         }
     }
+
+    private static bool IsInvalidValueByUniqueIdentifier(string value, UniqueIdentifierId uniqueIdentifierId) =>
+        uniqueIdentifierId switch
+        {
+            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !CommercialRegNumRegex.IsMatch(value),
+            UniqueIdentifierId.VAT_ID => !VatIdRegex.IsMatch(value),
+            UniqueIdentifierId.LEI_CODE => !LeiCodeRegex.IsMatch(value),
+            UniqueIdentifierId.VIES => !ViesRegex.IsMatch(value),
+            UniqueIdentifierId.EORI => !EoriRegex.IsMatch(value),
+            _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Provided unique identifier is not available in the system")
+        };
 }
