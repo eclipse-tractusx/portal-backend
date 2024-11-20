@@ -45,7 +45,7 @@ public class UserProfileUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandl
 
         var userProfile = await keycloak.GetUsersProfile(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (userProfiles == null || userProfiles.Count() != 1 || !userProfiles.Single().ComponentModel.Config.TryGetValue(UserProfileConfig, out var configs) || configs.Count() != 1)
+        if (userProfiles.Count() != 1 || !(userProfiles.Single().ComponentModel.Config?.TryGetValue(UserProfileConfig, out var configs) ?? false) || configs?.Count() != 1)
         {
             throw new ConflictException("There must be exactly one user profile");
         }

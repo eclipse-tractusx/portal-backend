@@ -132,7 +132,7 @@ public class SeedDataHandler : ISeedDataHandler
 
     public IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> RealmLocalizations
     {
-        get => _keycloakRealm?.LocalizationTexts?.FilterNotNullValues().Select(x => (x.Key, x.Value.Select(kvp => kvp))) ?? Enumerable.Empty<(string, IEnumerable<KeyValuePair<string, string>>)>();
+        get => _keycloakRealm?.LocalizationTexts?.FilterNotNullValues().Select(x => (x.Key, x.Value as IEnumerable<KeyValuePair<string, string>>)) ?? Enumerable.Empty<(string, IEnumerable<KeyValuePair<string, string>>)>();
     }
 
     public async Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds)

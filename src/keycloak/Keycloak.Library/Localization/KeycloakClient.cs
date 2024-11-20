@@ -55,13 +55,14 @@ public partial class KeycloakClient
 
     public async Task UpdateLocaleAsync(string realm, string locale, string key, string translation, CancellationToken cancellationToken)
     {
+        using var content = new StringContent(translation, MediaTypeHeaderValue.Parse("text/plain"));
         await (await GetBaseUrlAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .AppendPathSegment(AdminUrlSegment)
             .AppendPathSegment(realm, true)
             .AppendPathSegment(LocalizationUrlSegment)
             .AppendPathSegment(locale, true)
             .AppendPathSegment(key, true)
-            .PutAsync(new StringContent(translation, MediaTypeHeaderValue.Parse("text/plain")), cancellationToken: cancellationToken)
+            .PutAsync(content, cancellationToken: cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 

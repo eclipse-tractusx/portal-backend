@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 
@@ -43,44 +44,55 @@ public class LocalizationsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHan
     private static async Task UpdateLocaleTranslations(KeycloakClient keycloak, string realm, IEnumerable<string> locales,
         IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> translations, CancellationToken cancellationToken)
     {
-        var localesToUpdate = locales.Join(
-            translations,
-            l => l,
-            trans => trans.Locale,
-            (l, trans) => (Locale: l, Update: trans));
-
-        if (!localesToUpdate.Any())
+        if (!await locales
+                .Join(
+                    translations,
+                    l => l,
+                    trans => trans.Locale,
+                    (l, trans) => (Locale: l, Update: trans))
+                .IfAnyAwait(async localesToUpdate =>
+                {
+                    foreach (var (locale, update) in
+                            localesToUpdate)
+                    {
+                        var localizations = await keycloak.GetLocaleAsync(realm, locale, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                        await UpdateLocales(keycloak, realm, cancellationToken, update, localizations, locale).ConfigureAwait(ConfigureAwaitOptions.None);
+                        await DeleteLocales(keycloak, realm, cancellationToken, localizations, update, locale).ConfigureAwait(ConfigureAwaitOptions.None);
+                    }
+                }).ConfigureAwait(false))
         {
-            await AddLocales(keycloak, realm, translations, cancellationToken);
-            return;
+            await AddLocales(keycloak, realm, translations, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task DeleteLocales(KeycloakClient keycloak, string realm, CancellationToken cancellationToken,
+        IEnumerable<KeyValuePair<string, string>> localizations, (string Locale, IEnumerable<KeyValuePair<string, string>> Translations) update, string locale)
+    {
+        foreach (var deleteTranslation in
+                 localizations.ExceptBy(update.Translations.Select(t => t.Key),
+                     l => l.Key))
+        {
+            await keycloak.DeleteLocaleAsync(realm, locale, deleteTranslation.Key, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private static async Task UpdateLocales(KeycloakClient keycloak, string realm, CancellationToken cancellationToken,
+        (string Locale, IEnumerable<KeyValuePair<string, string>> Translations) update, IEnumerable<KeyValuePair<string, string>> localizations, string locale)
+    {
+        foreach (var missingTranslation in update.Translations.ExceptBy(localizations.Select(loc => loc.Key),
+                     locModel => locModel.Key))
+        {
+            await keycloak.UpdateLocaleAsync(realm, locale, missingTranslation.Key, missingTranslation.Value, cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var (locale, update) in
-                 localesToUpdate)
+        foreach (var updateTranslation in
+                 localizations.Join(
+                     update.Translations,
+                     l => l.Key,
+                     trans => trans.Key,
+                     (l, trans) => (Key: l.Key, Update: trans)))
         {
-            var localizations = await keycloak.GetLocaleAsync(realm, locale, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            foreach (var missingTranslation in update.Translations.ExceptBy(localizations.Select(loc => loc.Key),
-                         locModel => locModel.Key))
-            {
-                await keycloak.UpdateLocaleAsync(realm, locale, missingTranslation.Key, missingTranslation.Value, cancellationToken).ConfigureAwait(false);
-            }
-
-            foreach (var updateTranslation in
-                     localizations.Join(
-                         update.Translations,
-                         l => l.Key,
-                         trans => trans.Key,
-                         (l, trans) => (Key: l.Key, Update: trans)))
-            {
-                await keycloak.UpdateLocaleAsync(realm, locale, updateTranslation.Key, updateTranslation.Update.Value, cancellationToken).ConfigureAwait(false);
-            }
-
-            foreach (var deleteTranslation in
-                     localizations.ExceptBy(update.Translations.Select(t => t.Key),
-                         l => l.Key))
-            {
-                await keycloak.DeleteLocaleAsync(realm, locale, deleteTranslation.Key, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
+            await keycloak.UpdateLocaleAsync(realm, locale, updateTranslation.Key, updateTranslation.Update.Value, cancellationToken).ConfigureAwait(false);
         }
     }
 
