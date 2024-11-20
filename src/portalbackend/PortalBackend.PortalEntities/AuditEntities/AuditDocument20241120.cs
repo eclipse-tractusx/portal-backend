@@ -23,35 +23,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 
-public class AuditDocument20231108 : IAuditEntityV1
+public class AuditDocument20241120 : IAuditEntityV1
 {
-    public AuditDocument20231108()
-    {
-        DocumentHash = null!;
-        DocumentName = null!;
-        DocumentContent = null!;
-    }
-
     /// <inheritdoc />
     [Key]
     public Guid AuditV1Id { get; set; }
 
     public Guid Id { get; private set; }
 
-    public DateTimeOffset DateCreated { get; private set; }
+    public DateTimeOffset? DateCreated { get; private set; }
 
-    public byte[] DocumentHash { get; set; }
+    public byte[]? DocumentHash { get; set; }
 
-    public byte[] DocumentContent { get; set; }
+    public byte[]? DocumentContent { get; set; }
 
-    [MaxLength(255)]
-    public string DocumentName { get; set; }
+    public string? DocumentName { get; set; }
 
-    public MediaTypeId MediaTypeId { get; set; }
+    public MediaTypeId? MediaTypeId { get; set; }
 
-    public DocumentTypeId DocumentTypeId { get; set; }
+    public DocumentTypeId? DocumentTypeId { get; set; }
 
-    public DocumentStatusId DocumentStatusId { get; set; }
+    public DocumentStatusId? DocumentStatusId { get; set; }
+
+    public long? DocumentSize { get; set; }
 
     public Guid? CompanyUserId { get; set; }
     public DateTimeOffset? DateLastChanged { get; set; }
