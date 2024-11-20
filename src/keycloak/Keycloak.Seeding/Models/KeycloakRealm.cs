@@ -82,6 +82,7 @@ public class KeycloakRealm
     public int? OtpPolicyPeriod { get; set; }
     public IEnumerable<string>? OtpSupportedApplications { get; set; }
     public string? PasswordPolicy { get; set; }
+    public IDictionary<string, IDictionary<string, string>?>? LocalizationTexts { get; set; }
     public string? WebAuthnPolicyRpEntityName { get; set; }
     public IEnumerable<string>? WebAuthnPolicySignatureAlgorithms { get; set; }
     public string? WebAuthnPolicyRpId { get; set; }
@@ -122,7 +123,7 @@ public class KeycloakRealm
     public bool? AdminEventsDetailsEnabled { get; set; }
     public IEnumerable<IdentityProviderModel>? IdentityProviders { get; set; }
     public IEnumerable<IdentityProviderMapperModel>? IdentityProviderMappers { get; set; }
-    public IReadOnlyDictionary<string, IEnumerable<ComponentModel>?>? Components { get; set; }
+    public IDictionary<string, IEnumerable<ComponentModel>?>? Components { get; set; }
     public bool? InternationalizationEnabled { get; set; }
     public IEnumerable<string>? SupportedLocales { get; set; }
     public string? DefaultLocale { get; set; }

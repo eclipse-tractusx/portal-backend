@@ -34,5 +34,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Root;
 public enum Locale
 {
     [EnumMember(Value = "en")]
-    En
+    En,
+
+    [EnumMember(Value = "de")]
+    De
 }
