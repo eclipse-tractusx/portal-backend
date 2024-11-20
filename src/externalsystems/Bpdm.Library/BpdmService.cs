@@ -187,14 +187,10 @@ public class BpdmService : IBpdmService
         // But BaseAddress of Business Partner Pool is different as its deployed on another server.
         httpClient.BaseAddress = new Uri(_settings.BusinessPartnerPoolBaseAddress);
 
-        var requestData = new BpdmCxMembership(
-            new BpdmCxMembershipDto[]{
-                new(businessPartnerNumber, true)
-            }.AsEnumerable()
-        );
+        var requestData = new BpdmCxMembership([new(businessPartnerNumber, true)]);
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
-            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
+            (false, await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
 
         await httpClient.PutAsJsonAsync("v6/cx-memberships", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-cx-membership", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
