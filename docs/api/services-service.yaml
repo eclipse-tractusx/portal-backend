@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Org.Eclipse.TractusX.Portal.Backend.Services.Service
-  version: v2.3.0-RC2
+  version: v2.3.0-RC3
 paths:
   /api/services/errormessage:
     get:
