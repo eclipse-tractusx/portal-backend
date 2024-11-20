@@ -25,22 +25,14 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class RealmUpdater : IRealmUpdater
+public class RealmUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
+    : IRealmUpdater
 {
-    private readonly IKeycloakFactory _keycloakFactory;
-    private readonly ISeedDataHandler _seedData;
-
-    public RealmUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
-    {
-        _keycloakFactory = keycloakFactory;
-        _seedData = seedDataHandler;
-    }
-
     public async Task UpdateRealm(string keycloakInstanceName, CancellationToken cancellationToken)
     {
-        var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-        var realm = _seedData.Realm;
-        var seedRealm = _seedData.KeycloakRealm;
+        var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
+        var realm = seedDataHandler.Realm;
+        var seedRealm = seedDataHandler.KeycloakRealm;
 
         Realm keycloakRealm;
         try
@@ -118,6 +110,7 @@ public class RealmUpdater : IRealmUpdater
             keycloakRealm.AdminEventsEnabled = seedRealm.AdminEventsEnabled;
             keycloakRealm.AdminEventsDetailsEnabled = seedRealm.AdminEventsDetailsEnabled;
             keycloakRealm.InternationalizationEnabled = seedRealm.InternationalizationEnabled;
+            keycloakRealm.DefaultLocale = seedRealm.DefaultLocale;
             keycloakRealm.SupportedLocales = seedRealm.SupportedLocales;
             keycloakRealm.BrowserFlow = seedRealm.BrowserFlow;
             keycloakRealm.RegistrationFlow = seedRealm.RegistrationFlow;
@@ -136,6 +129,7 @@ public class RealmUpdater : IRealmUpdater
     private static bool CompareRealm(Realm keycloakRealm, KeycloakRealm seedRealm) =>
         keycloakRealm._Realm == seedRealm.Realm &&
         keycloakRealm.DisplayName == seedRealm.DisplayName &&
+        keycloakRealm.DefaultLocale == seedRealm.DefaultLocale &&
         keycloakRealm.NotBefore == seedRealm.NotBefore &&
         keycloakRealm.DefaultSignatureAlgorithm == seedRealm.DefaultSignatureAlgorithm &&
         keycloakRealm.RevokeRefreshToken == seedRealm.RevokeRefreshToken &&

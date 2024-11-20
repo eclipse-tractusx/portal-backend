@@ -85,6 +85,7 @@ public static class KeycloakRealmExtensions
             OtpPolicyPeriod = right.OtpPolicyPeriod ?? left.OtpPolicyPeriod,
             OtpSupportedApplications = right.OtpSupportedApplications ?? left.OtpSupportedApplications,
             PasswordPolicy = right.PasswordPolicy ?? left.PasswordPolicy,
+            LocalizationTexts = right.LocalizationTexts ?? left.LocalizationTexts,
             WebAuthnPolicyRpEntityName = right.WebAuthnPolicyRpEntityName ?? left.WebAuthnPolicyRpEntityName,
             WebAuthnPolicySignatureAlgorithms = right.WebAuthnPolicySignatureAlgorithms ?? left.WebAuthnPolicySignatureAlgorithms,
             WebAuthnPolicyRpId = right.WebAuthnPolicyRpId ?? left.WebAuthnPolicyRpId,

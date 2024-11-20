@@ -355,4 +355,20 @@ public partial class KeycloakClient
             .AppendPathSegment("/sessions")
             .GetJsonAsync<IEnumerable<UserSession>>()
             .ConfigureAwait(ConfigureAwaitOptions.None);
+
+    public async Task<UserProfileConfig> GetUsersProfile(string realm, CancellationToken cancellationToken) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/users/profile")
+            .GetJsonAsync<UserProfileConfig>(cancellationToken: cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+
+    public async Task UpdateUsersProfile(string realm, UserProfileConfig config, CancellationToken cancellationToken) =>
+        await (await GetBaseUrlAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
+            .AppendPathSegment("/admin/realms/")
+            .AppendPathSegment(realm, true)
+            .AppendPathSegment("/users/profile")
+            .PutJsonAsync(config, cancellationToken: cancellationToken)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
 }

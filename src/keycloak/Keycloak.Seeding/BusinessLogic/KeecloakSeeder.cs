@@ -21,48 +21,40 @@ using Microsoft.Extensions.Options;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class KeycloakSeeder : IKeycloakSeeder
+public class KeycloakSeeder(
+    ISeedDataHandler seedDataHandler,
+    IRealmUpdater realmUpdater,
+    IRolesUpdater rolesUpdater,
+    IClientsUpdater clientsUpdater,
+    IIdentityProvidersUpdater identityProvidersUpdater,
+    IUsersUpdater usersUpdater,
+    IClientScopesUpdater clientScopesUpdater,
+    IAuthenticationFlowsUpdater authenticationFlowsUpdater,
+    IClientScopeMapperUpdater clientScopeMapperUpdater,
+    ILocalizationsUpdater localizationsUpdater,
+    IUserProfileUpdater userProfileUpdater,
+    IOptions<KeycloakSeederSettings> options)
+    : IKeycloakSeeder
 {
-    private readonly KeycloakSeederSettings _settings;
-    private readonly ISeedDataHandler _seedData;
-    private readonly IRealmUpdater _realmUpdater;
-    private readonly IRolesUpdater _rolesUpdater;
-    private readonly IClientsUpdater _clientsUpdater;
-    private readonly IIdentityProvidersUpdater _identityProvidersUpdater;
-    private readonly IUsersUpdater _usersUpdater;
-    private readonly IClientScopesUpdater _clientScopesUpdater;
-    private readonly IAuthenticationFlowsUpdater _authenticationFlowsUpdater;
-    private readonly IClientScopeMapperUpdater _clientScopeMapperUpdater;
-
-    public KeycloakSeeder(ISeedDataHandler seedDataHandler, IRealmUpdater realmUpdater, IRolesUpdater rolesUpdater, IClientsUpdater clientsUpdater, IIdentityProvidersUpdater identityProvidersUpdater, IUsersUpdater usersUpdater, IClientScopesUpdater clientScopesUpdater, IAuthenticationFlowsUpdater authenticationFlowsUpdater, IClientScopeMapperUpdater clientScopeMapperUpdater, IOptions<KeycloakSeederSettings> options)
-    {
-        _seedData = seedDataHandler;
-        _realmUpdater = realmUpdater;
-        _rolesUpdater = rolesUpdater;
-        _clientsUpdater = clientsUpdater;
-        _identityProvidersUpdater = identityProvidersUpdater;
-        _usersUpdater = usersUpdater;
-        _clientScopesUpdater = clientScopesUpdater;
-        _authenticationFlowsUpdater = authenticationFlowsUpdater;
-        _clientScopeMapperUpdater = clientScopeMapperUpdater;
-        _settings = options.Value;
-    }
+    private readonly KeycloakSeederSettings _settings = options.Value;
 
     public async Task Seed(CancellationToken cancellationToken)
     {
         foreach (var realm in _settings.Realms)
         {
-            await _seedData.Import(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _realmUpdater.UpdateRealm(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _rolesUpdater.UpdateRealmRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _clientScopesUpdater.UpdateClientScopes(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _clientsUpdater.UpdateClients(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _rolesUpdater.UpdateClientRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _rolesUpdater.UpdateCompositeRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _identityProvidersUpdater.UpdateIdentityProviders(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _usersUpdater.UpdateUsers(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _clientScopeMapperUpdater.UpdateClientScopeMapper(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await _authenticationFlowsUpdater.UpdateAuthenticationFlows(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await seedDataHandler.Import(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await realmUpdater.UpdateRealm(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await localizationsUpdater.UpdateLocalizations(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await userProfileUpdater.UpdateUserProfile(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await rolesUpdater.UpdateRealmRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await clientScopesUpdater.UpdateClientScopes(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await clientsUpdater.UpdateClients(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await rolesUpdater.UpdateClientRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await rolesUpdater.UpdateCompositeRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await identityProvidersUpdater.UpdateIdentityProviders(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await usersUpdater.UpdateUsers(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await clientScopeMapperUpdater.UpdateClientScopeMapper(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await authenticationFlowsUpdater.UpdateAuthenticationFlows(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 }

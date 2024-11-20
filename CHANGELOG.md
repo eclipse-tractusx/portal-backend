@@ -4,6 +4,17 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.3.0-RC3
+
+### Technical Support
+
+* upgraded System.Text.Encodings.Web and System.Net.Http packages [#1156](https://github.com/eclipse-tractusx/portal-backend/pull/1156)
+
+### Bugfixes
+
+* **Keycloak realm seeding job**: added user profile and localization texts to seeding [#1154](https://github.com/eclipse-tractusx/portal-backend/pull/1154)
+* **Own Identity Provider**: fixed setting URLs for IdP update [#1153](https://github.com/eclipse-tractusx/portal-backend/pull/1153)
+
 ## 2.3.0-RC2
 
 ### Change
