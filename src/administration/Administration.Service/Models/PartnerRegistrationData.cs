@@ -27,6 +27,7 @@ public record PartnerRegistrationData
 (
     string ExternalId,
     string Name,
+    string? ShortName,
     [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     string City,
     string StreetName,
@@ -37,7 +38,7 @@ public record PartnerRegistrationData
     IEnumerable<CompanyUniqueIdData> UniqueIds,
     IEnumerable<UserDetailData> UserDetails,
     IEnumerable<CompanyRoleId> CompanyRoles
-) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, null, Region, null, StreetNumber, ZipCode, UniqueIds);
+) : RegistrationData(Name, City, StreetName, CountryAlpha2Code, BusinessPartnerNumber, ShortName, Region, null, StreetNumber, ZipCode, UniqueIds);
 
 public record UserDetailData(
     Guid? IdentityProviderId,

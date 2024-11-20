@@ -507,11 +507,10 @@ public class ProcessExecutionServiceTests
         await _service.ExecuteAsync(CancellationToken.None);
 
         // Assert
-        Environment.ExitCode.Should().Be(1);
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("start processing process")))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("start processing process")))).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNotNull(), A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("finished processing process")))).MustNotHaveHappened();
-        A.CallTo(() => _mockLogger.Log(LogLevel.Error, A<Exception>.That.Matches(e => e != null && e.Message == error.Message), $"processing failed with following Exception {error.Message}")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Critical, A<Exception>.That.Matches(e => e != null && e.Message == error.Message), A<string>.That.StartsWith($"Critical error : processing process"))).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 }

@@ -2,7 +2,7 @@
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206836",
     "name": "Test Connector 4",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector4.de",
     "type_id": 1,
     "status_id": 2,
     "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
@@ -13,7 +13,7 @@
   {
     "id": "595a5784-3f28-4ec3-a986-651342d1be81",
     "name": "Test Connector 6",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector6.de",
     "type_id": 1,
     "status_id": 2,
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
@@ -25,7 +25,7 @@
   {
     "id": "727365d6-5599-4598-a888-58733fa138e7",
     "name": "Test Connector 5",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector5.de",
     "type_id": 1,
     "status_id": 2,
     "provider_id": "ac861325-bc54-4583-bcdc-9e9f2a38ff84",
@@ -36,7 +36,7 @@
   {
     "id": "8e10b910-523c-435e-b700-4a0c7b31f044",
     "name": "Test Connector 7",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector7.de",
     "type_id": 1,
     "status_id": 2,
     "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -47,7 +47,7 @@
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206833",
     "name": "Test Connector 1",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector1.de",
     "type_id": 1,
     "status_id": 1,
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f87",
@@ -58,7 +58,7 @@
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206839",
     "name": "Test Connector 2",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector2.de",
     "type_id": 1,
     "status_id": 1,
     "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -69,7 +69,7 @@
   {
     "id": "7e86a0b8-6903-496b-96d1-0ef508206838",
     "name": "Test Connector 3",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector3.de",
     "type_id": 2,
     "status_id": 1,
     "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -81,7 +81,7 @@
   {
     "id": "4618c650-709c-4580-956a-85b76eecd4b8",
     "name": "Test Connector 666",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector666.de",
     "type_id": 2,
     "status_id": 1,
     "provider_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
@@ -92,7 +92,7 @@
   {
     "id": "bd644d9c-ca12-4488-ae38-6eb902c9bec0",
     "name": "Test Connector 123",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector123.de",
     "type_id": 2,
     "status_id": 1,
     "provider_id": "2dc4249f-b5ca-4d42-bef1-7a7a950a4f88",
@@ -103,7 +103,7 @@
   {
     "id": "12481a39-ca13-4760-bbbb-f6ff98508007",
     "name": "Test Connector 42",
-    "connector_url": "www.google.de",
+    "connector_url": "www.connector42.de",
     "type_id": 1,
     "status_id": 1,
     "provider_id": "a45f3b2e-29f7-4b52-8bb2-15b204849d87",
@@ -111,5 +111,16 @@
     "location_id": "DE",
     "self_description_document_id": null,
     "sd_creation_process_id":  "4a5059d9-c427-42b7-aa54-5e5a240946d3"
+  },
+  {
+    "id": "12481a39-ca13-4760-bbbb-f6ff98508008",
+    "name": "Test Connector 43",
+    "connector_url": "www.connector43.de",
+    "type_id": 1,
+    "status_id": 2,
+    "provider_id": "a45f3b2e-29f7-4b52-8bb2-15b204849d87",
+    "host_id": "41fd2ab8-71cd-4546-9bef-a388d91b2542",
+    "location_id": "DE",
+    "self_description_document_id": null
   }
 ]

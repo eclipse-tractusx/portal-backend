@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
 [Trait("Category", "Registration")]
 [TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer",
-    "EndToEnd.Tests")]
+    "Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests")]
 [Collection("Registration")]
 public class RegistrationScenarios : EndToEndTestBase
 {

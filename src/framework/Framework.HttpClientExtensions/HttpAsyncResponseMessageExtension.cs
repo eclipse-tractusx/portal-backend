@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using System.Net.Sockets;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
@@ -64,6 +65,10 @@ public static class HttpAsyncResponseMessageExtension
                 ? new ServiceException($"call to external system {systemName} failed", e, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION)
                 : new ServiceException($"call to external system {systemName} failed with statuscode {(int)e.StatusCode.Value}", e, e.StatusCode.Value, (recoverOptions & RecoverOptions.REQUEST_EXCEPTION) == RecoverOptions.REQUEST_EXCEPTION);
         }
+        catch (SystemException e) when (e is SocketException or IOException)
+        {
+            throw new ServiceException($"call to external system {systemName} failed due to network io", e, (recoverOptions & RecoverOptions.NETWORK) == RecoverOptions.NETWORK);
+        }
         catch (TaskCanceledException e)
         {
             throw new ServiceException($"call to external system {systemName} failed due to timeout", e, (recoverOptions & RecoverOptions.TIMEOUT) == RecoverOptions.TIMEOUT);
@@ -82,7 +87,8 @@ public static class HttpAsyncResponseMessageExtension
         REQUEST_EXCEPTION = 0b_0000_0010,
         TIMEOUT = 0b_0000_0100,
         OTHER_EXCEPTION = 0b_0000_1000,
-        INFRASTRUCTURE = REQUEST_EXCEPTION | TIMEOUT,
-        ALLWAYS = RESPONSE_RECEIVED | REQUEST_EXCEPTION | TIMEOUT | OTHER_EXCEPTION
+        NETWORK = 0b_0001_0000,
+        INFRASTRUCTURE = REQUEST_EXCEPTION | TIMEOUT | NETWORK,
+        ALLWAYS = RESPONSE_RECEIVED | REQUEST_EXCEPTION | TIMEOUT | NETWORK | OTHER_EXCEPTION
     }
 }

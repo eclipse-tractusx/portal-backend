@@ -2216,26 +2216,42 @@ components:
       properties:
         id:
           type: string
+          description: Id of the Offer
           format: uuid
         offerSubscriptionStatus:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
         name:
           type: string
+          description: Name of the Offer
           nullable: true
         customer:
           type: string
+          description: Name of the company subscribing the offer
         bpn:
           type: string
+          description: 'When called from /provider bpn of the company subscribing the offer, otherwise the provider company''s bpn'
           nullable: true
         contact:
           type: array
           items:
             type: string
+          description: 'When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider'
         technicalUserData:
           type: array
           items:
             $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+          description: Information about the technical user
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+          description: ''
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+        externalService:
+          $ref: '#/components/schemas/SubscriptionExternalServiceData'
       additionalProperties: false
+      description: Detail data for a offer subscription
     ServiceData:
       type: object
       properties:
@@ -2380,6 +2396,10 @@ components:
         price:
           type: string
           description: Pricing information of the app.
+        providerUri:
+          type: string
+          description: Provider's homepage url or marketing url
+          nullable: true
         offerSubscriptionDetailData:
           type: array
           items:
@@ -2765,6 +2785,25 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
+      additionalProperties: false
+    SubscriptionExternalServiceData:
+      type: object
+      properties:
+        trusted_issuer:
+          type: string
+        participant_id:
+          type: string
+          nullable: true
+        iatp_id:
+          type: string
+          nullable: true
+        did_resolver:
+          type: string
+        decentralIdentityManagementAuthUrl:
+          type: string
+        decentralIdentityManagementServiceUrl:
+          type: string
+          nullable: true
       additionalProperties: false
     SubscriptionStatusSorting:
       enum:

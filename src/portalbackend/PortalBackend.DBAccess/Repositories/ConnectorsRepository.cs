@@ -84,7 +84,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     c.ConnectorUrl)
         ).SingleOrDefaultAsync();
 
-    public Task<(ConnectorData ConnectorData, bool IsProviderCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
+    public Task<(ConnectorData ConnectorData, bool IsProvidingOrHostCompany)> GetConnectorByIdForCompany(Guid connectorId, Guid companyId) =>
         dbContext.Connectors
             .AsNoTracking()
             .Where(connector => connector.Id == connectorId && connector.StatusId != ConnectorStatusId.INACTIVE)
@@ -104,7 +104,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                         connector.TechnicalUser.ClientClientId,
                         connector.TechnicalUser.Description),
                     connector.ConnectorUrl),
-                connector.ProviderId == companyId
+                connector.ProviderId == companyId || connector.HostId == companyId
             ))
             .SingleOrDefaultAsync();
 
@@ -130,11 +130,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
     public IAsyncEnumerable<(string BusinessPartnerNumber, string ConnectorEndpoint)> GetConnectorEndPointDataAsync(IEnumerable<string> bpns) =>
         dbContext.Connectors
             .AsNoTracking()
-            .Where(connector => connector.StatusId == ConnectorStatusId.ACTIVE && (!bpns.Any() || bpns.Contains(connector.Provider!.BusinessPartnerNumber)))
-            .OrderBy(connector => connector.ProviderId)
+            .Where(connector => connector.StatusId == ConnectorStatusId.ACTIVE && (!bpns.Any() || bpns.Contains(connector.Host!.BusinessPartnerNumber)))
+            .OrderBy(connector => connector.HostId)
             .Select(connector => new ValueTuple<string, string>
             (
-                connector.Provider!.BusinessPartnerNumber!,
+                connector.Host!.BusinessPartnerNumber!,
                 connector.ConnectorUrl
             ))
             .AsAsyncEnumerable();

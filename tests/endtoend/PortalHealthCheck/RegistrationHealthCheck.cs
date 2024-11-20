@@ -25,7 +25,7 @@ using static RestAssured.Dsl;
 namespace Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests;
 
 [Trait("Category", "PortalHC")]
-[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer", "EndToEnd.Tests")]
+[TestCaseOrderer("Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests.AlphabeticalOrderer", "Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests")]
 [Collection("PortalHC")]
 public class RegistrationHealthCheck : EndToEndTestBase, IAsyncLifetime
 {

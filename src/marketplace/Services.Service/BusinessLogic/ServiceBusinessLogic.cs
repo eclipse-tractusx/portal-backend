@@ -99,6 +99,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             result.Description,
             result.LicenseTypeId,
             result.Price,
+            result.ProviderUri,
             result.OfferSubscriptionDetailData,
             result.ServiceTypeIds,
             result.Documents.GroupBy(doc => doc.DocumentTypeId).ToDictionary(d => d.Key, d => d.Select(x => new DocumentData(x.DocumentId, x.DocumentName))),
@@ -210,8 +211,22 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
     }
 
     /// <inheritdoc />
-    public Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId) =>
-        _offerService.GetSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles);
+    public async Task<ProviderSubscriptionDetailData> GetSubscriptionDetailForProvider(Guid serviceId, Guid subscriptionId)
+    {
+        var offerSubscriptionDetails = await _offerService.GetOfferSubscriptionDetailsForProviderAsync(serviceId, subscriptionId, OfferTypeId.SERVICE, _settings.CompanyAdminRoles, new WalletConfigData(_settings.IssuerDid, _settings.BpnDidResolverUrl, _settings.DecentralIdentityManagementAuthUrl)).ConfigureAwait(ConfigureAwaitOptions.None);
+        return new(
+            offerSubscriptionDetails.Id,
+            offerSubscriptionDetails.OfferSubscriptionStatus,
+            offerSubscriptionDetails.Name,
+            offerSubscriptionDetails.Customer,
+            offerSubscriptionDetails.Bpn,
+            offerSubscriptionDetails.Contact,
+            offerSubscriptionDetails.TechnicalUserData,
+            offerSubscriptionDetails.ConnectorData,
+            offerSubscriptionDetails.ProcessStepTypeId,
+            offerSubscriptionDetails.ExternalService
+        );
+    }
 
     /// <inheritdoc />
     public Task<SubscriberSubscriptionDetailData> GetSubscriptionDetailForSubscriber(Guid serviceId, Guid subscriptionId) =>

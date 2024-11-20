@@ -141,6 +141,7 @@ public class NetworkBusinessLogic(
         {
             c.AddressId = address.Id;
             c.BusinessPartnerNumber = data.BusinessPartnerNumber?.ToUpper();
+            c.Shortname = data.ShortName;
         });
 
         companyRepository.CreateUpdateDeleteIdentifiers(company.Id, Enumerable.Empty<(UniqueIdentifierId, string)>(), data.UniqueIds.Select(x => (x.UniqueIdentifierId, x.Value)));

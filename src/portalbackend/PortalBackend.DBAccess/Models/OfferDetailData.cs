@@ -51,6 +51,7 @@ public record OfferDetailData(
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
 /// <param name="Price">Pricing information of the app.</param>
+/// <param name="ProviderUri">Provider's homepage url or marketing url</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 /// <param name="ServiceTypeIds">Collection of the assigned serviceTypeIds.</param>
 /// <param name="Documents">Collections of the Document type Data.</param>
@@ -64,6 +65,7 @@ public record ServiceDetailData(
     string? ContactEmail,
     string? Description,
     string Price,
+    string? ProviderUri,
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
     IEnumerable<DocumentTypeData> Documents,

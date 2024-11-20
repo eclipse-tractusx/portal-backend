@@ -2168,7 +2168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppProviderSubscriptionDetailData'
+                $ref: '#/components/schemas/OfferProviderSubscriptionDetailData'
         '403':
           description: User's company does not provide the app.
           content:
@@ -2828,44 +2828,6 @@ components:
           description: the technicalUser Profile
       additionalProperties: false
       description: Response for the app creation
-    AppProviderSubscriptionDetailData:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        offerSubscriptionStatus:
-          $ref: '#/components/schemas/OfferSubscriptionStatusId'
-        name:
-          type: string
-          nullable: true
-        customer:
-          type: string
-        bpn:
-          type: string
-          nullable: true
-        contact:
-          type: array
-          items:
-            type: string
-        technicalUserData:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
-        connectorData:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
-        tenantUrl:
-          type: string
-          nullable: true
-        appInstanceId:
-          type: string
-        processStepTypeId:
-          $ref: '#/components/schemas/ProcessStepTypeId'
-        externalService:
-          $ref: '#/components/schemas/SubscriptionExternalServiceData'
-      additionalProperties: false
     AppRequestModel:
       type: object
       properties:
@@ -3434,6 +3396,45 @@ components:
       properties:
         message:
           type: string
+      additionalProperties: false
+    OfferProviderSubscriptionDetailData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        offerSubscriptionStatus:
+          $ref: '#/components/schemas/OfferSubscriptionStatusId'
+        name:
+          type: string
+          nullable: true
+        customer:
+          type: string
+        bpn:
+          type: string
+          nullable: true
+        contact:
+          type: array
+          items:
+            type: string
+        technicalUserData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionTechnicalUserData'
+        connectorData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionAssignedConnectorData'
+        tenantUrl:
+          type: string
+          nullable: true
+        appInstanceId:
+          type: string
+          nullable: true
+        processStepTypeId:
+          $ref: '#/components/schemas/ProcessStepTypeId'
+        externalService:
+          $ref: '#/components/schemas/SubscriptionExternalServiceData'
       additionalProperties: false
     OfferSorting:
       enum:

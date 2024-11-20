@@ -34,6 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Description">The description of the service.</param>
 /// <param name="LicenseType">LicenseType for offer</param>
 /// <param name="Price">Pricing information of the app.</param>
+/// <param name="ProviderUri">Provider's homepage url or marketing url</param>
 /// <param name="OfferSubscriptionDetailData">Detail Data of the offer subscription</param>
 /// <param name="ServiceTypes">Collection of the assigned serviceTypeIds.</param>
 /// <param name="Documents">documents assigned to offer</param>
@@ -48,6 +49,7 @@ public record ServiceDetailResponse(
     string? Description,
     LicenseTypeId LicenseType,
     string Price,
+    string? ProviderUri,
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypes,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
