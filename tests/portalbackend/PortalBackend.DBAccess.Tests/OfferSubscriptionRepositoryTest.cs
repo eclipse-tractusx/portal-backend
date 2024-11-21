@@ -1150,6 +1150,43 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region Delete OfferSubscription
+
+    [Fact]
+    public async Task DeleteOfferSubscription_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+
+        // Act
+        var results = sut.DeleteOfferSubscription(
+            new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
+            new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
+            new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
+            OfferSubscriptionStatusId.PENDING,
+            new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+
+        // Assert
+        var changeTracker = context.ChangeTracker;
+        var changedEntries = changeTracker.Entries().ToList();
+        results.Id.Should().Be(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"));
+        results.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
+        results.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        results.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        results.RequesterId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+        changeTracker.HasChanges().Should().BeTrue();
+        changedEntries.Should().NotBeEmpty();
+        changedEntries.Should().HaveCount(1);
+        changedEntries.Single().State.Should().Be(EntityState.Deleted);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.Id.Should().Be(new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"));
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.OfferId.Should().Be(new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"));
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
+        changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.RequesterId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+    }
+
+    #endregion
+
     #region Setup
 
     private async Task<(IOfferSubscriptionsRepository, PortalDbContext)> CreateSut()

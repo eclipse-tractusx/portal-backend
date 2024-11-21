@@ -109,9 +109,9 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         var offerSubscriptionDetails = await offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
         var offerId = offerSubscriptionDetails.OfferId;
 
-        if (offerSubscriptionDetails.OfferName is null)
+        if (string.IsNullOrEmpty(offerSubscriptionDetails.OfferName))
         {
-            throw new NotFoundException($"Offer {offerId} does not exist");
+            throw new NotFoundException($"Offer {offerId} does not exist.");
         }
         if (!offerSubscriptionDetails.IsProviderCompany)
         {
