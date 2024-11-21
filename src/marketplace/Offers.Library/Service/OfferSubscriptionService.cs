@@ -103,6 +103,62 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         return offerSubscription.Id;
     }
 
+    public async Task<Guid> RemoveOfferSubscriptionAsync(Guid subscriptionId, OfferTypeId offerTypeId, string basePortalAddress)
+    {
+        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerSubscriptionDetails = await offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
+        var offerId = offerSubscriptionDetails.OfferId;
+
+        if (offerSubscriptionDetails.OfferName is null)
+        {
+            throw new NotFoundException($"Offer {offerId} does not exist");
+        }
+        if (!offerSubscriptionDetails.IsProviderCompany)
+        {
+            throw new ForbiddenException("Only the providing company can decline the subscription request.");
+        }
+        if (offerSubscriptionDetails.Status == OfferSubscriptionStatusId.INACTIVE)
+        {
+            throw new ConflictException($"Subscription of {offerSubscriptionDetails.OfferName} is already {offerSubscriptionDetails.Status}");
+        }
+
+        var offerSubscription = offerSubscriptionsRepository.DeleteOfferSubscription(subscriptionId, offerId, offerSubscriptionDetails.CompanyId, offerSubscriptionDetails.Status, offerSubscriptionDetails.RequesterId);
+        SendNotificationsToRequester(offerId, offerTypeId, basePortalAddress, offerSubscriptionDetails);
+        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+
+        return offerSubscription.Id;
+    }
+
+    private void SendNotificationsToRequester(Guid offerId, OfferTypeId offerTypeId, string basePortalAddress, OfferSubscriptionTransferData offerSubscriptionDetails)
+    {
+        var content = JsonSerializer.Serialize(new
+        {
+            AppName = offerSubscriptionDetails.OfferName,
+            OfferId = offerId
+        });
+
+        var notificationTypeId = offerTypeId == OfferTypeId.SERVICE ? NotificationTypeId.SERVICE_SUBSCRIPTION_DECLINE : NotificationTypeId.APP_SUBSCRIPTION_DECLINE;
+        _portalRepositories.GetInstance<INotificationRepository>().CreateNotification(
+                offerSubscriptionDetails.RequesterId,
+                notificationTypeId,
+                false,
+                notification =>
+                {
+                    notification.CreatorUserId = _identityData.IdentityId;
+                    notification.Content = content;
+                });
+        var mailParameters = ImmutableDictionary.CreateRange(
+            [
+                KeyValuePair.Create("offerName", offerSubscriptionDetails.OfferName!),
+                KeyValuePair.Create("url", basePortalAddress),
+                KeyValuePair.Create("requesterName", string.Format("{0} {1}", offerSubscriptionDetails.RequesterFirstname, offerSubscriptionDetails.RequesterLastname))
+            ]);
+        _mailingProcessCreation.CreateMailProcess(
+            offerSubscriptionDetails.RequesterEmail!,
+            $"{offerTypeId.ToString().ToLower()}-subscription-decline",
+            mailParameters);
+    }
+
     private void CreateProcessSteps(OfferSubscription offerSubscription)
     {
         var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();

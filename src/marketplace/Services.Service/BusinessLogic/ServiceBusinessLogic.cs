@@ -83,6 +83,10 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         _offerSubscriptionService.AddOfferSubscriptionAsync(serviceId, offerAgreementConsentData, OfferTypeId.SERVICE, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles, _settings.ServiceManagerRoles);
 
     /// <inheritdoc />
+    public Task DeclineServiceSubscriptionAsync(Guid subscriptionId) =>
+        _offerSubscriptionService.RemoveOfferSubscriptionAsync(subscriptionId, OfferTypeId.SERVICE, _settings.BasePortalAddress);
+
+    /// <inheritdoc />
     public async Task<ServiceDetailResponse> GetServiceDetailsAsync(Guid serviceId, string lang)
     {
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);

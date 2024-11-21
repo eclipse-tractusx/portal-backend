@@ -508,6 +508,8 @@ components:
         - CREDENTIAL_APPROVAL
         - CREDENTIAL_REJECTED
         - CREDENTIAL_EXPIRY
+        - APP_SUBSCRIPTION_DECLINE
+        - SERVICE_SUBSCRIPTION_DECLINE
       type: string
     SearchSemanticTypeId:
       enum:
