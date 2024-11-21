@@ -200,6 +200,31 @@ public class AppBusinessLogicTests
 
     #endregion
 
+    #region Decline App Subscription
+
+    [Fact]
+    public async Task DeclineAppSubscription_ReturnsExpected()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        var offerSubscriptionService = A.Fake<IOfferSubscriptionService>();
+        A.CallTo(() => offerSubscriptionService.RemoveOfferSubscriptionAsync(A<Guid>._, OfferTypeId.APP, A<string>._))
+            .Returns(offerSubscriptionId);
+        var sut = new AppsBusinessLogic(null!, offerSubscriptionService, null!, null!, Options.Create(new AppsSettings()), _identityService);
+
+        // Act
+        await sut.DeclineAppSubscriptionAsync(offerSubscriptionId);
+
+        // Assert
+        A.CallTo(() => offerSubscriptionService.RemoveOfferSubscriptionAsync(
+                A<Guid>.That.IsEqualTo(offerSubscriptionId),
+                A<OfferTypeId>.That.Matches(x => x == OfferTypeId.APP),
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region Auto setup service
 
     [Fact]

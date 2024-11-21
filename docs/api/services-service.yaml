@@ -1514,7 +1514,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: The User is unauthorized
-  '/api/services/subscription/{subscriptionId}/decline':
+  '/subscription/{subscriptionId}/decline':
     put:
       tags:
         - Services
@@ -1532,14 +1532,14 @@ paths:
       responses:
         '204':
           description: Service subscription was successfully declined.
-        '400':
-          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
+        '403':
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -1556,6 +1556,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
         '401':
           description: The User is unauthorized
 components:
