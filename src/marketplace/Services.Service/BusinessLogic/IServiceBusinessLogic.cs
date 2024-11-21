@@ -45,6 +45,12 @@ public interface IServiceBusinessLogic
     Task<Guid> AddServiceSubscription(Guid serviceId, IEnumerable<OfferAgreementConsentData> offerAgreementConsentData);
 
     /// <summary>
+    /// Declines a pending service subscription of a service, provided by the current user's company.
+    /// </summary>
+    /// <param name="subscriptionId">ID of the pending service to be declined.</param>
+    public Task DeclineServiceSubscriptionAsync(Guid subscriptionId);
+
+    /// <summary>
     /// Gets the service detail data for the given service
     /// </summary>
     /// <param name="serviceId">Id of the service the details should be retrieved for.</param>

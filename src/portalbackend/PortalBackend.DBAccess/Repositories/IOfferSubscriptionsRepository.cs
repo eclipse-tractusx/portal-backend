@@ -40,6 +40,16 @@ public interface IOfferSubscriptionsRepository
     OfferSubscription CreateOfferSubscription(Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId);
 
     /// <summary>
+    /// Deletes the given company assigned offer's subscription from the database
+    /// </summary>
+    /// <param name="offerId">Id of the assigned offer</param>
+    /// <param name="companyId">Id of the company</param>
+    /// <param name="offerSubscriptionStatusId">id of the offer subscription</param>
+    /// <param name="requesterId">id of the user that requested the subscription of the offer</param>
+    /// <param name="creatorId">id of the creator</param>
+    OfferSubscription DeleteOfferSubscription(Guid subscriptionId, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId);
+
+    /// <summary>
     /// Gets the provided offer subscription statuses for the user and given company
     /// </summary>
     /// <param name="userCompanyId"></param>
