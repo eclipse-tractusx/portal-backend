@@ -77,7 +77,7 @@ https://www.eclipse.org/projects/handbook/#resources-commit
 
 ## How To Contribute
 
-For more practical information, please refer to [Contribution details](https://github.com/eclipse-tractusx/portal-assets/blob/main/docs/developer/Technical%20Documentation/Dev%20Process/How%20to%20contribute.md).
+For more practical information, please refer to [Contribution details](https://github.com/eclipse-tractusx/portal-assets/blob/main/docs/admin/Dev%20Process/How%20to%20contribute.md).
 
 ## Contact
 
