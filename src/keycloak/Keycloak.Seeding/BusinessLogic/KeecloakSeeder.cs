@@ -18,6 +18,8 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
@@ -44,17 +46,27 @@ public class KeycloakSeeder(
         {
             await seedDataHandler.Import(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await realmUpdater.UpdateRealm(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await localizationsUpdater.UpdateLocalizations(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await userProfileUpdater.UpdateUserProfile(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await rolesUpdater.UpdateRealmRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await clientScopesUpdater.UpdateClientScopes(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await clientsUpdater.UpdateClients(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await rolesUpdater.UpdateClientRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await rolesUpdater.UpdateCompositeRoles(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await identityProvidersUpdater.UpdateIdentityProviders(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await usersUpdater.UpdateUsers(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await clientScopeMapperUpdater.UpdateClientScopeMapper(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await authenticationFlowsUpdater.UpdateAuthenticationFlows(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.LocalizationsConfigKey, realm.InstanceName, localizationsUpdater.UpdateLocalizations, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.UserProfileConfigKey, realm.InstanceName, userProfileUpdater.UpdateUserProfile, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.RolesConfigKey, realm.InstanceName, rolesUpdater.UpdateRealmRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.ClientScopesConfigKey, realm.InstanceName, clientScopesUpdater.UpdateClientScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.ClientsConfigKey, realm.InstanceName, clientsUpdater.UpdateClients, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.ClientRolesConfigKey, realm.InstanceName, rolesUpdater.UpdateClientRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.RolesConfigKey, realm.InstanceName, rolesUpdater.UpdateCompositeRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.IdentityProvidersConfigKey, realm.InstanceName, identityProvidersUpdater.UpdateIdentityProviders, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.UsersConfigKey, realm.InstanceName, usersUpdater.UpdateUsers, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.ClientScopeMappersConfigKey, realm.InstanceName, clientScopeMapperUpdater.UpdateClientScopeMapper, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CheckAndExecuteUpdater(ConfigurationKeys.AuthenticationFlowsConfigKey, realm.InstanceName, authenticationFlowsUpdater.UpdateAuthenticationFlows, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
+    }
+
+    private async Task CheckAndExecuteUpdater(string configKey, string instanceName, Func<string, CancellationToken, Task> updaterExecution, CancellationToken cancellationToken)
+    {
+        if (!seedDataHandler.Configuration.ModificationAllowed(configKey))
+        {
+            return;
+        }
+
+        await updaterExecution(instanceName, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -22,27 +22,22 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class ClientScopeMapperUpdater : IClientScopeMapperUpdater
+public class ClientScopeMapperUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
+    : IClientScopeMapperUpdater
 {
-    private readonly IKeycloakFactory _keycloakFactory;
-    private readonly ISeedDataHandler _seedData;
-
-    public ClientScopeMapperUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
-    {
-        _keycloakFactory = keycloakFactory;
-        _seedData = seedDataHandler;
-    }
-
     public async Task UpdateClientScopeMapper(string instanceName, CancellationToken cancellationToken)
     {
-        var keycloak = _keycloakFactory.CreateKeycloakClient(instanceName);
-        var realm = _seedData.Realm;
+        var keycloak = keycloakFactory.CreateKeycloakClient(instanceName);
+        var realm = seedDataHandler.Realm;
+        var seederConfig = seedDataHandler.Configuration;
 
         var clients = await keycloak.GetClientsAsync(realm, null, true, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        foreach (var (clientName, mappingModels) in _seedData.ClientScopeMappings)
+        foreach (var (clientName, mappingModels) in seedDataHandler.ClientScopeMappings)
         {
             var client = clients.SingleOrDefault(x => x.ClientId == clientName);
             if (client?.Id is null)
@@ -60,17 +55,21 @@ public class ClientScopeMapperUpdater : IClientScopeMapperUpdater
                 }
                 var clientRoles = await keycloak.GetClientRolesScopeMappingsForClientAsync(realm, clientScope.Id, client.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 var mappingModelRoles = mappingModel.Roles?.Select(roleName => roles.SingleOrDefault(r => r.Name == roleName) ?? throw new ConflictException($"No role with name {roleName} found")) ?? Enumerable.Empty<Role>();
-                await AddAndDeleteRoles(keycloak, realm, clientScope.Id, client.Id, clientRoles, mappingModelRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                await AddAndDeleteRoles(keycloak, realm, clientScope.Id, client.Id, clientRoles, mappingModelRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         }
     }
 
-    private static async Task AddAndDeleteRoles(KeycloakClient keycloak, string realm, string clientScopeId, string clientId, IEnumerable<Role> roles, IEnumerable<Role> updateRoles, CancellationToken cancellationToken)
+    private static async Task AddAndDeleteRoles(KeycloakClient keycloak, string realm, string clientScopeId, string clientId, IEnumerable<Role> roles, IEnumerable<Role> updateRoles, SeederConfiguration seederConfig, CancellationToken cancellationToken)
     {
-        await updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name).IfAnyAwait(rolesToAdd =>
-            keycloak.AddClientRolesScopeMappingToClientAsync(realm, clientScopeId, clientId, rolesToAdd, cancellationToken)).ConfigureAwait(false);
+        await updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name)
+            .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.ClientScopesConfigKey, ModificationType.Create, x.Name))
+            .IfAnyAwait(rolesToAdd =>
+                keycloak.AddClientRolesScopeMappingToClientAsync(realm, clientScopeId, clientId, rolesToAdd, cancellationToken)).ConfigureAwait(false);
 
-        await roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name).IfAnyAwait(rolesToDelete =>
-            keycloak.RemoveClientRolesFromClientScopeForClientAsync(realm, clientScopeId, clientId, rolesToDelete, cancellationToken)).ConfigureAwait(false);
+        await roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name)
+            .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.ClientScopesConfigKey, ModificationType.Delete, x.Name))
+            .IfAnyAwait(rolesToDelete =>
+                keycloak.RemoveClientRolesFromClientScopeForClientAsync(realm, clientScopeId, clientId, rolesToDelete, cancellationToken)).ConfigureAwait(false);
     }
 }

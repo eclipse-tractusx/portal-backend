@@ -26,6 +26,7 @@ public interface ISeedDataHandler
     Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken);
 
     string Realm { get; }
+    SeederConfiguration Configuration { get; }
 
     KeycloakRealm KeycloakRealm { get; }
 
