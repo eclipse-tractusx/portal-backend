@@ -62,6 +62,7 @@ public class ApplicationChecklistHandlerService(
         new(ProcessStepTypeId.REMOVE_REGISTRATION_ROLES, new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, true, applicationActivationService.RemoveRegistrationRoles, (ex, _, _) => checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_REMOVE_REGISTRATION_ROLES))),
         new(ProcessStepTypeId.SET_THEME, new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, true, applicationActivationService.SetTheme, (ex, _, _) => checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_SET_THEME))),
         new(ProcessStepTypeId.SET_MEMBERSHIP, new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, true, applicationActivationService.SetMembership, (ex, _, _) => checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP))),
+        new(ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM, new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, true, applicationActivationService.SetCxMembership, (ex, _, _) => checklistService.HandleServiceErrorAsync(ex, ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM))),
         new(ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION, new(ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, true, applicationActivationService.SaveApplicationActivationToDatabase, null))
     ]);
 
