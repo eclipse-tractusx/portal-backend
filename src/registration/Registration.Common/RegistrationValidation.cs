@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.RegularExpressions;
@@ -78,13 +79,13 @@ public static class RegistrationValidation
                 nameof(data.UniqueIds));
         }
 
-        var invalidUniqueIdentifiersValues = data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId));
-        if (invalidUniqueIdentifiersValues.Any())
-        {
-            throw new ControllerArgumentException(
-                $"Invalid value of uniqueIds: '{string.Join(", ", invalidUniqueIdentifiersValues.Select(uniqueId => uniqueId.UniqueIdentifierId))}'",
-                nameof(data.UniqueIds));
-        }
+        var invalidUniqueIdentifiersValues = data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId))
+            .IfAny(invalidUniqueIdentifiersValues =>
+                {
+                    throw new ControllerArgumentException(
+                        $"Invalid value of uniqueIds: '{string.Join(", ", invalidUniqueIdentifiersValues.Select(uniqueId => uniqueId.UniqueIdentifierId))}'",
+                        nameof(data.UniqueIds));
+                });
     }
 
     public static async Task ValidateDatabaseData(this RegistrationData data, Func<string, Task<bool>> checkBpn, Func<string, Task<bool>> checkCountryExistByAlpha2Code, Func<string, IEnumerable<UniqueIdentifierId>, Task<(bool IsValidCountry, IEnumerable<UniqueIdentifierId> UniqueIdentifierIds)>> getCountryAssignedIdentifiers, bool checkBpnAlreadyExists)
@@ -127,6 +128,6 @@ public static class RegistrationValidation
             UniqueIdentifierId.LEI_CODE => !LeiCodeRegex.IsMatch(value),
             UniqueIdentifierId.VIES => !ViesRegex.IsMatch(value),
             UniqueIdentifierId.EORI => !EoriRegex.IsMatch(value),
-            _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Provided unique identifier is not available in the system")
+            _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId))
         };
 }
