@@ -1838,6 +1838,52 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: The User is unauthorized
+  '/api/apps/subscription/{subscriptionId}/decline':
+    put:
+      tags:
+        - Apps
+      summary: 'Declines a pending app subscription. (Authorization required - Roles: decline_subscription)'
+      description: 'Example: PUT: /api/apps/subscription/{subscriptiondId}/decline'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: ID of the subscription to decline.
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645
+      responses:
+        '204':
+          description: App subscription was successfully declined.
+        '404':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: 'If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.'
+        '401':
+          description: The User is unauthorized
   '/api/apps/{subscriptionId}/unsubscribe':
     put:
       tags:
