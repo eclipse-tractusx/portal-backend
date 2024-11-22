@@ -495,12 +495,6 @@ public class OfferSubscriptionServiceTests
             .Returns(offerSubscriptionDetails);
         A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
             .Returns(subscription);
-        var mailParameters = new[]
-        {
-            ("offerName", offerSubscriptionDetails.OfferName!),
-            ("url", BasePortalUrl),
-            ("requesterName", string.Format("{0} {1}", offerSubscriptionDetails.RequesterFirstname, offerSubscriptionDetails.RequesterLastname))
-        };
 
         // Act
         await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
