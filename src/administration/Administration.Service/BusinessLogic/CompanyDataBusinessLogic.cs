@@ -297,7 +297,7 @@ public class CompanyDataBusinessLogic(
     {
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var doc = portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, documentContent,
-            hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, x =>
+            hash, mediaTypeId, DocumentTypeId.COMPANY_CERTIFICATE, document.Length, x =>
             {
                 x.CompanyUserId = _identityData.IdentityId;
                 x.DocumentStatusId = DocumentStatusId.LOCKED;

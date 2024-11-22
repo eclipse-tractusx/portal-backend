@@ -200,6 +200,7 @@ public class SdFactoryBusinessLogic(
             hash,
             MediaTypeId.JSON,
             DocumentTypeId.SELF_DESCRIPTION,
+            documentContent.Length,
             doc => { doc.DocumentStatusId = DocumentStatusId.LOCKED; });
         return document.Id;
     }

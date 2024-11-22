@@ -746,20 +746,20 @@ public class CompanyDataBusinessLogicTests
                 setOptionalFields?.Invoke(companyCertificateData);
                 companyCertificates.Add(companyCertificateData);
             });
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
-            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields) =>
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<long>._, A<Action<Document>>._))
+            .Invokes((string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, long documentSize, Action<Document>? setupOptionalFields) =>
             {
-                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentTypeId);
+                var document = new Document(documentId, documentContent, hash, documentName, mediaTypeId, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, documentTypeId, documentSize);
                 setupOptionalFields?.Invoke(document);
                 documents.Add(document);
             })
-            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default));
+            .Returns(new Document(documentId, null!, null!, null!, default, default, default, default, default));
 
         // Act
         await _sut.CreateCompanyCertificate(data, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<Action<Document>>._))
+        A.CallTo(() => _documentRepository.CreateDocument(A<string>._, A<byte[]>._, A<byte[]>._, MediaTypeId.PDF, DocumentTypeId.COMPANY_CERTIFICATE, A<long>._, A<Action<Document>>._))
             .MustHaveHappenedOnceExactly();
         documents.Should().ContainSingle();
         var document = documents.Single();

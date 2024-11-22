@@ -136,7 +136,7 @@ public class CompanyCertificateRepository : ICompanyCertificateRepository
 
     public void AttachAndModifyCompanyCertificateDocumentDetails(Guid id, Action<Document>? initialize, Action<Document> updateFields)
     {
-        var entity = new Document(id, null!, null!, null!, default, default, default, default);
+        var entity = new Document(id, null!, null!, null!, default, default, default, default, default);
         initialize?.Invoke(entity);
         _context.Attach(entity);
         updateFields.Invoke(entity);

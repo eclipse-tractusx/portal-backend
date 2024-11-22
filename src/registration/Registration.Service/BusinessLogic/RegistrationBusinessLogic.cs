@@ -152,7 +152,7 @@ public class RegistrationBusinessLogic(
         var mediaTypeId = document.ContentType.ParseMediaTypeId();
         var (content, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, doc =>
+        portalRepositories.GetInstance<IDocumentRepository>().CreateDocument(document.FileName, content, hash, mediaTypeId, documentTypeId, document.Length, doc =>
         {
             doc.CompanyUserId = _identityData.IdentityId;
         });

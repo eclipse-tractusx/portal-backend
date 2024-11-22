@@ -660,7 +660,7 @@ public class ConnectorsBusinessLogicTests
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 =>
             {
-                var document = new Document(docId, null!, null!, null!, default, default, default, default);
+                var document = new Document(docId, null!, null!, null!, default, default, default, default, default);
                 initialize?.Invoke(document);
                 modify(document);
             });
@@ -706,7 +706,7 @@ public class ConnectorsBusinessLogicTests
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
                 =>
             {
-                var document = new Document(docId, null!, null!, null!, default, default, default, default);
+                var document = new Document(docId, null!, null!, null!, default, default, default, default, default);
                 initialize?.Invoke(document);
                 modify(document);
             });
@@ -1095,7 +1095,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var documentId = Guid.NewGuid();
         var connectorId = Guid.NewGuid();
-        var document = new Document(documentId, null!, null!, null!, default, default, DocumentStatusId.PENDING, default);
+        var document = new Document(documentId, null!, null!, null!, default, default, DocumentStatusId.PENDING, default, default);
         var connector = _fixture.Build<Connector>()
             .With(x => x.ConnectorUrl, "https://old.de")
             .Create();

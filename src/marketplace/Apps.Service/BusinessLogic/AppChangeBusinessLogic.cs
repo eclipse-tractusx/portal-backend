@@ -214,7 +214,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
         var (documentContent, hash) = await document.GetContentAndHash(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, x =>
+        var doc = documentRepository.CreateDocument(document.FileName, documentContent, hash, documentContentType, DocumentTypeId.APP_LEADIMAGE, documentContent.Length, x =>
         {
             x.CompanyUserId = _identityData.IdentityId;
             x.DocumentStatusId = DocumentStatusId.LOCKED;

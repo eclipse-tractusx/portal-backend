@@ -37,9 +37,10 @@ public interface IDocumentRepository
     /// <param name="hash">Hash of the document</param>
     /// <param name="mediaTypeId">The documents mediaType</param>
     /// <param name="documentTypeId">the document type id</param>
+    /// <param name="documentSize">the document size</param>
     /// <param name="setupOptionalFields">Action to setup the additional fields</param>
     /// <returns>Returns the created document</returns>
-    Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, Action<Document>? setupOptionalFields);
+    Document CreateDocument(string documentName, byte[] documentContent, byte[] hash, MediaTypeId mediaTypeId, DocumentTypeId documentTypeId, long documentLength, Action<Document>? setupOptionalFields);
 
     /// <summary>
     /// Gets the document with the given id from the persistence layer.
