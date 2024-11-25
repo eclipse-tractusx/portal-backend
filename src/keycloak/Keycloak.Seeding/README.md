@@ -10,13 +10,12 @@ In the Seeder configuration you must have one Default entry where the following 
 **Example**:
 
 ```json
-    "SeederConfiguration": {
-        "Key": "Default",
+    "Realms": [
         "Create": true,
         "Update": true,
         "Delete": true,
-        "Entities": []
-    }
+        "SeederConfiguration": []
+    ]
 ```
 
 with this the general logic to create, update, delete entries can either be enabled or disabled.
@@ -28,20 +27,14 @@ To be able to enable or disable the functionality for specific types the Entitie
 **Example**:
 
 ```json
-    "SeederConfiguration": {
-        "Key": "Default",
-        "Create": true,
-        "Update": true,
-        "Delete": true,
-        "Entities": [
-          {
-            "Key": "Localizations",
-            "Create": false,
-            "Update": false,
-            "Delete": false,
-          }
-        ]
-    }
+    "SeederConfiguration": [
+      {
+        "Key": "Localizations",
+        "Create": false,
+        "Update": false,
+        "Delete": false,
+      }
+    ]
 ```
 
 with this example configuration all entities would be created, updated and deleted, but for all entities that are roles the seeding wouldn't do anything.
@@ -74,28 +67,22 @@ To be able to enable or disable the seeding for specific values the configuratio
 **Example**
 
 ```json
-    "SeederConfiguration": {
-        "Key": "Default",
+    "SeederConfiguration": [
+      {
+        "Key": "Localizations",
         "Create": true,
         "Update": false,
         "Delete": true,
         "Entities": [
           {
-            "Key": "Localizations",
+            "Key": "profile.attributes.organisation",
             "Create": true,
-            "Update": false,
-            "Delete": true,
-            "Entities": [
-              {
-                "Key": "profile.attributes.organisation",
-                "Create": true,
-                "Update": true,
-                "Delete": true
-              }
-            ]
+            "Update": true,
+            "Delete": true
           }
         ]
-    }
+      }
+    ]
 ```
 
 In the example above you can see that the default settings as well as the specific type settings for update are disabled.
@@ -103,9 +90,57 @@ But for localizations with the key `profile.attributes.organisation` the update 
 
 **Note**: The key defers for the specific types e.g. for `Localization` it is a string for `User` it is a uuid.
 
+## Entity Specific Type Configurations
+
+For some entities there is a specific entry type configuration in place. E.g. FederatedIdentities can be configured for a specific user.
+
+**Example**
+
+```json
+    "SeederConfiguration": [
+      {
+        "Key": "Users",
+        "Create": true,
+        "Update": false,
+        "Delete": false,
+        "Entities": [
+          {
+            "Key": "e69c1397-eee8-434a-b83b-dc7944bb9bdd",
+            "Create": true,
+            "Update": true,
+            "Delete": false,
+            "Entities": [
+              {
+                "Key": "FederatedIdentities",
+                "Create": false,
+                "Update": false,
+                "Delete": false,
+                "Entities": [
+                  {
+                    "Key": "CX-Operator",
+                    "Create": true,
+                    "Update": true,
+                    "Delete": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+```
+
 ## Example Configuration
 
 For further reference you can have a look at the [example appsettings](./appsettings.example.json)
+
+## Not supported modifications
+
+- UserProfiles can only be updated. The deletion and creation of userProfiles isn't supported
+- Clients can't be deleted since it isn't supported by the api
+- IdentityProviders can't be deleted yet
+- Users can't be deleted yet
 
 ## NOTICE
 

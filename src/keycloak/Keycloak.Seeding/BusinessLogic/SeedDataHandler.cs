@@ -37,7 +37,7 @@ public class SeedDataHandler : ISeedDataHandler
 
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
-    private SeederConfiguration? _seedingConfiguration;
+    private KeycloakRealmSettings? _realmConfiguration;
 
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
@@ -47,7 +47,7 @@ public class SeedDataHandler : ISeedDataHandler
                 async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .Merge(realmSettings.ToModel());
-        _seedingConfiguration = realmSettings.SeederConfiguration;
+        _realmConfiguration = realmSettings;
         _idOfClients = null;
     }
 
@@ -59,6 +59,7 @@ public class SeedDataHandler : ISeedDataHandler
             jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken)
                                     .ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
         }
+
         if (jsonRealm.Realm != null && jsonRealm.Realm != realm)
             throw new ConfigurationException($"json realm {jsonRealm.Realm} doesn't match the configured realm: {realm}");
 
@@ -70,9 +71,9 @@ public class SeedDataHandler : ISeedDataHandler
         get => _keycloakRealm?.Realm ?? throw new ConflictException("realm must not be null");
     }
 
-    public SeederConfiguration Configuration
+    public KeycloakRealmSettings Configuration
     {
-        get => _seedingConfiguration ?? throw new ConflictException("configuration must not be null");
+        get => _realmConfiguration ?? throw new ConflictException("configuration must not be null");
     }
 
     public KeycloakRealm KeycloakRealm

@@ -57,10 +57,10 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             await UpdateExistingAuthenticationFlows(topLevelCustomFlows, seedFlows, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        private async Task DeleteRedundantAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task DeleteRedundantAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             foreach (var delete in topLevelCustomFlows.ExceptBy(seedFlows.Select(x => x.Alias), x => x.Alias)
-                         .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowsConfigKey, ModificationType.Delete, x.Alias)))
+                         .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlows, ModificationType.Delete, x.Alias)))
 
             {
                 if (delete.Id == null)
@@ -69,7 +69,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             }
         }
 
-        private async Task AddMissingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task AddMissingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             foreach (var addFlow in seedFlows.ExceptBy(topLevelCustomFlows.Select(x => x.Alias), x => x.Alias))
             {
@@ -77,7 +77,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
                     throw new ConflictException($"authenticationFlow.Alias is null {addFlow.Id} {addFlow.Description}");
                 if (addFlow.BuiltIn ?? false)
                     throw new ConflictException($"authenticationFlow.buildIn is true. flow cannot be added: {addFlow.Alias}");
-                if (seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowsConfigKey, ModificationType.Create, addFlow.Id))
+                if (seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlows, ModificationType.Create, addFlow.Alias))
                 {
                     await keycloak.CreateAuthenticationFlowAsync(_realm, CreateUpdateAuthenticationFlow(null, addFlow), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 }
@@ -86,7 +86,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             }
         }
 
-        private async Task UpdateExistingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task UpdateExistingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             foreach (var (flow, seed) in topLevelCustomFlows
                 .Join(
@@ -94,7 +94,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
                     x => x.Alias,
                     x => x.Alias,
                     (flow, seed) => (Flow: flow, Seed: seed))
-                .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowsConfigKey, ModificationType.Update, x.Flow.Id)))
+                .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlows, ModificationType.Update, x.Flow.Alias)))
             {
                 if (flow.Id == null)
                     throw new ConflictException($"authenticationFlow.id is null {flow.Alias} {flow.Description}");
@@ -125,7 +125,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             flow.ProviderId == update.ProviderId &&
             flow.TopLevel == update.TopLevel;
 
-        private async Task UpdateAuthenticationFlowExecutions(string alias, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task UpdateAuthenticationFlowExecutions(string alias, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             var updateExecutions = seedDataHandler.GetAuthenticationExecutions(alias);
             var executionNodes = ExecutionNode.Parse(await GetExecutions(alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
@@ -149,9 +149,9 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
                         (x.Node.Execution.AuthenticationFlow ?? false) == (x.Update.AuthenticatorFlow ?? false) &&
                         (!(x.Node.Execution.AuthenticationFlow ?? false) || CompareStructureRecursive(x.Node.Children, seedDataHandler.GetAuthenticationExecutions(x.Update.FlowAlias))));
 
-        private async Task DeleteExecutionsRecursive(IEnumerable<ExecutionNode> executionNodes, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task DeleteExecutionsRecursive(IEnumerable<ExecutionNode> executionNodes, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
-            foreach (var executionNode in executionNodes.Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecutionConfigKey, ModificationType.Delete, x.Execution.Id)))
+            foreach (var executionNode in executionNodes.Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecution, ModificationType.Delete, x.Execution.Id)))
             {
                 if (executionNode.Execution.AuthenticationFlow ?? false)
                 {
@@ -162,9 +162,9 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             }
         }
 
-        private async Task AddExecutionsRecursive(string? alias, IEnumerable<AuthenticationExecutionModel> seedExecutions, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task AddExecutionsRecursive(string? alias, IEnumerable<AuthenticationExecutionModel> seedExecutions, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
-            foreach (var execution in seedExecutions.Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecutionConfigKey, ModificationType.Delete, x.FlowAlias)))
+            foreach (var execution in seedExecutions.Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecution, ModificationType.Delete, x.FlowAlias)))
             {
                 await (execution.AuthenticatorFlow switch
                 {
@@ -180,12 +180,12 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             }
         }
 
-        private async Task UpdateExecutionsRecursive(string alias, IReadOnlyCollection<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task UpdateExecutionsRecursive(string alias, IReadOnlyCollection<ExecutionNode> executionNodes, IEnumerable<AuthenticationExecutionModel> seedExecutions, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             if (executionNodes.Count != seedExecutions.Count())
                 throw new ArgumentException("number of elements in executionNodes doesn't match seedData");
 
-            foreach (var (executionNode, update) in executionNodes.Zip(seedExecutions).Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecutionConfigKey, ModificationType.Update, x.First.Execution.Id)))
+            foreach (var (executionNode, update) in executionNodes.Zip(seedExecutions).Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecution, ModificationType.Update, x.First.Execution.Id)))
             {
                 if ((executionNode.Execution.AuthenticationFlow ?? false) != (update.AuthenticatorFlow ?? false))
                     throw new ArgumentException("execution.AuthenticatorFlow doesn't match seedData");
@@ -234,7 +234,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             async Task UpdateAuthenticationExecution(ExecutionNode executionNode, AuthenticationExecutionModel update, CancellationToken ct)
             {
                 var (isEqual, authenticatorConfig) = await CompareExecutions(executionNode.Execution, update, ct).ConfigureAwait(ConfigureAwaitOptions.None);
-                if (!isEqual && seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecutionConfigKey, ModificationType.Update, executionNode.Execution.Id))
+                if (!isEqual && seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticationFlowExecution, ModificationType.Update, executionNode.Execution.Id))
                 {
                     await keycloak.UpdateAuthenticationFlowExecutionsAsync(
                         _realm,
@@ -257,14 +257,14 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             }
         }
 
-        private async Task UpdateAuthenticatorConfig(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, AuthenticatorConfig? config, SeederConfiguration seederConfig, CancellationToken cancellationToken)
+        private async Task UpdateAuthenticatorConfig(AuthenticationFlowExecution execution, AuthenticationExecutionModel update, AuthenticatorConfig? config, KeycloakRealmSettings seederConfig, CancellationToken cancellationToken)
         {
             switch (execution.AuthenticationConfig, update.AuthenticatorConfig)
             {
                 case (null, null):
                     break;
 
-                case (null, var _) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfigConfigKey, ModificationType.Create, execution.Id):
+                case (null, var _) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfig, ModificationType.Create, update.AuthenticatorConfig):
                     await keycloak.CreateAuthenticationExecutionConfigurationAsync(
                         _realm,
                         execution.Id!,
@@ -276,20 +276,20 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
                         cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
 
-                case (var _, null) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfigConfigKey, ModificationType.Delete, execution.Id):
+                case (var _, null) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfig, ModificationType.Delete, update.AuthenticatorConfig):
                     await keycloak.DeleteAuthenticatorConfigurationAsync(
                         _realm,
                         execution.AuthenticationConfig,
                         cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
 
-                case var (_, _) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfigConfigKey, ModificationType.Update, execution.Id):
+                case var (_, _) when seederConfig.ModificationAllowed(ConfigurationKeys.AuthenticatorConfig, ModificationType.Update, update.AuthenticatorConfig):
                     var updateConfig = seedDataHandler.GetAuthenticatorConfig(update.AuthenticatorConfig);
                     if (config == null)
                         throw new UnexpectedConditionException("authenticatorConfig is null");
                     config.Alias = update.AuthenticatorConfig;
                     config.Config = updateConfig.Config?.FilterNotNullValues().ToDictionary();
-                    await keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig, config, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                    await keycloak.UpdateAuthenticatorConfigurationAsync(_realm, execution.AuthenticationConfig!, config, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                     break;
             }
         }
