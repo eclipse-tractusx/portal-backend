@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 
 public static class SeederConfigurationExtensions
 {
-    public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys configKey)
+    public static bool IsModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys configKey)
     {
         if (config.SeederConfiguration != null &&
             IsModificationAllowed(config.SeederConfiguration, configKey.ToString(), out var _))
@@ -82,7 +82,7 @@ public static class SeederConfigurationExtensions
 
     public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys containingConfigKey, string containingEntityKey, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
     {
-        var containingEntityTypeConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(containingConfigKey.ToString(), StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(configKey));
+        var containingEntityTypeConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(containingConfigKey.ToString(), StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(configKey.ToString()));
         if (containingEntityTypeConfig is null)
         {
             return config.ModificationAllowed(configKey, modificationType, entityKey);
@@ -90,7 +90,7 @@ public static class SeederConfigurationExtensions
 
         if (entityKey is null)
         {
-            return containingEntityTypeConfig?.ModifyAllowed(modificationType) ?? config.ModifyAllowed(modificationType);
+            return containingEntityTypeConfig.ModifyAllowed(modificationType);
         }
 
         // If we have a configuration for a specific entry return its value

@@ -37,7 +37,7 @@ To be able to enable or disable the functionality for specific types the Entitie
     ]
 ```
 
-with this example configuration all entities would be created, updated and deleted, but for all entities that are roles the seeding wouldn't do anything.
+with this example configuration all entities would be created, updated and deleted, but for all entities that are `Localization` the seeding wouldn't do anything.
 
 ### Possible Types
 
