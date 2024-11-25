@@ -34,20 +34,21 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.Configuration;
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.ClientRoles);
 
         foreach (var (clientId, updateRoles) in seedDataHandler.ClientRoles)
         {
             var id = seedDataHandler.GetIdOfClient(clientId);
             var roles = await keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            foreach (var newRole in updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name)
-                         .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.ClientRoles, ModificationType.Create, x.Name)))
+            foreach (var newRole in updateRoles
+                         .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+                         .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
             {
                 await keycloak.CreateRoleAsync(realm, id, CreateRole(newRole), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
 
-            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles, seederConfig, ConfigurationKeys.ClientRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -55,20 +56,21 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.Configuration;
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Roles);
         var roles = await keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var updateRealmRoles = seedDataHandler.RealmRoles;
 
-        foreach (var newRole in updateRealmRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name)
-                     .Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.Roles, ModificationType.Create, x.Name)))
+        foreach (var newRole in updateRealmRoles
+                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+                     .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
         {
             await keycloak.CreateRoleAsync(realm, CreateRole(newRole), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles, seederConfig, ConfigurationKeys.Roles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, KeycloakRealmSettings seederConfig, ConfigurationKeys configKey, CancellationToken cancellationToken)
+    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         foreach (var (role, update) in
             roles.Join(
@@ -76,7 +78,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
                 role => role.Name,
                 roleModel => roleModel.Name,
                 (role, roleModel) => (Role: role, Update: roleModel))
-                .Where(x => seederConfig.ModificationAllowed(configKey, ModificationType.Update, x.Role.Name)))
+                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Role.Name)))
         {
             if (!CompareRole(role, update))
             {
@@ -89,9 +91,9 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
             }
         }
 
-        foreach (var deleteRole in
-            roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name)
-                .Where(x => seederConfig.ModificationAllowed(configKey, ModificationType.Delete, x.Name)))
+        foreach (var deleteRole in roles
+                .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
+                .ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name))
         {
             if (deleteRole.Id == null)
                 throw new ConflictException($"role id must not be null: {deleteRole.Name}");
@@ -104,7 +106,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.Configuration;
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Roles);
 
         foreach (var (clientId, updateRoles) in seedDataHandler.ClientRoles)
         {
@@ -164,8 +166,8 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
                 Func<Role, T> joinUpdateKey,
                 Func<T, ValueTask<Role>> getRoleByName)
             {
-                var updateComposites = updateRoles.Where(x => compositeRolesUpdatePredicate(x) && seederConfig.ModificationAllowed(ConfigurationKeys.Roles, ModificationType.Update, x.Name));
-                var removeComposites = roles.Where(x => compositeRolesPredicate(x) && seederConfig.ModificationAllowed(ConfigurationKeys.Roles, ModificationType.Delete, x.Id)).ExceptBy(updateComposites.Select(roleModel => roleModel.Name), role => role.Name);
+                var updateComposites = updateRoles.Where(x => compositeRolesUpdatePredicate(x) && seederConfig.ModificationAllowed(ModificationType.Update, x.Name));
+                var removeComposites = roles.Where(x => compositeRolesPredicate(x) && seederConfig.ModificationAllowed(ModificationType.Delete, x.Id)).ExceptBy(updateComposites.Select(roleModel => roleModel.Name), role => role.Name);
 
                 foreach (var remove in removeComposites)
                 {
@@ -200,7 +202,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
                         .SelectAwait(x => getRoleByName(x))
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
-                    await addCompositeRoles(role.Name, add.Where(x => seederConfig.ModificationAllowed(ConfigurationKeys.Roles, ModificationType.Create, x.Name))).ConfigureAwait(ConfigureAwaitOptions.None);
+                    await addCompositeRoles(role.Name, add.Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))).ConfigureAwait(ConfigureAwaitOptions.None);
                 }
             }
         }

@@ -35,6 +35,8 @@ public class SeedDataHandler : ISeedDataHandler
         PropertyNameCaseInsensitive = false
     };
 
+    private readonly IDictionary<ConfigurationKeys, SeederConfiguration?> _specificConfigurations = new Dictionary<ConfigurationKeys, SeederConfiguration?>();
+
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
     private KeycloakRealmSettings? _realmConfiguration;
@@ -149,6 +151,7 @@ public class SeedDataHandler : ISeedDataHandler
         {
             clientIds[clientId] = id;
         }
+
         _idOfClients = clientIds.ToImmutableDictionary();
     }
 
@@ -164,4 +167,16 @@ public class SeedDataHandler : ISeedDataHandler
 
     public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
         _keycloakRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
+
+    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKeys configKey)
+    {
+        if (_specificConfigurations.TryGetValue(configKey, out var specificConfiguration))
+        {
+            return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
+        }
+
+        specificConfiguration = _realmConfiguration?.SeederConfiguration?.SingleOrDefault();
+        _specificConfigurations.Add(configKey, specificConfiguration);
+        return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
+    }
 }

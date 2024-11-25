@@ -44,8 +44,8 @@ public class UserProfileUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandl
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
         var userProfiles = seedDataHandler.RealmComponents.Where(x => x.ProviderType == UserProfileType);
-        var defaultConfig = seedDataHandler.Configuration;
-        if (defaultConfig.ModificationAllowed(ConfigurationKeys.UserProfile, ModificationType.Update))
+        var defaultConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.UserProfile);
+        if (defaultConfig.ModificationAllowed(ModificationType.Update))
         {
             return;
         }

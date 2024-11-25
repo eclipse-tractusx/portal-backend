@@ -26,7 +26,6 @@ public interface ISeedDataHandler
     Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken);
 
     string Realm { get; }
-    KeycloakRealmSettings Configuration { get; }
 
     KeycloakRealm KeycloakRealm { get; }
 
@@ -52,6 +51,7 @@ public interface ISeedDataHandler
 
     IEnumerable<(string ProviderType, ComponentModel ComponentModel)> RealmComponents { get; }
     IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> RealmLocalizations { get; }
+    KeycloakRealmSettings Configuration { get; }
 
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
 
@@ -62,4 +62,5 @@ public interface ISeedDataHandler
     IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
 
     AuthenticatorConfigModel GetAuthenticatorConfig(string? alias);
+    KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKeys configKey);
 }

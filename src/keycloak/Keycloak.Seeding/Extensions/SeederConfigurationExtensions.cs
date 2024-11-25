@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
@@ -60,14 +61,14 @@ public static class SeederConfigurationExtensions
         return false;
     }
 
-    public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys configKey, ModificationType modificationType) =>
-        config.ModificationAllowed(configKey, modificationType, null);
+    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, ModificationType modificationType) =>
+        config.ModificationAllowed(modificationType, null);
 
-    public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
+    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, ModificationType modificationType, string? entityKey)
     {
-        var specificConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase));
+        var (defaultConfig, specificConfig) = config;
         if (entityKey is null)
-            return specificConfig?.ModifyAllowed(modificationType) ?? config.ModifyAllowed(modificationType);
+            return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
 
         // If we have a configuration for a specific entry return its value
         var specificEntry = specificConfig?.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
@@ -77,15 +78,16 @@ public static class SeederConfigurationExtensions
         }
 
         // If we don't have a specific value return the specific configuration value if we have one
-        return specificConfig?.ModifyAllowed(modificationType) ?? config.ModifyAllowed(modificationType);
+        return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
     }
 
-    public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys containingConfigKey, string containingEntityKey, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
+    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, string containingEntityKey, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
     {
-        var containingEntityTypeConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(containingConfigKey.ToString(), StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString()));
+        var containingEntityTypeConfig = config.SpecificConfiguration?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase));
         if (containingEntityTypeConfig is null)
         {
-            return config.ModificationAllowed(configKey, modificationType, entityKey);
+            var configModel = config with { SpecificConfiguration = config.DefaultSettings.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase)) };
+            return configModel.ModificationAllowed(modificationType, entityKey);
         }
 
         if (entityKey is null)
@@ -95,7 +97,7 @@ public static class SeederConfigurationExtensions
 
         // If we have a configuration for a specific entry return its value
         var entity = containingEntityTypeConfig.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
-        return entity?.ModifyAllowed(modificationType) ?? config.ModificationAllowed(configKey, modificationType, entityKey);
+        return entity?.ModifyAllowed(modificationType) ?? config.ModificationAllowed(modificationType, entityKey);
     }
 
     private static bool ModifyAllowed(this KeycloakRealmSettings configuration, ModificationType modificationType) =>
