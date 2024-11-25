@@ -50,7 +50,8 @@ public class KeycloakSeeder(
             await CheckAndExecuteUpdater(ConfigurationKeys.UserProfile, realm.InstanceName, userProfileUpdater.UpdateUserProfile, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await CheckAndExecuteUpdater(ConfigurationKeys.Roles, realm.InstanceName, rolesUpdater.UpdateRealmRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await CheckAndExecuteUpdater(ConfigurationKeys.ClientScopes, realm.InstanceName, clientScopesUpdater.UpdateClientScopes, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await CheckAndExecuteUpdater(ConfigurationKeys.Clients, realm.InstanceName, clientsUpdater.UpdateClients, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            // The clients updater must run to set the clientIds
+            await clientsUpdater.UpdateClients(realm.InstanceName, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await CheckAndExecuteUpdater(ConfigurationKeys.ClientRoles, realm.InstanceName, rolesUpdater.UpdateClientRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await CheckAndExecuteUpdater(ConfigurationKeys.Roles, realm.InstanceName, rolesUpdater.UpdateCompositeRoles, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await CheckAndExecuteUpdater(ConfigurationKeys.IdentityProviders, realm.InstanceName, identityProvidersUpdater.UpdateIdentityProviders, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

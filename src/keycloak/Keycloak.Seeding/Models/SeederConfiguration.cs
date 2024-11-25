@@ -29,5 +29,5 @@ public class SeederConfiguration
     public bool Delete { get; set; }
 
     [DistinctValues]
-    public IEnumerable<SeederConfiguration>? Entities { get; set; }
+    public IEnumerable<SeederConfiguration>? SeederConfigurations { get; set; }
 }

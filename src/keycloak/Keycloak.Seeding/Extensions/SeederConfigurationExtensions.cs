@@ -43,7 +43,7 @@ public static class SeederConfigurationExtensions
 
         foreach (var config in configurations)
         {
-            if (config.Entities != null && IsModificationAllowed(config.Entities, targetKey, out matchingConfig))
+            if (config.SeederConfigurations != null && IsModificationAllowed(config.SeederConfigurations, targetKey, out matchingConfig))
             {
                 return true;
             }
@@ -70,7 +70,7 @@ public static class SeederConfigurationExtensions
             return specificConfig?.ModifyAllowed(modificationType) ?? config.ModifyAllowed(modificationType);
 
         // If we have a configuration for a specific entry return its value
-        var specificEntry = specificConfig?.Entities?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
+        var specificEntry = specificConfig?.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
         if (specificEntry != null)
         {
             return specificEntry.ModifyAllowed(modificationType);
@@ -82,7 +82,7 @@ public static class SeederConfigurationExtensions
 
     public static bool ModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys containingConfigKey, string containingEntityKey, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
     {
-        var containingEntityTypeConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(containingConfigKey.ToString(), StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.Entities?.SingleOrDefault(x => x.Key.Equals(configKey.ToString()));
+        var containingEntityTypeConfig = config.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(containingConfigKey.ToString(), StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString()));
         if (containingEntityTypeConfig is null)
         {
             return config.ModificationAllowed(configKey, modificationType, entityKey);
@@ -94,7 +94,7 @@ public static class SeederConfigurationExtensions
         }
 
         // If we have a configuration for a specific entry return its value
-        var entity = containingEntityTypeConfig.Entities?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
+        var entity = containingEntityTypeConfig.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
         return entity?.ModifyAllowed(modificationType) ?? config.ModificationAllowed(configKey, modificationType, entityKey);
     }
 
