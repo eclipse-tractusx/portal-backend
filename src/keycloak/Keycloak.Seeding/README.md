@@ -22,7 +22,7 @@ with this the general logic to create, update, delete entries can either be enab
 
 ## Type Specific Configuration
 
-To be able to enable or disable the functionality for specific types the Entities array in the seeder configuration can be used.
+To be able to enable or disable the functionality for specific types the SeederConfigurations array in the seeder configuration can be used.
 
 **Example**:
 
@@ -73,7 +73,7 @@ To be able to enable or disable the seeding for specific values the configuratio
         "Create": true,
         "Update": false,
         "Delete": true,
-        "Entities": [
+        "SeederConfigurations": [
           {
             "Key": "profile.attributes.organisation",
             "Create": true,
@@ -103,19 +103,19 @@ For some entities there is a specific entry type configuration in place. E.g. Fe
         "Create": true,
         "Update": false,
         "Delete": false,
-        "Entities": [
+        "SeederConfigurations": [
           {
             "Key": "e69c1397-eee8-434a-b83b-dc7944bb9bdd",
             "Create": true,
             "Update": true,
             "Delete": false,
-            "Entities": [
+            "SeederConfigurations": [
               {
                 "Key": "FederatedIdentities",
                 "Create": false,
                 "Update": false,
                 "Delete": false,
-                "Entities": [
+                "SeederConfigurations": [
                   {
                     "Key": "CX-Operator",
                     "Create": true,
