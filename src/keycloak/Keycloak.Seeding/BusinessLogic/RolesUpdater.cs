@@ -34,7 +34,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.ClientRoles);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientRoles);
 
         foreach (var (clientId, updateRoles) in seedDataHandler.ClientRoles)
         {
@@ -56,7 +56,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Roles);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Roles);
         var roles = await keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var updateRealmRoles = seedDataHandler.RealmRoles;
 
@@ -73,12 +73,13 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         foreach (var (role, update) in
-            roles.Join(
-                updateRoles,
-                role => role.Name,
-                roleModel => roleModel.Name,
-                (role, roleModel) => (Role: role, Update: roleModel))
-                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Role.Name)))
+            roles
+                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Name))
+                .Join(
+                    updateRoles,
+                    role => role.Name,
+                    roleModel => roleModel.Name,
+                    (role, roleModel) => (Role: role, Update: roleModel)))
         {
             if (!CompareRole(role, update))
             {
@@ -106,7 +107,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Roles);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Roles);
 
         foreach (var (clientId, updateRoles) in seedDataHandler.ClientRoles)
         {

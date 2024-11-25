@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -35,7 +36,7 @@ public class SeedDataHandler : ISeedDataHandler
         PropertyNameCaseInsensitive = false
     };
 
-    private readonly IDictionary<ConfigurationKeys, SeederConfiguration?> _specificConfigurations = new Dictionary<ConfigurationKeys, SeederConfiguration?>();
+    private readonly IDictionary<ConfigurationKey, SeederConfiguration?> _specificConfigurations = new Dictionary<ConfigurationKey, SeederConfiguration?>();
 
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
@@ -168,14 +169,16 @@ public class SeedDataHandler : ISeedDataHandler
     public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
         _keycloakRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
 
-    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKeys configKey)
+    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey)
     {
         if (_specificConfigurations.TryGetValue(configKey, out var specificConfiguration))
         {
             return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
         }
 
-        specificConfiguration = _realmConfiguration?.SeederConfiguration?.SingleOrDefault();
+        var configKeyString = configKey.ToString();
+
+        specificConfiguration = _realmConfiguration?.SeederConfigurations?.SingleOrDefault(x => x.Key == configKeyString);
         _specificConfigurations.Add(configKey, specificConfiguration);
         return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
     }

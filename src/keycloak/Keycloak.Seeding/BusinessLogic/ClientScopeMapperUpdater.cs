@@ -34,7 +34,7 @@ public class ClientScopeMapperUpdater(IKeycloakFactory keycloakFactory, ISeedDat
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(instanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.ClientScopes);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientScopes);
 
         var clients = await keycloak.GetClientsAsync(realm, null, true, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         foreach (var (clientName, mappingModels) in seedDataHandler.ClientScopeMappings)
@@ -62,13 +62,15 @@ public class ClientScopeMapperUpdater(IKeycloakFactory keycloakFactory, ISeedDat
 
     private static async Task AddAndDeleteRoles(KeycloakClient keycloak, string realm, string clientScopeId, string clientId, IEnumerable<Role> roles, IEnumerable<Role> updateRoles, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
-        await updateRoles.ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name)
+        await updateRoles
             .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+            .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name)
             .IfAnyAwait(rolesToAdd =>
                 keycloak.AddClientRolesScopeMappingToClientAsync(realm, clientScopeId, clientId, rolesToAdd, cancellationToken)).ConfigureAwait(false);
 
-        await roles.ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name)
+        await roles
             .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
+            .ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name)
             .IfAnyAwait(rolesToDelete =>
                 keycloak.RemoveClientRolesFromClientScopeForClientAsync(realm, clientScopeId, clientId, rolesToDelete, cancellationToken)).ConfigureAwait(false);
     }

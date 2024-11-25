@@ -17,23 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 
 public static class SeederConfigurationExtensions
 {
-    public static bool IsModificationAllowed(this KeycloakRealmSettings config, ConfigurationKeys configKey)
-    {
-        if (config.SeederConfiguration != null &&
-            IsModificationAllowed(config.SeederConfiguration, configKey.ToString(), out var _))
-        {
-            return true;
-        }
-
-        return config.Create || config.Update || config.Delete;
-    }
+    public static bool IsModificationAllowed(this KeycloakRealmSettings config, ConfigurationKey configKey) =>
+        config.Create || config.Update || config.Delete ||
+        (config.SeederConfigurations != null &&
+            IsModificationAllowed(config.SeederConfigurations, configKey.ToString(), out var _));
 
     private static bool IsModificationAllowed(
         IEnumerable<SeederConfiguration> configurations,
@@ -81,12 +74,12 @@ public static class SeederConfigurationExtensions
         return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
     }
 
-    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, string containingEntityKey, ConfigurationKeys configKey, ModificationType modificationType, string? entityKey)
+    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, string containingEntityKey, ConfigurationKey configKey, ModificationType modificationType, string? entityKey)
     {
         var containingEntityTypeConfig = config.SpecificConfiguration?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase));
         if (containingEntityTypeConfig is null)
         {
-            var configModel = config with { SpecificConfiguration = config.DefaultSettings.SeederConfiguration?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase)) };
+            var configModel = config with { SpecificConfiguration = config.DefaultSettings.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase)) };
             return configModel.ModificationAllowed(modificationType, entityKey);
         }
 

@@ -35,7 +35,7 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.IdentityProviders);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.IdentityProviders);
 
         foreach (var updateIdentityProvider in seedDataHandler.IdentityProviders)
         {
@@ -45,7 +45,7 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
             try
             {
                 var identityProvider = await keycloak.GetIdentityProviderAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                if (!CompareIdentityProvider(identityProvider, updateIdentityProvider) && seederConfig.ModificationAllowed(ModificationType.Update, updateIdentityProvider.Alias))
+                if (seederConfig.ModificationAllowed(ModificationType.Update, updateIdentityProvider.Alias) && !CompareIdentityProvider(identityProvider, updateIdentityProvider))
                 {
                     UpdateIdentityProvider(identityProvider, updateIdentityProvider);
                     await keycloak.UpdateIdentityProviderAsync(realm, updateIdentityProvider.Alias, identityProvider, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -73,7 +73,7 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
     private static async Task CreateMissingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         foreach (var mapper in updateMappers
-                     .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKeys.IdentityProviderMappers, ModificationType.Create, x.Id))
+                     .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Create, x.Name))
                      .ExceptBy(mappers.Select(x => x.Name), x => x.Name))
         {
             await keycloak.AddIdentityProviderMapperAsync(
@@ -93,12 +93,13 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
     private static async Task UpdateExistingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         foreach (var (mapper, update) in mappers
+            .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Update, x.Name))
             .Join(
                 updateMappers,
                 x => x.Name,
                 x => x.Name,
                 (mapper, update) => (Mapper: mapper, Update: update))
-            .Where(x => !CompareIdentityProviderMapper(x.Mapper, x.Update) && seederConfig.ModificationAllowed(alias, ConfigurationKeys.IdentityProviderMappers, ModificationType.Update, x.Update.Id)))
+            .Where(x => !CompareIdentityProviderMapper(x.Mapper, x.Update)))
         {
             await keycloak.UpdateIdentityProviderMapperAsync(
                 realm,
@@ -112,7 +113,7 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
     private static async Task DeleteObsoleteIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         if (mappers
-            .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKeys.IdentityProviderMappers, ModificationType.Delete, x.Id))
+            .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Delete, x.Name))
             .ExceptBy(updateMappers.Select(x => x.Name), x => x.Name)
             .IfAny(async deleteMappers =>
                 {

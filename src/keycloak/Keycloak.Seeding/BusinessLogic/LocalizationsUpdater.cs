@@ -32,7 +32,7 @@ public class LocalizationsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHan
     {
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Localizations);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Localizations);
         var localizations = await keycloak.GetLocaleAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var updateRealmLocalizations = seedDataHandler.RealmLocalizations;
 
@@ -94,12 +94,13 @@ public class LocalizationsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHan
         }
 
         foreach (var updateTranslation in
-                 localizations.Join(
-                     update.Translations,
-                     l => l.Key,
-                     trans => trans.Key,
-                     (l, trans) => (Key: l.Key, Update: trans))
-            .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Key)))
+                 localizations
+                    .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Key))
+                    .Join(
+                        update.Translations,
+                        l => l.Key,
+                        trans => trans.Key,
+                        (l, trans) => (Key: l.Key, Update: trans)))
         {
             await keycloak.UpdateLocaleAsync(realm, locale, updateTranslation.Key, updateTranslation.Update.Value, cancellationToken).ConfigureAwait(false);
         }

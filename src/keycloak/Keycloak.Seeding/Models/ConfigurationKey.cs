@@ -19,7 +19,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
-public enum ConfigurationKeys
+public enum ConfigurationKey
 {
     Roles = 1,
     Localizations = 2,

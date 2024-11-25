@@ -50,9 +50,9 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             var flows = await keycloak.GetAuthenticationFlowsAsync(_realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             var seedFlows = seedDataHandler.TopLevelCustomAuthenticationFlows;
             var topLevelCustomFlows = flows.Where(flow => !(flow.BuiltIn ?? false) && (flow.TopLevel ?? false));
-            var seederConfiguration = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.AuthenticationFlows);
-            var authFlowExecutionConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.AuthenticationFlowExecution);
-            var authenticatorConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.AuthenticatorConfig);
+            var seederConfiguration = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.AuthenticationFlows);
+            var authFlowExecutionConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.AuthenticationFlowExecution);
+            var authenticatorConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.AuthenticatorConfig);
 
             await DeleteRedundantAuthenticationFlows(topLevelCustomFlows, seedFlows, seederConfiguration, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             await AddMissingAuthenticationFlows(topLevelCustomFlows, seedFlows, seederConfiguration, authenticatorConfig, authFlowExecutionConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -64,7 +64,6 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             foreach (var delete in topLevelCustomFlows
                          .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Alias))
                          .ExceptBy(seedFlows.Select(x => x.Alias), x => x.Alias))
-
             {
                 if (delete.Id == null)
                     throw new ConflictException($"authenticationFlow.id is null {delete.Alias} {delete.Description}");
@@ -93,12 +92,12 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
         private async Task UpdateExistingAuthenticationFlows(IEnumerable<AuthenticationFlow> topLevelCustomFlows, IEnumerable<AuthenticationFlowModel> seedFlows, KeycloakSeederConfigModel seederConfig, KeycloakSeederConfigModel authenticatorConfig, KeycloakSeederConfigModel authFlowExecutionConfig, CancellationToken cancellationToken)
         {
             foreach (var (flow, seed) in topLevelCustomFlows
+                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Alias))
                 .Join(
                     seedFlows,
                     x => x.Alias,
                     x => x.Alias,
-                    (flow, seed) => (Flow: flow, Seed: seed))
-                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Flow.Alias)))
+                    (flow, seed) => (Flow: flow, Seed: seed)))
             {
                 if (flow.Id == null)
                     throw new ConflictException($"authenticationFlow.id is null {flow.Alias} {flow.Description}");
@@ -168,7 +167,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
 
         private async Task AddExecutionsRecursive(string? alias, IEnumerable<AuthenticationExecutionModel> seedExecutions, KeycloakSeederConfigModel authFlowExecutionConfig, CancellationToken cancellationToken)
         {
-            foreach (var execution in seedExecutions.Where(x => authFlowExecutionConfig.ModificationAllowed(ModificationType.Delete, x.FlowAlias)))
+            foreach (var execution in seedExecutions.Where(x => authFlowExecutionConfig.ModificationAllowed(ModificationType.Create, x.FlowAlias)))
             {
                 await (execution.AuthenticatorFlow switch
                 {
@@ -189,7 +188,7 @@ public class AuthenticationFlowsUpdater(IKeycloakFactory keycloakFactory, ISeedD
             if (executionNodes.Count != seedExecutions.Count())
                 throw new ArgumentException("number of elements in executionNodes doesn't match seedData");
 
-            foreach (var (executionNode, update) in executionNodes.Where(x => authFlowExecutionConfig.ModificationAllowed(ModificationType.Update, x.Execution.Id)).Zip(seedExecutions))
+            foreach (var (executionNode, update) in executionNodes.Zip(seedExecutions).Where(x => authFlowExecutionConfig.ModificationAllowed(ModificationType.Update, x.First.Execution.Id)))
             {
                 if ((executionNode.Execution.AuthenticationFlow ?? false) != (update.AuthenticatorFlow ?? false))
                     throw new ArgumentException("execution.AuthenticatorFlow doesn't match seedData");

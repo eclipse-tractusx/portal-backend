@@ -37,13 +37,13 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
     {
         var realm = seedDataHandler.Realm;
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.Clients);
-        var clientScopesSeederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKeys.ClientScopes);
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Clients);
+        var clientScopesSeederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientScopes);
 
         return seedDataHandler.SetClientInternalIds(UpdateClientsInternal(keycloak, realm, seederConfig, clientScopesSeederConfig, cancellationToken).Where(x => x != null).Select(x => x!.Value));
     }
 
-    private async IAsyncEnumerable<(string ClientId, string Id)?> UpdateClientsInternal(KeycloakClient keycloak, string realm, KeycloakSeederConfigModel seederConfig, KeycloakSeederConfigModel clientScopesSeederConfig, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm, KeycloakSeederConfigModel seederConfig, KeycloakSeederConfigModel clientScopesSeederConfig, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         string GetClientScopeId(string scope) => clientScopes.SingleOrDefault(x => x.Name == scope)?.Id ?? throw new ConflictException($"id of clientScope {scope} is undefined");
@@ -58,7 +58,7 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
             {
                 if (!seederConfig.ModificationAllowed(ModificationType.Create, update.ClientId))
                 {
-                    yield return null;
+                    continue;
                 }
 
                 client = await CreateClient(keycloak, realm, update, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -143,7 +143,7 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
             throw new ConflictException("client.ClientId must never be null");
 
         foreach (var mapperId in clientProtocolMappers
-                     .Where(x => seederConfig.ModificationAllowed(client.ClientId, ConfigurationKeys.ClientProtocolMapper, ModificationType.Delete, x.Name))
+                     .Where(x => seederConfig.ModificationAllowed(client.ClientId, ConfigurationKey.ClientProtocolMapper, ModificationType.Delete, x.Name))
                      .ExceptBy(updateProtocolMappers.Select(x => x.Name), x => x.Name)
                      .Select(x => x.Id ?? throw new ConflictException($"protocolMapper.Id is null {x.Name}")))
         {
@@ -151,7 +151,7 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
         }
 
         foreach (var mapper in updateProtocolMappers
-                     .Where(x => seederConfig.ModificationAllowed(client.ClientId, ConfigurationKeys.ClientProtocolMapper, ModificationType.Create, x.Name))
+                     .Where(x => seederConfig.ModificationAllowed(client.ClientId, ConfigurationKey.ClientProtocolMapper, ModificationType.Create, x.Name))
                      .ExceptBy(clientProtocolMappers.Select(x => x.Name), x => x.Name)
                      .Select(x => ProtocolMappersUpdater.CreateProtocolMapper(null, x)))
         {
@@ -159,12 +159,13 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
         }
 
         foreach (var (mapperId, mapper) in clientProtocolMappers
+            .Where(x => seederConfig.ModificationAllowed(client.ClientId, ConfigurationKey.ClientProtocolMapper, ModificationType.Update, x.Name))
             .Join(
                 updateProtocolMappers,
                 x => x.Name,
                 x => x.Name,
                 (mapper, update) => (Mapper: mapper, Update: update))
-            .Where(x => !ProtocolMappersUpdater.CompareProtocolMapper(x.Mapper, x.Update) && seederConfig.ModificationAllowed(client.ClientId, ConfigurationKeys.ClientProtocolMapper, ModificationType.Update, x.Update.Id))
+            .Where(x => !ProtocolMappersUpdater.CompareProtocolMapper(x.Mapper, x.Update))
             .Select(x => (
                 x.Mapper.Id ?? throw new ConflictException($"protocolMapper.Id is null {x.Mapper.Name}"),
                 ProtocolMappersUpdater.CreateProtocolMapper(x.Mapper.Id, x.Update))))
@@ -178,16 +179,18 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
         var optionalScopes = client.OptionalClientScopes ?? Enumerable.Empty<string>();
         var updateScopes = update.OptionalClientScopes ?? Enumerable.Empty<string>();
 
-        foreach (var scopeId in optionalScopes.Except(updateScopes)
-                     .Select(getClientScopeId)
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x)))
+        foreach (var scopeId in optionalScopes
+                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x))
+                     .Except(updateScopes)
+                     .Select(getClientScopeId))
         {
             await keycloak.DeleteOptionalClientScopeAsync(realm, idOfClient, scopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        foreach (var scopeId in updateScopes.Except(optionalScopes)
-                     .Select(getClientScopeId)
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x)))
+        foreach (var scopeId in updateScopes
+                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x))
+                     .Except(optionalScopes)
+                     .Select(getClientScopeId))
         {
             await keycloak.UpdateOptionalClientScopeAsync(realm, idOfClient, scopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
@@ -198,16 +201,18 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
         var defaultScopes = client.DefaultClientScopes ?? Enumerable.Empty<string>();
         var updateScopes = update.DefaultClientScopes ?? Enumerable.Empty<string>();
 
-        foreach (var scopeId in defaultScopes.Except(updateScopes)
-                     .Select(getClientScopeId)
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x)))
+        foreach (var scopeId in defaultScopes
+                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x))
+                     .Except(updateScopes)
+                     .Select(getClientScopeId))
         {
             await keycloak.DeleteDefaultClientScopeAsync(realm, idOfClient, scopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        foreach (var scopeId in updateScopes.Except(defaultScopes)
-                     .Select(getClientScopeId)
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x)))
+        foreach (var scopeId in updateScopes
+                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x))
+                     .Except(defaultScopes)
+                     .Select(getClientScopeId))
         {
             await keycloak.UpdateDefaultClientScopeAsync(realm, idOfClient, scopeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }

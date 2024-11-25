@@ -62,5 +62,5 @@ public interface ISeedDataHandler
     IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
 
     AuthenticatorConfigModel GetAuthenticatorConfig(string? alias);
-    KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKeys configKey);
+    KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey);
 }
