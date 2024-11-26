@@ -40,7 +40,7 @@ public class ClientsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler s
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Clients);
         var clientScopesSeederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientScopes);
 
-        return seedDataHandler.SetClientInternalIds(UpdateClientsInternal(keycloak, realm, seederConfig, clientScopesSeederConfig, cancellationToken).Where(x => x != null).Select(x => x!.Value));
+        return seedDataHandler.SetClientInternalIds(UpdateClientsInternal(keycloak, realm, seederConfig, clientScopesSeederConfig, cancellationToken));
     }
 
     private async IAsyncEnumerable<(string ClientId, string Id)> UpdateClientsInternal(KeycloakClient keycloak, string realm, KeycloakSeederConfigModel seederConfig, KeycloakSeederConfigModel clientScopesSeederConfig, [EnumeratorCancellation] CancellationToken cancellationToken)
