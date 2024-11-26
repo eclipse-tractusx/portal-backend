@@ -56,7 +56,9 @@ public class SeedDataHandler : ISeedDataHandler
             Delete = realmSettings.Delete,
             SeederConfigurations = realmSettings.SeederConfigurations
         };
+
         _idOfClients = null;
+        _specificConfigurations.Clear();
     }
 
     private static async Task<KeycloakRealm> ReadJsonRealm(string path, string realm, CancellationToken cancellationToken)
