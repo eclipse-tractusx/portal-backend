@@ -34,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="MimeKit" Version="4.8.0" />
     <PackageReference Include="ReportPortal.XUnit" Version="2.6.0" />
-    <PackageReference Include="RestAssured.Net" Version="4.4.0" />
+    <PackageReference Include="RestAssured.Net" Version="4.5.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
