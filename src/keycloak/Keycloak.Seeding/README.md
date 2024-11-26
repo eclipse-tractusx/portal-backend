@@ -14,7 +14,7 @@ In the Seeder configuration you must have one Default entry where the following 
         "Create": true,
         "Update": true,
         "Delete": true,
-        "SeederConfiguration": []
+        "SeederConfigurations": []
     ]
 ```
 
@@ -27,7 +27,7 @@ To be able to enable or disable the functionality for specific types the SeederC
 **Example**:
 
 ```json
-    "SeederConfiguration": [
+    "SeederConfigurations": [
       {
         "Key": "Localizations",
         "Create": false,
@@ -67,7 +67,7 @@ To be able to enable or disable the seeding for specific values the configuratio
 **Example**
 
 ```json
-    "SeederConfiguration": [
+    "SeederConfigurations": [
       {
         "Key": "Localizations",
         "Create": true,
@@ -97,7 +97,7 @@ For some entities there is a specific entry type configuration in place. E.g. Fe
 **Example**
 
 ```json
-    "SeederConfiguration": [
+    "SeederConfigurations": [
       {
         "Key": "Users",
         "Create": true,

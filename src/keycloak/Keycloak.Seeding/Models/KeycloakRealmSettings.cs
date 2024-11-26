@@ -35,7 +35,7 @@ public class KeycloakRealmSettings
     public bool Create { get; set; }
     public bool Update { get; set; }
     public bool Delete { get; set; }
-    [DistinctValues]
+    [DistinctValues("x => x.Key")]
     public IEnumerable<SeederConfiguration>? SeederConfigurations { get; set; }
     public string? Id { get; set; }
     public string? DisplayName { get; set; }

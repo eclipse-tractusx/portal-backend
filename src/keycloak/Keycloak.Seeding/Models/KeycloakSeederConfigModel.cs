@@ -20,6 +20,6 @@
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 public record KeycloakSeederConfigModel(
-    KeycloakRealmSettings DefaultSettings,
+    SeederConfiguration DefaultSettings,
     SeederConfiguration? SpecificConfiguration
 );

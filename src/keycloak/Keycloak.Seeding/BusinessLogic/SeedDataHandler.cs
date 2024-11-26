@@ -20,7 +20,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -40,7 +39,7 @@ public class SeedDataHandler : ISeedDataHandler
 
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
-    private KeycloakRealmSettings? _realmConfiguration;
+    private SeederConfiguration? _defaultConfiguration;
 
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
@@ -50,7 +49,13 @@ public class SeedDataHandler : ISeedDataHandler
                 async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .Merge(realmSettings.ToModel());
-        _realmConfiguration = realmSettings;
+        _defaultConfiguration = new SeederConfiguration
+        {
+            Create = realmSettings.Create,
+            Update = realmSettings.Update,
+            Delete = realmSettings.Delete,
+            SeederConfigurations = realmSettings.SeederConfigurations
+        };
         _idOfClients = null;
     }
 
@@ -74,9 +79,9 @@ public class SeedDataHandler : ISeedDataHandler
         get => _keycloakRealm?.Realm ?? throw new ConflictException("realm must not be null");
     }
 
-    public KeycloakRealmSettings Configuration
+    public SeederConfiguration Configuration
     {
-        get => _realmConfiguration ?? throw new ConflictException("configuration must not be null");
+        get => _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
     }
 
     public KeycloakRealm KeycloakRealm
@@ -178,7 +183,7 @@ public class SeedDataHandler : ISeedDataHandler
 
         var configKeyString = configKey.ToString();
 
-        specificConfiguration = _realmConfiguration?.SeederConfigurations?.SingleOrDefault(x => x.Key == configKeyString);
+        specificConfiguration = Configuration.SeederConfigurations?.SingleOrDefault(x => x.Key == configKeyString);
         _specificConfigurations.Add(configKey, specificConfiguration);
         return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
     }

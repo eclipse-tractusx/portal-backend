@@ -23,26 +23,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 
 public static class SeederConfigurationExtensions
 {
-    public static bool IsModificationAllowed(this KeycloakRealmSettings config, ConfigurationKey configKey) =>
+    public static bool IsModificationAllowed(this SeederConfiguration config, ConfigurationKey configKey) =>
         config.Create || config.Update || config.Delete ||
         (config.SeederConfigurations != null &&
-            IsModificationAllowed(config.SeederConfigurations, configKey.ToString(), out var _));
+            IsModificationAllowed(config.SeederConfigurations, configKey.ToString(), false, out var _));
 
     private static bool IsModificationAllowed(
         IEnumerable<SeederConfiguration> configurations,
         string targetKey,
+        bool isKeyParentConfig,
         out SeederConfiguration? matchingConfig)
     {
         matchingConfig = null;
 
         foreach (var config in configurations)
         {
-            if (config.SeederConfigurations != null && IsModificationAllowed(config.SeederConfigurations, targetKey, out matchingConfig))
+            if (config.SeederConfigurations != null && IsModificationAllowed(config.SeederConfigurations, targetKey, isKeyParentConfig || config.Key == targetKey, out matchingConfig))
             {
                 return true;
             }
 
-            if (config.Key != targetKey || config is { Create: false, Update: false, Delete: false })
+            if ((config.Key != targetKey && !isKeyParentConfig) || config is { Create: false, Update: false, Delete: false })
             {
                 continue;
             }
@@ -92,15 +93,6 @@ public static class SeederConfigurationExtensions
         var entity = containingEntityTypeConfig.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
         return entity?.ModifyAllowed(modificationType) ?? config.ModificationAllowed(modificationType, entityKey);
     }
-
-    private static bool ModifyAllowed(this KeycloakRealmSettings configuration, ModificationType modificationType) =>
-        modificationType switch
-        {
-            ModificationType.Create => configuration.Create,
-            ModificationType.Update => configuration.Update,
-            ModificationType.Delete => configuration.Delete,
-            _ => throw new ArgumentOutOfRangeException(nameof(modificationType), modificationType, null)
-        };
 
     private static bool ModifyAllowed(this SeederConfiguration configuration, ModificationType modificationType) =>
         modificationType switch
