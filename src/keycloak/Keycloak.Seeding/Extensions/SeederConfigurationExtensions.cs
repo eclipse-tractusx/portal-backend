@@ -30,7 +30,9 @@ public static class SeederConfigurationExtensions
     {
         var (defaultConfig, specificConfig) = config;
         if (entityKey is null)
+        {
             return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
+        }
 
         // If we have a configuration for a specific entry return its value
         if (specificConfig?.SeederConfigurations.TryGetValue(entityKey.ToLower(), out var specificEntry) == true)
@@ -53,7 +55,7 @@ public static class SeederConfigurationExtensions
         {
             // check if the specific entity configuration has a configuration for the section
             // e.g. for the specific user configuration is there a section for federated identities
-            if (containingEntityKeyConfiguration.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var containingEntityTypeConfig) != true)
+            if (!containingEntityKeyConfiguration.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var containingEntityTypeConfig))
             {
                 config.DefaultSettings.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var specificConfig);
                 var configModel = config with { SpecificConfiguration = specificConfig };

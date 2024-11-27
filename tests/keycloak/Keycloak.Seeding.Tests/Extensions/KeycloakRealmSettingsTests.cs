@@ -68,10 +68,10 @@ public class KeycloakRealmSettingsTests
 
         // Assert
         result.Should().HaveCount(4).And.Satisfy(
-            x => x.Key == "federatedidentities" && x.Value.Create == true && x.Value.Update == true && x.Value.Delete == false,
-            x => x.Key == "testuser" && x.Value.Create == true && x.Value.Update == true && x.Value.Delete == false,
-            x => x.Key == "users" && x.Value.Create == true && x.Value.Update == true && x.Value.Delete == true,
-            x => x.Key == "clients" && x.Value.Create == false && x.Value.Update == false && x.Value.Delete == false
+            x => x.Key == "federatedidentities" && x.Value.Create && x.Value.Update && !x.Value.Delete,
+            x => x.Key == "testuser" && x.Value.Create && x.Value.Update && !x.Value.Delete,
+            x => x.Key == "users" && x.Value.Create && x.Value.Update && x.Value.Delete,
+            x => x.Key == "clients" && !x.Value.Create && !x.Value.Update && !x.Value.Delete
         );
     }
 
@@ -114,10 +114,10 @@ public class KeycloakRealmSettingsTests
         result.Update.Should().BeFalse();
         result.Delete.Should().BeTrue();
         result.SeederConfigurations.Should().ContainSingle().And.Satisfy(
-            x => x.Key == "users" && x.Value.Create == true && x.Value.Update == false && x.Value.Delete == true &&
-                 x.Value.SeederConfigurations.Count == 1 && x.Value.SeederConfigurations.ContainsKey("testuser") == true &&
-                 x.Value.SeederConfigurations.Single().Value.Create == false &&
-                 x.Value.SeederConfigurations.Single().Value.Update == true &&
-                 x.Value.SeederConfigurations.Single().Value.Delete == false);
+            x => x.Key == "users" && x.Value.Create && !x.Value.Update && x.Value.Delete &&
+                 x.Value.SeederConfigurations.Count == 1 && x.Value.SeederConfigurations.ContainsKey("testuser") &&
+                 !x.Value.SeederConfigurations.Single().Value.Create &&
+                 x.Value.SeederConfigurations.Single().Value.Update &&
+                 !x.Value.SeederConfigurations.Single().Value.Delete);
     }
 }

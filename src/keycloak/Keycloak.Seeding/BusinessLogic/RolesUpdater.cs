@@ -208,7 +208,7 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         var updateComposites = updateRoles.Where(x => compositeRolesUpdatePredicate(x));
         var removeComposites = roles.Where(x => compositeRolesPredicate(x)).ExceptBy(updateComposites.Select(roleModel => roleModel.Name), role => role.Name);
 
-        await RemoveRoles<T>(keycloak, realm, removeCompositeRoles, rolePredicate, cancellationToken, removeComposites);
+        await RemoveRoles(keycloak, realm, removeCompositeRoles, rolePredicate, removeComposites, cancellationToken);
 
         var joinedComposites = roles.Join(
             updateComposites,
@@ -238,8 +238,13 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         }
     }
 
-    private static async Task RemoveRoles<T>(KeycloakClient keycloak, string realm, Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
-        Func<Role, bool> rolePredicate, CancellationToken cancellationToken, IEnumerable<Role> removeComposites)
+    private static async Task RemoveRoles(
+        KeycloakClient keycloak,
+        string realm,
+        Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
+        Func<Role, bool> rolePredicate,
+        IEnumerable<Role> removeComposites,
+        CancellationToken cancellationToken)
     {
         foreach (var remove in removeComposites)
         {
