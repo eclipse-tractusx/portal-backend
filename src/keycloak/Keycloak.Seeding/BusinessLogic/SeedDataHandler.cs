@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -35,11 +36,10 @@ public class SeedDataHandler : ISeedDataHandler
         PropertyNameCaseInsensitive = false
     };
 
-    private readonly IDictionary<ConfigurationKey, SeederConfiguration?> _specificConfigurations = new Dictionary<ConfigurationKey, SeederConfiguration?>();
-
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
-    private SeederConfiguration? _defaultConfiguration;
+    private SeederConfigurationModel? _defaultConfiguration;
+    private Dictionary<string, (bool Create, bool Update, bool Delete)>? _flatConfiguration;
 
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
@@ -49,16 +49,10 @@ public class SeedDataHandler : ISeedDataHandler
                 async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .Merge(realmSettings.ToModel());
-        _defaultConfiguration = new SeederConfiguration
-        {
-            Create = realmSettings.Create,
-            Update = realmSettings.Update,
-            Delete = realmSettings.Delete,
-            SeederConfigurations = realmSettings.SeederConfigurations
-        };
+        _defaultConfiguration = realmSettings.GetConfigurationDictionaries();
+        _flatConfiguration = realmSettings.GetFlatDictionary();
 
         _idOfClients = null;
-        _specificConfigurations.Clear();
     }
 
     private static async Task<KeycloakRealm> ReadJsonRealm(string path, string realm, CancellationToken cancellationToken)
@@ -79,11 +73,6 @@ public class SeedDataHandler : ISeedDataHandler
     public string Realm
     {
         get => _keycloakRealm?.Realm ?? throw new ConflictException("realm must not be null");
-    }
-
-    public SeederConfiguration Configuration
-    {
-        get => _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
     }
 
     public KeycloakRealm KeycloakRealm
@@ -178,15 +167,20 @@ public class SeedDataHandler : ISeedDataHandler
 
     public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey)
     {
-        if (_specificConfigurations.TryGetValue(configKey, out var specificConfiguration))
+        var config = _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
+        config.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var specificConfiguration);
+        return new KeycloakSeederConfigModel(config, specificConfiguration);
+    }
+
+    public bool IsModificationAllowed(ConfigurationKey configKey)
+    {
+        var flatConfig = _flatConfiguration ?? throw new ConflictException("configuration must not be null");
+        var config = _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
+        if (flatConfig.TryGetValue(configKey.ToString().ToLower(), out var result))
         {
-            return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
+            return result.Create || result.Update || result.Delete;
         }
 
-        var configKeyString = configKey.ToString();
-
-        specificConfiguration = Configuration.SeederConfigurations?.SingleOrDefault(x => x.Key == configKeyString);
-        _specificConfigurations.Add(configKey, specificConfiguration);
-        return new KeycloakSeederConfigModel(Configuration, specificConfiguration);
+        return config.Create || config.Update || config.Delete;
     }
 }

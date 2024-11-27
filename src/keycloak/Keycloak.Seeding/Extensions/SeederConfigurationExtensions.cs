@@ -23,38 +23,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 
 public static class SeederConfigurationExtensions
 {
-    public static bool IsModificationAllowed(this SeederConfiguration config, ConfigurationKey configKey) =>
-        config.Create || config.Update || config.Delete ||
-        (config.SeederConfigurations != null &&
-            IsModificationAllowed(config.SeederConfigurations, configKey.ToString(), false, out var _));
-
-    private static bool IsModificationAllowed(
-        IEnumerable<SeederConfiguration> configurations,
-        string targetKey,
-        bool isKeyParentConfig,
-        out SeederConfiguration? matchingConfig)
-    {
-        matchingConfig = null;
-
-        foreach (var config in configurations)
-        {
-            if (config.SeederConfigurations != null && IsModificationAllowed(config.SeederConfigurations, targetKey, isKeyParentConfig || config.Key == targetKey, out matchingConfig))
-            {
-                return true;
-            }
-
-            if ((config.Key != targetKey && !isKeyParentConfig) || config is { Create: false, Update: false, Delete: false })
-            {
-                continue;
-            }
-
-            matchingConfig = config;
-            return true;
-        }
-
-        return false;
-    }
-
     public static bool ModificationAllowed(this KeycloakSeederConfigModel config, ModificationType modificationType) =>
         config.ModificationAllowed(modificationType, null);
 
@@ -65,8 +33,7 @@ public static class SeederConfigurationExtensions
             return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
 
         // If we have a configuration for a specific entry return its value
-        var specificEntry = specificConfig?.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
-        if (specificEntry != null)
+        if (specificConfig?.SeederConfigurations.TryGetValue(entityKey.ToLower(), out var specificEntry) == true)
         {
             return specificEntry.ModifyAllowed(modificationType);
         }
@@ -75,26 +42,42 @@ public static class SeederConfigurationExtensions
         return specificConfig?.ModifyAllowed(modificationType) ?? defaultConfig.ModifyAllowed(modificationType);
     }
 
+    public static bool ModificationAllowed(this KeycloakSeederConfigModel config, string containingEntityKey, ConfigurationKey configKey, ModificationType modificationType) =>
+        config.ModificationAllowed(containingEntityKey, configKey, modificationType, null);
+
     public static bool ModificationAllowed(this KeycloakSeederConfigModel config, string containingEntityKey, ConfigurationKey configKey, ModificationType modificationType, string? entityKey)
     {
-        var containingEntityTypeConfig = config.SpecificConfiguration?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(containingEntityKey, StringComparison.OrdinalIgnoreCase))?.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase));
-        if (containingEntityTypeConfig is null)
+        // Check if the specific configuration contains the entity key
+        // e.g. for the users configuration check for a specific user configuration
+        if (config.SpecificConfiguration?.SeederConfigurations.TryGetValue(containingEntityKey.ToLower(), out var containingEntityKeyConfiguration) == true)
         {
-            var configModel = config with { SpecificConfiguration = config.DefaultSettings.SeederConfigurations?.SingleOrDefault(x => x.Key.Equals(configKey.ToString(), StringComparison.OrdinalIgnoreCase)) };
-            return configModel.ModificationAllowed(modificationType, entityKey);
+            // check if the specific entity configuration has a configuration for the section
+            // e.g. for the specific user configuration is there a section for federated identities
+            if (containingEntityKeyConfiguration.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var containingEntityTypeConfig) != true)
+            {
+                config.DefaultSettings.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var specificConfig);
+                var configModel = config with { SpecificConfiguration = specificConfig };
+                return configModel.ModificationAllowed(modificationType, entityKey);
+            }
+
+            // if the entity key isn't set check the configuration for the type
+            if (entityKey is null)
+            {
+                return containingEntityTypeConfig.ModifyAllowed(modificationType);
+            }
+
+            // If we have a configuration for a specific entry return its value otherwise take the section configuration
+            containingEntityTypeConfig.SeederConfigurations.TryGetValue(entityKey.ToLower(), out var entity);
+            return entity?.ModifyAllowed(modificationType) ?? containingEntityTypeConfig.ModifyAllowed(modificationType);
         }
 
-        if (entityKey is null)
-        {
-            return containingEntityTypeConfig.ModifyAllowed(modificationType);
-        }
-
-        // If we have a configuration for a specific entry return its value
-        var entity = containingEntityTypeConfig.SeederConfigurations?.SingleOrDefault(c => c.Key.Equals(entityKey, StringComparison.OrdinalIgnoreCase));
-        return entity?.ModifyAllowed(modificationType) ?? config.ModificationAllowed(modificationType, entityKey);
+        // if no configuration isn't set check the top level configuration
+        config.DefaultSettings.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var topLevelSpecificConfig);
+        var topLevelConfig = config with { SpecificConfiguration = topLevelSpecificConfig };
+        return topLevelConfig.ModificationAllowed(modificationType, entityKey);
     }
 
-    private static bool ModifyAllowed(this SeederConfiguration configuration, ModificationType modificationType) =>
+    private static bool ModifyAllowed(this SeederConfigurationModel configuration, ModificationType modificationType) =>
         modificationType switch
         {
             ModificationType.Create => configuration.Create,

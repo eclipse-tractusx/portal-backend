@@ -114,98 +114,140 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
             var id = seedDataHandler.GetIdOfClient(clientId);
 
             await UpdateCompositeRolesInner(
-                () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
+                keycloak,
+                realm,
+                seederConfig,
                 updateRoles,
+                () => keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken),
                 (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, id, name, roles, cancellationToken),
-                (name, roles) => keycloak.AddCompositesToRoleAsync(realm, id, name, roles, cancellationToken)).ConfigureAwait(ConfigureAwaitOptions.None);
+                (name, roles) => keycloak.AddCompositesToRoleAsync(realm, id, name, roles, cancellationToken),
+                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         await UpdateCompositeRolesInner(
-            () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
+            keycloak,
+            realm,
+            seederConfig,
             seedDataHandler.RealmRoles,
+            () => keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken),
             (name, roles) => keycloak.RemoveCompositesFromRoleAsync(realm, name, roles, cancellationToken),
-            (name, roles) => keycloak.AddCompositesToRoleAsync(realm, name, roles, cancellationToken)).ConfigureAwait(ConfigureAwaitOptions.None);
+            (name, roles) => keycloak.AddCompositesToRoleAsync(realm, name, roles, cancellationToken),
+            cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 
-        async Task UpdateCompositeRolesInner(
-            Func<Task<IEnumerable<Role>>> getRoles,
-            IEnumerable<RoleModel> updateRoles,
-            Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
-            Func<string, IEnumerable<Role>, Task> addCompositeRoles)
+    public async Task UpdateCompositeRolesInner(
+        KeycloakClient keycloak,
+        string realm,
+        KeycloakSeederConfigModel seederConfig,
+        IEnumerable<RoleModel> updateRoles,
+        Func<Task<IEnumerable<Role>>> getRoles,
+        Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
+        Func<string, IEnumerable<Role>, Task> addCompositeRoles,
+        CancellationToken cancellationToken)
+    {
+        var roles = await getRoles().ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await RemoveAddCompositeRolesInner<(string ContainerId, string Name)>(
+            keycloak,
+            realm,
+            seederConfig,
+            updateRoles,
+            roles,
+            removeCompositeRoles,
+            addCompositeRoles,
+            roleModel => roleModel.Composites?.Client?.Any() ?? false,
+            role => role.Composites?.Client?.Any() ?? false,
+            role => role.ClientRole ?? false,
+            roleModel => roleModel.Composites?.Client?
+                    .FilterNotNullValues()
+                    .Select(x => (
+                        Id: seedDataHandler.GetIdOfClient(x.Key),
+                        Names: x.Value))
+                    .SelectMany(x => x.Names.Select(name => (x.Id, name))) ?? throw new ConflictException($"roleModel.Composites.Client is null: {roleModel.Id} {roleModel.Name}"),
+            role => (
+                role.ContainerId ?? throw new ConflictException($"role.ContainerId is null: {role.Id} {role.Name}"),
+                role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}")),
+            async x => await keycloak.GetRoleByNameAsync(realm, x.ContainerId, x.Name, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None),
+            cancellationToken
+        ).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        await RemoveAddCompositeRolesInner(
+            keycloak,
+            realm,
+            seederConfig,
+            updateRoles,
+            roles,
+            removeCompositeRoles,
+            addCompositeRoles,
+            roleModel => roleModel.Composites?.Realm?.Any() ?? false,
+            role => role.Composites?.Realm?.Any() ?? false,
+            role => !(role.ClientRole ?? false),
+            roleModel => roleModel.Composites?.Realm ?? throw new ConflictException($"roleModel.Composites.Realm is null: {roleModel.Id} {roleModel.Name}"),
+            role => role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}"),
+            async name => await keycloak.GetRoleByNameAsync(realm, name, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None),
+            cancellationToken
+        ).ConfigureAwait(ConfigureAwaitOptions.None);
+    }
+
+    private static async Task RemoveAddCompositeRolesInner<T>(
+        KeycloakClient keycloak,
+        string realm,
+        KeycloakSeederConfigModel seederConfig,
+        IEnumerable<RoleModel> updateRoles,
+        IEnumerable<Role> roles,
+        Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
+        Func<string, IEnumerable<Role>, Task> addCompositeRoles,
+        Func<RoleModel, bool> compositeRolesUpdatePredicate,
+        Func<Role, bool> compositeRolesPredicate,
+        Func<Role, bool> rolePredicate,
+        Func<RoleModel, IEnumerable<T>> joinUpdateSelector,
+        Func<Role, T> joinUpdateKey,
+        Func<T, ValueTask<Role>> getRoleByName,
+        CancellationToken cancellationToken)
+    {
+        var updateComposites = updateRoles.Where(x => compositeRolesUpdatePredicate(x));
+        var removeComposites = roles.Where(x => compositeRolesPredicate(x)).ExceptBy(updateComposites.Select(roleModel => roleModel.Name), role => role.Name);
+
+        await RemoveRoles<T>(keycloak, realm, removeCompositeRoles, rolePredicate, cancellationToken, removeComposites);
+
+        var joinedComposites = roles.Join(
+            updateComposites,
+            role => role.Name,
+            roleModel => roleModel.Name,
+            (role, roleModel) => (
+                Role: role,
+                Update: joinUpdateSelector(roleModel)));
+
+        foreach (var (role, updates) in joinedComposites)
         {
-            var roles = await getRoles().ConfigureAwait(ConfigureAwaitOptions.None);
+            if (role.Id == null || role.Name == null)
+                throw new ConflictException($"role.id or role.name must not be null {role.Id} {role.Name}");
+            var composites = (await keycloak.GetRoleChildrenAsync(realm, role.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).Where(role => rolePredicate(role));
+            composites.Where(role => role.ContainerId == null || role.Name == null).IfAny(
+                invalid => throw new ConflictException($"composites roles containerId or name must not be null: {string.Join(" ", invalid.Select(x => $"[{string.Join(",", x.Id, x.Name, x.Description, x.ContainerId)}]"))}"));
 
-            await RemoveAddCompositeRolesInner<(string ContainerId, string Name)>(
-                roleModel => roleModel.Composites?.Client?.Any() ?? false,
-                role => role.Composites?.Client?.Any() ?? false,
-                role => role.ClientRole ?? false,
-                roleModel => roleModel.Composites?.Client?
-                        .FilterNotNullValues()
-                        .Select(x => (
-                            Id: seedDataHandler.GetIdOfClient(x.Key),
-                            Names: x.Value))
-                        .SelectMany(x => x.Names.Select(name => (x.Id, name))) ?? throw new ConflictException($"roleModel.Composites.Client is null: {roleModel.Id} {roleModel.Name}"),
-                role => (
-                    role.ContainerId ?? throw new ConflictException($"role.ContainerId is null: {role.Id} {role.Name}"),
-                    role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}")),
-                async x => await keycloak.GetRoleByNameAsync(realm, x.ContainerId, x.Name, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)
-            ).ConfigureAwait(ConfigureAwaitOptions.None);
+            var remove = composites.ExceptBy(updates, role => joinUpdateKey(role)).Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, role.Name) || seederConfig.ModificationAllowed(ModificationType.Delete, x.Name));
+            await removeCompositeRoles(role.Name, remove).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            await RemoveAddCompositeRolesInner(
-                roleModel => roleModel.Composites?.Realm?.Any() ?? false,
-                role => role.Composites?.Realm?.Any() ?? false,
-                role => !(role.ClientRole ?? false),
-                roleModel => roleModel.Composites?.Realm ?? throw new ConflictException($"roleModel.Composites.Realm is null: {roleModel.Id} {roleModel.Name}"),
-                role => role.Name ?? throw new ConflictException($"role.Name is null: {role.Id}"),
-                async name => await keycloak.GetRoleByNameAsync(realm, name, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)
-            ).ConfigureAwait(ConfigureAwaitOptions.None);
+            var add = await updates.Except(composites.Select(role => joinUpdateKey(role)))
+                .ToAsyncEnumerable()
+                .SelectAwait(x => getRoleByName(x))
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+            await addCompositeRoles(role.Name, add.Where(x => seederConfig.ModificationAllowed(ModificationType.Create, role.Name) || seederConfig.ModificationAllowed(ModificationType.Create, x.Name))).ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
 
-            async Task RemoveAddCompositeRolesInner<T>(
-                Func<RoleModel, bool> compositeRolesUpdatePredicate,
-                Func<Role, bool> compositeRolesPredicate,
-                Func<Role, bool> rolePredicate,
-                Func<RoleModel, IEnumerable<T>> joinUpdateSelector,
-                Func<Role, T> joinUpdateKey,
-                Func<T, ValueTask<Role>> getRoleByName)
-            {
-                var updateComposites = updateRoles.Where(x => compositeRolesUpdatePredicate(x) && seederConfig.ModificationAllowed(ModificationType.Update, x.Name));
-                var removeComposites = roles.Where(x => compositeRolesPredicate(x) && seederConfig.ModificationAllowed(ModificationType.Delete, x.Id)).ExceptBy(updateComposites.Select(roleModel => roleModel.Name), role => role.Name);
+    private static async Task RemoveRoles<T>(KeycloakClient keycloak, string realm, Func<string, IEnumerable<Role>, Task> removeCompositeRoles,
+        Func<Role, bool> rolePredicate, CancellationToken cancellationToken, IEnumerable<Role> removeComposites)
+    {
+        foreach (var remove in removeComposites)
+        {
+            if (remove.Id == null || remove.Name == null)
+                throw new ConflictException($"role.id or role.name must not be null {remove.Id} {remove.Name}");
 
-                foreach (var remove in removeComposites)
-                {
-                    if (remove.Id == null || remove.Name == null)
-                        throw new ConflictException($"role.id or role.name must not be null {remove.Id} {remove.Name}");
-
-                    var composites = (await keycloak.GetRoleChildrenAsync(realm, remove.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).Where(role => rolePredicate(role));
-                    await removeCompositeRoles(remove.Name, composites).ConfigureAwait(ConfigureAwaitOptions.None);
-                }
-
-                var joinedComposites = roles.Join(
-                    updateComposites,
-                    role => role.Name,
-                    roleModel => roleModel.Name,
-                    (role, roleModel) => (
-                        Role: role,
-                        Update: joinUpdateSelector(roleModel)));
-
-                foreach (var (role, updates) in joinedComposites)
-                {
-                    if (role.Id == null || role.Name == null)
-                        throw new ConflictException($"role.id or role.name must not be null {role.Id} {role.Name}");
-                    var composites = (await keycloak.GetRoleChildrenAsync(realm, role.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).Where(role => rolePredicate(role));
-                    composites.Where(role => role.ContainerId == null || role.Name == null).IfAny(
-                        invalid => throw new ConflictException($"composites roles containerId or name must not be null: {string.Join(" ", invalid.Select(x => $"[{string.Join(",", x.Id, x.Name, x.Description, x.ContainerId)}]"))}"));
-
-                    var remove = composites.ExceptBy(updates, role => joinUpdateKey(role));
-                    await removeCompositeRoles(role.Name, remove).ConfigureAwait(ConfigureAwaitOptions.None);
-
-                    var add = await updates.Except(composites.Select(role => joinUpdateKey(role)))
-                        .ToAsyncEnumerable()
-                        .SelectAwait(x => getRoleByName(x))
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await addCompositeRoles(role.Name, add.Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))).ConfigureAwait(ConfigureAwaitOptions.None);
-                }
-            }
+            var composites = (await keycloak.GetRoleChildrenAsync(realm, remove.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).Where(role => rolePredicate(role));
+            await removeCompositeRoles(remove.Name, composites).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 

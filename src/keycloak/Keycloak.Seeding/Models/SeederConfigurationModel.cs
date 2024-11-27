@@ -19,7 +19,9 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
-public record KeycloakSeederConfigModel(
-    SeederConfigurationModel DefaultSettings,
-    SeederConfigurationModel? SpecificConfiguration
+public record SeederConfigurationModel(
+    bool Create,
+    bool Update,
+    bool Delete,
+    IDictionary<string, SeederConfigurationModel> SeederConfigurations
 );

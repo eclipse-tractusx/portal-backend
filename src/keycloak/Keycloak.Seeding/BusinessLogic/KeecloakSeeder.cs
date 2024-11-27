@@ -62,7 +62,7 @@ public class KeycloakSeeder(
     }
 
     private Task CheckAndExecuteUpdater(ConfigurationKey configKey, string instanceName, Func<string, CancellationToken, Task> updaterExecution, CancellationToken cancellationToken) =>
-        seedDataHandler.Configuration.IsModificationAllowed(configKey)
+        seedDataHandler.IsModificationAllowed(configKey)
             ? updaterExecution(instanceName, cancellationToken)
             : Task.CompletedTask;
 }

@@ -51,7 +51,6 @@ public interface ISeedDataHandler
 
     IEnumerable<(string ProviderType, ComponentModel ComponentModel)> RealmComponents { get; }
     IEnumerable<(string Locale, IEnumerable<KeyValuePair<string, string>> Translations)> RealmLocalizations { get; }
-    SeederConfiguration Configuration { get; }
 
     Task SetClientInternalIds(IAsyncEnumerable<(string ClientId, string Id)> clientInternalIds);
 
@@ -63,4 +62,5 @@ public interface ISeedDataHandler
 
     AuthenticatorConfigModel GetAuthenticatorConfig(string? alias);
     KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey);
+    bool IsModificationAllowed(ConfigurationKey configKey);
 }
