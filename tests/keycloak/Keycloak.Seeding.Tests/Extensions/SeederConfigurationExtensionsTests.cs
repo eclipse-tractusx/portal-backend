@@ -92,8 +92,8 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
@@ -101,10 +101,12 @@ public class SeederConfigurationExtensionsTests
                     Update = false,
                     Delete = false
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
+
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed(ModificationType.Create);
 
@@ -119,27 +121,28 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = true, Update = false, Delete = false
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed(ModificationType.Create, "testUser");
 
@@ -154,27 +157,28 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = true,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed(ModificationType.Create, "nonexistent");
 
@@ -189,21 +193,21 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false,
-                            SeederConfigurations = new SeederConfiguration[]
-                            {
+                            SeederConfigurations =
+                            [
                                 new()
                                 {
                                     Key = ConfigurationKey.FederatedIdentities.ToString(),
@@ -211,15 +215,16 @@ public class SeederConfigurationExtensionsTests
                                     Update = false,
                                     Delete = false,
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("testUser", ConfigurationKey.FederatedIdentities, ModificationType.Create);
 
@@ -234,32 +239,32 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser",
                             Create = false,
                             Update = false,
                             Delete = false,
-                            SeederConfigurations = new SeederConfiguration[]
-                            {
+                            SeederConfigurations =
+                            [
                                 new()
                                 {
                                     Key = ConfigurationKey.FederatedIdentities.ToString(),
                                     Create = false,
                                     Update = false,
                                     Delete = false,
-                                    SeederConfigurations = new SeederConfiguration[]
-                                    {
+                                    SeederConfigurations =
+                                    [
                                         new()
                                         {
                                             Key = "fi1",
@@ -267,17 +272,18 @@ public class SeederConfigurationExtensionsTests
                                             Update = false,
                                             Delete = false,
                                         }
-                                    }
+                                    ]
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("testUser", ConfigurationKey.FederatedIdentities, ModificationType.Create, "fi1");
 
@@ -292,29 +298,29 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false,
-                            SeederConfigurations = new SeederConfiguration[]
-                            {
+                            SeederConfigurations =
+                            [
                                 new()
                                 {
                                     Key = ConfigurationKey.FederatedIdentities.ToString(),
                                     Create = true,
                                     Update = false,
                                     Delete = false,
-                                    SeederConfigurations = new SeederConfiguration[]
-                                    {
+                                    SeederConfigurations =
+                                    [
                                         new()
                                         {
                                             Key = "fi1",
@@ -322,17 +328,18 @@ public class SeederConfigurationExtensionsTests
                                             Update = false,
                                             Delete = false,
                                         }
-                                    }
+                                    ]
                                 }
-                            }
+                            ]
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("testUser", ConfigurationKey.FederatedIdentities, ModificationType.Create, "finotfound");
 
@@ -347,21 +354,21 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false
                         }
-                    }
+                    ]
                 },
                 new()
                 {
@@ -369,8 +376,8 @@ public class SeederConfigurationExtensionsTests
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "fi",
@@ -378,13 +385,14 @@ public class SeederConfigurationExtensionsTests
                             Update = false,
                             Delete = false,
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("testUser", ConfigurationKey.FederatedIdentities, ModificationType.Create, "fi");
 
@@ -399,21 +407,21 @@ public class SeederConfigurationExtensionsTests
             Create = false,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false
                         }
-                    }
+                    ]
                 },
                 new()
                 {
@@ -421,8 +429,8 @@ public class SeederConfigurationExtensionsTests
                     Create = true,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "fi",
@@ -430,13 +438,14 @@ public class SeederConfigurationExtensionsTests
                             Update = false,
                             Delete = false,
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("testUser", ConfigurationKey.FederatedIdentities, ModificationType.Create, "missing");
 
@@ -451,27 +460,28 @@ public class SeederConfigurationExtensionsTests
             Create = true,
             Update = false,
             Delete = false,
-            SeederConfigurations = new SeederConfiguration[]
-            {
+            SeederConfigurations =
+            [
                 new()
                 {
                     Key = ConfigurationKey.Users.ToString(),
                     Create = false,
                     Update = false,
                     Delete = false,
-                    SeederConfigurations = new SeederConfiguration[]
-                    {
+                    SeederConfigurations =
+                    [
                         new()
                         {
                             Key = "testUser", Create = false, Update = false, Delete = false
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         var defaultSettings = settings.GetConfigurationDictionaries();
+        defaultSettings.SeederConfigurations.Should().NotBeNull();
 
-        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations["users"]);
+        var config = new KeycloakSeederConfigModel(defaultSettings, defaultSettings.SeederConfigurations!["Users"]);
 
         var result = config.ModificationAllowed("xy", ConfigurationKey.FederatedIdentities, ModificationType.Create, "missing");
 

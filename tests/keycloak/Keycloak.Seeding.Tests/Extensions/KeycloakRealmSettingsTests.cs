@@ -40,14 +40,14 @@ public class KeycloakRealmSettingsTests
             [
                 new()
                 {
-                    Key = "roles",
+                    Key = "Roles",
                     Create = true,
                     Update = false,
                     Delete = false
                 },
                 new()
                 {
-                    Key = "localiZations",
+                    Key = "Localizations",
                     Create = false,
                     Update = true,
                     Delete = false
@@ -65,6 +65,13 @@ public class KeycloakRealmSettingsTests
                     Create = false,
                     Update = false,
                     Delete = false
+                },
+                new()
+                {
+                    Key = "FEDERATEDIdentities",
+                    Create = true,
+                    Update = true,
+                    Delete = true
                 },
                 new()
                 {
@@ -178,7 +185,5 @@ public class KeycloakRealmSettingsTests
                  !x.Value.SeederConfigurations.Single().Value.Create &&
                  x.Value.SeederConfigurations.Single().Value.Update &&
                  !x.Value.SeederConfigurations.Single().Value.Delete);
-        result.SeederConfigurations!.TryGetValue("users", out var _).Should().BeTrue();
-        result.SeederConfigurations["uSeRs"].SeederConfigurations!.TryGetValue("TESTUSER", out var _).Should().BeTrue();
     }
 }

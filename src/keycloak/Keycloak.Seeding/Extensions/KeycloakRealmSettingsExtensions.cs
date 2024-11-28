@@ -30,9 +30,8 @@ public static class KeycloakRealmSettingsExtensions
                 Enum.GetValues<ConfigurationKey>(),
                 config => config.Key,
                 key => key.ToString(),
-                (SeederConfiguration config, ConfigurationKey key) => KeyValuePair.Create(key, GetFlat(config)),
-                StringComparer.OrdinalIgnoreCase
-            ).ToImmutableDictionary();
+                (SeederConfiguration config, ConfigurationKey key) => KeyValuePair.Create(key, GetFlat(config)))
+            .ToImmutableDictionary();
 
     private static bool GetFlat(SeederConfiguration config) =>
         config.Create || config.Update || config.Delete || (config.SeederConfigurations != null && config.SeederConfigurations.Any(GetFlat));
@@ -44,8 +43,7 @@ public static class KeycloakRealmSettingsExtensions
             realmSettings.Delete,
             realmSettings.SeederConfigurations?.ToImmutableDictionary(sc =>
                 sc.Key,
-                ConvertSeederConfigToSeederConfigurationModel,
-                StringComparer.OrdinalIgnoreCase));
+                ConvertSeederConfigToSeederConfigurationModel));
 
     private static SeederConfigurationModel ConvertSeederConfigToSeederConfigurationModel(this SeederConfiguration seederConfig) =>
         new(
@@ -54,6 +52,5 @@ public static class KeycloakRealmSettingsExtensions
             seederConfig.Delete,
             seederConfig.SeederConfigurations?.ToImmutableDictionary(sc =>
                 sc.Key,
-                ConvertSeederConfigToSeederConfigurationModel,
-                StringComparer.OrdinalIgnoreCase));
+                ConvertSeederConfigToSeederConfigurationModel));
 }
