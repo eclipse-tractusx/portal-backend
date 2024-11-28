@@ -31,6 +31,7 @@
         <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
         <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
         <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
+        <ProjectReference Include="..\..\processes\Processes.Library\Processes.Library.csproj" />
     </ItemGroup>
 
 </Project>

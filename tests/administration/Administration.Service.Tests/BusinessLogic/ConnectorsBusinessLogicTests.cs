@@ -1419,6 +1419,49 @@ public class ConnectorsBusinessLogicTests
 
     #endregion
 
+    #region RetriggerSelfDescriptionResponseCreation
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionResponseCreation_CallsExpected()
+    {
+        // Arrange
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
+        var processSteps = new List<ProcessStep>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((true, new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> ps) =>
+            {
+                processSteps.AddRange(ps.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
+
+        // Act
+        await _logic.RetriggerSelfDescriptionResponseCreation(process.Id);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().And.Satisfy(
+            x => x.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+    }
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionResponseCreation_WithInvalidProcess_ThrowsNotFoundException()
+    {
+        // Arrange
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((false, new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
+        Task Act() => _logic.RetriggerSelfDescriptionResponseCreation(process.Id);
+
+        // Act
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        result.Message.Should().Be($"process {process.Id} does not exist");
+    }
+
+    #endregion
+
     #region Setup
 
     private void SetupRepositoryMethods()
