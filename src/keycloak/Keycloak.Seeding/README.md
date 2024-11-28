@@ -43,22 +43,22 @@ with this example configuration all entities would be created, updated and delet
 
 The following types can be configured:
 
-- `ROLES`
-- `LOCALIZATIONS`
-- `USERPROFILE`
-- `CLIENTSCOPES`
-- `CLIENTS`
-- `IDENTITYPROVIDERS`
-- `IDENTITYPROVIDERMAPPERS`
-- `USERS`
-- `FEDERATEDIDENTITIES`
-- `CLIENTSCOPEMAPPERS`
-- `PROTOCOLMAPPERS`
-- `AUTHENTICATIONFLOWS`
-- `CLIENTPROTOCOLMAPPER`
-- `CLIENTROLES`
-- `AUTHENTICATIONFLOWEXECUTION`
-- `AUTHENTICATORCONFIG`
+- `Roles`
+- `Localizations`
+- `UserProfile`
+- `ClientScopes`
+- `Clients`
+- `IdentityProviders`
+- `IdentityProviderMappers`
+- `Users`
+- `FederatedIdentities`
+- `ClientScopeMappers`
+- `ProtocolMappers`
+- `AuthenticationFlows`
+- `ClientProtocolMapper`
+- `ClientRoles`
+- `AuthenticationFlowExecution`
+- `AuthenticatorConfig`
 
 ## Entry Specific Configuration
 
@@ -88,7 +88,7 @@ To be able to enable or disable the seeding for specific values the configuratio
 In the example above you can see that the default settings as well as the specific type settings for update are disabled.
 But for localizations with the key `profile.attributes.organisation` the update is enabled. With this option you can enable the modification specifically for only the entities you want to modify with the seeding.
 
-**Note**: The key defers for the specific types e.g. for `Localization` it is a string for `User` it is a uuid.
+**Note**: The key defers for the specific types e.g. for `Localization` it is a string for `User` it is a uuid. Keys are case-sensitive.
 
 ## Entity Specific Type Configurations
 
@@ -148,4 +148,4 @@ This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LIC
 
 - SPDX-License-Identifier: Apache-2.0
 - SPDX-FileCopyrightText: 2024 Contributors to the Eclipse Foundation
-- Source URL: https://github.com/eclipse-tractusx/portal-backend
+- Source URL: <https://github.com/eclipse-tractusx/portal-backend>
