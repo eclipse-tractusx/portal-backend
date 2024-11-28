@@ -53,7 +53,7 @@ public static class KeycloakRealmSettingsExtensions
             seederConfig.Update,
             seederConfig.Delete,
             seederConfig.SeederConfigurations?.ToImmutableDictionary(sc =>
-                sc.Key.ToLower(),
+                sc.Key,
                 ConvertSeederConfigToSeederConfigurationModel,
                 StringComparer.OrdinalIgnoreCase));
 }
