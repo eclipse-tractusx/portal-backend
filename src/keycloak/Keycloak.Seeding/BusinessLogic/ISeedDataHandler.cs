@@ -61,4 +61,6 @@ public interface ISeedDataHandler
     IEnumerable<AuthenticationExecutionModel> GetAuthenticationExecutions(string? alias);
 
     AuthenticatorConfigModel GetAuthenticatorConfig(string? alias);
+    KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey);
+    bool IsModificationAllowed(ConfigurationKey configKey);
 }

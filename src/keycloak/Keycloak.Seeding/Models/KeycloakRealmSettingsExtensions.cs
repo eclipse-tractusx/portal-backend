@@ -22,7 +22,7 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
-public static class KeycloakRealmSettingsExtentions
+public static class KeycloakRealmSettingsExtensions
 {
     public static KeycloakRealm ToModel(this KeycloakRealmSettings keycloakRealmSettings) =>
         new()

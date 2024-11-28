@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -37,6 +38,8 @@ public class SeedDataHandler : ISeedDataHandler
 
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
+    private SeederConfigurationModel? _defaultConfiguration;
+    private IReadOnlyDictionary<ConfigurationKey, bool>? _flatConfiguration;
 
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
@@ -46,6 +49,8 @@ public class SeedDataHandler : ISeedDataHandler
                 async (importRealm, path) => importRealm.Merge(await ReadJsonRealm(path, realmSettings.Realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None))
             .Merge(realmSettings.ToModel());
+        _defaultConfiguration = realmSettings.GetConfigurationDictionaries();
+        _flatConfiguration = realmSettings.GetFlatDictionary();
 
         _idOfClients = null;
     }
@@ -58,6 +63,7 @@ public class SeedDataHandler : ISeedDataHandler
             jsonRealm = await JsonSerializer.DeserializeAsync<KeycloakRealm>(stream, Options, cancellationToken)
                                     .ConfigureAwait(false) ?? throw new ConfigurationException($"cannot deserialize realm from {path}");
         }
+
         if (jsonRealm.Realm != null && jsonRealm.Realm != realm)
             throw new ConfigurationException($"json realm {jsonRealm.Realm} doesn't match the configured realm: {realm}");
 
@@ -142,6 +148,7 @@ public class SeedDataHandler : ISeedDataHandler
         {
             clientIds[clientId] = id;
         }
+
         _idOfClients = clientIds.ToImmutableDictionary();
     }
 
@@ -157,4 +164,14 @@ public class SeedDataHandler : ISeedDataHandler
 
     public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
         _keycloakRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
+
+    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey) =>
+        new KeycloakSeederConfigModel(
+            _defaultConfiguration ?? throw new ConflictException("configuration must not be null"),
+            _defaultConfiguration.SeederConfigurations?.TryGetValue(configKey.ToString(), out var specificConfiguration) ?? false ? specificConfiguration : null);
+
+    public bool IsModificationAllowed(ConfigurationKey configKey) =>
+        _flatConfiguration?.TryGetValue(configKey, out var result) ?? false
+            ? result
+            : (_defaultConfiguration ?? throw new ConflictException("configuration must not be null")).Create || _defaultConfiguration.Update || _defaultConfiguration.Delete;
 }

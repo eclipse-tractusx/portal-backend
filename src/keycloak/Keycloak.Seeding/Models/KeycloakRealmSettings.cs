@@ -32,6 +32,11 @@ public class KeycloakRealmSettings
     [Required]
     [DistinctValues]
     public IEnumerable<string> DataPaths { get; set; } = null!;
+    public bool Create { get; set; }
+    public bool Update { get; set; }
+    public bool Delete { get; set; }
+    [DistinctValues("x => x.Key")]
+    public IEnumerable<SeederConfiguration>? SeederConfigurations { get; set; }
     public string? Id { get; set; }
     public string? DisplayName { get; set; }
     public string? DisplayNameHtml { get; set; }
