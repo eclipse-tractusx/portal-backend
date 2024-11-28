@@ -171,7 +171,7 @@ public class SeedDataHandler : ISeedDataHandler
             _defaultConfiguration.SeederConfigurations?.TryGetValue(configKey.ToString(), out var specificConfiguration) ?? false ? specificConfiguration : null);
 
     public bool IsModificationAllowed(ConfigurationKey configKey) =>
-        (_flatConfiguration ?? throw new ConflictException("configuration must not be null")).TryGetValue(configKey, out var result)
+        _flatConfiguration?.TryGetValue(configKey, out var result) ?? false
             ? result
             : (_defaultConfiguration ?? throw new ConflictException("configuration must not be null")).Create || _defaultConfiguration.Update || _defaultConfiguration.Delete;
 }
