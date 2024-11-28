@@ -35,7 +35,7 @@ public static class SeederConfigurationExtensions
         }
 
         // If we have a configuration for a specific entry return its value
-        if (specificConfig?.SeederConfigurations.TryGetValue(entityKey.ToLower(), out var specificEntry) == true)
+        if (specificConfig?.SeederConfigurations?.TryGetValue(entityKey, out var specificEntry) ?? false)
         {
             return specificEntry.ModifyAllowed(modificationType);
         }
@@ -51,15 +51,14 @@ public static class SeederConfigurationExtensions
     {
         // Check if the specific configuration contains the entity key
         // e.g. for the users configuration check for a specific user configuration
-        if (config.SpecificConfiguration?.SeederConfigurations.TryGetValue(containingEntityKey.ToLower(), out var containingEntityKeyConfiguration) == true)
+        if (config.SpecificConfiguration?.SeederConfigurations?.TryGetValue(containingEntityKey, out var containingEntityKeyConfiguration) ?? false)
         {
             // check if the specific entity configuration has a configuration for the section
             // e.g. for the specific user configuration is there a section for federated identities
-            if (!containingEntityKeyConfiguration.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var containingEntityTypeConfig))
+            if (!(containingEntityKeyConfiguration.SeederConfigurations?.TryGetValue(configKey.ToString(), out var containingEntityTypeConfig) ?? false))
             {
-                config.DefaultSettings.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var specificConfig);
-                var configModel = config with { SpecificConfiguration = specificConfig };
-                return configModel.ModificationAllowed(modificationType, entityKey);
+                return (config with { SpecificConfiguration = config.DefaultSettings.SeederConfigurations?.TryGetValue(configKey.ToString(), out var specificConfig) ?? false ? specificConfig : null })
+                    .ModificationAllowed(modificationType, entityKey);
             }
 
             // if the entity key isn't set check the configuration for the type
@@ -69,14 +68,13 @@ public static class SeederConfigurationExtensions
             }
 
             // If we have a configuration for a specific entry return its value otherwise take the section configuration
-            containingEntityTypeConfig.SeederConfigurations.TryGetValue(entityKey.ToLower(), out var entity);
-            return entity?.ModifyAllowed(modificationType) ?? containingEntityTypeConfig.ModifyAllowed(modificationType);
+            return (containingEntityTypeConfig.SeederConfigurations?.TryGetValue(entityKey, out var entity) ?? false ? entity?.ModifyAllowed(modificationType) : null)
+                ?? containingEntityTypeConfig.ModifyAllowed(modificationType);
         }
 
         // if no configuration isn't set check the top level configuration
-        config.DefaultSettings.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var topLevelSpecificConfig);
-        var topLevelConfig = config with { SpecificConfiguration = topLevelSpecificConfig };
-        return topLevelConfig.ModificationAllowed(modificationType, entityKey);
+        return (config with { SpecificConfiguration = config.DefaultSettings.SeederConfigurations?.TryGetValue(configKey.ToString(), out var topLevelSpecificConfig) ?? false ? topLevelSpecificConfig : null })
+            .ModificationAllowed(modificationType, entityKey);
     }
 
     private static bool ModifyAllowed(this SeederConfigurationModel configuration, ModificationType modificationType) =>

@@ -39,7 +39,7 @@ public class SeedDataHandler : ISeedDataHandler
     private KeycloakRealm? _keycloakRealm;
     private IReadOnlyDictionary<string, string>? _idOfClients;
     private SeederConfigurationModel? _defaultConfiguration;
-    private Dictionary<string, (bool Create, bool Update, bool Delete)>? _flatConfiguration;
+    private IReadOnlyDictionary<ConfigurationKey, bool>? _flatConfiguration;
 
     public async Task Import(KeycloakRealmSettings realmSettings, CancellationToken cancellationToken)
     {
@@ -165,22 +165,13 @@ public class SeedDataHandler : ISeedDataHandler
     public AuthenticatorConfigModel GetAuthenticatorConfig(string? alias) =>
         _keycloakRealm?.AuthenticatorConfig?.SingleOrDefault(x => x.Alias == (alias ?? throw new ConflictException("alias is null"))) ?? throw new ConflictException($"authenticatorConfig {alias} does not exist");
 
-    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey)
-    {
-        var config = _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
-        config.SeederConfigurations.TryGetValue(configKey.ToString().ToLower(), out var specificConfiguration);
-        return new KeycloakSeederConfigModel(config, specificConfiguration);
-    }
+    public KeycloakSeederConfigModel GetSpecificConfiguration(ConfigurationKey configKey) =>
+        new KeycloakSeederConfigModel(
+            _defaultConfiguration ?? throw new ConflictException("configuration must not be null"),
+            _defaultConfiguration.SeederConfigurations?.TryGetValue(configKey.ToString(), out var specificConfiguration) ?? false ? specificConfiguration : null);
 
-    public bool IsModificationAllowed(ConfigurationKey configKey)
-    {
-        var flatConfig = _flatConfiguration ?? throw new ConflictException("configuration must not be null");
-        var config = _defaultConfiguration ?? throw new ConflictException("configuration must not be null");
-        if (flatConfig.TryGetValue(configKey.ToString().ToLower(), out var result))
-        {
-            return result.Create || result.Update || result.Delete;
-        }
-
-        return config.Create || config.Update || config.Delete;
-    }
+    public bool IsModificationAllowed(ConfigurationKey configKey) =>
+        (_flatConfiguration ?? throw new ConflictException("configuration must not be null")).TryGetValue(configKey, out var result)
+            ? result
+            : (_defaultConfiguration ?? throw new ConflictException("configuration must not be null")).Create || _defaultConfiguration.Update || _defaultConfiguration.Delete;
 }

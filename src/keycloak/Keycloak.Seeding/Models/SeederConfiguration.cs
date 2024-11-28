@@ -18,11 +18,13 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 public class SeederConfiguration
 {
+    [Required(AllowEmptyStrings = false)]
     public string Key { get; set; } = null!;
     public bool Create { get; set; }
     public bool Update { get; set; }

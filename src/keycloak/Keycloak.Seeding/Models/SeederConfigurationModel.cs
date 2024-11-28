@@ -23,5 +23,5 @@ public record SeederConfigurationModel(
     bool Create,
     bool Update,
     bool Delete,
-    IDictionary<string, SeederConfigurationModel> SeederConfigurations
+    IReadOnlyDictionary<string, SeederConfigurationModel>? SeederConfigurations
 );

@@ -18,74 +18,42 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 
 public static class KeycloakRealmSettingsExtensions
 {
-    public static Dictionary<string, (bool Create, bool Update, bool Delete)> GetFlatDictionary(this KeycloakRealmSettings realmSettings)
-    {
-        var result = new Dictionary<string, (bool Create, bool Update, bool Delete, int Depth)>();
+    public static IReadOnlyDictionary<ConfigurationKey, bool>? GetFlatDictionary(this KeycloakRealmSettings realmSettings) =>
+        realmSettings.SeederConfigurations?
+            .Join(
+                Enum.GetValues<ConfigurationKey>(),
+                config => config.Key,
+                key => key.ToString(),
+                (SeederConfiguration config, ConfigurationKey key) => KeyValuePair.Create(key, GetFlat(config)),
+                StringComparer.OrdinalIgnoreCase
+            ).ToImmutableDictionary();
 
-        GetFlatDictionary(realmSettings.SeederConfigurations, 0, result);
-
-        return result.Select(x => new KeyValuePair<string, ValueTuple<bool, bool, bool>>(x.Key.ToLower(), new ValueTuple<bool, bool, bool>(x.Value.Create, x.Value.Update, x.Value.Delete))).ToDictionary();
-    }
-
-    private static (bool Create, bool Update, bool Delete) GetFlatDictionary(
-        IEnumerable<SeederConfiguration>? configurations,
-        int depth,
-        IDictionary<string, (bool Create, bool Update, bool Delete, int Depth)> result)
-    {
-        if (configurations == null)
-        {
-            return (false, false, false);
-        }
-
-        var parentCreate = false;
-        var parentUpdate = false;
-        var parentDelete = false;
-
-        foreach (var config in configurations)
-        {
-            // Process child configurations first
-            var childPermissions = GetFlatDictionary(config.SeederConfigurations, depth + 1, result);
-
-            // Combine child permissions with current configuration's permissions
-            var create = config.Create || childPermissions.Create;
-            var update = config.Update || childPermissions.Update;
-            var delete = config.Delete || childPermissions.Delete;
-
-            // If the key doesn't exist or the current depth is deeper, update the result
-            if (!result.TryGetValue(config.Key.ToLower(), out var value) || depth > value.Depth)
-            {
-                result[config.Key.ToLower()] = (create, update, delete, depth);
-            }
-
-            // Aggregate permissions for the parent
-            parentCreate |= create;
-            parentUpdate |= update;
-            parentDelete |= delete;
-        }
-
-        return (parentCreate, parentUpdate, parentDelete);
-    }
+    private static bool GetFlat(SeederConfiguration config) =>
+        config.Create || config.Update || config.Delete || (config.SeederConfigurations != null && config.SeederConfigurations.Any(GetFlat));
 
     public static SeederConfigurationModel GetConfigurationDictionaries(this KeycloakRealmSettings realmSettings) =>
         new(
             realmSettings.Create,
             realmSettings.Update,
             realmSettings.Delete,
-            realmSettings.SeederConfigurations?.ToDictionary(sc =>
-                sc.Key.ToLower(),
-                ConvertSeederConfigToSeederConfigurationModel) ?? new Dictionary<string, SeederConfigurationModel>());
+            realmSettings.SeederConfigurations?.ToImmutableDictionary(sc =>
+                sc.Key,
+                ConvertSeederConfigToSeederConfigurationModel,
+                StringComparer.OrdinalIgnoreCase));
 
     private static SeederConfigurationModel ConvertSeederConfigToSeederConfigurationModel(this SeederConfiguration seederConfig) =>
         new(
             seederConfig.Create,
             seederConfig.Update,
             seederConfig.Delete,
-            seederConfig.SeederConfigurations?.ToDictionary(sc =>
+            seederConfig.SeederConfigurations?.ToImmutableDictionary(sc =>
                 sc.Key.ToLower(),
-                ConvertSeederConfigToSeederConfigurationModel) ?? new Dictionary<string, SeederConfigurationModel>());
+                ConvertSeederConfigToSeederConfigurationModel,
+                StringComparer.OrdinalIgnoreCase));
 }
