@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -472,5 +473,13 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         context.Companies
             .Where(x => x.BusinessPartnerNumber == bpn)
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
+            .SingleOrDefaultAsync();
+
+    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId) =>
+        context.Companies
+            .Where(c => c.Id == companyId && c.SdCreationProcessId != null && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
+            .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                c.SdCreationProcess,
+                c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
             .SingleOrDefaultAsync();
 }

@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -110,4 +111,5 @@ public interface IConnectorsRepository
     IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription();
     Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
     Task<bool> CheckConnectorExists(string name, string connectorUrl);
+    Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForConnectorId(Guid connectorId);
 }

@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -183,4 +184,5 @@ public interface ICompanyRepository
     Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId);
     Task<bool> IsExistingCompany(Guid companyId);
     Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
+    Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId);
 }

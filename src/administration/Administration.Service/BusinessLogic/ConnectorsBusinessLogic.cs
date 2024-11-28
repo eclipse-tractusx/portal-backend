@@ -507,4 +507,21 @@ public class ConnectorsBusinessLogic(
         context.FinalizeProcessStep();
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
+
+    public async Task RetriggerSelfDescriptionResponseCreation(Guid processId)
+    {
+        const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION;
+        const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE;
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IPortalProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (!validProcessId)
+        {
+            throw new NotFoundException($"process {processId} does not exist");
+        }
+
+        var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");
+
+        context.ScheduleProcessSteps(Enumerable.Repeat(NextStep, 1));
+        context.FinalizeProcessStep();
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
 }

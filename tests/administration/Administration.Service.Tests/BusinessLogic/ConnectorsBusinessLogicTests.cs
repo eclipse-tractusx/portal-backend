@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -1455,6 +1456,49 @@ public class ConnectorsBusinessLogicTests
         // Assert
         processes.Should().BeEmpty();
         processSteps.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region RetriggerSelfDescriptionResponseCreation
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionResponseCreation_CallsExpected()
+    {
+        // Arrange
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((true, new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> ps) =>
+            {
+                processSteps.AddRange(ps.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+            });
+
+        // Act
+        await _logic.RetriggerSelfDescriptionResponseCreation(process.Id);
+
+        // Assert
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        processSteps.Should().ContainSingle().And.Satisfy(
+            x => x.ProcessStepTypeId == ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION && x.ProcessStepStatusId == ProcessStepStatusId.TODO);
+    }
+
+    [Fact]
+    public async Task RetriggerSelfDescriptionResponseCreation_WithInvalidProcess_ThrowsNotFoundException()
+    {
+        // Arrange
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
+        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns((false, new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
+        Task Act() => _logic.RetriggerSelfDescriptionResponseCreation(process.Id);
+
+        // Act
+        var result = await Assert.ThrowsAsync<NotFoundException>(Act);
+
+        // Assert
+        result.Message.Should().Be($"process {process.Id} does not exist");
     }
 
     #endregion

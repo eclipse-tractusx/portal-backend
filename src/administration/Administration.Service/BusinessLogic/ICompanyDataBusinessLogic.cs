@@ -53,5 +53,6 @@ public interface ICompanyDataBusinessLogic
     Task<DimUrlsResponse> GetDimServiceUrls();
     Task<Pagination.Response<CompanyMissingSdDocumentData>> GetCompaniesWithMissingSdDocument(int page, int size);
     Task RetriggerSelfDescriptionCreation(Guid processId);
+    Task RetriggerSelfDescriptionResponseCreation(Guid processId);
     Task TriggerSelfDescriptionCreation();
 }

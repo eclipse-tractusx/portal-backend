@@ -133,7 +133,28 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
+    public static void FailProcessStep<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, string message)
+        where TProcessTypeId : struct, IConvertible
+        where TProcessStepTypeId : struct, IConvertible
+    {
+        if (context.ProcessStepTypeId.HasValue)
+        {
+            context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().AttachAndModifyProcessSteps(
+                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId.Equals(context.ProcessStepTypeId!.Value)), ProcessStepStatusId.FAILED, message));
+        }
+
+        context.ProcessRepositories.Attach(context.Process);
+        if (!context.Process.ReleaseLock())
+        {
+            context.Process.UpdateVersion();
+        }
+    }
+
     private static IEnumerable<(Guid, Action<IProcessStep<TProcessStepTypeId>>?, Action<IProcessStep<TProcessStepTypeId>>)> ModifyStepStatusRange<TProcessStepTypeId>(IEnumerable<IProcessStep<TProcessStepTypeId>> steps, ProcessStepStatusId processStepStatusId)
+        where TProcessStepTypeId : struct, IConvertible
+        => ModifyStepStatusRange(steps, processStepStatusId, null);
+
+    private static IEnumerable<(Guid, Action<IProcessStep<TProcessStepTypeId>>?, Action<IProcessStep<TProcessStepTypeId>>)> ModifyStepStatusRange<TProcessStepTypeId>(IEnumerable<IProcessStep<TProcessStepTypeId>> steps, ProcessStepStatusId processStepStatusId, string? message)
         where TProcessStepTypeId : struct, IConvertible
     {
         using var enumerator = steps.GetEnumerator();
@@ -146,8 +167,17 @@ public static class ManualProcessStepDataExtensions
 
         yield return (
             current.Id,
-            ps => ps.ProcessStepStatusId = current.ProcessStepStatusId,
-            ps => ps.ProcessStepStatusId = processStepStatusId);
+            ps =>
+            {
+                ps.ProcessStepStatusId = current.ProcessStepStatusId;
+                ps.Message = null;
+            },
+            ps =>
+            {
+                ps.ProcessStepStatusId = processStepStatusId;
+                ps.Message = message;
+            }
+        );
 
         while (enumerator.MoveNext())
         {

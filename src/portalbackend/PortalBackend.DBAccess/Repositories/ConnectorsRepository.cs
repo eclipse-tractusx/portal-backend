@@ -20,6 +20,7 @@
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -242,4 +243,12 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
         dbContext.Connectors.AnyAsync(x =>
             x.Name == name &&
             x.ConnectorUrl == connectorUrl);
+
+    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForConnectorId(Guid connectorId) =>
+        dbContext.Connectors
+            .Where(c => c.Id == connectorId && c.SdCreationProcessId != null && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
+            .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                c.SdCreationProcess,
+                c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
+            .SingleOrDefaultAsync();
 }

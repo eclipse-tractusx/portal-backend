@@ -20,6 +20,8 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -140,10 +142,12 @@ public class SdFactoryBusinessLogic(
     /// <inheritdoc />
     public async Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
-        if (ValidateConfirmationData(data))
+        var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
+        var result = ValidateConfirmationData(data);
+        if (result)
         {
             var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.Connector, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
+            connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionDocumentId = documentId;
                 con.StatusId = ConnectorStatusId.ACTIVE;
@@ -152,21 +156,47 @@ public class SdFactoryBusinessLogic(
         }
         else
         {
-            portalRepositories.GetInstance<IConnectorsRepository>().AttachAndModifyConnector(data.ExternalId, null, con =>
+            connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
             {
                 con.SelfDescriptionMessage = data.Message!;
                 con.DateLastChanged = DateTimeOffset.UtcNow;
             });
         }
+
+        var processData = await connectorsRepository.GetProcessDataForConnectorId(data.ExternalId);
+        if (processData == null)
+        {
+            HandleSdCreationProcess(processData!, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
+        }
+    }
+
+    private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId)
+    {
+        var context = processData.CreateManualProcessData(processStepTypeId, portalRepositories, () => $"externalId {data.ExternalId}");
+        if (data.Status == SelfDescriptionStatus.Confirm)
+        {
+            context.FinalizeProcessStep();
+        }
+        else
+        {
+            context.ScheduleProcessSteps(new[] { retriggerProcessStepTypeId });
+            context.FailProcessStep(data.Message!);
+        }
     }
 
     public async Task ProcessFinishSelfDescriptionLpForCompany(SelfDescriptionResponseData data, CancellationToken cancellationToken)
     {
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
         if (data.Status == SelfDescriptionStatus.Confirm)
         {
             var documentId = await ProcessAndCreateDocument(SdFactoryResponseModelTitle.LegalPerson, data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(data.ExternalId, null,
-                c => { c.SelfDescriptionDocumentId = documentId; });
+            companyRepository.AttachAndModifyCompany(data.ExternalId, null, c => { c.SelfDescriptionDocumentId = documentId; });
+        }
+
+        var processData = await companyRepository.GetProcessDataForCompanyIdId(data.ExternalId);
+        if (processData == null)
+        {
+            HandleSdCreationProcess(processData!, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
         }
     }
 
@@ -176,7 +206,7 @@ public class SdFactoryBusinessLogic(
         switch (confirm)
         {
             case false when string.IsNullOrEmpty(data.Message):
-                throw new ConflictException("Please provide a messsage");
+                throw new ConflictException("Please provide a message");
             case true when data.Content == null:
                 throw new ConflictException("Please provide a selfDescriptionDocument");
         }

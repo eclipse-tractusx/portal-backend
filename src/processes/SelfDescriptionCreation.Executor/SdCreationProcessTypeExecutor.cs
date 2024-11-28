@@ -89,7 +89,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
         await sdFactoryService.RegisterSelfDescriptionAsync(id, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return (null, ProcessStepStatusId.DONE, true, null);
+        return (new[] { ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE }, ProcessStepStatusId.DONE, true, null);
     }
 
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> CreateSdDocumentForConnector(CancellationToken cancellationToken)
@@ -110,7 +110,7 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
         await sdFactoryService.RegisterConnectorAsync(id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return (null, ProcessStepStatusId.DONE, true, null);
+        return (new[] { ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE }, ProcessStepStatusId.DONE, true, null);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId stepTypeId) =>
