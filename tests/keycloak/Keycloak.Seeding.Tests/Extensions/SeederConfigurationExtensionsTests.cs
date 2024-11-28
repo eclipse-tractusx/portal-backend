@@ -133,7 +133,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = true, Update = false, Delete = false
+                            Key = "testUser",
+                            Create = true,
+                            Update = false,
+                            Delete = false
                         }
                     ]
                 }
@@ -169,7 +172,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false
                         }
                     ]
                 }
@@ -205,7 +211,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false,
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false,
                             SeederConfigurations =
                             [
                                 new()
@@ -310,7 +319,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false,
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false,
                             SeederConfigurations =
                             [
                                 new()
@@ -366,7 +378,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false
                         }
                     ]
                 },
@@ -419,7 +434,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false
                         }
                     ]
                 },
@@ -472,7 +490,10 @@ public class SeederConfigurationExtensionsTests
                     [
                         new()
                         {
-                            Key = "testUser", Create = false, Update = false, Delete = false
+                            Key = "testUser",
+                            Create = false,
+                            Update = false,
+                            Delete = false
                         }
                     ]
                 }
