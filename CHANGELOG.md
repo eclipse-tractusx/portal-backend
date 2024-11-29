@@ -4,115 +4,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
-## 2.3.0-RC4
-
-### Change
-
-* **Keycloak realm seeding job**: made seeder configurable [#1174](https://github.com/eclipse-tractusx/portal-backend/pull/1174)
-
-## 2.3.0-RC3
-
-### Technical Support
-
-* upgraded System.Text.Encodings.Web and System.Net.Http packages [#1156](https://github.com/eclipse-tractusx/portal-backend/pull/1156)
-
-### Bugfixes
-
-* **Keycloak realm seeding job**: added user profile and localization texts to seeding [#1154](https://github.com/eclipse-tractusx/portal-backend/pull/1154)
-* **Own Identity Provider**: fixed setting URLs for IdP update [#1153](https://github.com/eclipse-tractusx/portal-backend/pull/1153)
-
-## 2.3.0-RC2
-
-### Change
-
-* **Connectors**: enhanced PUT api/administration/Connectors/{connectorId}/connectorUrl endpoint logic [#1094](https://github.com/eclipse-tractusx/portal-backend/pull/1094)
-
-### Bugfixes
-
-* **Application Activation**
-  * fixed initial roles not being added to invited users [#1135](https://github.com/eclipse-tractusx/portal-backend/pull/1135)
-* **Registration**
-  * fixed company name change not reflecting consistently [#1010](https://github.com/eclipse-tractusx/portal-backend/pull/1010), [#1145](https://github.com/eclipse-tractusx/portal-backend/pull/1145), [#1147](https://github.com/eclipse-tractusx/portal-backend/pull/1147)
-
-## 2.3.0-RC1
-
-### Bugfixes
-
-* **Technical User**
-  * fixed the callback of external technical user creation and deletion [#1113](https://github.com/eclipse-tractusx/portal-backend/pull/1113)
-* **Application Activation**
-  * fixed the process worker for the application activation [#1109](https://github.com/eclipse-tractusx/portal-backend/pull/1109)
-
-## 2.3.0-alpha.3
-
-## Feature
-
-* **Registration**
-  * adjusted legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
-* **Application Activation**
-  * split application activation to enable retrigger [#1004](https://github.com/eclipse-tractusx/portal-backend/pull/1004)
-
-## Change
-
-* **Technical User**
-  * added internal external flag to profiles [#1038](https://github.com/eclipse-tractusx/portal-backend/pull/1038)
-  * renamed company service account related tables [#1060](https://github.com/eclipse-tractusx/portal-backend/pull/1060)
-* **Registration Documents**
-  * added check for OPERATOR and confirmed status to GET /api/registration/documents/{documentId} [#1075](https://github.com/eclipse-tractusx/portal-backend/pull/1075)
-* **Seeding**
-  * moved company and address to overwrite directory to prepare possible overwrite in helm chart [#1067](https://github.com/eclipse-tractusx/portal-backend/pull/1067)
-
-### Technical Support
-
-* **Dependencies**
-  * upgraded Flurl packages [#1053](https://github.com/eclipse-tractusx/portal-backend/pull/1053)
-* **Pre Checks**
-  * added  step to check for uncommitted files [#1077](https://github.com/eclipse-tractusx/portal-backend/pull/1077)
-
-### Bugfixes
-
-* **Services**
-  * fixed response for leadPictureId [#1042](https://github.com/eclipse-tractusx/portal-backend/pull/1042)
-
-## 2.3.0-alpha.2
-
-## Feature
-
-* **Administration Service**
-  * added type flag to user role to display if an external technical user is created in the frontend to endpoint `GET: api/administration/serviceaccount/user/roles` [#1024](https://github.com/eclipse-tractusx/portal-backend/pull/1024)
-  * added flag to display if a technical user is internal or external for endpoint `GET: api/administration/serviceaccount/owncompany/serviceaccounts` [#1028](https://github.com/eclipse-tractusx/portal-backend/pull/1028/files)
-* **Technical User**
-  * added `Registration Internal` as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
-  * added BPDM Orchestrator technical user and service accounts [#1048](https://github.com/eclipse-tractusx/portal-backend/pull/1048)
-* **Onboarding Service Provider**
-  * adjusted permission for endpoint `POST: api/administration/registration/network/{externalId}/partnerRegistration` & `GET: api/administration/registration/network/companies` [#1037](https://github.com/eclipse-tractusx/portal-backend/pull/1037)
-* **Keycloak Seeding**
-  * adjusted seeding to allow update of existing urls and secret in client, add credentials to user, allow override of identity providers urls on update, create users by partial-import, fix client protocol-mappers, add seeding of protocol mappers and client scopes, create clients via partial import & allow import of multiple files per realm [#910](https://github.com/eclipse-tractusx/portal-backend/pull/910)
-
-### Technical Support
-
-* **API-Hub**
-  * added process to generate open api specs for portal services [#1030](https://github.com/eclipse-tractusx/portal-backend/pull/1030)
-* **Seeding**
-  * adjusted seeding for initial operator wallet data [#1036](https://github.com/eclipse-tractusx/portal-backend/pull/1036)
-* **Github Workflows**
-  * added external services to workflows [#1058](https://github.com/eclipse-tractusx/portal-backend/pull/1058)
-* **Dependencies**
-  * updated Microsoft nuget packages [#1018](https://github.com/eclipse-tractusx/portal-backend/pull/1018)
-  * update workflow actions [1049](https://github.com/eclipse-tractusx/portal-backend/pull/1049)
-
-### Bugfixes
-
-* **Process Worker**
-  * adjusted validation of the did schema [#1055](https://github.com/eclipse-tractusx/portal-backend/pull/1055)
-* **Administration Service**
-  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
-* **Registration Service**
-  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
-* **Process Worker**
-  * adjusted registration for offerProcessSettings [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
-
-## 2.3.0-alpha.1
+## 2.3.0
 
 ## Feature
 
@@ -122,35 +14,87 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Invitation**
   * enabled creation of application and company on invite to remove the delay of the company application after invite [#960](https://github.com/eclipse-tractusx/portal-backend/pull/960)
   * allowed access to invitation endpoint to technical user [#933](https://github.com/eclipse-tractusx/portal-backend/pull/933)
-* **Technical User**: new parameters for api expansion for technical user data [#997](https://github.com/eclipse-tractusx/portal-backend/pull/997)
-* **Administration**: introduced validating og bpn before adding to company user [#902](https://github.com/eclipse-tractusx/portal-backend/pull/902)
-* **Business Partner Data Management**: add sharing state ready toggle [#905](https://github.com/eclipse-tractusx/portal-backend/pull/905)
+* **Technical User**
+  * new parameters for api expansion for technical user data [#997](https://github.com/eclipse-tractusx/portal-backend/pull/997)
+  * added `Registration Internal` as Operator technical user for invite API [#1002](https://github.com/eclipse-tractusx/portal-backend/pull/1002)
+  * added BPDM Orchestrator technical user and service accounts [#1048](https://github.com/eclipse-tractusx/portal-backend/pull/1048)
+* **Business Partner Data Management**
+  * add sharing state ready toggle [#905](https://github.com/eclipse-tractusx/portal-backend/pull/905)
+* **Administration Service**
+  * introduced validating og bpn before adding to company user [#902](https://github.com/eclipse-tractusx/portal-backend/pull/902)
+  * added type flag to user role to display if an external technical user is created in the frontend to endpoint `GET: api/administration/serviceaccount/user/roles` [#1024](https://github.com/eclipse-tractusx/portal-backend/pull/1024)
+  * added flag to display if a technical user is internal or external for endpoint `GET: api/administration/serviceaccount/owncompany/serviceaccounts` [#1028](https://github.com/eclipse-tractusx/portal-backend/pull/1028/files)
+* **Onboarding Service Provider**
+  * adjusted permission for endpoint `POST: api/administration/registration/network/{externalId}/partnerRegistration` & `GET: api/administration/registration/network/companies` [#1037](https://github.com/eclipse-tractusx/portal-backend/pull/1037)
+* **Keycloak Seeding**
+  * adjusted seeding to allow update of existing urls and secret in client, add credentials to user, allow override of identity providers urls on update, create users by partial-import, fix client protocol-mappers, add seeding of protocol mappers and client scopes, create clients via partial import & allow import of multiple files per realm [#910](https://github.com/eclipse-tractusx/portal-backend/pull/910)
+* **Registration**
+  * adjusted legalEntityPattern REGEX to allow all language characters [#1043](https://github.com/eclipse-tractusx/portal-backend/pull/1043)
+* **Application Activation**
+  * split application activation to enable retrigger [#1004](https://github.com/eclipse-tractusx/portal-backend/pull/1004)
 
 ### Change
 
-* **notification**: adjusted create notification endpoint [#906](https://github.com/eclipse-tractusx/portal-backend/pull/906)
-* **Legal Entity**: extended legal entity length [#860](https://github.com/eclipse-tractusx/portal-backend/pull/860)
-* **Connector**: added duplicate check to connector creation [#921](https://github.com/eclipse-tractusx/portal-backend/pull/921)
-* **Offers**: removed provider from offer [#911](https://github.com/eclipse-tractusx/portal-backend/pull/911)
-* **ServiceAccountDeletion**: adjusted error messages [#995](https://github.com/eclipse-tractusx/portal-backend/pull/995)
+* **Notification**
+  * adjusted create notification endpoint [#906](https://github.com/eclipse-tractusx/portal-backend/pull/906)
+* **Legal Entity**
+  * extended legal entity length [#860](https://github.com/eclipse-tractusx/portal-backend/pull/860)
+* **Connector**:
+  * added duplicate check to connector creation [#921](https://github.com/eclipse-tractusx/portal-backend/pull/921)
+  * enhanced PUT api/administration/Connectors/{connectorId}/connectorUrl endpoint logic [#1094](https://github.com/eclipse-tractusx/portal-backend/pull/1094)
+* **Offers**
+  * removed provider from offer [#911](https://github.com/eclipse-tractusx/portal-backend/pull/911)
+* **Technical User**
+  * added internal external flag to profiles [#1038](https://github.com/eclipse-tractusx/portal-backend/pull/1038)
+  * renamed company service account related tables [#1060](https://github.com/eclipse-tractusx/portal-backend/pull/1060)
+  * adjusted error messages for deletion [#995](https://github.com/eclipse-tractusx/portal-backend/pull/995)
+* **Registration Documents**
+  * added check for OPERATOR and confirmed status to GET /api/registration/documents/{documentId} [#1075](https://github.com/eclipse-tractusx/portal-backend/pull/1075)
+* **Seeding**
+  * moved company and address to overwrite directory to prepare possible overwrite in helm chart [#1067](https://github.com/eclipse-tractusx/portal-backend/pull/1067)
+* **Keycloak realm seeding job**
+  * added user profile and localization texts to seeding [#1154](https://github.com/eclipse-tractusx/portal-backend/pull/1154)
+  * made seeder configurable [#1174](https://github.com/eclipse-tractusx/portal-backend/pull/1174)
+* **Own Identity Provider**
+  * fixed setting URLs for IdP update [#1153](https://github.com/eclipse-tractusx/portal-backend/pull/1153)
+* **Translations**
+  * corrected German translation for TechnicalIntegrationCheckpoints [#931](https://github.com/eclipse-tractusx/portal-backend/pull/931)
 
 ### Technical Support
 
-* added sql scripts to query application checklist data [#925](https://github.com/eclipse-tractusx/portal-backend/pull/925)
-* removed Microsoft.AspNetCore.Mvc.Abstractions [#926](https://github.com/eclipse-tractusx/portal-backend/pull/926)
-* removed consortia test seeding files [#957](https://github.com/eclipse-tractusx/portal-backend/pull/957)
-* corrected German translation for TechnicalIntegrationCheckpoints [#931](https://github.com/eclipse-tractusx/portal-backend/pull/931)
-* added TruffleHog secret scan [#999](https://github.com/eclipse-tractusx/portal-backend/pull/999)
-* dependabot: fixed nuget scanning [#1009](https://github.com/eclipse-tractusx/portal-backend/pull/1009), [#1001](https://github.com/eclipse-tractusx/portal-backend/pull/1001)
-* adjusted maintenance job docker image [#1005](https://github.com/eclipse-tractusx/portal-backend/pull/1005)
-* aggregated migrations [#1014](https://github.com/eclipse-tractusx/portal-backend/pull/1014)
-* removed some redundancy from ServiceAccountBusinessLogic unit tests [#1023](https://github.com/eclipse-tractusx/portal-backend/pull/1023)
+* **Dependabot**
+  * fixed nuget scanning [#1009](https://github.com/eclipse-tractusx/portal-backend/pull/1009), [#1001](https://github.com/eclipse-tractusx/portal-backend/pull/1001)
+* **API-Hub**
+  * added process to generate open api specs for portal services [#1030](https://github.com/eclipse-tractusx/portal-backend/pull/1030)
+* **Seeding**
+  * adjusted seeding for initial operator wallet data [#1036](https://github.com/eclipse-tractusx/portal-backend/pull/1036)
+* **Build and workflows**
+  * adjusted maintenance job docker image [#1005](https://github.com/eclipse-tractusx/portal-backend/pull/1005)
+  * added external services to workflows [#1058](https://github.com/eclipse-tractusx/portal-backend/pull/1058)
+  * added TruffleHog secret scan [#999](https://github.com/eclipse-tractusx/portal-backend/pull/999)
+* **Dependencies**
+  * removed Microsoft.AspNetCore.Mvc.Abstractions [#926](https://github.com/eclipse-tractusx/portal-backend/pull/926)
+  * updated Microsoft nuget packages [#1018](https://github.com/eclipse-tractusx/portal-backend/pull/1018)
+  * update workflow actions [1049](https://github.com/eclipse-tractusx/portal-backend/pull/1049)
+  * upgraded Flurl packages [#1053](https://github.com/eclipse-tractusx/portal-backend/pull/1053)
+  * upgraded System.Text.Encodings.Web and System.Net.Http packages [#1156](https://github.com/eclipse-tractusx/portal-backend/pull/1156)
+* **Pre Checks**
+  * removed some redundancy from ServiceAccountBusinessLogic unit tests [#1023](https://github.com/eclipse-tractusx/portal-backend/pull/1023)
+  * added  step to check for uncommitted files [#1077](https://github.com/eclipse-tractusx/portal-backend/pull/1077)
+* **Scripts**
+  * added sql scripts to query application checklist data [#925](https://github.com/eclipse-tractusx/portal-backend/pull/925)
+* **Seeding**
+  * removed consortia test seeding files [#957](https://github.com/eclipse-tractusx/portal-backend/pull/957)
 
 ### Bugfixes
 
-* **Registration**
+* **Registration Service**
   * fixed BPDM details region mapping [#980](https://github.com/eclipse-tractusx/portal-backend/pull/980)
   * added agreement table in update seeder [#1011](https://github.com/eclipse-tractusx/portal-backend/pull/1011)
+  * fixed company name change not reflecting consistently [#1010](https://github.com/eclipse-tractusx/portal-backend/pull/1010), [#1145](https://github.com/eclipse-tractusx/portal-backend/pull/1145), [#1147](https://github.com/eclipse-tractusx/portal-backend/pull/1147)
+  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
+* **Administration Service**
+  * adjusted the settings validation [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
 * **Mailing**
   * subscription activation: fixed null requester name [#974](https://github.com/eclipse-tractusx/portal-backend/pull/974)
   * fixed mail sending for subscription [#975](https://github.com/eclipse-tractusx/portal-backend/pull/975)
@@ -160,7 +104,27 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed sending of invitation email when uploading multiple Users [#922](https://github.com/eclipse-tractusx/portal-backend/pull/922)
 * **Technical User**
   * adjusted response for get service account detail [#964](https://github.com/eclipse-tractusx/portal-backend/pull/964)
+  * fixed the callback of external technical user creation and deletion [#1113](https://github.com/eclipse-tractusx/portal-backend/pull/1113)
 * **IdP**: fixed delete iam identity provider [#1026](https://github.com/eclipse-tractusx/portal-backend/pull/1026)
+* **Process Worker**
+  * adjusted validation of the did schema [#1055](https://github.com/eclipse-tractusx/portal-backend/pull/1055)
+  * adjusted registration for offerProcessSettings [#1057](https://github.com/eclipse-tractusx/portal-backend/pull/1057)
+* **Application Activation**
+  * fixed the process worker for the application activation [#1109](https://github.com/eclipse-tractusx/portal-backend/pull/1109)
+  * fixed initial roles not being added to invited users [#1135](https://github.com/eclipse-tractusx/portal-backend/pull/1135)
+* **Services**
+  * fixed response for leadPictureId [#1042](https://github.com/eclipse-tractusx/portal-backend/pull/1042)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
+* During end-to-end testing, some minor issues and in regards to system internal **notifications** as well as the **UI** were detected.
+* **Deletion Support Deficiencies**:
+  * Removal of BDRS (BPN-DID Resolver Service) entries is currently not supported.
+  * Deletion of wallet tenants has not been implemented.
+* **Validation Limitations**: pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
+* **Validation of File Upload Limitation**: it is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+* **In Memory Storage Limitation**: sensitive information (such as passwords) is read in an unencrypted manner in memory.
 
 ## 2.2.0
 
