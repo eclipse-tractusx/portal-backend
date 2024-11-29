@@ -20,6 +20,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -42,6 +44,11 @@ public class UserProfileUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandl
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
         var userProfiles = seedDataHandler.RealmComponents.Where(x => x.ProviderType == UserProfileType);
+        var defaultConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.UserProfile);
+        if (!defaultConfig.ModificationAllowed(ModificationType.Update))
+        {
+            return;
+        }
 
         var userProfile = await keycloak.GetUsersProfile(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 

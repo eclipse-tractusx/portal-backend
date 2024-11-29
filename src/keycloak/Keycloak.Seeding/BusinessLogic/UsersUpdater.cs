@@ -24,35 +24,36 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
-public class UsersUpdater : IUsersUpdater
+public class UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
+    : IUsersUpdater
 {
-    private readonly IKeycloakFactory _keycloakFactory;
-    private readonly ISeedDataHandler _seedData;
-
-    public UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler seedDataHandler)
-    {
-        _keycloakFactory = keycloakFactory;
-        _seedData = seedDataHandler;
-    }
-
     public async Task UpdateUsers(string keycloakInstanceName, CancellationToken cancellationToken)
     {
-        var realm = _seedData.Realm;
-        var keycloak = _keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
-        var clientsDictionary = _seedData.ClientsDictionary;
+        var realm = seedDataHandler.Realm;
+        var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
+        var clientsDictionary = seedDataHandler.ClientsDictionary;
+        var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Users);
 
-        foreach (var seedUser in _seedData.Users)
+        foreach (var seedUser in seedDataHandler.Users)
         {
             if (seedUser.Username == null)
                 throw new ConflictException($"username must not be null {seedUser.Id}");
 
+            var createAllowed = seederConfig.ModificationAllowed(ModificationType.Create, seedUser.Username);
+            var updateAllowed = seederConfig.ModificationAllowed(ModificationType.Update, seedUser.Username);
+            if (!createAllowed && !updateAllowed)
+            {
+                continue;
+            }
+
             var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
 
-            if (user == null)
+            if (user == null && createAllowed)
             {
                 var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
@@ -60,7 +61,7 @@ public class UsersUpdater : IUsersUpdater
                     throw new ConflictException($"PartialImport failed to add user id: {seedUser.Id}, userName: {seedUser.Username}");
                 }
             }
-            else
+            else if (user != null && updateAllowed)
             {
                 await UpdateUser(
                     keycloak,
@@ -68,17 +69,21 @@ public class UsersUpdater : IUsersUpdater
                     user,
                     seedUser,
                     clientsDictionary,
+                    seederConfig,
                     cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
             }
         }
     }
 
-    private static async Task UpdateUser(KeycloakClient keycloak, string realm, User user, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, CancellationToken cancellationToken)
+    private static async Task UpdateUser(KeycloakClient keycloak, string realm, User user, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         if (user.Id == null)
             throw new ConflictException($"user.Id must not be null: userName {seedUser.Username}");
 
-        if (!CompareUser(user, seedUser))
+        if (user.UserName == null)
+            throw new ConflictException($"user.UserName must not be null: userName {seedUser.Username}");
+
+        if (!CompareUser(user, seedUser) && seederConfig.ModificationAllowed(ModificationType.Update, user.UserName))
         {
             await keycloak.UpdateUserAsync(
                 realm,
@@ -98,8 +103,10 @@ public class UsersUpdater : IUsersUpdater
         await UpdateFederatedIdentities(
             keycloak,
             realm,
+            user.UserName,
             user.Id,
             seedUser.FederatedIdentities ?? Enumerable.Empty<FederatedIdentityModel>(),
+            seederConfig,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -210,17 +217,19 @@ public class UsersUpdater : IUsersUpdater
         identity.UserId == update.UserId &&
         identity.UserName == update.UserName;
 
-    private static async Task UpdateFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    private static async Task UpdateFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         var identities = await keycloak.GetUserSocialLoginsAsync(realm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
-        await DeleteObsoleteFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await CreateMissingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await UpdateExistingFederatedIdentities(keycloak, realm, userId, identities, updates, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await DeleteObsoleteFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
-        foreach (var identity in identities.ExceptBy(updates.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        foreach (var identity in identities
+                     .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Delete, x.IdentityProvider))
+                     .ExceptBy(updates.Select(x => x.IdentityProvider), x => x.IdentityProvider))
         {
             await keycloak.RemoveUserSocialLoginProviderAsync(
                 realm,
@@ -230,9 +239,11 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static async Task CreateMissingFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    private static async Task CreateMissingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
-        foreach (var update in updates.ExceptBy(identities.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        foreach (var update in updates
+                     .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Create, x.IdentityProvider))
+                     .ExceptBy(identities.Select(x => x.IdentityProvider), x => x.IdentityProvider))
         {
             await keycloak.AddUserSocialLoginProviderAsync(
                 realm,
@@ -248,9 +259,10 @@ public class UsersUpdater : IUsersUpdater
         }
     }
 
-    private static async Task UpdateExistingFederatedIdentities(KeycloakClient keycloak, string realm, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, CancellationToken cancellationToken)
+    private static async Task UpdateExistingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
         foreach (var (identity, update) in identities
+            .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Update, x.IdentityProvider))
             .Join(
                 updates,
                 x => x.IdentityProvider,
