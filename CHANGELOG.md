@@ -4,6 +4,12 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.3.0-RC4
+
+### Change
+
+* **Keycloak realm seeding job**: made seeder configurable [#1174](https://github.com/eclipse-tractusx/portal-backend/pull/1174)
+
 ## 2.3.0-RC3
 
 ### Technical Support
