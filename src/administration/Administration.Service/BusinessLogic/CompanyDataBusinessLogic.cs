@@ -57,7 +57,7 @@ public class CompanyDataBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw new ConflictException($"company {companyId} is not a valid company");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INVALID_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         return result;
@@ -77,7 +77,7 @@ public class CompanyDataBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
-            throw new ConflictException("Company Status is Incorrect");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS);
         }
 
         if (useCaseDetails.IsUseCaseIdExists)
@@ -99,12 +99,12 @@ public class CompanyDataBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!useCaseDetails.IsActiveCompanyStatus)
         {
-            throw new ConflictException("Company Status is Incorrect");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS);
         }
 
         if (!useCaseDetails.IsUseCaseIdExists)
         {
-            throw new ConflictException($"UseCaseId {useCaseId} is not available");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_USECASEID_NOT_AVAL);
         }
 
         companyRepositories.RemoveCompanyAssignedUseCase(companyId, useCaseId);
@@ -116,19 +116,19 @@ public class CompanyDataBusinessLogic(
         var companyId = _identityData.CompanyId;
         if (languageShortName != null && !await portalRepositories.GetInstance<ILanguageRepository>().IsValidLanguageCode(languageShortName).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ControllerArgumentException($"language {languageShortName} is not a valid languagecode");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_LANG_CODE_NOT_VALID, new ErrorParameter[] { new("languageShortName", languageShortName) });
         }
 
         var companyRepositories = portalRepositories.GetInstance<ICompanyRepository>();
         var statusData = await companyRepositories.GetCompanyStatusDataAsync(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (statusData == default)
         {
-            throw new NotFoundException($"company {companyId} does not exist");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMPANY_NOT_EXIST, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (!statusData.IsActive)
         {
-            throw new ConflictException("Company Status is Incorrect");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS);
         }
 
         await foreach (var data in companyRepositories.GetCompanyRoleAndConsentAgreementDataAsync(companyId, languageShortName ?? Constants.DefaultLanguage).ConfigureAwait(false))
@@ -165,17 +165,17 @@ public class CompanyDataBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!result.IsValidCompany)
         {
-            throw new ConflictException($"company {_identityData.CompanyId} does not exist");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMPANY_NOT_EXIST, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
         }
 
         if (!result.IsCompanyActive)
         {
-            throw new ConflictException("Company Status is Incorrect");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS);
         }
 
         if (result.CompanyRoleIds == null || result.ConsentStatusDetails == null)
         {
-            throw new UnexpectedConditionException("neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+            throw UnexpectedConditionException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_UNEXP_COMP_ROLES_NOR_DETAILS_NULL);
         }
 
         var agreementAssignedRoleData = await companyRepositories
@@ -204,18 +204,18 @@ public class CompanyDataBusinessLogic(
         var missing = joined.Where(x => x.MissingAgreementIds.Any() && !x.AllInActiveAgreements);
         if (missing.Any())
         {
-            throw new ControllerArgumentException($"All agreements need to get signed as Active or InActive. Missing consents: [{string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))}]");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_AGREEMENT_ACTIVE_INACTIVE_MISSING, new ErrorParameter[] { new("consentType", string.Join(", ", missing.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.MissingAgreementIds)}]"))) });
         }
 
         if (!joined.Exists(x => x.AllActiveAgreements))
         {
-            throw new ConflictException("Company can't unassign from all roles, Atleast one Company role need to signed as active");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_NOT_UNASSIGN_ALL_ROLES_ATLEAST_ONE_ACTIVE_NEEDED);
         }
 
         var extra = joined.Where(x => x.ExtraAgreementIds.Any());
         if (extra.Any())
         {
-            throw new ControllerArgumentException($"Agreements not associated with requested companyRoles: [{string.Join(", ", extra.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.ExtraAgreementIds)}]"))}]");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_AGREEMENT_NOT_ASSOCIATE_COMPANY_ROLES, new ErrorParameter[] { new("companyRoles", string.Join(", ", extra.Select(x => $"{x.CompanyRoleId}: [{string.Join(", ", x.ExtraAgreementIds)}]"))) });
         }
 
         portalRepositories.GetInstance<IConsentRepository>().AddAttachAndModifyConsents(
@@ -247,24 +247,24 @@ public class CompanyDataBusinessLogic(
     {
         if (data.ExternalCertificateNumber != null && !EcmRegex.IsMatch(data.ExternalCertificateNumber))
         {
-            throw new ControllerArgumentException("ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_EXTER_CERT_APLHA_LENGTH);
         }
 
         if (data.Sites != null && data.Sites.Any(bpn => !BpnsRegex.IsMatch(bpn)))
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters and must be prefixed with BPNS");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_PREFIXED_BPNS_SIXTEEN_CHAR);
         }
 
         var now = dateTimeProvider.OffsetNow;
 
         if (data.ValidFrom > now)
         {
-            throw new ControllerArgumentException("ValidFrom date should not be greater than current date");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_NOT_GREATER_CURR_DATE);
         }
 
         if (data.ValidTill < now)
         {
-            throw new ControllerArgumentException("ValidTill date should be greater than current date");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_SHOULD_GREATER_THAN_CURR_DATE);
         }
 
         if (data.Issuer != null && !data.Issuer.IsValidCompanyName())
@@ -278,7 +278,7 @@ public class CompanyDataBusinessLogic(
         var companyCertificateRepository = portalRepositories.GetInstance<ICompanyCertificateRepository>();
         if (!await companyCertificateRepository.CheckCompanyCertificateType(data.CertificateType).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ControllerArgumentException($"{data.CertificateType} is not assigned to a certificate");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_CERT_TYPE_NOT_ASSIGN_CERTIFICATE, new ErrorParameter[] { new("certificateType", data.CertificateType.ToString()) });
         }
 
         await HandleCompanyCertificateCreationAsync(data.CertificateType, data.Document, documentContentType, companyCertificateRepository, data.ExternalCertificateNumber, data.Sites, data.ValidFrom, data.ValidTill, data.Issuer, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -322,7 +322,7 @@ public class CompanyDataBusinessLogic(
     {
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
-            throw new ControllerArgumentException("businessPartnerNumber must not be empty");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_BPN_NOT_EMPTY);
         }
 
         var companyCertificateRepository = portalRepositories.GetInstance<ICompanyCertificateRepository>();
@@ -330,7 +330,7 @@ public class CompanyDataBusinessLogic(
         var companyId = await companyCertificateRepository.GetCompanyIdByBpn(businessPartnerNumber).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"company does not exist for {businessPartnerNumber}");
+            throw ControllerArgumentException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_COMP_NOT_EXISTS_FOR_BPN, new ErrorParameter[] { new("businessPartnerNumber", businessPartnerNumber) });
         }
 
         await foreach (var data in companyCertificateRepository.GetCompanyCertificateData(companyId))
@@ -369,17 +369,17 @@ public class CompanyDataBusinessLogic(
         var certificateCount = details.CompanyCertificateId.Count();
         if (certificateCount > 1)
         {
-            throw new ConflictException($"There must not be multiple active certificates for document {documentId}");
+            throw ConflictException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_MULTIPLE_ACTIVE_CERT_NOT_ALLOWED_ONE_DOC, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (details.DocumentId == Guid.Empty)
         {
-            throw new NotFoundException("Document is not existing");
+            throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_DOC_NOT_EXIST);
         }
 
         if (!details.IsSameCompany)
         {
-            throw new ForbiddenException("User is not allowed to delete this document");
+            throw ForbiddenException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_FORBIDDEN_USER_NOT_ALLOW_DEL_DOC);
         }
 
         companyCertificateRepository.AttachAndModifyCompanyCertificateDocumentDetails(documentId, null, c =>
@@ -408,7 +408,7 @@ public class CompanyDataBusinessLogic(
 
         if (!documentDetails.Exists)
         {
-            throw new NotFoundException($"Company certificate document {documentId} does not exist");
+            throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMP_CERT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
@@ -423,12 +423,12 @@ public class CompanyDataBusinessLogic(
 
         if (!documentDetails.Exists)
         {
-            throw new NotFoundException($"Company certificate document {documentId} does not exist");
+            throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMP_CERT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (!documentDetails.IsStatusLocked)
         {
-            throw new ForbiddenException($"Document {documentId} status is not locked");
+            throw ForbiddenException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_FORBIDDEN_DOC_STATUS_NOT_LOCKED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
@@ -463,7 +463,7 @@ public class CompanyDataBusinessLogic(
         var (validProcessId, processData) = await portalRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
-            throw new NotFoundException($"process {processId} does not exist");
+            throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_PROCESSID_NOT_EXIST, new ErrorParameter[] { new("processId", processId.ToString()) });
         }
 
         var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");

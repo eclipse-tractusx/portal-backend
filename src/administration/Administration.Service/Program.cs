@@ -95,10 +95,15 @@ await WebAppHelper
 
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, AdministrationCompanyDataErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationConnectorErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, AdministrationDocumentErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, AdministrationIdentityProviderErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, AdministrationNetworkErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationMailErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationRegistrationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationServiceAccountErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, AdministrationSubscriptionConfigurationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>();
 

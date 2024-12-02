@@ -56,17 +56,17 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw new NotFoundException($"Document {documentId} does not exist");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (!documentDetails.IsUserInCompany)
         {
-            throw new ForbiddenException("User is not allowed to access the document");
+            throw ForbiddenException.Create(AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_ACCESS_DOC);
         }
 
         if (documentDetails.Content == null)
         {
-            throw new UnexpectedConditionException("documentContent should never be null here");
+            throw UnexpectedConditionException.Create(AdministrationDocumentErrors.DOCUMENT_UNEXPECT_DOC_CONTENT_NOT_NULL);
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
@@ -80,7 +80,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw new NotFoundException($"Self description document {documentId} does not exist");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
@@ -93,17 +93,17 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         if (details.DocumentId == Guid.Empty)
         {
-            throw new NotFoundException("Document is not existing");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (!details.IsSameUser)
         {
-            throw new ForbiddenException("User is not allowed to delete this document");
+            throw ForbiddenException.Create(AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_DEL_DOC);
         }
 
         if (details.DocumentStatusId == DocumentStatusId.LOCKED)
         {
-            throw new ArgumentException("Incorrect document status");
+            throw ControllerArgumentException.Create(AdministrationDocumentErrors.DOCUMENT_ARGUMENT_INCORR_DOC_STATUS);
         }
 
         documentRepository.RemoveDocument(details.DocumentId);
@@ -121,7 +121,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
     {
         if (!_settings.EnableSeedEndpoint)
         {
-            throw new ForbiddenException("Endpoint can only be used on dev environment");
+            throw ForbiddenException.Create(AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_ENDPOINT_ALLOW_USE_IN_DEV_ENV);
         }
 
         var document = await _portalRepositories.GetInstance<IDocumentRepository>()
@@ -129,7 +129,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {
-            throw new NotFoundException($"Document {documentId} does not exists.");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         return document;
@@ -143,11 +143,11 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
         var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!documentDetails.IsDocumentTypeMatch)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content);

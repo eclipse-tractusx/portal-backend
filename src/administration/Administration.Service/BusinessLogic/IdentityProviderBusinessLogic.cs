@@ -65,7 +65,7 @@ public class IdentityProviderBusinessLogic(
             {
                 IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.CategoryId, identityProviderData.TypeId, identityProviderData.MetadataUrl).ConfigureAwait(false),
                 IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderData.IdentityProviderId, identityProviderData.Alias, identityProviderData.TypeId),
-                _ => throw new ControllerArgumentException($"unexpected value for category '{identityProviderData.CategoryId}'")
+                _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_CATEGORY_ID, new ErrorParameter[] { new("categoryId", identityProviderData.CategoryId.ToString()) })
             };
 
             if (displayName == null || (details.DisplayName != null && details.DisplayName.Contains(displayName)))
@@ -79,13 +79,13 @@ public class IdentityProviderBusinessLogic(
         {
             IamIdentityProviderProtocol.SAML => IdentityProviderCategoryId.KEYCLOAK_SAML,
             IamIdentityProviderProtocol.OIDC => IdentityProviderCategoryId.KEYCLOAK_OIDC,
-            _ => throw new ControllerArgumentException($"unexcepted value of protocol: '{protocol}'", nameof(protocol))
+            _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_OF_PROTOCOL, new ErrorParameter[] { new("protocol", nameof(protocol)) })
         };
         var requiredCompanyRoles = typeId switch
         {
             IdentityProviderTypeId.OWN => Enumerable.Empty<CompanyRoleId>(),
             IdentityProviderTypeId.MANAGED => new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER },
-            _ => throw new ControllerArgumentException($"creation of identityProviderType {typeId} is not supported")
+            _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_PROVIDER_TYPE_CREATION_NOT_SUPPORTED, new ErrorParameter[] { new("typeId", typeId.ToString()) })
         };
         if (displayName != null)
         {
@@ -99,11 +99,11 @@ public class IdentityProviderBusinessLogic(
     {
         if (displayName.Length is < 2 or > 30)
         {
-            throw new ControllerArgumentException("displayName length must be 2-30 characters");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_DISPLAY_NAME_CHAR_BET_TWO_TO_THIRTY);
         }
         if (!DisplayNameValidationExpression.IsMatch(displayName))
         {
-            throw new ControllerArgumentException("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_ALLO_CHAR_AS_PER_REG_EX);
         }
     }
 
@@ -114,12 +114,12 @@ public class IdentityProviderBusinessLogic(
         var result = await portalRepositories.GetInstance<ICompanyRepository>().CheckCompanyAndCompanyRolesAsync(companyId, requiredCompanyRoles).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!result.IsValidCompany)
         {
-            throw new ControllerArgumentException($"company {companyId} does not exist", nameof(companyId));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_COMPANY_NOT_EXIST, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (!result.IsAllowed)
         {
-            throw new ForbiddenException($"Not allowed to create an identityProvider of type {typeId}");
+            throw ForbiddenException.Create(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_NOT_ALLOW_CREATE_PROVIDER_TYPE, new ErrorParameter[] { new("typeId", typeId.ToString()) });
         }
 
         var alias = await provisioningManager.CreateOwnIdpAsync(displayName ?? result.CompanyName, result.CompanyName, protocol).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -135,7 +135,7 @@ public class IdentityProviderBusinessLogic(
         {
             IamIdentityProviderProtocol.OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, IdentityProviderCategoryId.KEYCLOAK_OIDC, typeId, null).ConfigureAwait(false),
             IamIdentityProviderProtocol.SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new UnexpectedConditionException($"unexpected value of protocol: '{protocol}'")
+            _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_OF_PROTOCOL, new ErrorParameter[] { new("protocol", nameof(protocol)) })
         };
     }
 
@@ -147,7 +147,7 @@ public class IdentityProviderBusinessLogic(
         {
             IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId, metadataUrl).ConfigureAwait(false),
             IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'")
+            _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_CATEGORY_OF_PROVIDER, new ErrorParameter[] { new("category", category.ToString()), new("identityProviderId", identityProviderId.ToString()) })
         };
     }
 
@@ -157,17 +157,17 @@ public class IdentityProviderBusinessLogic(
         var (alias, category, isOwnOrOwnerCompany, typeId, metadataUrl) = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasUntrackedAsync(identityProviderId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isOwnOrOwnerCompany)
         {
-            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyId", companyId.ToString()) });
         }
 
         if (alias == null)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
 
         if (category == IdentityProviderCategoryId.KEYCLOAK_SAML && typeId is IdentityProviderTypeId.SHARED)
         {
-            throw new ConflictException("Shared Idps must not use SAML");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_NOT_USE_SAML);
         }
 
         return (alias, category, typeId, metadataUrl);
@@ -197,7 +197,7 @@ public class IdentityProviderBusinessLogic(
                 }
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_CATEGORY_OF_PROVIDER, new ErrorParameter[] { new("category", category.ToString()), new("identityProviderId", identityProviderId.ToString()) });
         }
     }
 
@@ -215,24 +215,24 @@ public class IdentityProviderBusinessLogic(
         var result = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, companyId, !enabled).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         var (isOwner, (alias, identityProviderCategory, identityProviderTypeId, metadataUrl), companyIdAliase, companyUsersLinked, ownerCompanyName) = result;
         if (!isOwner)
         {
-            throw new ForbiddenException($"company {companyId} is not the owner of identityProvider {identityProviderId}");
+            throw ForbiddenException.Create(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_COMP_NOT_OWNER_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("identityProviderId", identityProviderId.ToString()) });
         }
         if (alias == null)
         {
-            throw new ConflictException($"identityprovider {identityProviderId} does not have an iamIdentityProvider.alias");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_HAVE_IAMIDENTITY_PROVIDER_ALIAS, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         if (identityProviderTypeId != IdentityProviderTypeId.MANAGED &&
             !enabled &&
             !await ValidateOtherActiveIdentityProvider(
                 alias,
-                companyIdAliase ?? throw new UnexpectedConditionException("CompanyIdAliase should never be null here")).ConfigureAwait(false))
+                companyIdAliase ?? throw UnexpectedConditionException.Create(AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANYID_ALIAS_NOT_NULL)).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"cannot disable indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_NOT_DISABLE_PROVIDER, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         return (identityProviderCategory, alias, identityProviderTypeId, companyUsersLinked, ownerCompanyName, metadataUrl);
     }
@@ -253,7 +253,7 @@ public class IdentityProviderBusinessLogic(
                 await UpdateIdentityProviderSaml(alias, details).ConfigureAwait(false);
                 return await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false);
             default:
-                throw new ControllerArgumentException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_CATEGORY_OF_PROVIDER, new ErrorParameter[] { new("category", category.ToString()), new("identityProviderId", identityProviderId.ToString()) });
         }
     }
 
@@ -265,16 +265,16 @@ public class IdentityProviderBusinessLogic(
         var result = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderUpdateData(identityProviderId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         var (isOwner, alias, identityProviderCategory, identityProviderTypeId, metadataUrl) = result;
         if (!isOwner)
         {
-            throw new ForbiddenException($"User not allowed to run the change for identity provider {identityProviderId}");
+            throw ForbiddenException.Create(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_USER_NOT_ALLOW_CHANGE_PROVIDER, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         if (alias == null)
         {
-            throw new ConflictException($"identityprovider {identityProviderId} does not have an iamIdentityProvider.alias");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_HAVE_IAMIDENTITY_PROVIDER_ALIAS, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
         return (identityProviderCategory, alias, identityProviderTypeId, metadataUrl);
     }
@@ -283,11 +283,11 @@ public class IdentityProviderBusinessLogic(
     {
         if (details.Oidc == null)
         {
-            throw new ControllerArgumentException("property 'oidc' must not be null", nameof(details.Oidc));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL);
         }
         if (details.Saml != null)
         {
-            throw new ControllerArgumentException("property 'saml' must be null", nameof(details.Saml));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL);
         }
         await provisioningManager.UpdateCentralIdentityProviderDataOIDCAsync(
             new IdentityProviderEditableConfigOidc(
@@ -311,11 +311,11 @@ public class IdentityProviderBusinessLogic(
     {
         if (details.Saml == null)
         {
-            throw new ControllerArgumentException("property 'saml' must not be null", nameof(details.Saml));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL);
         }
         if (details.Oidc != null)
         {
-            throw new ControllerArgumentException("property 'oidc' must be null", nameof(details.Oidc));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL);
         }
         await provisioningManager.UpdateCentralIdentityProviderDataSAMLAsync(
             new IdentityProviderEditableConfigSaml(
@@ -331,11 +331,11 @@ public class IdentityProviderBusinessLogic(
     {
         if (details.Oidc != null)
         {
-            throw new ControllerArgumentException("property 'oidc' must be null", nameof(details.Oidc));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL);
         }
         if (details.Saml != null)
         {
-            throw new ControllerArgumentException("property 'saml' must be null", nameof(details.Saml));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL);
         }
         await provisioningManager.UpdateSharedIdentityProviderAsync(alias, details.DisplayName).ConfigureAwait(false);
     }
@@ -432,13 +432,13 @@ public class IdentityProviderBusinessLogic(
         var result = await identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
 
         var (isOwner, alias, typeId, aliase, ownerCompanyName) = result;
         if (!isOwner)
         {
-            throw new ForbiddenException($"company {companyId} is not the owner of identityProvider {identityProviderId}");
+            throw ForbiddenException.Create(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_COMP_NOT_OWNER_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("identityProviderId", identityProviderId.ToString()) });
         }
 
         if (alias == null || typeId == IdentityProviderTypeId.MANAGED)
@@ -448,14 +448,14 @@ public class IdentityProviderBusinessLogic(
 
         if (await provisioningManager.IsCentralIdentityProviderEnabled(alias).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"cannot delete identityProvider {identityProviderId} as it is enabled");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_CANNOT_DEL_ENABLE_PROVIDERID, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
 
         if (!await ValidateOtherActiveIdentityProvider(
                 alias,
                 aliase).ConfigureAwait(false))
         {
-            throw new ControllerArgumentException($"cannot delete indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_NOT_DELETE_PROVIDER, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
 
         return (alias, typeId, ownerCompanyName);
@@ -591,7 +591,7 @@ public class IdentityProviderBusinessLogic(
         var result = await provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(iamUserId).FirstOrDefaultAsync(identityProviderLink => identityProviderLink.Alias == alias).ConfigureAwait(false);
         if (result == default)
         {
-            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMP_USERID_NO_KEYLOCK_LINK_FOUND, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyUserId", companyUserId.ToString()) });
         }
 
         return new UserIdentityProviderLinkData(
@@ -608,9 +608,9 @@ public class IdentityProviderBusinessLogic(
         {
             await provisioningManager.DeleteProviderUserLinkToCentralUserAsync(iamUserId, alias).ConfigureAwait(ConfigureAwaitOptions.None);
         }
-        catch (KeycloakEntityNotFoundException e)
+        catch (KeycloakEntityNotFoundException)
         {
-            throw new NotFoundException($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}", e);
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMP_USERID_NO_KEYLOCK_LINK_FOUND, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyUserId", companyUserId.ToString()) });
         }
     }
 
@@ -621,24 +621,24 @@ public class IdentityProviderBusinessLogic(
         var (alias, category, isOwnerCompany, typeId, metadataUrl, connectedCompanies) = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnIdentityProviderWithConnectedCompanies(identityProviderId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isOwnerCompany)
         {
-            throw new ConflictException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyId", companyId.ToString()) });
         }
 
         if (alias == null)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()) });
         }
 
         if (category == IdentityProviderCategoryId.KEYCLOAK_SAML && typeId is IdentityProviderTypeId.SHARED)
         {
-            throw new ConflictException("Shared Idps must not use SAML");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_SHARED_IDP_NOT_USE_SAML);
         }
 
         var details = category switch
         {
             IdentityProviderCategoryId.KEYCLOAK_OIDC => await GetIdentityProviderDetailsOidc(identityProviderId, alias, category, typeId, metadataUrl).ConfigureAwait(false),
             IdentityProviderCategoryId.KEYCLOAK_SAML => await GetIdentityProviderDetailsSaml(identityProviderId, alias, typeId).ConfigureAwait(false),
-            _ => throw new UnexpectedConditionException($"unexpected value for category '{category}' of identityProvider '{identityProviderId}'")
+            _ => throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_VAL_FOR_CATEGORY_OF_PROVIDER, new ErrorParameter[] { new("category", category.ToString()), new("identityProviderId", identityProviderId.ToString()) })
         };
 
         return new(details.IdentityProviderId, details.Alias, details.IdentityProviderCategoryId, details.IdentityProviderTypeId, details.DisplayName, details.RedirectUrl, details.Enabled, connectedCompanies);
@@ -683,7 +683,7 @@ public class IdentityProviderBusinessLogic(
     {
         if (!document.ContentType.Equals(_settings.CsvSettings.ContentType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnsupportedMediaTypeException($"Only contentType {_settings.CsvSettings.ContentType} files are allowed.");
+            throw UnsupportedMediaTypeException.Create(AdministrationIdentityProviderErrors.IDENTITY_UNSUPPORTEDMEDIA_CONTENT_TYPE_ALLOWED, new ErrorParameter[] { new("contentType", _settings.CsvSettings.ContentType) });
         }
 
         return UploadOwnCompanyUsersIdentityProviderLinkDataInternalAsync(document, cancellationToken);
@@ -740,7 +740,7 @@ public class IdentityProviderBusinessLogic(
         {
             if (userProfileLinkData == default)
             {
-                throw new UnexpectedConditionException("userProfileLinkData should never be default here");
+                throw UnexpectedConditionException.Create(AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_USER_PROFILE_LINK_DATA_NEVER_DEFAULT);
             }
             var (companyUserId, profile, identityProviderLinks) = userProfileLinkData;
             Exception? error = null;
@@ -797,7 +797,7 @@ public class IdentityProviderBusinessLogic(
         var userEntityData = await userRepository.GetUserEntityDataAsync(companyUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (userEntityData == default)
         {
-            throw new ControllerArgumentException($"unexpected value of {_settings.CsvSettings.HeaderUserId}: '{companyUserId}'");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_CSV_COMPAY_USERID, new ErrorParameter[] { new("headerUserId", _settings.CsvSettings.HeaderUserId.ToString()), new("companyUserId", companyUserId.ToString()) });
         }
         var (existingFirstName, existingLastName, existingEmail) = userEntityData;
 
@@ -830,7 +830,7 @@ public class IdentityProviderBusinessLogic(
 
         if (alias == sharedIdp.Alias)
         {
-            throw new ControllerArgumentException($"unexpected update of shared identityProviderLink, alias '{alias}', companyUser '{companyUserId}', providerUserId: '{userId}', providerUserName: '{userName}'");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_UNEXPECT_SHARED_IDENTITY_PROVIDER_LINK, new ErrorParameter[] { new("alias", alias), new("companyUserId", companyUserId.ToString()), new("userId", userId), new("userName", userName) });
         }
 
         if (existingLink != null)
@@ -897,11 +897,11 @@ public class IdentityProviderBusinessLogic(
         {
             if (!headers.MoveNext())
             {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_FORMAT_CSVHEADER, new ErrorParameter[] { new("csvHeader", csvHeader) });
             }
             if ((string)headers.Current != csvHeader)
             {
-                throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_FORMAT_CSVHEADER_WITH_CURR, new ErrorParameter[] { new("csvHeader", csvHeader), new("current", headers.Current.ToString()) });
             }
         }
         var numIdps = 0;
@@ -912,11 +912,11 @@ public class IdentityProviderBusinessLogic(
             {
                 if (!hasNext)
                 {
-                    throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got ''");
+                    throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_FORMAT_CSVHEADER, new ErrorParameter[] { new("csvHeader", csvHeader) });
                 }
                 if ((string)headers.Current != csvHeader)
                 {
-                    throw new ControllerArgumentException($"invalid format: expected '{csvHeader}', got '{headers.Current}'");
+                    throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_FORMAT_CSVHEADER_WITH_CURR, new ErrorParameter[] { new("csvHeader", csvHeader), new("current", headers.Current.ToString()) });
                 }
                 hasNext = headers.MoveNext();
             }
@@ -930,25 +930,25 @@ public class IdentityProviderBusinessLogic(
         var items = line.Split(_settings.CsvSettings.Separator).AsEnumerable().GetEnumerator();
         if (!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderUserId} type Guid expected");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_USERID, new ErrorParameter[] { new("headerUserId", _settings.CsvSettings.HeaderUserId) });
         }
         if (!Guid.TryParse(items.Current, out var companyUserId))
         {
-            throw new ControllerArgumentException($"invalid format for {_settings.CsvSettings.HeaderUserId} type Guid: '{items.Current}'");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_USERID_WITH_CURRENT_ITEMS, new ErrorParameter[] { new("headerUserId", _settings.CsvSettings.HeaderUserId), new("current", items.Current) });
         }
         if (!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderFirstName} expected");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_FOR_HEADER_FIRSTNAME, new ErrorParameter[] { new("headerFirstName", _settings.CsvSettings.HeaderFirstName) });
         }
         var firstName = items.Current;
         if (!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderLastName} expected");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_FOR_HEADER_LASTNAME, new ErrorParameter[] { new("headerLastName", _settings.CsvSettings.HeaderLastName) });
         }
         var lastName = items.Current;
         if (!items.MoveNext())
         {
-            throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderEmail} expected");
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_FOR_HEADER_EMAIL, new ErrorParameter[] { new("headerEmail", _settings.CsvSettings.HeaderEmail) });
         }
         var email = items.Current;
         var identityProviderLinks = ParseCSVIdentityProviderLinks(items, numIdps, existingAliase).ToList();
@@ -962,21 +962,21 @@ public class IdentityProviderBusinessLogic(
         {
             if (!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderAlias} expected");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_PROVIDERALIAS, new ErrorParameter[] { new("headerProviderAlias", _settings.CsvSettings.HeaderProviderAlias) });
             }
             var identityProviderAlias = items.Current;
             if (!existingAliase.Contains(identityProviderAlias))
             {
-                throw new ControllerArgumentException($"unexpected value for {_settings.CsvSettings.HeaderProviderAlias}: {identityProviderAlias}]");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_PROVIDERALIAS_WITH_IDENTITY_ALIAS, new ErrorParameter[] { new("headerProviderAlias", _settings.CsvSettings.HeaderProviderAlias), new("identityProviderAlias", identityProviderAlias) });
             }
             if (!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderUserId} expected");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_PROVIDER_USERID, new ErrorParameter[] { new("headerProviderUserId", _settings.CsvSettings.HeaderProviderUserId) });
             }
             var identityProviderUserId = items.Current;
             if (!items.MoveNext())
             {
-                throw new ControllerArgumentException($"value for {_settings.CsvSettings.HeaderProviderUserName} expected");
+                throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_VAL_HEADER_PROVIDER_USERNAME, new ErrorParameter[] { new("headerProviderUserName", _settings.CsvSettings.HeaderProviderUserName) });
             }
             var identityProviderUserName = items.Current;
             yield return new IdentityProviderLink(identityProviderAlias, identityProviderUserId, identityProviderUserName);
@@ -1038,13 +1038,13 @@ public class IdentityProviderBusinessLogic(
     {
         if (!identityProviderIds.Any())
         {
-            throw new ControllerArgumentException("at least one identityProviderId must be specified", nameof(identityProviderIds));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_ATLEAST_ONE_PROVIDERID_SPECIFIED);
         }
         var identityProviderData = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetOwnCompanyIdentityProviderAliasDataUntracked(companyId, identityProviderIds).ToListAsync().ConfigureAwait(false);
 
         identityProviderIds.Except(identityProviderData.Select(data => data.IdentityProviderId)).IfAny(invalidIds =>
         {
-            throw new ControllerArgumentException($"invalid identityProviders: [{string.Join(", ", invalidIds)}] for company {companyId}", nameof(identityProviderIds));
+            throw ControllerArgumentException.Create(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_IDENTITY_PROVIDER_IDS, new ErrorParameter[] { new("invalidIds", string.Join(", ", invalidIds)), new("companyId", companyId.ToString()) });
         });
 
         return identityProviderData;
@@ -1079,20 +1079,20 @@ public class IdentityProviderBusinessLogic(
         var (isValidUser, alias, isSameCompany) = await portalRepositories.GetInstance<IIdentityProviderRepository>().GetIamUserIsOwnCompanyIdentityProviderAliasAsync(companyUserId, identityProviderId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidUser)
         {
-            throw new NotFoundException($"companyUserId {companyUserId} does not exist");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMPANY_USERID_NOT_EXIST, new ErrorParameter[] { new("companyUserId", companyUserId.ToString()) });
         }
         if (alias == null)
         {
-            throw new NotFoundException($"identityProvider {identityProviderId} not found in company of user {companyUserId}");
+            throw NotFoundException.Create(AdministrationIdentityProviderErrors.IDENTITY_NOT_FOUND_COMPANY_OF_COMPANY_USER_ID, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyUserId", companyUserId.ToString()) });
         }
         if (!isSameCompany)
         {
-            throw new ForbiddenException($"identityProvider {identityProviderId} is not associated with company {companyId}");
+            throw ConflictException.Create(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY, new ErrorParameter[] { new("identityProviderId", identityProviderId.ToString()), new("companyId", companyId.ToString()) });
         }
         var iamUserId = await provisioningManager.GetUserByUserName(companyUserId.ToString()).ConfigureAwait(ConfigureAwaitOptions.None);
         if (iamUserId == null)
         {
-            throw new UnexpectedConditionException($"companyUserId {companyUserId} is not linked to keycloak");
+            throw UnexpectedConditionException.Create(AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK, new ErrorParameter[] { new("companyUserId", companyUserId.ToString()) });
         }
         return (iamUserId, alias);
     }
