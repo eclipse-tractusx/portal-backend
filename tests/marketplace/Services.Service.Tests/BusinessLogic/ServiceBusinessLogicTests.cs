@@ -34,6 +34,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using System.Collections.Immutable;
 using Xunit;
@@ -310,7 +311,7 @@ public class ServiceBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Service {notExistingServiceId} does not exist");
+        ex.Message.Should().Be(ServicesServiceErrors.SERVICES_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -363,7 +364,7 @@ public class ServiceBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Subscription {notExistingId} does not exist");
+        ex.Message.Should().Be(ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST.ToString());
     }
 
     #endregion
