@@ -295,7 +295,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
-        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
