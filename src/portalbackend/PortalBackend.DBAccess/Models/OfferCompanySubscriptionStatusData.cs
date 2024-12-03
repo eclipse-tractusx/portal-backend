@@ -25,37 +25,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// View model containing an offer id and connected company subscription statuses.
 /// </summary>
-public class OfferCompanySubscriptionStatusData
-{
-    /// <summary>
-    /// Constructor.
-    /// </summary>
-    public OfferCompanySubscriptionStatusData()
-    {
-        CompanySubscriptionStatuses = new HashSet<CompanySubscriptionStatusData>();
-    }
-
-    /// <summary>
-    /// Id of the offer.
-    /// </summary>
-    public Guid OfferId { get; set; }
-
-    /// <summary>
-    /// Name of the service.
-    /// </summary>
-    public string? ServiceName { get; set; }
-
-    /// <summary>
-    /// Subscription statuses of subscribing companies.
-    /// </summary>
-    public IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses { get; set; }
-
-    /// <summary>
-    /// Id of the lead Image
-    /// </summary>
-    /// <value></value>
-    public Guid Image { get; set; }
-}
+public record OfferCompanySubscriptionStatusData(
+    Guid OfferId,
+    string? ServiceName,
+    IEnumerable<CompanySubscriptionStatusData> CompanySubscriptionStatuses,
+    Guid Image
+);
 
 /// <summary>
 /// View model containing the ID of a company and its app subscription status in a specific context.

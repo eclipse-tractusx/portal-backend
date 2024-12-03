@@ -42,7 +42,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
+    public async Task<IEnumerable<TechnicalUserCreationInfo>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId)
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileData(offerId, offerTypeId)
@@ -54,11 +54,11 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
 
         return CheckTechnicalUserData(data)
             ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
-            : Enumerable.Empty<ServiceAccountCreationInfo>();
+            : Enumerable.Empty<TechnicalUserCreationInfo>();
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ServiceAccountCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
+    public async Task<IEnumerable<TechnicalUserCreationInfo>> GetTechnicalUserProfilesForOfferSubscription(Guid subscriptionId)
     {
         var data = await _portalRepositories.GetInstance<IOfferRepository>()
             .GetServiceAccountProfileDataForSubscription(subscriptionId)
@@ -70,7 +70,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
 
         return CheckTechnicalUserData(data)
             ? data.ServiceAccountProfiles.Select(x => GetServiceAccountData(data.OfferName!, x))
-            : Enumerable.Empty<ServiceAccountCreationInfo>();
+            : Enumerable.Empty<TechnicalUserCreationInfo>();
     }
 
     private static bool CheckTechnicalUserData((bool IsSingleInstance, IEnumerable<IEnumerable<UserRoleData>> ServiceAccountProfiles, string? OfferName) data)
@@ -83,7 +83,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
         return !data.IsSingleInstance && data.ServiceAccountProfiles.Any();
     }
 
-    private static ServiceAccountCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
+    private static TechnicalUserCreationInfo GetServiceAccountData(string offerName, IEnumerable<UserRoleData> serviceAccountUserRoles) =>
         new(
             offerName,
             $"Technical User for app {offerName} - {string.Join(",", serviceAccountUserRoles.Select(x => x.UserRoleText))}",

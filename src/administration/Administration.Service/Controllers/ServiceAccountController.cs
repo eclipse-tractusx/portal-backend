@@ -36,12 +36,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers
 [EnvironmentRoute("MVC_ROUTING_BASEPATH", "serviceaccount")]
 [Produces("application/json")]
 [Consumes("application/json")]
-public class ServiceAccountController(IServiceAccountBusinessLogic logic) : ControllerBase
+public class ServiceAccountController(ITechnicalUserBusinessLogic logic) : ControllerBase
 {
     /// <summary>
     /// Creates a new technical user / service account with selected role under the same org as the requester
     /// </summary>
-    /// <param name="serviceAccountCreationInfo"></param>
+    /// <param name="technicalUserCreationInfo"></param>
     /// <returns></returns>
     /// <remarks>Example: POST: api/administration/serviceaccount/owncompany/serviceaccounts</remarks>
     /// <response code="200">The service account was created.</response>
@@ -54,8 +54,8 @@ public class ServiceAccountController(IServiceAccountBusinessLogic logic) : Cont
     [ProducesResponseType(typeof(IEnumerable<ServiceAccountDetails>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] ServiceAccountCreationInfo serviceAccountCreationInfo) =>
-        logic.CreateOwnCompanyServiceAccountAsync(serviceAccountCreationInfo);
+    public Task<IEnumerable<ServiceAccountDetails>> ExecuteCompanyUserCreation([FromBody] TechnicalUserCreationInfo technicalUserCreationInfo) =>
+        logic.CreateOwnCompanyServiceAccountAsync(technicalUserCreationInfo);
 
     /// <summary>
     /// Deletes the service account with the given id
