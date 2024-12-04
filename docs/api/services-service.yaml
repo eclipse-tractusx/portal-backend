@@ -1348,7 +1348,7 @@ paths:
     get:
       tags:
         - Services
-      summary: 'Retrieves the details of a subscription (Authorization required - Roles: subscribe_service)'
+      summary: 'Retrieves the details of a subscription (Authorization required - Roles: view_service_subscriptions)'
       description: 'Example: GET: /api/services/{serviceId}/subscription/{subscriptionId}/subscriber'
       parameters:
         - name: serviceId
