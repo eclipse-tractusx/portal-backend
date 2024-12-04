@@ -36,16 +36,16 @@ using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Libr
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 /// <inheritdoc />
-public class ServiceAccountCreation(
+public class TechnicalUserCreation(
     IProvisioningManager provisioningManager,
     IPortalRepositories portalRepositories,
     IProvisioningDBAccess provisioningDbAccess,
-    IOptions<ServiceAccountCreationSettings> options) : IServiceAccountCreation
+    IOptions<ServiceAccountCreationSettings> options) : ITechnicalUserCreation
 {
     private readonly ServiceAccountCreationSettings _settings = options.Value;
 
     /// <inheritdoc />
-    async Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> IServiceAccountCreation.CreateServiceAccountAsync(ServiceAccountCreationInfo creationData,
+    async Task<(bool HasExternalTechnicalUser, Guid? ProcessId, IEnumerable<CreatedServiceAccountData> TechnicalUsers)> ITechnicalUserCreation.CreateTechnicalUsersAsync(TechnicalUserCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
             TechnicalUserTypeId technicalUserTypeId,

@@ -30,7 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 /// <param name="Description">Description for the service account table</param>
 /// <param name="IamClientAuthMethod">Method of the authentication</param>
 /// <param name="UserRoleIds">ids for the user roles</param>
-public record ServiceAccountCreationInfo(
+public record TechnicalUserCreationInfo(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("description")] string Description,
     [property: JsonPropertyName("authenticationType")] IamClientAuthMethod IamClientAuthMethod,

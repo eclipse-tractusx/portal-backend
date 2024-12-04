@@ -58,11 +58,10 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                     SubscriptionStatusSorting.OfferIdDesc => (IEnumerable<Offer> o) => o.OrderByDescending(offer => offer.Id),
                     _ => null
                 },
-                g => new OfferCompanySubscriptionStatusData
-                {
-                    OfferId = g.Id,
-                    ServiceName = g.Name,
-                    CompanySubscriptionStatuses = g.OfferSubscriptions
+                g => new OfferCompanySubscriptionStatusData(
+                    g.Id,
+                    g.Name,
+                    g.OfferSubscriptions
                         .Where(os =>
                             statusIds.Contains(os.OfferSubscriptionStatusId) &&
                             (companyName == null || EF.Functions.ILike(os.Company!.Name, $"%{companyName.EscapeForILike()}%")))
@@ -82,11 +81,11 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                                         ps.ProcessStepTypeId,
                                         ps.ProcessStepStatusId))
                                     .Distinct())),
-                    Image = g.Documents
+                    g.Documents
                         .Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId == DocumentStatusId.LOCKED)
                         .Select(document => document.Id)
                         .FirstOrDefault()
-                })
+                ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />

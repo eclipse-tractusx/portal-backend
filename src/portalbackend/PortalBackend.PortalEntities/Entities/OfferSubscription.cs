@@ -49,7 +49,6 @@ public class OfferSubscription : IAuditableV1, IBaseEntity
     /// <param name="companyId">Company id.</param>
     /// <param name="offerSubscriptionStatusId">app subscription status.</param>
     /// <param name="requesterId">Id of the requester</param>
-    /// <param name="lastEditorId">Id of the editor</param>
     /// <param name="dateCreated">DateCreated of an Subscription</param>
     public OfferSubscription(Guid id, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId, DateTimeOffset dateCreated)
         : this()

@@ -26,9 +26,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public interface IServiceAccountBusinessLogic
+public interface ITechnicalUserBusinessLogic
 {
-    Task<IEnumerable<ServiceAccountDetails>> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos);
+    Task<IEnumerable<ServiceAccountDetails>> CreateOwnCompanyServiceAccountAsync(TechnicalUserCreationInfo technicalUserCreationInfos);
     Task DeleteOwnCompanyServiceAccountAsync(Guid serviceAccountId);
     Task<ServiceAccountConnectorOfferData> GetOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId);
     Task<ServiceAccountDetails> UpdateOwnCompanyServiceAccountDetailsAsync(Guid serviceAccountId, ServiceAccountEditableDetails serviceAccountDetails);
