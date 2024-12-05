@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -51,11 +52,11 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new ConflictException($"Company {companyId} not found");
+            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not a service-provider");
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         return result.ProviderDetailReturnData;
@@ -69,8 +70,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 
         if (data.Url is { Length: > 100 })
         {
-            throw new ControllerArgumentException(
-                "the maximum allowed length is 100 characters", nameof(data.Url));
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, new ErrorParameter[] { new("Url", nameof(data.Url)) });
         }
 
         return SetOfferProviderCompanyDetailsInternalAsync(data, _identityData.CompanyId);
@@ -119,12 +119,12 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!result.IsValidCompanyId)
         {
-            throw new ConflictException($"Company {companyId} not found");
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, new ErrorParameter[] { new("Url", nameof(data.Url)) });
         }
 
         if (!result.IsCompanyRoleOwner)
         {
-            throw new ForbiddenException($"Company {companyId} is not an app- or service-provider");
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>

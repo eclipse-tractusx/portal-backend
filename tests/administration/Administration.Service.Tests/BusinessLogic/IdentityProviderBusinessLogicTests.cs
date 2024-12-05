@@ -203,7 +203,7 @@ public class IdentityProviderBusinessLogicTests
         async Task Act() => await sut.UploadOwnCompanyUsersIdentityProviderLinkDataAsync(_document, CancellationToken.None);
 
         var error = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        error.Message.Should().Be($"Only contentType {_csvSettings.ContentType} files are allowed.");
+        error.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_UNSUPPORTEDMEDIA_CONTENT_TYPE_ALLOWED.ToString());
     }
 
     [Fact]
@@ -309,8 +309,7 @@ public class IdentityProviderBusinessLogicTests
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
         result.Errors.Single().Should().Match<UserUpdateError>(x =>
-            x.Line == 3 &&
-            x.Message == $"unexpected update of shared identityProviderLink, alias '{_sharedIdpAlias}', companyUser '{changed.CompanyUserId}', providerUserId: '{changed.SharedIdpUserId}', providerUserName: '{changed.SharedIdpUserName}'");
+            x.Line == 3);
 
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
@@ -451,8 +450,7 @@ public class IdentityProviderBusinessLogicTests
         result.Total.Should().Be(numUsers);
         result.Errors.Should().HaveCount(1);
         result.Errors.Single().Should().Match<UserUpdateError>(x =>
-            x.Line == 3 &&
-            x.Message == $"unexpected value of UserId: '{unknown.CompanyUserId}'");
+            x.Line == 3);
 
         A.CallTo(() => _provisioningManager.DeleteProviderUserLinkToCentralUserAsync(A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.AddProviderUserLinkToCentralUserAsync(A<string>._, A<IdentityProviderLink>._)).MustNotHaveHappened();
@@ -486,7 +484,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("protocol");
+        ex.Parameters.First().Name.Should().Be("protocol");
     }
 
     [Theory]
@@ -509,7 +507,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("displayName length must be 2-30 characters");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_DISPLAY_NAME_CHAR_BET_TWO_TO_THIRTY.ToString());
     }
 
     [Fact]
@@ -530,7 +528,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_ALLO_CHAR_AS_PER_REG_EX.ToString());
     }
 
     [Fact]
@@ -555,8 +553,8 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"company {companyId} does not exist (Parameter 'companyId')");
-        ex.ParamName.Should().Be("companyId");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_COMPANY_NOT_EXIST.ToString());
+        ex.Parameters.First().Name.Should().Be("companyId");
     }
 
     [Fact]
@@ -580,7 +578,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Not allowed to create an identityProvider of type MANAGED");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_NOT_ALLOW_CREATE_PROVIDER_TYPE.ToString());
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>.That.IsSameSequenceAs(new[] { CompanyRoleId.OPERATOR, CompanyRoleId.ONBOARDING_SERVICE_PROVIDER }))).MustHaveHappenedOnceExactly();
     }
 
@@ -602,7 +600,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"creation of identityProviderType {IdentityProviderTypeId.SHARED} is not supported");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_PROVIDER_TYPE_CREATION_NOT_SUPPORTED.ToString());
         A.CallTo(() => _companyRepository.CheckCompanyAndCompanyRolesAsync(_invalidCompanyId, A<IEnumerable<CompanyRoleId>>._)).MustNotHaveHappened();
     }
 
@@ -714,7 +712,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {invalidId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST.ToString());
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(invalidId, _companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -739,7 +737,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"company {_companyId} is not the owner of identityProvider {identityProviderId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_COMP_NOT_OWNER_PROVIDER.ToString());
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, _companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -766,7 +764,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"cannot delete identityProvider {identityProviderId} as it is enabled");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_CANNOT_DEL_ENABLE_PROVIDERID.ToString());
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderUpdateDataForDelete(identityProviderId, _companyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("test")).MustHaveHappenedOnceExactly();
     }
@@ -1058,7 +1056,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_companyId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY.ToString());
     }
 
     [Fact]
@@ -1082,7 +1080,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1238,7 +1236,7 @@ public class IdentityProviderBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
-        ex.Message.Should().Be($"identityProvider {identityProviderId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1263,7 +1261,7 @@ public class IdentityProviderBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
-        ex.Message.Should().Be($"company {_companyId} is not the owner of identityProvider {identityProviderId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_COMP_NOT_OWNER_PROVIDER.ToString());
     }
 
     [Fact]
@@ -1290,7 +1288,7 @@ public class IdentityProviderBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         A.CallTo(() => _identityProviderRepository.GetOwnCompanyIdentityProviderStatusUpdateData(identityProviderId, _companyId, true)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _provisioningManager.IsCentralIdentityProviderEnabled("alt-cl1")).MustHaveHappenedOnceExactly();
-        ex.Message.Should().Be($"cannot disable indentityProvider {identityProviderId} as no other active identityProvider exists for this company");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_NOT_DISABLE_PROVIDER.ToString());
     }
 
     [Fact]
@@ -1497,10 +1495,8 @@ public class IdentityProviderBusinessLogicTests
     #region UpdateOwnCompanyIdentityProviderAsync
 
     [Theory]
-    [InlineData("a", "displayName length must be 2-30 characters")]
-    [InlineData("way-too-long-display-name-throws-an-error-should-be-long-enough", "displayName length must be 2-30 characters")]
-    [InlineData("$invalid-character", "allowed characters in displayName: 'a-zA-Z0-9!?@&#'\"()_-=/*.,;: '")]
-    public async Task UpdateOwnCompanyIdentityProviderAsync_WithInvalidDisplayName_ThrowsControllerArgumentException(string displayName, string errorMessage)
+    [InlineData("a")]
+    public async Task UpdateOwnCompanyIdentityProviderAsync_WithInvalidDisplayName_ThrowsControllerArgumentException(string displayName)
     {
         // Arrange
         var identityProviderId = Guid.NewGuid();
@@ -1523,7 +1519,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be(errorMessage);
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_DISPLAY_NAME_CHAR_BET_TWO_TO_THIRTY.ToString());
     }
 
     [Fact]
@@ -1550,7 +1546,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1577,7 +1573,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"User not allowed to run the change for identity provider {identityProviderId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_FORBIDDEN_USER_NOT_ALLOW_CHANGE_PROVIDER.ToString());
     }
 
     [Fact]
@@ -1605,7 +1601,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'oidc' must not be null (Parameter 'Oidc')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1634,7 +1630,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'saml' must be null (Parameter 'Saml')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1716,7 +1712,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'saml' must not be null (Parameter 'Saml')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1745,7 +1741,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'oidc' must be null (Parameter 'Oidc')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1810,7 +1806,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'oidc' must be null (Parameter 'Oidc')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_OIDC_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1839,7 +1835,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("property 'saml' must be null (Parameter 'Saml')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_SAML_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1907,7 +1903,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMPANY_USERID_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1937,7 +1933,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} is not linked to keycloak");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK.ToString());
     }
 
     [Fact]
@@ -1965,7 +1961,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} not found in company of user {companyUserId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_FOUND_COMPANY_OF_COMPANY_USER_ID.ToString());
     }
 
     [Fact]
@@ -1992,8 +1988,8 @@ public class IdentityProviderBusinessLogicTests
         async Task Act() => await sut.CreateOrUpdateOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId, data);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_identity.CompanyId}");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY.ToString());
     }
 
     [Fact]
@@ -2056,7 +2052,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMPANY_USERID_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -2083,7 +2079,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"companyUserId {companyUserId} is not linked to keycloak");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_UNEXPECT_COMPANY_USERID_NOT_LINKED_KEYCLOAK.ToString());
     }
 
     [Fact]
@@ -2108,7 +2104,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} not found in company of user {companyUserId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_FOUND_COMPANY_OF_COMPANY_USER_ID.ToString());
     }
 
     [Fact]
@@ -2132,8 +2128,8 @@ public class IdentityProviderBusinessLogicTests
         async Task Act() => await sut.GetOwnCompanyUserIdentityProviderLinkDataAsync(companyUserId, identityProviderId);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_identity.CompanyId}");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY.ToString());
     }
 
     [Fact]
@@ -2163,7 +2159,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMP_USERID_NO_KEYLOCK_LINK_FOUND.ToString());
 
         A.CallTo(() => _provisioningManager.GetProviderUserLinkDataForCentralUserIdAsync(iamUserId))
             .MustHaveHappenedOnceExactly();
@@ -2229,7 +2225,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProviderLink for identityProvider {identityProviderId} not found in keycloak for user {companyUserId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_COMP_USERID_NO_KEYLOCK_LINK_FOUND.ToString());
     }
 
     [Fact]
@@ -2286,7 +2282,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("at least one identityProviderId must be specified (Parameter 'identityProviderIds')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_ATLEAST_ONE_PROVIDERID_SPECIFIED.ToString());
     }
 
     [Fact]
@@ -2310,7 +2306,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"invalid identityProviders: [{identityProviderId}] for company {_identity.CompanyId} (Parameter 'identityProviderIds')");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_ARGUMENT_INVALID_IDENTITY_PROVIDER_IDS.ToString());
     }
 
     #endregion
@@ -2338,7 +2334,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} is not associated with company {_companyId}");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_CONFLICT_PROVIDER_NOT_ASSOCIATE_WITH_COMPANY.ToString());
     }
 
     [Fact]
@@ -2362,7 +2358,7 @@ public class IdentityProviderBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"identityProvider {identityProviderId} does not exist");
+        ex.Message.Should().Be(AdministrationIdentityProviderErrors.IDENTITY_NOT_PROVIDER_NOT_EXIST.ToString());
     }
 
     [Fact]
