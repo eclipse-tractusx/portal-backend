@@ -17,23 +17,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
-using System.Net.Http.Headers;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
-public class BpnAccess(IHttpClientFactory httpFactory) : IBpnAccess
+public class BpdmAccessService(ITokenService tokenService, IOptions<BpdmAccessSettings> options)
+    : IBpdmAccessService
 {
+    private readonly BpdmAccessSettings _settings = options.Value;
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    public async Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient = httpFactory.CreateClient(nameof(BpnAccess));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using var httpClient = await tokenService.GetAuthorizedClient<BpdmAccessService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var result = await httpClient.GetAsync($"legal-entities/{Uri.EscapeDataString(businessPartnerNumber)}?idType=BPN", cancellationToken)
             .CatchingIntoServiceExceptionFor("bpn-fetch-legal-entity")
             .ConfigureAwait(false);

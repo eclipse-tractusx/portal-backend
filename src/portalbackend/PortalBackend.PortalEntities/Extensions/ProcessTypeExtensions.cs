@@ -52,6 +52,9 @@ public static class ProcessTypeExtensions
             ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT),
             ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER => (ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER),
             ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER => (ProcessTypeId.USER_PROVISIONING, ProcessStepTypeId.DELETE_CENTRAL_USER),
+            ProcessStepTypeId.RETRIGGER_DELETE_BPN_FROM_CENTRAL_USER => (ProcessTypeId.USER_BPN, ProcessStepTypeId.DELETE_BPN_FROM_CENTRAL_USER),
+            ProcessStepTypeId.RETRIGGER_CHECK_LEGAL_ENTITY_DATA => (ProcessTypeId.USER_BPN, ProcessStepTypeId.CHECK_LEGAL_ENTITY_DATA),
+            ProcessStepTypeId.RETRIGGER_ADD_BPN_TO_IDENTITY => (ProcessTypeId.USER_BPN, ProcessStepTypeId.ADD_BPN_TO_IDENTITY),
             _ => throw new UnexpectedConditionException($"Step {stepToTrigger} is not retriggerable")
         };
 }

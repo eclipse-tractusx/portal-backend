@@ -46,7 +46,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
 public class RegistrationBusinessLogic(
     IOptions<RegistrationSettings> settings,
-    IBpnAccess bpnAccess,
+    IBpdmAccessService bpdmAccessService,
     IUserProvisioningService userProvisioningService,
     IIdentityProviderProvisioningService identityProviderProvisioningService,
     ILogger<RegistrationBusinessLogic> logger,
@@ -64,18 +64,19 @@ public class RegistrationBusinessLogic(
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
         portalRepositories.GetInstance<IUserRolesRepository>().GetClientRolesCompositeAsync(_settings.KeycloakClientID);
 
-    public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    public Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumber(string businessPartnerNumber, CancellationToken cancellationToken)
     {
         if (!bpnRegex.IsMatch(businessPartnerNumber))
         {
             throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(businessPartnerNumber));
         }
-        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber.ToUpper(), token, cancellationToken);
+
+        return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber.ToUpper(), cancellationToken);
     }
 
-    private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, string token, CancellationToken cancellationToken)
+    private async Task<CompanyBpdmDetailData> GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        var legalEntity = await bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var legalEntity = await bpdmAccessService.FetchLegalEntityByBpn(businessPartnerNumber, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!businessPartnerNumber.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
         {
             throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
