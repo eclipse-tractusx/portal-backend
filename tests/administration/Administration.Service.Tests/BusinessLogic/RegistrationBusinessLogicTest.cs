@@ -26,7 +26,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -34,7 +38,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
@@ -69,7 +72,7 @@ public class RegistrationBusinessLogicTest
     private readonly IApplicationRepository _applicationRepository;
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IIdentityProviderRepository _identityProviderRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFixture _fixture;
     private readonly IRegistrationBusinessLogic _logic;
@@ -93,7 +96,7 @@ public class RegistrationBusinessLogicTest
         _applicationRepository = A.Fake<IApplicationRepository>();
         _identityProviderRepository = A.Fake<IIdentityProviderRepository>();
         _documentRepository = A.Fake<IDocumentRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         _userRepository = A.Fake<IUserRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
         _mailingProcessCreation = A.Fake<IMailingProcessCreation>();
@@ -115,7 +118,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
 
         _logger = A.Fake<ILogger<RegistrationBusinessLogic>>();
 
@@ -704,11 +707,11 @@ public class RegistrationBusinessLogicTest
         var applicationId = _fixture.Create<Guid>();
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             applicationId,
-            new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
+            new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
             Guid.NewGuid(),
             typeId,
             ImmutableDictionary.Create<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>(),
-            Enumerable.Empty<ProcessStep>());
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>());
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(applicationId,
                 typeId,
                 A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
@@ -1056,11 +1059,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
         var processStepTypeId = ProcessStepTypeId.DELETE_IDP_SHARED_REALM;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
+        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        var verifyProcessData = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, stepToTrigger, Framework.Processes.Library.Enums.ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((true, verifyProcessData));
 
@@ -1071,7 +1074,7 @@ public class RegistrationBusinessLogicTest
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? Initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> Modify)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1083,7 +1086,7 @@ public class RegistrationBusinessLogicTest
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM;
         var processId = Guid.NewGuid();
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()));
 
         Task Act() => _logic.RetriggerDeleteIdpSharedRealm(processId);
 
@@ -1102,11 +1105,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
         var processStepTypeId = ProcessStepTypeId.DELETE_IDP_SHARED_SERVICEACCOUNT;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
+        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        var verifyProcessData = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, stepToTrigger, Framework.Processes.Library.Enums.ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((true, verifyProcessData));
 
@@ -1117,7 +1120,7 @@ public class RegistrationBusinessLogicTest
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? Initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> Modify)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1129,7 +1132,7 @@ public class RegistrationBusinessLogicTest
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT;
         var processId = Guid.NewGuid();
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()));
 
         Task Act() => _logic.RetriggerDeleteIdpSharedServiceAccount(processId);
 
@@ -1148,11 +1151,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
         var processStepTypeId = ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
+        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        var verifyProcessData = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, stepToTrigger, Framework.Processes.Library.Enums.ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((true, verifyProcessData));
 
@@ -1163,7 +1166,7 @@ public class RegistrationBusinessLogicTest
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.IDENTITYPROVIDER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? Initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> Modify)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1175,7 +1178,7 @@ public class RegistrationBusinessLogicTest
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER;
         var processId = Guid.NewGuid();
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()));
 
         Task Act() => _logic.RetriggerDeleteCentralIdentityProvider(processId);
 
@@ -1194,11 +1197,11 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER;
         var processStepTypeId = ProcessStepTypeId.DELETE_CENTRAL_USER;
-        var processSteps = new List<ProcessStep>();
-        var process = _fixture.Build<Process>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
+        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>().With(x => x.LockExpiryDate, default(DateTimeOffset?)).Create();
         var processStepId = Guid.NewGuid();
         SetupFakesForRetrigger(processSteps);
-        var verifyProcessData = new VerifyProcessData(process, Enumerable.Repeat(new ProcessStep(processStepId, stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
+        var verifyProcessData = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, stepToTrigger, Framework.Processes.Library.Enums.ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1));
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((true, verifyProcessData));
 
@@ -1209,7 +1212,7 @@ public class RegistrationBusinessLogicTest
         processSteps.Should().ContainSingle().And.Satisfy(x => x.ProcessStepTypeId == processStepTypeId);
         A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.USER_PROVISIONING, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? Initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> Modify)>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -1221,7 +1224,7 @@ public class RegistrationBusinessLogicTest
         var stepToTrigger = ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER;
         var processId = Guid.NewGuid();
         A.CallTo(() => _processStepRepository.IsValidProcess(A<Guid>._, A<ProcessTypeId>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()));
 
         Task Act() => _logic.RetriggerDeleteCentralUser(processId);
 
@@ -1277,9 +1280,9 @@ public class RegistrationBusinessLogicTest
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
-            Enumerable.Empty<ProcessStep>()));
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
     }
 
     private void SetupForApproveRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry)
@@ -1291,13 +1294,13 @@ public class RegistrationBusinessLogicTest
             });
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, (ApplicationChecklistEntryStatusId.IN_PROGRESS, default(string?))) }),
-            Enumerable.Empty<ProcessStep>()));
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
-            Enumerable.Empty<ProcessStep>()));
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
     }
 
     private void SetupForDeclineRegistrationVerification(ApplicationChecklistEntry applicationChecklistEntry, CompanyApplication application, Company company, ApplicationChecklistEntryStatusId checklistStatusId, IdentityProviderTypeId idpTypeId)
@@ -1309,13 +1312,13 @@ public class RegistrationBusinessLogicTest
             });
 
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithoutBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (checklistStatusId, default(string?))) }),
-            Enumerable.Empty<ProcessStep>()));
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
         A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(IdWithBpn, ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, A<IEnumerable<ApplicationChecklistEntryStatusId>>._, A<ProcessStepTypeId>._, A<IEnumerable<ApplicationChecklistEntryTypeId>?>._, A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(IdWithoutBpn, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.NewGuid(), ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION,
             ImmutableDictionary.CreateRange(new[] { KeyValuePair.Create(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, (ApplicationChecklistEntryStatusId.DONE, default(string?))) }),
-            Enumerable.Empty<ProcessStep>()));
+            Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
 
         A.CallTo(() => _applicationRepository.GetCompanyIdNameForSubmittedApplication(IdWithBpn))
             .Returns((CompanyId, CompanyName, ExistingExternalId, Enumerable.Repeat((IdpId, IamAliasId, idpTypeId, Enumerable.Repeat(UserId, 1)), 1), Enumerable.Repeat(UserId, 1)));
@@ -1341,12 +1344,12 @@ public class RegistrationBusinessLogicTest
             });
     }
 
-    private void SetupFakesForRetrigger(List<ProcessStep> processSteps)
+    private void SetupFakesForRetrigger(List<ProcessStep<ProcessTypeId, ProcessStepTypeId>> processSteps)
     {
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
-            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, Framework.Processes.Library.Enums.ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
+            .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, Framework.Processes.Library.Enums.ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
                 {
-                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
+                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
                 });
     }
 

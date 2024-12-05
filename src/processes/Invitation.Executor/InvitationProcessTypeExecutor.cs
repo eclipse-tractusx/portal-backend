@@ -19,17 +19,18 @@
 
 using Flurl.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using System.Collections.Immutable;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Invitation.Executor;
 
-public class InvitationProcessTypeExecutor : IProcessTypeExecutor
+public class InvitationProcessTypeExecutor : IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>
 {
     private static readonly IEnumerable<int> RecoverableStatusCodes = ImmutableArray.Create(
         (int)HttpStatusCode.BadGateway,
@@ -75,7 +76,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => ExecutableProcessSteps.Contains(processStepTypeId);
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => ExecutableProcessSteps;
 
-    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
         _companyInvitationId = Guid.Empty;
 
@@ -86,14 +87,14 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
         }
 
         _companyInvitationId = result;
-        return new IProcessTypeExecutor.InitializationResult(false, null);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null);
     }
 
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(LockableProcessSteps.Contains(processStepTypeId));
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.INVITATION;
 
-    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
     {
         if (_companyInvitationId == Guid.Empty)
         {
@@ -138,7 +139,7 @@ public class InvitationProcessTypeExecutor : IProcessTypeExecutor
             modified = true;
         }
 
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
     private static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(Exception ex, ProcessStepTypeId processStepTypeId) =>

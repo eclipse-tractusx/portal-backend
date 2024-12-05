@@ -19,7 +19,10 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -90,7 +93,7 @@ public class ServiceAccountCreation(
                 var dimRoleData = roleData.ToImmutableList();
                 var dimSaName = $"dim-{name}";
                 var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
-                var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository>();
+                var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
                 if (processData?.ProcessTypeId is not null)
                 {
                     if (processData.ProcessId is null)

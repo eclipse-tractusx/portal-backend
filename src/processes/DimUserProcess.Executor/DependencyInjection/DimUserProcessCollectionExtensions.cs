@@ -21,7 +21,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.ExternalSystems.Provisioning.Library.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
 
@@ -32,6 +33,6 @@ public static class DimUserProcessCollectionExtensions
         services
             .AddIdpManagement(config)
             .AddTransient<IDimUserProcessService, DimUserProcessService>()
-            .AddTransient<IProcessTypeExecutor, DimUserProcessTypeExecutor>()
+            .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, DimUserProcessTypeExecutor>()
             .AddDimService(config.GetSection("Dim"));
 }

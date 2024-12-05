@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -27,7 +28,7 @@ public class ProcessType
     private ProcessType()
     {
         Label = null!;
-        Processes = new HashSet<Process>();
+        Processes = new HashSet<Process<ProcessTypeId, ProcessStepTypeId>>();
     }
 
     public ProcessType(ProcessTypeId processTypeId) : this()
@@ -42,5 +43,5 @@ public class ProcessType
     public string Label { get; private set; }
 
     // Navigation properties
-    public virtual ICollection<Process> Processes { get; private set; }
+    public virtual ICollection<Process<ProcessTypeId, ProcessStepTypeId>> Processes { get; private set; }
 }

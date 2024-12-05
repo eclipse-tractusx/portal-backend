@@ -23,11 +23,13 @@ using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
@@ -40,7 +42,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.D
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
@@ -53,8 +54,8 @@ try
         {
             services
                 .AddMailingAndTemplateManager(hostContext.Configuration)
-                .AddProcessExecutionService(hostContext.Configuration.GetSection("Processes"))
-                .AddTransient<IProcessTypeExecutor, ApplicationChecklistProcessTypeExecutor>()
+                .AddProcessExecutionService<ProcessTypeId, ProcessStepTypeId>(hostContext.Configuration.GetSection("Processes"))
+                .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
                 .AddTechnicalUserProfile()
                 .AddTransient<IApplicationChecklistHandlerService, ApplicationChecklistHandlerService>()
@@ -69,8 +70,8 @@ try
                 .AddInvitationProcessExecutor(hostContext.Configuration)
                 .AddMailingProcessCreation(hostContext.Configuration.GetSection("MailingProcessCreation"))
                 .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
-                .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
-                .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, IdentityProviderProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, UserProvisioningProcessTypeExecutor>()
                 .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
@@ -99,7 +100,7 @@ try
     };
 
     Log.Information("Start processing");
-    var workerInstance = host.Services.GetRequiredService<ProcessExecutionService>();
+    var workerInstance = host.Services.GetRequiredService<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>>();
     await workerInstance.ExecuteAsync(tokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.None);
     Log.Information("Execution finished shutting down");
 }

@@ -30,6 +30,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.Async\Framework.Async.csproj" />
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Identity\Framework.Identity.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\Provisioning.DBAccess\Provisioning.DBAccess.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.ErrorHandling\Keycloak.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
