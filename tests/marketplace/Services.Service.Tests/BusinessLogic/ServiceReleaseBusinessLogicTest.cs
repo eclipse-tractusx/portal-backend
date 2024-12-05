@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -197,7 +198,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
-        error.Message.Should().Be($"serviceId {invalidServiceId} not found or Incorrect Status");
+        error.Message.Should().Be(ServicesServiceReleaseErrors.SERVICES_NOT_SERVICEID_NOT_FOUND_OR_INCORR.ToString());
     }
 
     [Fact]
@@ -338,7 +339,7 @@ public class ServiceReleaseBusinessLogicTest
         async Task Act() => await _sut.SubmitOfferConsentAsync(Guid.Empty, data);
 
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("ServiceId must not be empty");
+        ex.Message.Should().Be(ServicesServiceReleaseErrors.SERVICES_ARGUMENT_NOT_EMPTY.ToString());
     }
 
     #endregion
@@ -396,7 +397,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
-        error.Message.Should().Be($"Service {_notExistingServiceId} does not exists");
+        error.Message.Should().Be(ServicesServiceReleaseErrors.SERVICES_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -411,7 +412,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act);
-        error.Message.Should().Be("Service in State ACTIVE can't be updated");
+        error.Message.Should().Be(ServicesServiceReleaseErrors.SERVICES_CONFLICT_STATE_NOT_UPDATED.ToString());
     }
 
     [Fact]
@@ -426,7 +427,7 @@ public class ServiceReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        error.Message.Should().Be($"Company {_identity.CompanyId} is not the service provider.");
+        error.Message.Should().Be(ServicesServiceReleaseErrors.SERVICES_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER.ToString());
     }
 
     [Fact]
