@@ -61,8 +61,6 @@ jobs:
         uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-          # change to preview .NET 9 until fix for https://github.com/NuGet/Home/issues/12954 gets released for .NET 8
-          dotnet-quality: 'preview'
 
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
