@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;

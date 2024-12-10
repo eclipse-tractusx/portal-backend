@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;

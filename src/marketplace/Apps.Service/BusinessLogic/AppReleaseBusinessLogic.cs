@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
@@ -30,7 +31,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.BusinessLogic;
 

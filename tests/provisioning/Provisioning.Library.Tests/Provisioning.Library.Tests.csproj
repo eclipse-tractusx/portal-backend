@@ -38,6 +38,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\..\..\src\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />

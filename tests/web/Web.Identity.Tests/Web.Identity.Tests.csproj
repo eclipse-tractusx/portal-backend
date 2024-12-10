@@ -40,6 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\..\..\src\web\Web.Identity\Web.Identity.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>

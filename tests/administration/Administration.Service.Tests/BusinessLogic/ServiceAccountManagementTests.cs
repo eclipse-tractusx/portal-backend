@@ -19,6 +19,10 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -36,7 +40,8 @@ public class ServiceAccountManagementTests
     private readonly IEnumerable<Guid> _userRoleIds = Enumerable.Repeat(Guid.NewGuid(), 1);
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly ITechnicalUserRepository _serviceAccountRepository;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IFixture _fixture;
     private readonly ServiceAccountManagement _sut;
@@ -50,11 +55,13 @@ public class ServiceAccountManagementTests
 
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _serviceAccountRepository = A.Fake<ITechnicalUserRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         var portalRepositories = A.Fake<IPortalRepositories>();
         A.CallTo(() => portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_serviceAccountRepository);
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
 
         _sut = new ServiceAccountManagement(_provisioningManager, portalRepositories);
     }
@@ -80,7 +87,7 @@ public class ServiceAccountManagementTests
         // Assert
         if (isDimServiceAccount)
         {
-            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.First().ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER && x.First().ProcessStepStatusId == ProcessStepStatusId.TODO && x.First().ProcessId == processId))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, Framework.Processes.Library.Enums.ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.First().ProcessStepTypeId == ProcessStepTypeId.DELETE_DIM_TECHNICAL_USER && x.First().ProcessStepStatusId == ProcessStepStatusId.TODO && x.First().ProcessId == processId))).MustHaveHappenedOnceExactly();
             A.CallTo(() => _userRepository.AttachAndModifyIdentity(A<Guid>._, A<Action<Identity>>._, A<Action<Identity>>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _provisioningManager.DeleteCentralClientAsync(A<string>._)).MustNotHaveHappened();
             identity.UserStatusId.Should().Be(UserStatusId.PENDING_DELETION);
@@ -114,13 +121,13 @@ public class ServiceAccountManagementTests
     {
         if (isDimServiceAccount)
         {
-            A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountDeletionCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            A.CallTo(() => _serviceAccountRepository.GetProcessDataForTechnicalUserDeletionCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
                 .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId>? processStepTypeIds) =>
                     (
                         ProcessTypeId.OFFER_SUBSCRIPTION,
-                        new VerifyProcessData(
-                            new Process(id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                            processStepTypeIds?.Select(stepTypeId => new ProcessStep(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, id, _fixture.Create<DateTimeOffset>())) ?? Enumerable.Empty<ProcessStep>()),
+                        new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                            new Process<ProcessTypeId, ProcessStepTypeId>(id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
+                            processStepTypeIds?.Select(stepTypeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, id, _fixture.Create<DateTimeOffset>())) ?? Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()),
                         Guid.NewGuid()));
         }
 

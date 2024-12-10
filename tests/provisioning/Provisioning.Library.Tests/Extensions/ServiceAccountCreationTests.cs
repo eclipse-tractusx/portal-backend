@@ -19,7 +19,11 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -53,7 +57,7 @@ public class ServiceAccountCreationTests
     private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningDBAccess _provisioningDbAccess;
@@ -73,7 +77,7 @@ public class ServiceAccountCreationTests
         _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _userRepository = A.Fake<IUserRepository>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
@@ -88,7 +92,7 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
 
         _sut = new ServiceAccountCreation(_provisioningManager, _portalRepositories, _provisioningDbAccess, Options.Create(settings));
     }
@@ -411,9 +415,9 @@ public class ServiceAccountCreationTests
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .ReturnsLazily((ProcessTypeId processTypeId) => new Process(_processId, processTypeId, Guid.NewGuid())).Once();
+            .ReturnsLazily((ProcessTypeId processTypeId) => new Process<ProcessTypeId, ProcessStepTypeId>(_processId, processTypeId, Guid.NewGuid())).Once();
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
-            .ReturnsLazily((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) => new ProcessStep(_processStepId, processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Once();
+            .ReturnsLazily((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(_processStepId, processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Once();
     }
 
     #endregion

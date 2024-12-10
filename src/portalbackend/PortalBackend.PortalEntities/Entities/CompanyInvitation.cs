@@ -17,7 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -64,7 +66,7 @@ public class CompanyInvitation : IBaseEntity
 
     public string? ServiceAccountUserId { get; set; }
 
-    public virtual Process? Process { get; private set; }
+    public virtual Process<ProcessTypeId, ProcessStepTypeId>? Process { get; private set; }
 
     public virtual CompanyApplication? Application { get; private set; }
 }
