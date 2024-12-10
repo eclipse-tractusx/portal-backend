@@ -29,6 +29,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -76,7 +77,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             .GetServiceDetailsByIdAsync(serviceId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"serviceId {serviceId} not found or Incorrect Status");
+            throw NotFoundException.Create(ServicesServiceReleaseErrors.SERVICES_NOT_SERVICEID_NOT_FOUND_OR_INCORR, new ErrorParameter[] { new("serviceId", serviceId.ToString()) });
         }
 
         return new ServiceData(
@@ -108,7 +109,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.ServiceTypeIds == null)
         {
-            throw new UnexpectedConditionException("serviceTypeIds should never be null here");
+            throw UnexpectedConditionException.Create(ServicesServiceReleaseErrors.SERVICES_SERVICE_TYPE_IDS_NEVER_NULL);
         }
 
         return new ServiceProviderResponse(
@@ -132,7 +133,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     {
         if (serviceId == Guid.Empty)
         {
-            throw new ControllerArgumentException("ServiceId must not be empty");
+            throw ControllerArgumentException.Create(ServicesServiceReleaseErrors.SERVICES_ARGUMENT_NOT_EMPTY);
         }
 
         return _offerService.CreateOrUpdateProviderOfferAgreementConsent(serviceId, offerAgreementConsents, OfferTypeId.SERVICE);
@@ -174,17 +175,17 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (serviceData is null)
         {
-            throw new NotFoundException($"Service {serviceId} does not exists");
+            throw NotFoundException.Create(ServicesServiceReleaseErrors.SERVICES_NOT_EXIST, new ErrorParameter[] { new("serviceId", serviceId.ToString()) });
         }
 
         if (serviceData.OfferState != OfferStatusId.CREATED)
         {
-            throw new ConflictException($"Service in State {serviceData.OfferState} can't be updated");
+            throw ConflictException.Create(ServicesServiceReleaseErrors.SERVICES_CONFLICT_STATE_NOT_UPDATED, new ErrorParameter[] { new("offerState", serviceData.OfferState.ToString()) });
         }
 
         if (!serviceData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {companyId} is not the service provider.");
+            throw ForbiddenException.Create(ServicesServiceReleaseErrors.SERVICES_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (data.SalesManager.HasValue)

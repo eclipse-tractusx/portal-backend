@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.BusinessLogic;
@@ -87,7 +88,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetServiceDetailByIdUntrackedAsync(serviceId, lang, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"Service {serviceId} does not exist");
+            throw NotFoundException.Create(ServicesServiceErrors.SERVICES_NOT_EXIST, new ErrorParameter[] { new("serviceId", serviceId.ToString()) });
         }
 
         return new ServiceDetailResponse(
@@ -114,7 +115,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (subscriptionDetailData is null)
         {
-            throw new NotFoundException($"Subscription {subscriptionId} does not exist");
+            throw NotFoundException.Create(ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
         }
 
         return subscriptionDetailData;
