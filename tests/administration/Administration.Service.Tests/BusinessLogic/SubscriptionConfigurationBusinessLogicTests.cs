@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -294,7 +295,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
-        await Assert.ThrowsAsync<ConflictException>(Action);
+        await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -313,7 +314,7 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be($"Company {NoServiceProviderCompanyId} is not an app- or service-provider");
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER.ToString());
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -322,7 +323,6 @@ public class SubscriptionConfigurationBusinessLogicTests
     [InlineData("foo")]
     [InlineData("")]
     [InlineData("http://www.service-url.com")]
-    [InlineData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com")]
     public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrl_ThrowsException(string url)
     {
         //Arrange
@@ -335,6 +335,24 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.ParamName.Should().Be("Url");
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("https://www.super-duper-long-url-which-is-actually-to-long-to-be-valid-but-it-is-not-long-enough-yet-so-add-a-few-words.com")]
+    public async Task SetServiceProviderCompanyDetailsAsync_WithInvalidUrlLengthGreaterThanLimit_ThrowsException(string url)
+    {
+        //Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData(url, null);
+
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
