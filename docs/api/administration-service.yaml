@@ -241,30 +241,28 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                CertificateType:
-                  $ref: '#/components/schemas/CompanyCertificateTypeId'
-                Document:
-                  type: file
-                  format: binary
-                ExternalCertificateNumber:
-                  type: string
-                Sites:
-                  type: array
-                  items:
-                    type: string
-                ValidFrom:
-                  type: string
-                  format: date-time
-                ValidTill:
-                  type: string
-                  format: date-time
-                Issuer:
-                  type: string
+              allOf:
+                - $ref: '#/components/schemas/CompanyCertificateTypeId'
+                - type: object
+                  properties:
+                    Document:
+                      type: file
+                      format: binary
+                    ExternalCertificateNumber:
+                      type: string
+                    Sites:
+                      type: array
+                      items:
+                        type: string
+                    ValidFrom:
+                      type: string
+                      format: date-time
+                    ValidTill:
+                      type: string
+                      format: date-time
+                    Issuer:
+                      type: string
             encoding:
-              CertificateType:
-                style: form
               Document:
                 style: form
               ExternalCertificateNumber:
@@ -279,30 +277,28 @@ paths:
                 style: form
           application/json:
             schema:
-              type: object
-              properties:
-                CertificateType:
-                  $ref: '#/components/schemas/CompanyCertificateTypeId'
-                Document:
-                  type: file
-                  format: binary
-                ExternalCertificateNumber:
-                  type: string
-                Sites:
-                  type: array
-                  items:
-                    type: string
-                ValidFrom:
-                  type: string
-                  format: date-time
-                ValidTill:
-                  type: string
-                  format: date-time
-                Issuer:
-                  type: string
+              allOf:
+                - $ref: '#/components/schemas/CompanyCertificateTypeId'
+                - type: object
+                  properties:
+                    Document:
+                      type: file
+                      format: binary
+                    ExternalCertificateNumber:
+                      type: string
+                    Sites:
+                      type: array
+                      items:
+                        type: string
+                    ValidFrom:
+                      type: string
+                      format: date-time
+                    ValidTill:
+                      type: string
+                      format: date-time
+                    Issuer:
+                      type: string
             encoding:
-              CertificateType:
-                style: form
               Document:
                 style: form
               ExternalCertificateNumber:
