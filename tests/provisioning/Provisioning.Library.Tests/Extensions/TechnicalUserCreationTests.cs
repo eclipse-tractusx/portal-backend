@@ -34,7 +34,7 @@ using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Libr
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Tests.Extensions;
 
-public class ServiceAccountCreationTests
+public class TechnicalUserCreationTests
 {
     private const string Bpn = "CAXSDUMMYCATENAZZ";
     private readonly string _iamUserId = Guid.NewGuid().ToString();
@@ -57,9 +57,9 @@ public class ServiceAccountCreationTests
     private readonly IProvisioningManager _provisioningManager;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningDBAccess _provisioningDbAccess;
-    private readonly IServiceAccountCreation _sut;
+    private readonly ITechnicalUserCreation _sut;
 
-    public ServiceAccountCreationTests()
+    public TechnicalUserCreationTests()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
@@ -90,7 +90,7 @@ public class ServiceAccountCreationTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
 
-        _sut = new ServiceAccountCreation(_provisioningManager, _portalRepositories, _provisioningDbAccess, Options.Create(settings));
+        _sut = new TechnicalUserCreation(_provisioningManager, _portalRepositories, _provisioningDbAccess, Options.Create(settings));
     }
 
     private void ServiceAccountCreationAction(TechnicalUser _) { }
@@ -99,11 +99,11 @@ public class ServiceAccountCreationTests
     public async Task CreateServiceAccountAsync_WithInvalidRole_ThrowsNotFoundException()
     {
         // Arrange
-        var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_invalidUserRoleId]);
+        var creationData = new TechnicalUserCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_invalidUserRoleId]);
         Setup();
 
         // Act
-        async Task Act() => await _sut.CreateServiceAccountAsync(creationData, _companyId, Enumerable.Empty<string>(), TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        async Task Act() => await _sut.CreateTechnicalUsersAsync(creationData, _companyId, Enumerable.Empty<string>(), TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
@@ -132,7 +132,7 @@ public class ServiceAccountCreationTests
         // Arrange
         var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
-        var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId]);
+        var creationData = new TechnicalUserCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId]);
         var bpns = new[]
         {
             Bpn
@@ -140,11 +140,11 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, enhance, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateTechnicalUsersAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, enhance, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
 
-        result.ServiceAccounts.Should().ContainSingle()
+        result.TechnicalUsers.Should().ContainSingle()
             .Which.Should().Match<CreatedServiceAccountData>(x =>
                 x.ClientId == "sa1" &&
                 x.Description == "abc" &&
@@ -210,7 +210,7 @@ public class ServiceAccountCreationTests
         // Arrange
         var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
-        var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_dimUserRoleId]);
+        var creationData = new TechnicalUserCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_dimUserRoleId]);
         var bpns = new[]
         {
             Bpn
@@ -218,10 +218,10 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateTechnicalUsersAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
-        result.ServiceAccounts.Should().ContainSingle()
+        result.TechnicalUsers.Should().ContainSingle()
             .Which.Should().Match<CreatedServiceAccountData>(x =>
                 x.ClientId == null &&
                 x.Description == "abc" &&
@@ -278,7 +278,7 @@ public class ServiceAccountCreationTests
         // Arrange
         var serviceAccounts = new List<TechnicalUser>();
         var identities = new List<Identity>();
-        var creationData = new ServiceAccountCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId, _dimUserRoleId]);
+        var creationData = new TechnicalUserCreationInfo("testName", "abc", IamClientAuthMethod.SECRET, [_validUserRoleId, _dimUserRoleId]);
         var bpns = new[]
         {
             Bpn
@@ -286,10 +286,10 @@ public class ServiceAccountCreationTests
         Setup(serviceAccounts, identities);
 
         // Act
-        var result = await _sut.CreateServiceAccountAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
+        var result = await _sut.CreateTechnicalUsersAsync(creationData, _companyId, bpns, TechnicalUserTypeId.OWN, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null), ServiceAccountCreationAction);
 
         // Assert
-        result.ServiceAccounts.Should().HaveCount(2)
+        result.TechnicalUsers.Should().HaveCount(2)
             .And.Satisfy(
                 x => x.ClientId == "sa1" &&
                      x.Description == "abc" &&

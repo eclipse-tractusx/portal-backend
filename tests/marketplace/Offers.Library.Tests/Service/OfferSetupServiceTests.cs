@@ -74,7 +74,7 @@ public class OfferSetupServiceTests
     private readonly IMailingProcessCreation _mailingProcessCreation;
     private readonly IPortalRepositories _portalRepositories;
     private readonly IProvisioningManager _provisioningManager;
-    private readonly IServiceAccountCreation _serviceAccountCreation;
+    private readonly ITechnicalUserCreation _technicalUserCreation;
     private readonly INotificationService _notificationService;
     private readonly OfferSetupService _sut;
     private readonly ITechnicalUserProfileService _technicalUserProfileService;
@@ -97,7 +97,7 @@ public class OfferSetupServiceTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _provisioningManager = A.Fake<IProvisioningManager>();
         _notificationRepository = A.Fake<INotificationRepository>();
-        _serviceAccountCreation = A.Fake<IServiceAccountCreation>();
+        _technicalUserCreation = A.Fake<ITechnicalUserCreation>();
         _notificationService = A.Fake<INotificationService>();
         _technicalUserProfileService = A.Fake<ITechnicalUserProfileService>();
         _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
@@ -117,7 +117,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
-        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _serviceAccountCreation, _notificationService, _offerSubscriptionProcessService, _technicalUserProfileService, _identityService, _mailingProcessCreation, _dimService, A.Fake<ILogger<OfferSetupService>>());
+        _sut = new OfferSetupService(_portalRepositories, _provisioningManager, _technicalUserCreation, _notificationService, _offerSubscriptionProcessService, _technicalUserProfileService, _identityService, _mailingProcessCreation, _dimService, A.Fake<ILogger<OfferSetupService>>());
     }
 
     #region AutoSetupServiceAsync
@@ -253,7 +253,7 @@ public class OfferSetupServiceTests
     }
 
     [Fact]
-    public async Task AutoSetup_WithMultipleTechnicalUsers_ThrowsException()
+    public async Task AutoSetup_WithMultipleTechnicalUsers_CreatesMultipleUsers()
     {
         // Arrange
         SetupAutoSetup(OfferTypeId.APP);
@@ -264,8 +264,8 @@ public class OfferSetupServiceTests
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns(
             [
-                new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()),
-                new(Guid.NewGuid().ToString(), "test1", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>())
+                new("sa1", "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()),
+                new("sa2", "test1", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>())
             ]);
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
@@ -283,11 +283,12 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles);
+        var result = await _sut.AutoSetupOfferAsync(data, companyAdminRoles, OfferTypeId.APP, "https://base-address.com", serviceManagerAdminRoles);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"There should only be one or none technical user profile configured for {data.RequestId}");
+        result.TechnicalUserInfo.Should().HaveCount(2).And.Satisfy(
+            x => x.TechnicalClientId == "cl1",
+            x => x.TechnicalClientId == "cl2");
     }
 
     [Theory]
@@ -424,7 +425,7 @@ public class OfferSetupServiceTests
         var appInstance = new AppInstance(appInstanceId, _validOfferId, default);
         SetupCreateSingleInstance(appInstance);
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOffer(_validOfferId, A<OfferTypeId>._))
-            .Returns(new ServiceAccountCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
+            .Returns(new TechnicalUserCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
 
         // Act
         var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId);
@@ -1101,8 +1102,8 @@ public class OfferSetupServiceTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<TechnicalUser>>._))
-            .Invokes((ServiceAccountCreationInfo _,
+        A.CallTo(() => _technicalUserCreation.CreateTechnicalUsersAsync(A<TechnicalUserCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<TechnicalUser>>._))
+            .Invokes((TechnicalUserCreationInfo _,
                 Guid _,
                 IEnumerable<string> _,
                 TechnicalUserTypeId _,
@@ -1460,28 +1461,35 @@ public class OfferSetupServiceTests
         A.CallTo(() => _provisioningManager.SetupClientAsync(A<string>._, A<string>._, A<IEnumerable<string>?>._, A<bool>._))
             .Returns("cl1");
 
-        A.CallTo(() => _serviceAccountCreation.CreateServiceAccountAsync(A<ServiceAccountCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData?>._, A<Action<TechnicalUser>?>._))
-            .Invokes((ServiceAccountCreationInfo _, Guid _, IEnumerable<string> _, TechnicalUserTypeId _, bool _, bool _, ServiceAccountCreationProcessData? _, Action<TechnicalUser>? setOptionalParameter) =>
+        var count = 1;
+        A.CallTo(() => _technicalUserCreation.CreateTechnicalUsersAsync(A<TechnicalUserCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.Matches(x => x.Any(y => y == "CAXSDUMMYCATENAZZ")), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData?>._, A<Action<TechnicalUser>?>._))
+            .Invokes((TechnicalUserCreationInfo _, Guid _, IEnumerable<string> _, TechnicalUserTypeId _, bool _, bool _, ServiceAccountCreationProcessData? _, Action<TechnicalUser>? setOptionalParameter) =>
             {
                 if (technicalUser != null)
                 {
                     setOptionalParameter?.Invoke(technicalUser);
                 }
             })
-            .Returns(new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
-                new CreatedServiceAccountData(
-                    _technicalUserId,
-                    "sa2",
-                    "description",
-                    UserStatusId.ACTIVE,
-                    "cl1",
-                    new ServiceAccountData(Guid.NewGuid().ToString(), "cl1",
-                        new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "katze!1234" }),
-                    new UserRoleData[]
-                    {
-                        new(Guid.NewGuid(), "client1", "role1"), new(Guid.NewGuid(), "client1", "role2"),
-                    })
-            ]));
+            .ReturnsLazily(() =>
+            {
+                var result = new ValueTuple<bool, Guid?, List<CreatedServiceAccountData>>(false, null, [
+                    new CreatedServiceAccountData(
+                        _technicalUserId,
+                        $"sa-{count + 1}",
+                        "description",
+                        UserStatusId.ACTIVE,
+                        $"cl{count}",
+                        new ServiceAccountData(Guid.NewGuid().ToString(), $"cl{count}",
+                            new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "katze!1234" }),
+                        new UserRoleData[]
+                        {
+                            new(Guid.NewGuid(), $"client{count}", "role1"),
+                            new(Guid.NewGuid(), $"client{count}", "role2"),
+                        })
+                ]);
+                count++;
+                return result;
+            });
 
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._,
                 A<Guid>._, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<bool?>._))
@@ -1556,6 +1564,7 @@ public class OfferSetupServiceTests
 
         return createNotificationsEnumerator;
     }
+
     private void SetupCreateSingleInstance(AppInstance? appInstance = null)
     {
         SetupServices();

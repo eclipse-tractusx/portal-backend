@@ -23,7 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
-public interface IServiceAccountCreation
+public interface ITechnicalUserCreation
 {
     /// <summary>
     /// Creates the technical user account and stores the client in the service account table
@@ -31,14 +31,14 @@ public interface IServiceAccountCreation
     /// <param name="creationData">Creation Data</param>
     /// <param name="companyId">Id of the company the technical user is created for</param>
     /// <param name="bpns">Optional list of bpns to set for the user</param>
-    /// <param name="companyServiceAccountTypeId">The type of the created service account</param>
+    /// <param name="technicalUserTypeId">The type of the created service account</param>
     /// <param name="enhanceTechnicalUserName">If <c>true</c> the technicalUserName will get enhanced by the id of the clientID.</param>
     /// <param name="enabled">if <c>true</c> the technical user will be enabled, otherwise <c>false</c></param>
     /// <param name="processData">The process that should be created if a role for a provider type was selected</param>
     /// <param name="setOptionalParameter"></param>
     /// <returns>Returns information about the created technical user</returns>
-    Task<(bool HasExternalServiceAccount, Guid? processId, IEnumerable<CreatedServiceAccountData> ServiceAccounts)> CreateServiceAccountAsync(
-            ServiceAccountCreationInfo creationData,
+    Task<(bool HasExternalTechnicalUser, Guid? ProcessId, IEnumerable<CreatedServiceAccountData> TechnicalUsers)> CreateTechnicalUsersAsync(
+            TechnicalUserCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
             TechnicalUserTypeId technicalUserTypeId,

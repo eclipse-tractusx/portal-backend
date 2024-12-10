@@ -35,7 +35,7 @@ public static class ServiceAccountCreationExtensions
             .EnvironmentalValidation(section);
 
         services
-            .AddTransient<IServiceAccountCreation, ServiceAccountCreation>();
+            .AddTransient<ITechnicalUserCreation, TechnicalUserCreation>();
 
         return services;
     }
