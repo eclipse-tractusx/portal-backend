@@ -110,7 +110,8 @@ public class SdCreationProcessTypeExecutorTests
 
         // Assert
         result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(
+            x => x == ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
         A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(company.Item1, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
@@ -142,7 +143,8 @@ public class SdCreationProcessTypeExecutorTests
 
         // Assert
         result.Modified.Should().BeTrue();
-        result.ScheduleStepTypeIds.Should().BeNull();
+        result.ScheduleStepTypeIds.Should().ContainSingle().And.Satisfy(
+            x => x == ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
         A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, A<string>._, "BPNL000000001TEST", A<CancellationToken>._))
