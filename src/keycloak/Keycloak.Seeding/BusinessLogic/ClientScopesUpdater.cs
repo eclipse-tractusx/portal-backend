@@ -39,51 +39,59 @@ public class ClientScopesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHand
         var clientScopes = await keycloak.GetClientScopesAsync(realm, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var seedClientScopes = seedDataHandler.ClientScopes;
 
-        await CheckAndExecute(ModificationType.Delete, keycloak, realm, clientScopes, seedClientScopes, seederConfig, cancellationToken, RemoveObsoleteClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
-        await CheckAndExecute(ModificationType.Create, keycloak, realm, clientScopes, seedClientScopes, seederConfig, cancellationToken, CreateMissingClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
-        await CheckAndExecute(ModificationType.Update, keycloak, realm, clientScopes, seedClientScopes, seederConfig, cancellationToken, UpdateExistingClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
+        var parallelOptions = ParallelOptionsExtensions.CreateParallelOptions(cancellationToken);
+        await CheckAndExecute(ModificationType.Delete, keycloak, realm, clientScopes, seedClientScopes, seederConfig, parallelOptions, RemoveObsoleteClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CheckAndExecute(ModificationType.Create, keycloak, realm, clientScopes, seedClientScopes, seederConfig, parallelOptions, CreateMissingClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CheckAndExecute(ModificationType.Update, keycloak, realm, clientScopes, seedClientScopes, seederConfig, parallelOptions, UpdateExistingClientScopes).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static Task CheckAndExecute(ModificationType modificationType, KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken, Func<KeycloakClient, string, IEnumerable<ClientScope>, IEnumerable<ClientScopeModel>, KeycloakSeederConfigModel, CancellationToken, Task> executeLogic) =>
+    private static Task CheckAndExecute(ModificationType modificationType, KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions, Func<KeycloakClient, string, IEnumerable<ClientScope>, IEnumerable<ClientScopeModel>, KeycloakSeederConfigModel, ParallelOptions, Task> executeLogic) =>
         seederConfig.ModificationAllowed(modificationType)
-            ? executeLogic(keycloak, realm, clientScopes, seedClientScopes, seederConfig, cancellationToken)
+            ? executeLogic(keycloak, realm, clientScopes, seedClientScopes, seederConfig, parallelOptions)
             : Task.CompletedTask;
 
-    private static async Task RemoveObsoleteClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task RemoveObsoleteClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var deleteScope in clientScopes
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
-                     .ExceptBy(seedClientScopes.Select(x => x.Name), x => x.Name))
-        {
-            await keycloak.DeleteClientScopeAsync(
-                realm,
-                deleteScope.Id ?? throw new ConflictException($"clientScope.Id is null: {deleteScope.Name}"),
-                cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        var deleteScopes = clientScopes
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
+            .ExceptBy(seedClientScopes.Select(x => x.Name), x => x.Name);
+        await Parallel.ForEachAsync(deleteScopes, parallelOptions, async (scope, cancellationToken) =>
+            {
+                await keycloak.DeleteClientScopeAsync(
+                    realm,
+                    scope.Id ?? throw new ConflictException($"clientScope.Id is null: {scope.Name}"),
+                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            })
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task CreateMissingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task CreateMissingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var addScope in seedClientScopes
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
-                     .ExceptBy(clientScopes.Select(x => x.Name), x => x.Name))
-        {
-            await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, addScope, true), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        var clientScopeModels = seedClientScopes
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+            .ExceptBy(clientScopes.Select(x => x.Name), x => x.Name);
+        await Parallel.ForEachAsync(clientScopeModels, parallelOptions, async (scope, cancellationToken) =>
+            {
+                await keycloak.CreateClientScopeAsync(realm, CreateClientScope(null, scope, true), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            })
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateExistingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task UpdateExistingClientScopes(KeycloakClient keycloak, string realm, IEnumerable<ClientScope> clientScopes, IEnumerable<ClientScopeModel> seedClientScopes, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var (clientScope, update) in clientScopes
+        var clientScopeModels = clientScopes
             .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Name))
             .Join(
                 seedClientScopes,
                 x => x.Name,
                 x => x.Name,
-                (clientScope, update) => (ClientScope: clientScope, Update: update)))
-        {
-            await UpdateClientScopeWithProtocolMappers(keycloak, realm, clientScope, update, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+                (clientScope, update) => (ClientScope: clientScope, Update: update));
+        await Parallel.ForEachAsync(clientScopeModels, parallelOptions, async (scope, cancellationToken) =>
+            {
+                var (clientScope, update) = scope;
+                await UpdateClientScopeWithProtocolMappers(keycloak, realm, clientScope, update, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            })
+            .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task UpdateClientScopeWithProtocolMappers(KeycloakClient keycloak, string realm, ClientScope clientScope, ClientScopeModel update, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)

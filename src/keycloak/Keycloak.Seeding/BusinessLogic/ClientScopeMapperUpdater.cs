@@ -37,27 +37,31 @@ public class ClientScopeMapperUpdater(IKeycloakFactory keycloakFactory, ISeedDat
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientScopes);
 
         var clients = await keycloak.GetClientsAsync(realm, null, true, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        foreach (var (clientName, mappingModels) in seedDataHandler.ClientScopeMappings)
-        {
-            var client = clients.SingleOrDefault(x => x.ClientId == clientName);
-            if (client?.Id is null)
+        await Parallel.ForEachAsync(seedDataHandler.ClientScopeMappings,
+            ParallelOptionsExtensions.CreateParallelOptions(cancellationToken),
+            async (mappings, token) =>
             {
-                throw new ConflictException($"No client id found with name {clientName}");
-            }
-
-            var roles = await keycloak.GetRolesAsync(realm, client.Id, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            foreach (var mappingModel in mappingModels)
-            {
-                var clientScope = clients.SingleOrDefault(x => x.ClientId == mappingModel.Client);
-                if (clientScope?.Id is null)
+                var (clientName, mappingModels) = mappings;
+                var client = clients.SingleOrDefault(x => x.ClientId == clientName);
+                if (client?.Id is null)
                 {
                     throw new ConflictException($"No client id found with name {clientName}");
                 }
-                var clientRoles = await keycloak.GetClientRolesScopeMappingsForClientAsync(realm, clientScope.Id, client.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                var mappingModelRoles = mappingModel.Roles?.Select(roleName => roles.SingleOrDefault(r => r.Name == roleName) ?? throw new ConflictException($"No role with name {roleName} found")) ?? Enumerable.Empty<Role>();
-                await AddAndDeleteRoles(keycloak, realm, clientScope.Id, client.Id, clientRoles, mappingModelRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
-        }
+
+                var roles = await keycloak.GetRolesAsync(realm, client.Id, cancellationToken: token).ConfigureAwait(ConfigureAwaitOptions.None);
+                foreach (var mappingModel in mappingModels)
+                {
+                    var clientScope = clients.SingleOrDefault(x => x.ClientId == mappingModel.Client);
+                    if (clientScope?.Id is null)
+                    {
+                        throw new ConflictException($"No client id found with name {clientName}");
+                    }
+
+                    var clientRoles = await keycloak.GetClientRolesScopeMappingsForClientAsync(realm, clientScope.Id, client.Id, token).ConfigureAwait(ConfigureAwaitOptions.None);
+                    var mappingModelRoles = mappingModel.Roles?.Select(roleName => roles.SingleOrDefault(r => r.Name == roleName) ?? throw new ConflictException($"No role with name {roleName} found")) ?? Enumerable.Empty<Role>();
+                    await AddAndDeleteRoles(keycloak, realm, clientScope.Id, client.Id, clientRoles, mappingModelRoles, seederConfig, token).ConfigureAwait(ConfigureAwaitOptions.None);
+                }
+            }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task AddAndDeleteRoles(KeycloakClient keycloak, string realm, string clientScopeId, string clientId, IEnumerable<Role> roles, IEnumerable<Role> updateRoles, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)

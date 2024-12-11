@@ -35,20 +35,22 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.ClientRoles);
+        var parallelOptions = ParallelOptionsExtensions.CreateParallelOptions(cancellationToken);
 
         foreach (var (clientId, updateRoles) in seedDataHandler.ClientRoles)
         {
             var id = seedDataHandler.GetIdOfClient(clientId);
             var roles = await keycloak.GetRolesAsync(realm, id, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            foreach (var newRole in updateRoles
-                         .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
-                         .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
+            var newRoles = updateRoles
+                .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+                .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name);
+            await Parallel.ForEachAsync(newRoles, parallelOptions, async (newRole, ct) =>
             {
-                await keycloak.CreateRoleAsync(realm, id, CreateRole(newRole), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
+                await keycloak.CreateRoleAsync(realm, id, CreateRole(newRole), ct).ConfigureAwait(ConfigureAwaitOptions.None);
+            }).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await UpdateAndDeleteRoles(keycloak, realm, roles, updateRoles, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
@@ -59,28 +61,31 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Roles);
         var roles = await keycloak.GetRolesAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var updateRealmRoles = seedDataHandler.RealmRoles;
+        var parallelOptions = ParallelOptionsExtensions.CreateParallelOptions(cancellationToken);
 
-        foreach (var newRole in updateRealmRoles
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
-                     .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name))
+        var newRoles = updateRealmRoles
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Create, x.Name))
+            .ExceptBy(roles.Select(role => role.Name), roleModel => roleModel.Name);
+        await Parallel.ForEachAsync(newRoles, parallelOptions, async (newRole, ct) =>
         {
-            await keycloak.CreateRoleAsync(realm, CreateRole(newRole), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+            await keycloak.CreateRoleAsync(realm, CreateRole(newRole), ct).ConfigureAwait(ConfigureAwaitOptions.None);
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateAndDeleteRoles(keycloak, realm, roles, updateRealmRoles, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task UpdateAndDeleteRoles(KeycloakClient keycloak, string realm, IEnumerable<Role> roles, IEnumerable<RoleModel> updateRoles, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var (role, update) in
-            roles
-                .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Name))
-                .Join(
-                    updateRoles,
-                    role => role.Name,
-                    roleModel => roleModel.Name,
-                    (role, roleModel) => (Role: role, Update: roleModel)))
+        var rolesToUpdate = roles
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Update, x.Name))
+            .Join(
+                updateRoles,
+                role => role.Name,
+                roleModel => roleModel.Name,
+                (role, roleModel) => (Role: role, Update: roleModel));
+        await Parallel.ForEachAsync(rolesToUpdate, parallelOptions, async (entity, ct) =>
         {
+            var (role, update) = entity;
             if (!CompareRole(role, update))
             {
                 if (role.Id == null)
@@ -88,19 +93,20 @@ public class RolesUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
                 if (role.ContainerId == null)
                     throw new ConflictException($"role containerId must not be null: {role.Name}");
 
-                await keycloak.UpdateRoleByIdAsync(realm, role.Id, CreateUpdateRole(role.Id, role.ContainerId, update), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                await keycloak.UpdateRoleByIdAsync(realm, role.Id, CreateUpdateRole(role.Id, role.ContainerId, update), ct).ConfigureAwait(ConfigureAwaitOptions.None);
             }
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        foreach (var deleteRole in roles
-                .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
-                .ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name))
+        var deleteRoles = roles
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x.Name))
+            .ExceptBy(updateRoles.Select(roleModel => roleModel.Name), role => role.Name);
+        await Parallel.ForEachAsync(deleteRoles, parallelOptions, async (deleteRole, ct) =>
         {
             if (deleteRole.Id == null)
                 throw new ConflictException($"role id must not be null: {deleteRole.Name}");
 
-            await keycloak.DeleteRoleByIdAsync(realm, deleteRole.Id, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+            await keycloak.DeleteRoleByIdAsync(realm, deleteRole.Id, ct).ConfigureAwait(ConfigureAwaitOptions.None);
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task UpdateCompositeRoles(string keycloakInstanceName, CancellationToken cancellationToken)
