@@ -4,9 +4,47 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.4.0-alpha.1
+
+### Feature
+
+* **Documents**
+  * added document size to documents [#1164](https://github.com/eclipse-tractusx/portal-backend/pull/1164)
+
+### Change
+
+* **Marketplace Service**
+  * added sorting to `GET: /api/apps/active` [#1132](https://github.com/eclipse-tractusx/portal-backend/pull/1132)
+
+### Technical Support
+
+* **Pre Checks**
+  * added filter to dependencies workflow [#1165](https://github.com/eclipse-tractusx/portal-backend/pull/1165)
+* **Dependencies**
+  * update app dependencies [#1130](https://github.com/eclipse-tractusx/portal-backend/pull/1130), [#1203](https://github.com/eclipse-tractusx/portal-backend/pull/1203), [#1201](https://github.com/eclipse-tractusx/portal-backend/pull/1201), [#1194](https://github.com/eclipse-tractusx/portal-backend/pull/1194), [#1176](https://github.com/eclipse-tractusx/portal-backend/pull/1176), [#1178](https://github.com/eclipse-tractusx/portal-backend/pull/1178), [#1162](https://github.com/eclipse-tractusx/portal-backend/pull/1162), [#1159](https://github.com/eclipse-tractusx/portal-backend/pull/1159), [#1141](https://github.com/eclipse-tractusx/portal-backend/pull/1141)
+
+### Bugfixes
+
+* **Documentation**
+  * fixed the link to how to contribute [#1173](https://github.com/eclipse-tractusx/portal-backend/pull/1173)
+* **Connectors**
+  * fixed access check for managed connectors [#1124](https://github.com/eclipse-tractusx/portal-backend/pull/1124)
+  * fixed the edc discovery endpoint [#1120](https://github.com/eclipse-tractusx/portal-backend/pull/1120)
+* **Services Service**
+  * added providerUrl to response for `Get: /api/services/{serviceId}` [#1126](https://github.com/eclipse-tractusx/portal-backend/pull/1126)
+  * added external service details to `GET: /api/services/{serviceId}/subscription/{subscriptionId}/provider` [#1081](https://github.com/eclipse-tractusx/portal-backend/pull/1081)
+* **Administration Service**
+  * added company shortname to `POST: api/administration/registration/network/{externalId}/partnerRegistration` [#1133](https://github.com/eclipse-tractusx/portal-backend/pull/1133)
+* **Marketplace Service**
+  * added external service details to `GET: /api/apps/{appId}/subscription/{subscriptionId}/provider` [#1081](https://github.com/eclipse-tractusx/portal-backend/pull/1081)
+* **Auditing**
+  * fixed audit-expression-creation to accommodate changes in updated audit-package [#1122](https://github.com/eclipse-tractusx/portal-backend/pull/1182)
+* **Process Worker**
+  * fixed error handling [#1119](https://github.com/eclipse-tractusx/portal-backend/pull/1119)
+
 ## 2.3.0
 
-## Feature
+### Feature
 
 * **Process Retriggers**
   * adjusted retriggers [#915](https://github.com/eclipse-tractusx/portal-backend/pull/915)
