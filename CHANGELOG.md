@@ -21,7 +21,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Pre Checks**
   * added filter to dependencies workflow [#1165](https://github.com/eclipse-tractusx/portal-backend/pull/1165)
 * **Dependencies**
-  * update app dependencies [#1130](https://github.com/eclipse-tractusx/portal-backend/pull/1130), [#1203](https://github.com/eclipse-tractusx/portal-backend/pull/1203), [#1201](https://github.com/eclipse-tractusx/portal-backend/pull/1201), [#1194](https://github.com/eclipse-tractusx/portal-backend/pull/1194), [#1176](https://github.com/eclipse-tractusx/portal-backend/pull/1176), [#1178](https://github.com/eclipse-tractusx/portal-backend/pull/1178), [#1162](https://github.com/eclipse-tractusx/portal-backend/pull/1162), [#1159](https://github.com/eclipse-tractusx/portal-backend/pull/1159), [#1141](https://github.com/eclipse-tractusx/portal-backend/pull/1141)
+  * updated app dependencies [#1130](https://github.com/eclipse-tractusx/portal-backend/pull/1130), [#1203](https://github.com/eclipse-tractusx/portal-backend/pull/1203), [#1201](https://github.com/eclipse-tractusx/portal-backend/pull/1201), [#1194](https://github.com/eclipse-tractusx/portal-backend/pull/1194), [#1176](https://github.com/eclipse-tractusx/portal-backend/pull/1176), [#1178](https://github.com/eclipse-tractusx/portal-backend/pull/1178), [#1162](https://github.com/eclipse-tractusx/portal-backend/pull/1162), [#1159](https://github.com/eclipse-tractusx/portal-backend/pull/1159), [#1141](https://github.com/eclipse-tractusx/portal-backend/pull/1141)
 
 ### Bugfixes
 
