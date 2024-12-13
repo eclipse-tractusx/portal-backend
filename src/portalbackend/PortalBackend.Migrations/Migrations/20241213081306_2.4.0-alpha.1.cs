@@ -26,7 +26,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class document_size_field_update_audit_changes : Migration
+    public partial class _240alpha1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20241121103806_document_size_field_update_audit_changes")]
-    partial class document_size_field_update_audit_changes
+    [Migration("20241213081306_2.4.0-alpha.1")]
+    partial class _240alpha1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
