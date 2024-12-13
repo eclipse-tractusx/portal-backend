@@ -79,7 +79,7 @@ public static class RegistrationValidation
                 nameof(data.UniqueIds));
         }
 
-        var invalidUniqueIdentifiersValues = data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId))
+        data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId))
             .IfAny(invalidUniqueIdentifiersValues =>
                 {
                     throw new ControllerArgumentException(
