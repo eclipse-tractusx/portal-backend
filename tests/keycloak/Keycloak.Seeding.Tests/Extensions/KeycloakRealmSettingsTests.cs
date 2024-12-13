@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Tests.Extensions;
 
-using System.Collections.Generic;
 using Xunit;
 
 public class KeycloakRealmSettingsTests

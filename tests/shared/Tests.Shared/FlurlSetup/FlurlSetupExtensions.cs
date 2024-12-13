@@ -25,7 +25,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.OpenIDConfigur
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Roles;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Users;
-using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using System.Net;
 using IdentityProvider = Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.RealmsAdmin.IdentityProvider;
 

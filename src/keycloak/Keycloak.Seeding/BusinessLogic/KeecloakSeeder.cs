@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
