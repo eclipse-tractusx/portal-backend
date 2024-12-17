@@ -24,10 +24,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ErrorHandling;
 
 public class ServicesServiceErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<ServicesServiceErrors, string> {
-                { ServicesServiceErrors.SERVICES_NOT_EXIST, "Service {serviceId} does not exist" },
-                { ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST, "Subscription {subscriptionId} does not exist"},
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)ServicesServiceErrors.SERVICES_NOT_EXIST, "Service {serviceId} does not exist"),
+        new((int)ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST, "Subscription {subscriptionId} does not exist")
+    ]);
 
     public Type Type { get => typeof(ServicesServiceErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
@@ -37,5 +37,4 @@ public enum ServicesServiceErrors
 {
     SERVICES_NOT_EXIST,
     SERVICES_SUBSCRIPTION_NOT_EXIST
-
 }
