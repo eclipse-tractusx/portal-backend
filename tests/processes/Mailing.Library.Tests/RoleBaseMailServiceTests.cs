@@ -25,6 +25,8 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -43,7 +45,7 @@ public class MailingProcessCreationTests
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMailingInformationRepository _mailingInformationRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly Guid _companyId;
     private readonly IEnumerable<Guid> _userRoleIds;
     private readonly byte[] _encryptionKey;
@@ -59,7 +61,7 @@ public class MailingProcessCreationTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _mailingInformationRepository = A.Fake<IMailingInformationRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         _userRepository = A.Fake<IUserRepository>();
         _companyId = _fixture.Create<Guid>();
         _userRoleIds = _fixture.CreateMany<Guid>(2);
@@ -185,7 +187,7 @@ public class MailingProcessCreationTests
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IMailingInformationRepository>()).Returns(_mailingInformationRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
         _fixture.Inject(_portalRepositories);
     }
 

@@ -19,23 +19,16 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 
-public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
+public class OfferSubscriptionProcessService(IPortalRepositories portalRepositories) : IOfferSubscriptionProcessService
 {
-    private readonly IPortalRepositories _portalRepositories;
-
-    public OfferSubscriptionProcessService(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
-
-    public async Task<ManualProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
+    public async Task<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending)
     {
         var allProcessStepTypeIds = processStepTypeIds switch
         {
@@ -45,7 +38,7 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
                     : processStepTypeIds.Append(processStepTypeId)
         };
 
-        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
+        var offerSubscriptionsRepository = portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
 
         if (mustBePending)
         {
@@ -63,10 +56,10 @@ public class OfferSubscriptionProcessService : IOfferSubscriptionProcessService
         var processData = await offerSubscriptionsRepository
             .GetProcessStepData(offerSubscriptionId, allProcessStepTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        return processData.CreateManualProcessData(processStepTypeId, _portalRepositories, () => $"offer subscription {offerSubscriptionId}");
+        return processData.CreateManualProcessData(processStepTypeId, portalRepositories, () => $"offer subscription {offerSubscriptionId}");
     }
 
-    public void FinalizeProcessSteps(ManualProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
+    public void FinalizeProcessSteps(ManualProcessStepData<ProcessTypeId, ProcessStepTypeId> context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
         if (nextProcessStepTypeIds != null && nextProcessStepTypeIds.Any())
         {

@@ -27,7 +27,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -36,9 +40,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -613,8 +616,8 @@ public sealed class RegistrationBusinessLogic(
         return result.Single();
     }
 
-    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM.TriggerProcessStep(processId, portalRepositories);
-    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT.TriggerProcessStep(processId, portalRepositories);
-    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER.TriggerProcessStep(processId, portalRepositories);
-    public Task RetriggerDeleteCentralUser(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER.TriggerProcessStep(processId, portalRepositories);
+    public Task RetriggerDeleteIdpSharedRealm(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_REALM.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerDeleteIdpSharedServiceAccount(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_IDP_SHARED_SERVICEACCOUNT.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerDeleteCentralIdentityProvider(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_IDENTITY_PROVIDER.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
+    public Task RetriggerDeleteCentralUser(Guid processId) => ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER.TriggerProcessStep(processId, portalRepositories, ProcessTypeExtensions.GetProcessStepForRetrigger);
 }

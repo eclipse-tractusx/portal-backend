@@ -18,13 +18,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 
 public interface IOfferSubscriptionProcessService
 {
-    Task<ManualProcessStepData> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending);
-    void FinalizeProcessSteps(ManualProcessStepData context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
+    Task<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>> VerifySubscriptionAndProcessSteps(Guid offerSubscriptionId, ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId>? processStepTypeIds, bool mustBePending);
+    void FinalizeProcessSteps(ManualProcessStepData<ProcessTypeId, ProcessStepTypeId> context, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds);
 }
