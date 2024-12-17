@@ -81,7 +81,7 @@ public sealed class RegistrationBusinessLogic(
         var companyWithAddress = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWithAddress == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new ErrorParameter(nameof(applicationId), applicationId.ToString())]);
         }
         if (!companyWithAddress.Name.IsValidCompanyName())
         {
@@ -213,12 +213,12 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!BpnRegex.IsMatch(bpn))
         {
-            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPN_MUST_SIXTEEN_CHAR_LONG, new ErrorParameter[] { new("bpn", bpn) });
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPN_MUST_SIXTEEN_CHAR_LONG, new ErrorParameter[] { new(nameof(bpn), bpn) });
         }
 
         if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
         {
-            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPNL_PREFIXED_BPNL, new ErrorParameter[] { new("bpn", bpn) });
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPNL_PREFIXED_BPNL, new ErrorParameter[] { new(nameof(bpn), bpn) });
         }
 
         return UpdateCompanyBpnInternal(applicationId, bpn);
@@ -230,7 +230,7 @@ public sealed class RegistrationBusinessLogic(
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn.ToUpper()).ToListAsync().ConfigureAwait(false);
         if (!result.Exists(item => item.IsApplicationCompany))
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_APPLICATION_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_APPLICATION_FOUND, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()) });
         }
 
         if (result.Exists(item => !item.IsApplicationCompany))
@@ -241,7 +241,7 @@ public sealed class RegistrationBusinessLogic(
         var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
         if (!applicationCompanyData.IsApplicationPending)
         {
-            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APPLICATION_FOR_COMPANY_NOT_PENDING, new ErrorParameter[] { new("applicationId", applicationId.ToString()), new("companyId", applicationCompanyData.CompanyId.ToString()) });
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APPLICATION_FOR_COMPANY_NOT_PENDING, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()), new("companyId", applicationCompanyData.CompanyId.ToString()) });
         }
 
         if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
@@ -353,13 +353,13 @@ public sealed class RegistrationBusinessLogic(
         var possibleSteps = entryTypeId.GetManualTriggerProcessStepIds();
         if (!possibleSteps.Contains(processStepTypeId))
         {
-            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_PROCEES_TYPID_NOT_TRIGERABLE, new ErrorParameter[] { new("processStepTypeId", processStepTypeId.ToString()) });
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_PROCEES_TYPID_NOT_TRIGERABLE, new ErrorParameter[] { new(nameof(processStepTypeId), processStepTypeId.ToString()) });
         }
 
         var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId();
         if (nextStepData == default)
         {
-            throw UnexpectedConditionException.Create(AdministrationRegistrationErrors.REGISTRATION_UNEXPECT_PROCESS_TYPID_CONFIGURED_TRIGERABLE, new ErrorParameter[] { new("processStepTypeId", processStepTypeId.ToString()) });
+            throw UnexpectedConditionException.Create(AdministrationRegistrationErrors.REGISTRATION_UNEXPECT_PROCESS_TYPID_CONFIGURED_TRIGERABLE, new ErrorParameter[] { new(nameof(processStepTypeId), processStepTypeId.ToString()) });
         }
 
         return TriggerChecklistInternal(applicationId, entryTypeId, processStepTypeId, nextStepData.ProcessStepTypeId, nextStepData.ChecklistEntryStatusId);
@@ -464,7 +464,7 @@ public sealed class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_COMP_APP_STATUS_NOTSUBMITTED, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_COMP_APP_STATUS_NOTSUBMITTED, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()) });
         }
 
         var (companyId, companyName, networkRegistrationProcessId, idps, companyUserIds) = result;
@@ -550,7 +550,7 @@ public sealed class RegistrationBusinessLogic(
 
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_EMAIL_NOT_ASSIGN_TO_USERNAME, new ErrorParameter[] { new("userName", userName) });
+                throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_EMAIL_NOT_ASSIGN_TO_USERNAME, new ErrorParameter[] { new(nameof(userName), userName) });
             }
 
             var mailParameters = ImmutableDictionary.CreateRange(new[]
@@ -572,7 +572,7 @@ public sealed class RegistrationBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());

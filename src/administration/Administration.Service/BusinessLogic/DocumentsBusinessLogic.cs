@@ -56,7 +56,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         if (!documentDetails.IsUserInCompany)
@@ -80,7 +80,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
     }
@@ -93,7 +93,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
 
         if (details.DocumentId == Guid.Empty)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         if (!details.IsSameUser)
@@ -129,7 +129,7 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         return document;
@@ -143,11 +143,11 @@ public class DocumentsBusinessLogic : IDocumentsBusinessLogic
         var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.FrameDocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         if (!documentDetails.IsDocumentTypeMatch)
         {
-            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content);

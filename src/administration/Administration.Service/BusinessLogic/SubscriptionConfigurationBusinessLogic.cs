@@ -52,11 +52,11 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {
-            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         return result.ProviderDetailReturnData;
@@ -124,7 +124,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 
         if (!result.IsCompanyRoleOwner)
         {
-            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>

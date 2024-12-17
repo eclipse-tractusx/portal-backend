@@ -56,7 +56,7 @@ public class NetworkBusinessLogic(
     {
         if (!data.Name.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "OrganisationName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", data.Name)]);
         }
 
         var ownerCompanyId = _identityData.CompanyId;
@@ -87,7 +87,7 @@ public class NetworkBusinessLogic(
         identityProviderRepository.CreateCompanyIdentityProviders(allIdentityProviderIds.Select(identityProviderId => (companyId, identityProviderId)));
 
         Guid GetIdpId(Guid? identityProviderId) =>
-            identityProviderId ?? (singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here"));
+            identityProviderId ?? singleIdentityProviderIdAlias?.IdentityProviderId ?? throw new UnexpectedConditionException("singleIdentityProviderIdAlias should never be null here");
 
         string GetIdpAlias(Guid? identityProviderId) =>
             identityProviderId == null
@@ -121,7 +121,7 @@ public class NetworkBusinessLogic(
         }
 
         var userCreationErrors = await CreateUsers().Where(x => x.Error != null).Select(x => x.Error!).ToListAsync();
-        userCreationErrors.IfAny(errors => throw ServiceException.Create(AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS, new ErrorParameter[] { new("errors", string.Join("", errors.Select(x => x.Message))) }));
+        userCreationErrors.IfAny(errors => throw ServiceException.Create(AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS, new ErrorParameter[] { new(nameof(errors), string.Join("", errors.Select(x => x.Message))) }));
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
@@ -211,7 +211,7 @@ public class NetworkBusinessLogic(
         if (await networkRepository.CheckExternalIdExists(data.ExternalId, ownerCompanyId)
                 .ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_EXISTS, new ErrorParameter[] { new("ExternalId", data.ExternalId) });
+            throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_EXISTS, new ErrorParameter[] { new(nameof(ExternalId), data.ExternalId) });
         }
 
         var idpResult = await ValidateIdps(data, identityProviderRepository, ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -242,12 +242,12 @@ public class NetworkBusinessLogic(
             {
                 var single = await identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
                 if (single.IdentityProviderId == Guid.Empty)
-                    throw ConflictException.Create(AdministrationNetworkErrors.NETWORK_CONFLICT_NO_MANAGED_PROVIDER, new ErrorParameter[] { new("ownerCompanyId", ownerCompanyId.ToString()) });
+                    throw ConflictException.Create(AdministrationNetworkErrors.NETWORK_CONFLICT_NO_MANAGED_PROVIDER, new ErrorParameter[] { new(nameof(ownerCompanyId), ownerCompanyId.ToString()) });
                 singleIdpAlias = (single.IdentityProviderId, single.Alias ?? throw ConflictException.Create(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS, new ErrorParameter[] { new("identityProviderId", single.IdentityProviderId.ToString()) }));
             }
             catch (InvalidOperationException)
             {
-                throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDENTIFIER_SET_FOR_ALL_USERS, new ErrorParameter[] { new("ownerCompanyId", ownerCompanyId.ToString()), new("UserDetails", data.UserDetails.ToString()) });
+                throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDENTIFIER_SET_FOR_ALL_USERS, new ErrorParameter[] { new(nameof(ownerCompanyId), ownerCompanyId.ToString()), new("UserDetails", data.UserDetails.ToString() ?? "") });
             }
         }
         else
@@ -267,7 +267,7 @@ public class NetworkBusinessLogic(
                                     x => x.IdentityProviderId,
                                     x => x.Alias ?? throw ConflictException.Create(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS, new ErrorParameter[] { new("identityProviderId", x.IdentityProviderId.ToString()) })).ConfigureAwait(false);
                             distinctIds.Except(idpAliasData.Keys).IfAny(invalidIds =>
-                                throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDPS_NOT_EXIST, new ErrorParameter[] { new("invalidIds", string.Join("", invalidIds)) }));
+                                throw ControllerArgumentException.Create(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDPS_NOT_EXIST, new ErrorParameter[] { new(nameof(invalidIds), string.Join("", invalidIds)) }));
                             return idpAliasData;
                         },
                         out var idpAliasDataTask)
@@ -304,7 +304,7 @@ public class NetworkBusinessLogic(
     {
         if (companyName != null && !companyName.IsValidCompanyName())
         {
-            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", "CompanyName")]);
+            throw ControllerArgumentException.Create(ValidationExpressionErrors.INCORRECT_COMPANY_NAME, [new ErrorParameter("name", companyName)]);
         }
 
         var applicationsQuery = portalRepositories.GetInstance<IApplicationRepository>()
