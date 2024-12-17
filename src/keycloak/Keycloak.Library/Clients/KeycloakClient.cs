@@ -24,7 +24,6 @@
  ********************************************************************************/
 
 using Flurl.Http;
-using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Common.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Clients;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.ClientScopes;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Models.Common;
