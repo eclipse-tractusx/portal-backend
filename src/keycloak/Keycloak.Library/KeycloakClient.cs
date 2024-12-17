@@ -89,7 +89,7 @@ public partial class KeycloakClient
         }
 
         _token = await _token
-            .GetAccessToken(url.Clone(), _authRealm ?? targetRealm, _userName, _password ?? "", _clientSecret, _clientId ?? "admin-cli", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            .GetAccessToken(url.Clone(), _authRealm ?? targetRealm, _userName, _password, _clientSecret, _clientId ?? "admin-cli", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return url
             .WithSettings(s => s.JsonSerializer = new DefaultJsonSerializer(_jsonOptions))

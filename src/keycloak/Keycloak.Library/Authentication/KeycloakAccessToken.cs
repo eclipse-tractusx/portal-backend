@@ -21,7 +21,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Authentication;
 
 public record KeycloakAccessToken(
     string AccessToken,
-    DateTimeOffset ExpiresIn,
-    DateTimeOffset RefreshExpiresIn,
-    string RefreshToken
+    DateTimeOffset ExpiryTime,
+    string RefreshToken,
+    DateTimeOffset RefreshExpiryTime
 );

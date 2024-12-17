@@ -26,62 +26,58 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Library.Authentication;
 
 internal static class KeycloakAccessTokenExtensions
 {
-    public static async Task<KeycloakAccessToken> GetAccessToken(this KeycloakAccessToken? token, Url url, string realm, string? userName, string password, string? clientSecret, string clientId, CancellationToken cancellationToken)
+    public static async Task<KeycloakAccessToken> GetAccessToken(this KeycloakAccessToken? token, Url url, string realm, string? userName, string? password, string? clientSecret, string clientId, CancellationToken cancellationToken)
     {
-        if (clientSecret == null && userName == null)
-        {
-            throw new ArgumentException($"{nameof(userName)} and {nameof(clientSecret)} must not all be null");
-        }
+        var now = DateTimeOffset.UtcNow;
 
         if (token is null)
         {
-            return await GetToken(url, realm, userName, password, clientSecret, clientId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            return await GetToken(url, realm, userName, password, clientSecret, clientId, now, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
-        if (token.ExpiresIn > DateTimeOffset.UtcNow)
+        if (token.ExpiryTime > now)
         {
             return token;
         }
 
-        return token.RefreshExpiresIn > DateTimeOffset.UtcNow ?
+        return token.RefreshExpiryTime > now ?
             await GetToken(url, realm, [
-                new KeyValuePair<string, string>("grant_type", "refresh_token"),
-                new KeyValuePair<string, string>("refresh_token", token.RefreshToken),
-                new KeyValuePair<string, string>("client_id", clientId)
-            ], cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) :
-            await GetToken(url, realm, userName, password, clientSecret, clientId, cancellationToken)
+                new("grant_type", "refresh_token"),
+                new("refresh_token", token.RefreshToken),
+                new("client_id", clientId)
+            ], now, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) :
+            await GetToken(url, realm, userName, password, clientSecret, clientId, now, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, string? userName, string password, string? clientSecret, string clientId, CancellationToken cancellationToken)
+    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, string? userName, string? password, string? clientSecret, string clientId, DateTimeOffset requestTime, CancellationToken cancellationToken)
     {
         if (clientSecret != null)
         {
             return await GetToken(url, realm, [
-                new KeyValuePair<string, string>("grant_type", "client_credentials"),
-                new KeyValuePair<string, string>("client_secret", clientSecret),
-                new KeyValuePair<string, string>("client_id", clientId)
-            ], cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                new("grant_type", "client_credentials"),
+                new("client_secret", clientSecret),
+                new("client_id", clientId)
+            ], requestTime, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         if (userName != null)
         {
             return await GetToken(url, realm, [
-                new KeyValuePair<string, string>("grant_type", "password"),
-                new KeyValuePair<string, string>("username", userName),
-                new KeyValuePair<string, string>("password", password),
-                new KeyValuePair<string, string>("client_id", "admin-cli")
-            ], cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+                new("grant_type", "password"),
+                new("username", userName),
+                new("password", password ?? ""),
+                new("client_id", "admin-cli")
+            ], requestTime, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         throw new ArgumentException($"{nameof(userName)} and {nameof(clientSecret)} must not all be null");
     }
 
-    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, List<KeyValuePair<string, string>> keyValues, CancellationToken cancellationToken)
+    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, IEnumerable<KeyValuePair<string, string>> keyValues, DateTimeOffset requestTime, CancellationToken cancellationToken)
     {
-        var requestTime = DateTimeOffset.UtcNow;
         var result = await url
-            .AppendPathSegment($"realms/{realm}/protocol/openid-connect/token")
+            .AppendPathSegments("realms", Url.Encode(realm), "protocol/openid-connect/token")
             .WithHeader("Content-Type", "application/x-www-form-urlencoded")
             .PostUrlEncodedAsync(keyValues, cancellationToken: cancellationToken)
             .ReceiveJson<AccessTokenResponse>().ConfigureAwait(ConfigureAwaitOptions.None);
@@ -91,13 +87,13 @@ internal static class KeycloakAccessTokenExtensions
             throw new ConflictException("result should never be null");
         }
 
-        return new KeycloakAccessToken(result.AccessToken, requestTime.AddSeconds(result.ExpiresIn), requestTime.AddSeconds(result.RefreshExpiresIn), result.RefreshToken);
+        return new KeycloakAccessToken(result.AccessToken, requestTime.AddSeconds(result.ExpiresIn), result.RefreshToken, requestTime.AddSeconds(result.RefreshExpiresIn));
     }
 
     private record AccessTokenResponse(
         [property: JsonPropertyName("access_token")] string AccessToken,
         [property: JsonPropertyName("expires_in")] int ExpiresIn,
-        [property: JsonPropertyName("refresh_expires_in")] int RefreshExpiresIn,
-        [property: JsonPropertyName("refresh_token")] string RefreshToken
+        [property: JsonPropertyName("refresh_token")] string RefreshToken,
+        [property: JsonPropertyName("refresh_expires_in")] int RefreshExpiresIn
     );
 }
