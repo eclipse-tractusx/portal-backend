@@ -30,67 +30,59 @@ internal static class KeycloakAccessTokenExtensions
     {
         var now = DateTimeOffset.UtcNow;
 
-        if (token is null)
-        {
-            return await GetToken(url, realm, userName, password, clientSecret, clientId, now, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
-
-        if (token.ExpiryTime > now)
+        if (token != null && token.ExpiryTime > now)
         {
             return token;
         }
 
-        return token.RefreshExpiryTime > now ?
-            await GetToken(url, realm, [
-                new("grant_type", "refresh_token"),
-                new("refresh_token", token.RefreshToken),
-                new("client_id", clientId)
-            ], now, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None) :
-            await GetToken(url, realm, userName, password, clientSecret, clientId, now, cancellationToken)
-                .ConfigureAwait(ConfigureAwaitOptions.None);
-    }
+        var accessTokenResponse = await (token is null
+                ? GetToken()
+                : RefreshToken()).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw new ConflictException("accessTokenResponse should never be null");
 
-    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, string? userName, string? password, string? clientSecret, string clientId, DateTimeOffset requestTime, CancellationToken cancellationToken)
-    {
-        if (clientSecret != null)
+        return new KeycloakAccessToken(accessTokenResponse.AccessToken, now.AddSeconds(accessTokenResponse.ExpiresIn), accessTokenResponse.RefreshToken, now.AddSeconds(accessTokenResponse.RefreshExpiresIn));
+
+        Task<AccessTokenResponse> GetToken()
         {
-            return await GetToken(url, realm, [
-                new("grant_type", "client_credentials"),
-                new("client_secret", clientSecret),
-                new("client_id", clientId)
-            ], requestTime, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (clientSecret != null)
+            {
+                return RetrieveToken([
+                    new("grant_type", "client_credentials"),
+                    new("client_secret", clientSecret),
+                    new("client_id", clientId)
+                ]);
+            }
+
+            if (userName != null)
+            {
+                return RetrieveToken([
+                    new("grant_type", "password"),
+                    new("username", userName),
+                    new("password", password ?? ""),
+                    new("client_id", "admin-cli")
+                ]);
+            }
+
+            throw new ArgumentException($"{nameof(userName)} and {nameof(clientSecret)} must not all be null");
         }
 
-        if (userName != null)
-        {
-            return await GetToken(url, realm, [
-                new("grant_type", "password"),
-                new("username", userName),
-                new("password", password ?? ""),
-                new("client_id", "admin-cli")
-            ], requestTime, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        Task<AccessTokenResponse> RefreshToken() =>
+            token.RefreshExpiryTime > now
+                ? RetrieveToken([
+                    new("grant_type", "refresh_token"),
+                    new("refresh_token", token.RefreshToken),
+                    new("client_id", clientId)
+                ])
+                : GetToken();
 
-        throw new ArgumentException($"{nameof(userName)} and {nameof(clientSecret)} must not all be null");
+        Task<AccessTokenResponse> RetrieveToken(IEnumerable<KeyValuePair<string, string>> keyValues) =>
+            url
+                .AppendPathSegments("realms", Url.Encode(realm), "protocol/openid-connect/token")
+                .WithHeader("Content-Type", "application/x-www-form-urlencoded")
+                .PostUrlEncodedAsync(keyValues, cancellationToken: cancellationToken)
+                .ReceiveJson<AccessTokenResponse>();
     }
 
-    private static async Task<KeycloakAccessToken> GetToken(Url url, string realm, IEnumerable<KeyValuePair<string, string>> keyValues, DateTimeOffset requestTime, CancellationToken cancellationToken)
-    {
-        var result = await url
-            .AppendPathSegments("realms", Url.Encode(realm), "protocol/openid-connect/token")
-            .WithHeader("Content-Type", "application/x-www-form-urlencoded")
-            .PostUrlEncodedAsync(keyValues, cancellationToken: cancellationToken)
-            .ReceiveJson<AccessTokenResponse>().ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (result is null)
-        {
-            throw new ConflictException("result should never be null");
-        }
-
-        return new KeycloakAccessToken(result.AccessToken, requestTime.AddSeconds(result.ExpiresIn), result.RefreshToken, requestTime.AddSeconds(result.RefreshExpiresIn));
-    }
-
-    private record AccessTokenResponse(
+    private sealed record AccessTokenResponse(
         [property: JsonPropertyName("access_token")] string AccessToken,
         [property: JsonPropertyName("expires_in")] int ExpiresIn,
         [property: JsonPropertyName("refresh_token")] string RefreshToken,
