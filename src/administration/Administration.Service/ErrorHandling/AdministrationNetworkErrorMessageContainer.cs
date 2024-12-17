@@ -20,21 +20,24 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Collections.Immutable;
 
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+
 public class AdministrationNetworkErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationNetworkErrors, string> {
-            { AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS, "Errors occured while saving the users: {errors}"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_LEAST_ONE_COMP_ROLE_SELECT, "At least one company role must be selected {companyRoles}"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_BET_SIX_TO_THIRTYSIX, "ExternalId must be between 6 and 36 characters"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_EXISTS, "ExternalId {ExternalId} already exists"},
-            { AdministrationNetworkErrors.NETWORK_CONFLICT_NO_MANAGED_PROVIDER, "company {ownerCompanyId} has no managed identityProvider"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_IDENTIFIER_SET_FOR_ALL_USERS, "Company {ownerCompanyId} has more than one identity provider linked, therefore identityProviderId must be set for all users"},
-            { AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS, "identityProvider {identityProviderId} has no alias"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_IDPS_NOT_EXIST, "Idps {invalidIds} do not exist"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_MAIL_NOT_EMPTY_WITH_VALID_FORMAT, "Mail {email} must not be empty and have valid format"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_FIRST_NAME_NOT_MATCH_FORMAT, "Firstname does not match expected format"},
-            { AdministrationNetworkErrors.NETWORK_ARGUMENT_LAST_NAME_NOT_MATCH_FORMAT, "Lastname does not match expected format"},
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS, "Errors occured while saving the users: {errors}"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_LEAST_ONE_COMP_ROLE_SELECT, "At least one company role must be selected {companyRoles}"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_BET_SIX_TO_THIRTYSIX, "ExternalId must be between 6 and 36 characters"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_EXISTS, "ExternalId {ExternalId} already exists"),
+        new((int)AdministrationNetworkErrors.NETWORK_CONFLICT_NO_MANAGED_PROVIDER, "company {ownerCompanyId} has no managed identityProvider"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_IDENTIFIER_SET_FOR_ALL_USERS, "Company {ownerCompanyId} has more than one identity provider linked, therefore identityProviderId must be set for all users"),
+        new((int)AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS, "identityProvider {identityProviderId} has no alias"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_IDPS_NOT_EXIST, "Idps {invalidIds} do not exist"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_MAIL_NOT_EMPTY_WITH_VALID_FORMAT, "Mail {email} must not be empty and have valid format"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_FIRST_NAME_NOT_MATCH_FORMAT, "Firstname does not match expected format"),
+        new((int)AdministrationNetworkErrors.NETWORK_ARGUMENT_LAST_NAME_NOT_MATCH_FORMAT, "Lastname does not match expected format")
+    ]);
+
     public Type Type { get => typeof(AdministrationNetworkErrors); }
 
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }

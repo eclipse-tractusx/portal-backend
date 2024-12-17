@@ -20,17 +20,20 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Collections.Immutable;
 
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+
 public class AdministrationDocumentErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationDocumentErrors, string> {
-                { AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, "Document {documentId} does not exist" },
-                { AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_ACCESS_DOC, "User is not allowed to access the document"},
-                { AdministrationDocumentErrors.DOCUMENT_UNEXPECT_DOC_CONTENT_NOT_NULL, "documentContent should never be null here"},
-                { AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST, "Self description document {documentId} does not exist"},
-                { AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_DEL_DOC, "User is not allowed to delete this document"},
-                { AdministrationDocumentErrors.DOCUMENT_ARGUMENT_INCORR_DOC_STATUS, "Incorrect document status"},
-                { AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_ENDPOINT_ALLOW_USE_IN_DEV_ENV, "Endpoint can only be used on dev environment"}
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST, "Document {documentId} does not exist"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_ACCESS_DOC, "User is not allowed to access the document"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_UNEXPECT_DOC_CONTENT_NOT_NULL, "documentContent should never be null here"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST, "Self description document {documentId} does not exist"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_DEL_DOC, "User is not allowed to delete this document"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_ARGUMENT_INCORR_DOC_STATUS, "Incorrect document status"),
+        new((int)AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_ENDPOINT_ALLOW_USE_IN_DEV_ENV, "Endpoint can only be used on dev environment")
+    ]);
+
     public Type Type { get => typeof(AdministrationDocumentErrors); }
 
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
