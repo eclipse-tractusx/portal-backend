@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic
 {
     public interface IPartnerNetworkBusinessLogic
@@ -27,5 +29,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
         /// </summary>
         /// <param name="bpnIds">Ids of BPN</param>
         IAsyncEnumerable<string> GetAllMemberCompaniesBPNAsync(IEnumerable<string>? bpnIds);
+
+        /// <summary>
+        /// Gets partner network data from BPN Pool
+        /// </summary>
+        /// <param name="page" example="0">The page of partner network data, default is 0.</param>
+        /// <param name="size" example="10">Amount of partner network data, default is 10.</param>
+        /// <param name="partnerNetworkRequest">The bpnls to get the selected record</param>
+        /// <param name="token">Access token to access the partner network pool</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Returns a List of partner networks</returns>
+        Task<PartnerNetworkResponse> GetPartnerNetworkDataAsync(int page, int size, PartnerNetworkRequest partnerNetworkRequest, string token, CancellationToken cancellationToken);
     }
 }
