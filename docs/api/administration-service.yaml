@@ -4314,7 +4314,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ServiceAccountCreationInfo'
+              $ref: '#/components/schemas/TechnicalUserCreationInfo'
       responses:
         '200':
           description: The service account was created.
@@ -7688,21 +7688,6 @@ components:
           type: string
           nullable: true
       additionalProperties: false
-    ServiceAccountCreationInfo:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        authenticationType:
-          $ref: '#/components/schemas/IamClientAuthMethod'
-        roleIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-      additionalProperties: false
     ServiceAccountDetails:
       type: object
       properties:
@@ -7746,6 +7731,21 @@ components:
           type: string
         authenticationType:
           $ref: '#/components/schemas/IamClientAuthMethod'
+      additionalProperties: false
+    TechnicalUserCreationInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        authenticationType:
+          $ref: '#/components/schemas/IamClientAuthMethod'
+        roleIds:
+          type: array
+          items:
+            type: string
+            format: uuid
       additionalProperties: false
     TechnicalUserData:
       type: object

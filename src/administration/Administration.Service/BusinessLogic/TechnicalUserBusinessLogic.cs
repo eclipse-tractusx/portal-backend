@@ -38,30 +38,30 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class ServiceAccountBusinessLogic(
+public class TechnicalUserBusinessLogic(
     IProvisioningManager provisioningManager,
     IPortalRepositories portalRepositories,
     IOptions<ServiceAccountSettings> options,
-    IServiceAccountCreation serviceAccountCreation,
+    ITechnicalUserCreation technicalUserCreation,
     IIdentityService identityService,
     IServiceAccountManagement serviceAccountManagement)
-    : IServiceAccountBusinessLogic
+    : ITechnicalUserBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly ServiceAccountSettings _settings = options.Value;
 
     private const string CompanyId = "companyId";
 
-    public async Task<IEnumerable<ServiceAccountDetails>> CreateOwnCompanyServiceAccountAsync(ServiceAccountCreationInfo serviceAccountCreationInfos)
+    public async Task<IEnumerable<ServiceAccountDetails>> CreateOwnCompanyServiceAccountAsync(TechnicalUserCreationInfo technicalUserCreationInfos)
     {
-        if (serviceAccountCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
+        if (technicalUserCreationInfos.IamClientAuthMethod != IamClientAuthMethod.SECRET)
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, parameters: [new("authenticationType", serviceAccountCreationInfos.IamClientAuthMethod.ToString())]);//TODO implement other authenticationTypes
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_AUTH_SECRET_ARGUMENT, parameters: [new("authenticationType", technicalUserCreationInfos.IamClientAuthMethod.ToString())]);//TODO implement other authenticationTypes
         }
 
-        if (string.IsNullOrWhiteSpace(serviceAccountCreationInfos.Name))
+        if (string.IsNullOrWhiteSpace(technicalUserCreationInfos.Name))
         {
-            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, parameters: [new("name", serviceAccountCreationInfos.Name)]);
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_NAME_EMPTY_ARGUMENT, parameters: [new("name", technicalUserCreationInfos.Name)]);
         }
 
         var companyId = _identityData.CompanyId;
@@ -76,11 +76,11 @@ public class ServiceAccountBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, [new(CompanyId, companyId.ToString())]);
         }
 
-        serviceAccountCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
+        technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
             .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
         const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;
-        var (_, _, serviceAccounts) = await serviceAccountCreation.CreateServiceAccountAsync(serviceAccountCreationInfos, companyId, [result.Bpn], TechnicalUserTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (_, _, serviceAccounts) = await technicalUserCreation.CreateTechnicalUsersAsync(technicalUserCreationInfos, companyId, [result.Bpn], TechnicalUserTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         return serviceAccounts.Select(sa => new ServiceAccountDetails(

@@ -103,7 +103,7 @@ public static class AdministrationEndpointHelper
             userRoleIds.AddRange(from t in allServiceAccountsRoles where t.UserRoleText.Contains(p) select t.UserRoleId);
         }
 
-        var serviceAccountCreationInfo = new ServiceAccountCreationInfo(techUserName, Description, IamClientAuthMethod.SECRET, userRoleIds);
+        var serviceAccountCreationInfo = new TechnicalUserCreationInfo(techUserName, Description, IamClientAuthMethod.SECRET, userRoleIds);
         var endpoint = $"{EndPoint}/serviceaccount/owncompany/serviceaccounts";
         var response = Given()
             .DisableSslCertificateValidation()

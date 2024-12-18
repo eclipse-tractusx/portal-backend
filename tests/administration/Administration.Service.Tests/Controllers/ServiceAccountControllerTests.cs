@@ -34,7 +34,7 @@ public class ServiceAccountControllerTests
 {
     private readonly IIdentityData _identity;
     private readonly IFixture _fixture;
-    private readonly IServiceAccountBusinessLogic _logic;
+    private readonly ITechnicalUserBusinessLogic _logic;
     private readonly ServiceAccountController _controller;
 
     public ServiceAccountControllerTests()
@@ -48,7 +48,7 @@ public class ServiceAccountControllerTests
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
-        _logic = A.Fake<IServiceAccountBusinessLogic>();
+        _logic = A.Fake<ITechnicalUserBusinessLogic>();
         _controller = new ServiceAccountController(_logic);
         _controller.AddControllerContextWithClaim(_identity);
     }
@@ -61,8 +61,8 @@ public class ServiceAccountControllerTests
         var responseData = _fixture.Build<ServiceAccountDetails>()
             .With(x => x.TechnicalUserId, serviceAccountId)
             .CreateMany(1);
-        var data = _fixture.Create<ServiceAccountCreationInfo>();
-        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<ServiceAccountCreationInfo>._))
+        var data = _fixture.Create<TechnicalUserCreationInfo>();
+        A.CallTo(() => _logic.CreateOwnCompanyServiceAccountAsync(A<TechnicalUserCreationInfo>._))
             .Returns(responseData);
 
         // Act
