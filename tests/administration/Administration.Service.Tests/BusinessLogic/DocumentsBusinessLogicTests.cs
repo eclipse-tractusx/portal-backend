@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -90,7 +91,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<NotFoundException>(Act);
-        exception.Message.Should().Be($"Document {invalidId} does not exists.");
+        exception.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var exception = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        exception.Message.Should().Be("Endpoint can only be used on dev environment");
+        exception.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_ENDPOINT_ALLOW_USE_IN_DEV_ENV.ToString());
     }
 
     #endregion
@@ -142,7 +143,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Document {documentId} does not exist");
+        ex.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -159,7 +160,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("User is not allowed to access the document");
+        ex.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_FORBIDDEN_USER_NOT_ALLOW_ACCESS_DOC.ToString());
     }
 
     #endregion
@@ -198,7 +199,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Self description document {documentId} does not exist");
+        ex.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_NOT_SELFDESP_DOC_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -237,7 +238,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"document {documentId} does not exist.");
+        result.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -254,7 +255,7 @@ public class DocumentsBusinessLogicTests
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"document {documentId} does not exist.");
+        result.Message.Should().Be(AdministrationDocumentErrors.DOCUMENT_NOT_DOC_NOT_EXIST.ToString());
     }
 
     #region Setup

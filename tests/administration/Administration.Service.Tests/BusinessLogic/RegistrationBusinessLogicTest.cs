@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
@@ -280,8 +281,8 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("bpn");
-        ex.Message.Should().Be("BPN must contain exactly 16 characters long. (Parameter 'bpn')");
+        ex.Parameters.First().Name.Should().Be("bpn");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPN_MUST_SIXTEEN_CHAR_LONG.ToString());
     }
 
     [Fact]
@@ -295,7 +296,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"application {NotExistingApplicationId} not found");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_APPLICATION_FOUND.ToString());
     }
 
     [Fact]
@@ -309,7 +310,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("BusinessPartnerNumber is already assigned to a different company");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_BPN_ASSIGN_TO_OTHER_COMP.ToString());
     }
 
     [Fact]
@@ -323,7 +324,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"application {ActiveApplicationCompanyId} for company {CompanyId} is not pending");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APPLICATION_FOR_COMPANY_NOT_PENDING.ToString());
     }
 
     [Fact]
@@ -337,7 +338,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"BusinessPartnerNumber of company {CompanyId} has already been set.");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_BPN_OF_COMPANY_SET.ToString());
     }
 
     [Theory]
@@ -397,7 +398,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain($"more than one companyApplication in status SUBMITTED found for BPN {BusinessPartnerNumber}");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -413,7 +414,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"No companyApplication for BPN {BusinessPartnerNumber} is not in status SUBMITTED");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion
@@ -523,11 +524,10 @@ public class RegistrationBusinessLogicTest
         Task Act() => _logic.DeclineRegistrationVerification(applicationId, "test", CancellationToken.None);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
 
         // Assert
-        ex.Message.Should().Be($"CompanyApplication {applicationId} is not in status SUBMITTED (Parameter 'applicationId')");
-        ex.ParamName.Should().Be("applicationId");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_COMP_APP_STATUS_NOTSUBMITTED.ToString());
     }
 
     [Fact]
@@ -543,7 +543,7 @@ public class RegistrationBusinessLogicTest
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        ex.Message.Should().Be("No comment set.");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_COMMENT_NOT_SET.ToString());
     }
 
     [Fact]
@@ -621,7 +621,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Application {applicationId} does not exists");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -778,7 +778,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"The processStep {stepId} is not retriggerable");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_PROCEES_TYPID_NOT_TRIGERABLE.ToString());
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -864,7 +864,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"companyApplication {ApplicationId} not found");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_COMPANY_EXTERNAL_APP_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -882,7 +882,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"companyApplication {ApplicationId} is not in status SUBMITTED");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_COMPANY_EXTERNAL_NOT_STATUS_SUBMIT.ToString());
     }
 
     #endregion
@@ -919,7 +919,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Document {documentId} does not exist");
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_DOC_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -974,7 +974,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain($"more than one companyApplication in status SUBMITTED found for BPN {BusinessPartnerNumber}");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -990,7 +990,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"No companyApplication for BPN {BusinessPartnerNumber} is not in status SUBMITTED");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion
@@ -1026,7 +1026,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain($"more than one companyApplication in status SUBMITTED found for BPN {BusinessPartnerNumber}");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -1042,7 +1042,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"No companyApplication for BPN {BusinessPartnerNumber} is not in status SUBMITTED");
+        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion

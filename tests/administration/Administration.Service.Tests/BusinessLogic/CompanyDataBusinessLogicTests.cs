@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -123,7 +124,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} is not a valid company");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INVALID_COMPANY.ToString());
     }
 
     #endregion
@@ -198,8 +199,8 @@ public class CompanyDataBusinessLogicTests
         async Task Act() => await _sut.GetCompanyRoleAndConsentAgreementDetailsAsync(languageShortName).ToListAsync();
 
         // Assert
-        var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"company {companyId} does not exist");
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMPANY_NOT_EXIST.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -222,7 +223,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusDataAsync(companyId)).MustHaveHappenedOnceExactly();
     }
 
@@ -241,7 +242,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"language {languageShortName} is not a valid languagecode");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_LANG_CODE_NOT_VALID.ToString());
 
     }
 
@@ -370,7 +371,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -421,7 +422,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All agreements need to get signed as Active or InActive. Missing consents: [ACTIVE_PARTICIPANT: [{agreementId2}, {agreementId3}], APP_PROVIDER: [{agreementId3}]]");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_AGREEMENT_ACTIVE_INACTIVE_MISSING.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -477,7 +478,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Agreements not associated with requested companyRoles: [ACTIVE_PARTICIPANT: [{agreementId4}], APP_PROVIDER: [{agreementId1}, {agreementId2}]]");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_AGREEMENT_NOT_ASSOCIATE_COMPANY_ROLES.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -504,7 +505,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company can't unassign from all roles, Atleast one Company role need to signed as active");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_NOT_UNASSIGN_ALL_ROLES_ATLEAST_ONE_ACTIVE_NEEDED.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -521,7 +522,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"company {_identity.CompanyId} does not exist");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMPANY_NOT_EXIST.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -538,7 +539,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_UNEXP_COMP_ROLES_NOR_DETAILS_NULL.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -555,7 +556,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"neither CompanyRoleIds nor ConsentStatusDetails should ever be null here");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_UNEXP_COMP_ROLES_NOR_DETAILS_NULL.ToString());
         A.CallTo(() => _companyRepository.GetCompanyRolesDataAsync(_identity.CompanyId, A<IEnumerable<CompanyRoleId>>._)).MustHaveHappenedOnceExactly();
     }
 
@@ -641,7 +642,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -681,7 +682,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Status is Incorrect");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_INCORR_COMPANY_STATUS.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -701,7 +702,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"UseCaseId {useCaseId} is not available");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_USECASEID_NOT_AVAL.ToString());
         A.CallTo(() => _companyRepository.GetCompanyStatusAndUseCaseIdAsync(companyId, useCaseId)).MustHaveHappenedOnceExactly();
     }
 
@@ -791,7 +792,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"{CompanyCertificateTypeId.IATF} is not assigned to a certificate");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_CERT_TYPE_NOT_ASSIGN_CERTIFICATE.ToString());
     }
 
     [Fact]
@@ -811,7 +812,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"ExternalCertificateNumber must be alphanumeric and length should not be greater than 36");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_EXTER_CERT_APLHA_LENGTH.ToString());
     }
 
     [Fact]
@@ -832,7 +833,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"BPN must contain exactly 16 characters and must be prefixed with BPNS");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_PREFIXED_BPNS_SIXTEEN_CHAR.ToString());
     }
 
     [Fact]
@@ -853,7 +854,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"ValidFrom date should not be greater than current date");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_NOT_GREATER_CURR_DATE.ToString());
     }
 
     [Fact]
@@ -874,7 +875,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"ValidTill date should be greater than current date");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_SHOULD_GREATER_THAN_CURR_DATE.ToString());
     }
 
     [Fact]
@@ -910,7 +911,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().StartWith("businessPartnerNumber must not be empty");
+        error.Message.Should().StartWith(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_BPN_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -928,7 +929,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().StartWith($"company does not exist for {businessPartnerNumber}");
+        error.Message.Should().StartWith(AdministrationCompanyDataErrors.COMPANY_DATA_ARGUMENT_COMP_NOT_EXISTS_FOR_BPN.ToString());
     }
 
     [Fact]
@@ -1021,7 +1022,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMP_CERT_DOC_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -1055,7 +1056,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Company certificate document {documentId} does not exist");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_COMP_CERT_DOC_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1070,7 +1071,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Document {documentId} status is not locked");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_FORBIDDEN_DOC_STATUS_NOT_LOCKED.ToString());
     }
 
     #endregion
@@ -1121,7 +1122,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Document is not existing");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_DOC_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1137,7 +1138,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"User is not allowed to delete this document");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_FORBIDDEN_USER_NOT_ALLOW_DEL_DOC.ToString());
     }
 
     [Fact]
@@ -1153,7 +1154,7 @@ public class CompanyDataBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"There must not be multiple active certificates for document {documentId}");
+        ex.Message.Should().Be(AdministrationCompanyDataErrors.COMPANY_DATA_CONFLICT_MULTIPLE_ACTIVE_CERT_NOT_ALLOWED_ONE_DOC.ToString());
     }
 
     [Fact]

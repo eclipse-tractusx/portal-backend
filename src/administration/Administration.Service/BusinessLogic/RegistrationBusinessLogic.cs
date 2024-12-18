@@ -80,7 +80,7 @@ public sealed class RegistrationBusinessLogic(
         var companyWithAddress = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyUserRoleWithAddressUntrackedAsync(applicationId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyWithAddress == null)
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new ErrorParameter(nameof(applicationId), applicationId.ToString())]);
         }
         if (!companyWithAddress.Name.IsValidCompanyName())
         {
@@ -212,12 +212,12 @@ public sealed class RegistrationBusinessLogic(
     {
         if (!BpnRegex.IsMatch(bpn))
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 characters long.", nameof(bpn));
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPN_MUST_SIXTEEN_CHAR_LONG, new ErrorParameter[] { new(nameof(bpn), bpn) });
         }
 
         if (!bpn.StartsWith("BPNL", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ControllerArgumentException("businessPartnerNumbers must prefixed with BPNL", nameof(bpn));
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_BPNL_PREFIXED_BPNL, new ErrorParameter[] { new(nameof(bpn), bpn) });
         }
 
         return UpdateCompanyBpnInternal(applicationId, bpn);
@@ -229,25 +229,23 @@ public sealed class RegistrationBusinessLogic(
             .GetBpnForIamUserUntrackedAsync(applicationId, bpn.ToUpper()).ToListAsync().ConfigureAwait(false);
         if (!result.Exists(item => item.IsApplicationCompany))
         {
-            throw new NotFoundException($"application {applicationId} not found");
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_APPLICATION_FOUND, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()) });
         }
 
         if (result.Exists(item => !item.IsApplicationCompany))
         {
-            throw new ConflictException("BusinessPartnerNumber is already assigned to a different company");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_BPN_ASSIGN_TO_OTHER_COMP);
         }
 
         var applicationCompanyData = result.Single(item => item.IsApplicationCompany);
         if (!applicationCompanyData.IsApplicationPending)
         {
-            throw new ConflictException(
-                $"application {applicationId} for company {applicationCompanyData.CompanyId} is not pending");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APPLICATION_FOR_COMPANY_NOT_PENDING, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()), new("companyId", applicationCompanyData.CompanyId.ToString()) });
         }
 
         if (!string.IsNullOrWhiteSpace(applicationCompanyData.BusinessPartnerNumber))
         {
-            throw new ConflictException(
-                $"BusinessPartnerNumber of company {applicationCompanyData.CompanyId} has already been set.");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_BPN_OF_COMPANY_SET, new ErrorParameter[] { new("companyId", applicationCompanyData.CompanyId.ToString()) });
         }
 
         var context = await checklistService
@@ -306,12 +304,12 @@ public sealed class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
-            throw new NotFoundException($"No companyApplication for BPN {data.BusinessPartnerNumber} is not in status SUBMITTED");
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT, new ErrorParameter[] { new("businessPartnerNumber", data.BusinessPartnerNumber) });
         }
 
         if (result.Count > 1)
         {
-            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.BusinessPartnerNumber} [{string.Join(", ", result)}]");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN, new ErrorParameter[] { new("businessPartnerNumber", data.BusinessPartnerNumber) });
         }
 
         await clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -335,7 +333,7 @@ public sealed class RegistrationBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw new NotFoundException($"Application {applicationId} does not exists");
+            throw NotFoundException.Create(AdministrationRegistrationErrors.APPLICATION_NOT_FOUND, [new("applicationId", applicationId.ToString())]);
         }
 
         return data.ChecklistData
@@ -354,13 +352,13 @@ public sealed class RegistrationBusinessLogic(
         var possibleSteps = entryTypeId.GetManualTriggerProcessStepIds();
         if (!possibleSteps.Contains(processStepTypeId))
         {
-            throw new ControllerArgumentException($"The processStep {processStepTypeId} is not retriggerable");
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_PROCEES_TYPID_NOT_TRIGERABLE, new ErrorParameter[] { new(nameof(processStepTypeId), processStepTypeId.ToString()) });
         }
 
         var nextStepData = processStepTypeId.GetNextProcessStepDataForManualTriggerProcessStepId();
         if (nextStepData == default)
         {
-            throw new UnexpectedConditionException($"While the processStep {processStepTypeId} is configured to be retriggerable there is no next step configured");
+            throw UnexpectedConditionException.Create(AdministrationRegistrationErrors.REGISTRATION_UNEXPECT_PROCESS_TYPID_CONFIGURED_TRIGERABLE, new ErrorParameter[] { new(nameof(processStepTypeId), processStepTypeId.ToString()) });
         }
 
         return TriggerChecklistInternal(applicationId, entryTypeId, processStepTypeId, nextStepData.ProcessStepTypeId, nextStepData.ChecklistEntryStatusId);
@@ -412,12 +410,12 @@ public sealed class RegistrationBusinessLogic(
                 .ConfigureAwait(ConfigureAwaitOptions.None);
             if (!result.IsValidApplicationId)
             {
-                throw new NotFoundException($"companyApplication {data.ExternalId} not found");
+                throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMPANY_EXTERNAL_APP_NOT_FOUND, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
             }
 
             if (!result.IsSubmitted)
             {
-                throw new ConflictException($"companyApplication {data.ExternalId} is not in status SUBMITTED");
+                throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMPANY_EXTERNAL_NOT_STATUS_SUBMIT, new ErrorParameter[] { new("externalId", data.ExternalId.ToString()) });
             }
 
             await sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForApplication(data, result.CompanyId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -459,13 +457,13 @@ public sealed class RegistrationBusinessLogic(
     {
         if (string.IsNullOrWhiteSpace(comment))
         {
-            throw new ConflictException("No comment set.");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_COMMENT_NOT_SET);
         }
 
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyIdNameForSubmittedApplication(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new ArgumentException($"CompanyApplication {applicationId} is not in status SUBMITTED", nameof(applicationId));
+            throw ControllerArgumentException.Create(AdministrationRegistrationErrors.REGISTRATION_ARGUMENT_COMP_APP_STATUS_NOTSUBMITTED, new ErrorParameter[] { new(nameof(applicationId), applicationId.ToString()) });
         }
 
         var (companyId, companyName, networkRegistrationProcessId, idps, companyUserIds) = result;
@@ -551,7 +549,7 @@ public sealed class RegistrationBusinessLogic(
 
             if (string.IsNullOrWhiteSpace(user.Email))
             {
-                throw new ConflictException($"user {userName} has no assigned email");
+                throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_EMAIL_NOT_ASSIGN_TO_USERNAME, new ErrorParameter[] { new(nameof(userName), userName) });
             }
 
             var mailParameters = ImmutableDictionary.CreateRange(new[]
@@ -573,7 +571,7 @@ public sealed class RegistrationBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {
-            throw new NotFoundException($"Document {documentId} does not exist");
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_DOC_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
@@ -601,12 +599,12 @@ public sealed class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.Bpn.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
-            throw new NotFoundException($"No companyApplication for BPN {data.Bpn} is not in status SUBMITTED");
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT, new ErrorParameter[] { new("businessPartnerNumber", data.Bpn) });
         }
 
         if (result.Count > 1)
         {
-            throw new ConflictException($"more than one companyApplication in status SUBMITTED found for BPN {data.Bpn} [{string.Join(", ", result)}]");
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN, new ErrorParameter[] { new("businessPartnerNumber", data.Bpn) });
         }
 
         return result.Single();

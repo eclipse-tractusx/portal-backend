@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -169,8 +170,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("At least one company role must be selected (Parameter 'CompanyRoles')");
-        ex.ParamName.Should().Be("CompanyRoles");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_LEAST_ONE_COMP_ROLE_SELECT.ToString());
     }
 
     [Theory]
@@ -191,7 +191,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Mail {email} must not be empty and have valid format");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_MAIL_NOT_EMPTY_WITH_VALID_FORMAT.ToString());
     }
 
     [Theory]
@@ -210,7 +210,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Firstname does not match expected format");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_FIRST_NAME_NOT_MATCH_FORMAT.ToString());
     }
 
     [Theory]
@@ -229,7 +229,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Lastname does not match expected format");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_LAST_NAME_NOT_MATCH_FORMAT.ToString());
     }
 
     [Fact]
@@ -248,8 +248,8 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"ExternalId {data.ExternalId} already exists (Parameter 'ExternalId')");
-        ex.ParamName.Should().Be("ExternalId");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_EXTERNALID_EXISTS.ToString());
+        ex.Parameters.First().Name.Should().Be("ExternalId");
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"company {NoIdpCompanyId} has no managed identityProvider");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_CONFLICT_NO_MANAGED_PROVIDER.ToString());
     }
 
     [Fact]
@@ -308,8 +308,8 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Company {MultiIdpCompanyId} has more than one identity provider linked, therefore identityProviderId must be set for all users (Parameter 'UserDetails')");
-        ex.ParamName.Should().Be("UserDetails");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDENTIFIER_SET_FOR_ALL_USERS.ToString());
+
     }
 
     [Fact]
@@ -329,7 +329,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain("Idps").And.Contain("do not exist");
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_ARGUMENT_IDPS_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -389,7 +389,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain("Errors occured while saving the users: ");
+        ex.Message.Should().Contain(AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS.ToString());
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain($"identityProvider {IdpId} has no alias");
+        ex.Message.Should().Contain(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS.ToString());
     }
 
     [Fact]
