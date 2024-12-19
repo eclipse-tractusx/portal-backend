@@ -150,6 +150,7 @@ public class ServiceReleaseBusinessLogicTest
         result.ProviderUri.Should().NotBeNull().And.Be(data.ProviderUri);
         result.ContactEmail.Should().NotBeNull().And.Be(data.ContactEmail);
         result.ContactNumber.Should().NotBeNull().And.Be(data.ContactNumber);
+        result.DisplayTechnicalUser.Should().NotBeNull().And.Be(data.DisplayTechnicalUser);
         result.OfferStatus.Should().Be(data.OfferStatusId);
         result.TechnicalUserProfile.Should().HaveSameCount(data.TechnicalUserProfile).And.AllSatisfy(
             x => data.TechnicalUserProfile.Should().ContainSingle(d => d.TechnicalUserProfileId == x.Key).Which.UserRoles.Should().ContainInOrder(x.Value)
@@ -375,7 +376,7 @@ public class ServiceReleaseBusinessLogicTest
         var sut = _fixture.Create<ServiceReleaseBusinessLogic>();
 
         // Act
-        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", CompanyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null));
+        var result = await sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", CompanyUserId, new List<LocalizedDescription>(), new List<ServiceTypeId>(), null, true));
 
         // Assert
         result.Should().Be(serviceId);

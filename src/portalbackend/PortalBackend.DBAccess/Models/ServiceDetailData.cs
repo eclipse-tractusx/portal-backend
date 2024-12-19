@@ -73,6 +73,11 @@ public record ServiceDetailsData(
     string? ContactNumber,
 
     /// <summary>
+    /// Technical User status.
+    /// </summary>
+    bool? DisplayTechnicalUser,
+
+    /// <summary>
     /// Offer Status Id
     /// </summary>
     OfferStatusId OfferStatusId,

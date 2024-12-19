@@ -98,6 +98,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.ProviderCompany!.Name,
                 offer.ContactEmail,
                 offer.ContactNumber,
+                offer.DisplayTechnicalUser,
                 offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),
                 dbContext.Languages.Any(l => l.ShortName == languageShortName)
                     ? offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong
@@ -675,6 +676,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.MarketingUrl,
                 offer.ContactEmail,
                 offer.ContactNumber,
+                offer.DisplayTechnicalUser,
                 offer.OfferStatusId,
                 offer.LicenseTypeId,
                 offer.TechnicalUserProfiles.Select(tup => new TechnicalUserRoleData(
