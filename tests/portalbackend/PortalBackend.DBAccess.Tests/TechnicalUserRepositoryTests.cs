@@ -292,7 +292,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(21);
+        result!.Count.Should().Be(22);
         result.Data.Should().HaveCount(10)
             .And.AllSatisfy(x => x.Should().Match<CompanyServiceAccountData>(y =>
                 y.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
@@ -371,7 +371,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result!.Count.Should().Be(18);
+        result!.Count.Should().Be(19);
         result.Data.Should().HaveCount(10);
     }
 
