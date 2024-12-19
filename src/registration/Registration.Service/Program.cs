@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
@@ -35,20 +36,18 @@ await WebAppHelper
     .BuildAndRunWebApplicationAsync<Program>(args, "registration", version, builder =>
     {
         builder.Services
-            .AddPublicInfos();
-
-        builder.Services
-            .AddPortalRepositories(builder.Configuration)
-            .AddProvisioningManager(builder.Configuration);
-
-        builder.Services.AddTransient<IUserProvisioningService, UserProvisioningService>();
-        builder.Services.AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>();
-        builder.Services.AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
+            .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
+            .AddTransient<ITokenService, TokenService>()
+            .AddTransient<IUserProvisioningService, UserProvisioningService>()
+            .AddTransient<IStaticDataBusinessLogic, StaticDataBusinessLogic>()
+            .AddTransient<IRegistrationBusinessLogic, RegistrationBusinessLogic>()
             .AddTransient<IIdentityProviderProvisioningService, IdentityProviderProvisioningService>()
             .ConfigureRegistrationSettings(builder.Configuration.GetSection("Registration"))
-            .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>();
-
-        builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
-        builder.Services.AddBpnAccess(builder.Configuration.GetSection("BpnAccess"));
-        builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
+            .AddTransient<INetworkBusinessLogic, NetworkBusinessLogic>()
+            .AddPortalRepositories(builder.Configuration)
+            .AddProvisioningManager(builder.Configuration)
+            .AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"))
+            .AddBpnAccess(builder.Configuration.GetSection("BpnAccess"))
+            .AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"))
+            .AddPublicInfos();
     }).ConfigureAwait(ConfigureAwaitOptions.None);

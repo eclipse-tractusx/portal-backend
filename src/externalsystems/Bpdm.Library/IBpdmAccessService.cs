@@ -1,5 +1,6 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Microsoft and BMW Group AG
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +18,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.ComponentModel.DataAnnotations;
+using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
-public class BpdmAccessSettings
+public interface IBpdmAccessService
 {
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
+    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, CancellationToken cancellationToken);
 }

@@ -28,6 +28,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.DimUserCreationProcess.Executor.DependencyInjection;
@@ -40,6 +41,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.D
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor.Provisioning;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using Serilog;
 
@@ -71,6 +74,7 @@ try
                 .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddTransient<IProcessTypeExecutor, IdentityProviderProvisioningProcessTypeExecutor>()
                 .AddTransient<IProcessTypeExecutor, UserProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor, UserBpnProcessTypeExecutor>()
                 .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
