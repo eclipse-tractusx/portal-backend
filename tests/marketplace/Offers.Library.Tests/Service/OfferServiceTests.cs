@@ -128,7 +128,7 @@ public class OfferServiceTests
             });
 
         // Act
-        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUserId, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
+        var result = await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUserId, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com", true), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(serviceId);
@@ -158,7 +158,8 @@ public class OfferServiceTests
         },
         [
             ServiceTypeId.DATASPACE_SERVICE
-        ], "http://google.com");
+        ], "http://google.com",
+        true);
         var result = await _sut.CreateServiceOfferingAsync(serviceOfferingData, OfferTypeId.SERVICE);
 
         // Assert
@@ -173,7 +174,7 @@ public class OfferServiceTests
     {
         // Act
         var serviceTypeIds = Enumerable.Empty<ServiceTypeId>();
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), serviceTypeIds, "http://google.com"), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), serviceTypeIds, "http://google.com", false), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -184,7 +185,7 @@ public class OfferServiceTests
     public async Task CreateServiceOffering_WithoutTitle_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("", "42", "mail@test.de", _companyUser.Id, Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com", false), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
@@ -198,7 +199,7 @@ public class OfferServiceTests
         var serviceOfferingData = new ServiceOfferingData("Newest Service", "42", "mail@test.de", _companyUserId, new LocalizedDescription[]
         {
             new ("gg", "That's a description with incorrect language short code", "Short description")
-        }, new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com");
+        }, new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com", true);
         async Task Action() => await _sut.CreateServiceOfferingAsync(serviceOfferingData, OfferTypeId.SERVICE);
 
         // Assert
@@ -210,7 +211,7 @@ public class OfferServiceTests
     public async Task CreateServiceOffering_WithoutCompanyUser_ThrowsException()
     {
         // Act
-        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com"), OfferTypeId.SERVICE);
+        async Task Action() => await _sut.CreateServiceOfferingAsync(new ServiceOfferingData("Newest Service", "42", "mail@test.de", Guid.NewGuid(), Enumerable.Empty<LocalizedDescription>(), new[] { ServiceTypeId.DATASPACE_SERVICE }, "http://google.com", false), OfferTypeId.SERVICE);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);

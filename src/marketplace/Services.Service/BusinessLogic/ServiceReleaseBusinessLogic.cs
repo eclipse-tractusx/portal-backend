@@ -90,6 +90,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ProviderUri ?? Constants.ErrorString,
             result.ContactEmail,
             result.ContactNumber,
+            result.DisplayTechnicalUser,
             result.LicenseTypeId,
             result.OfferStatusId,
             result.TechnicalUserProfile.ToDictionary(g => g.TechnicalUserProfileId, g => g.UserRoles)

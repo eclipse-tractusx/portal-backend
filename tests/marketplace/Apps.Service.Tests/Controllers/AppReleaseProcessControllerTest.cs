@@ -239,7 +239,8 @@ public class AppReleaseProcessControllerTest
             },
             "https://test.provider.com",
             "test@gmail.com",
-            "9456321678"
+            "9456321678",
+            true
             );
 
         // Act
