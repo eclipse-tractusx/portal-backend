@@ -105,4 +105,5 @@ public interface IConnectorsBusinessLogic
     Task<Pagination.Response<ConnectorMissingSdDocumentData>> GetConnectorsWithMissingSdDocument(int page, int size);
     Task TriggerSelfDescriptionCreation();
     Task RetriggerSelfDescriptionCreation(Guid processId);
+    Task RetriggerSelfDescriptionResponseCreation(Guid processId);
 }

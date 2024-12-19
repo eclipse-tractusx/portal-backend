@@ -458,4 +458,12 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .Where(x => x.BusinessPartnerNumber == bpn)
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
             .SingleOrDefaultAsync();
+
+    public Task<VerifyProcessData?> GetProcessDataForCompanyIdId(Guid companyId) =>
+        context.Companies
+            .Where(c => c.Id == companyId && c.SdCreationProcessId != null && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
+            .Select(c => new VerifyProcessData(
+                c.SdCreationProcess,
+                c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
+            .SingleOrDefaultAsync();
 }
