@@ -17,7 +17,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ###############################################################
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS publish
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS publish
 ARG TARGETARCH
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/framework/Framework.Async /src/framework/Framework.Async
@@ -32,7 +32,7 @@ COPY /src/keycloak/Keycloak.Seeding /src/keycloak/Keycloak.Seeding
 WORKDIR /src/keycloak/Keycloak.Seeding
 RUN dotnet publish "Keycloak.Seeding.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
+FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine
 ENV COMPlus_EnableDiagnostics=0
 WORKDIR /app
 COPY --from=publish /app/publish .
