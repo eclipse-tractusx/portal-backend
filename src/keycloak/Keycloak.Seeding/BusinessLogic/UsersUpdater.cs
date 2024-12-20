@@ -39,40 +39,42 @@ public class UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         var clientsDictionary = seedDataHandler.ClientsDictionary;
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Users);
 
-        foreach (var seedUser in seedDataHandler.Users)
-        {
-            if (seedUser.Username == null)
-                throw new ConflictException($"username must not be null {seedUser.Id}");
-
-            var createAllowed = seederConfig.ModificationAllowed(ModificationType.Create, seedUser.Username);
-            var updateAllowed = seederConfig.ModificationAllowed(ModificationType.Update, seedUser.Username);
-            if (!createAllowed && !updateAllowed)
+        await Parallel.ForEachAsync(seedDataHandler.Users,
+            ParallelOptionsExtensions.CreateParallelOptions(cancellationToken),
+            async (seedUser, token) =>
             {
-                continue;
-            }
+                if (seedUser.Username == null)
+                    throw new ConflictException($"username must not be null {seedUser.Id}");
 
-            var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
-
-            if (user == null && createAllowed)
-            {
-                var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
+                var createAllowed = seederConfig.ModificationAllowed(ModificationType.Create, seedUser.Username);
+                var updateAllowed = seederConfig.ModificationAllowed(ModificationType.Update, seedUser.Username);
+                if (!createAllowed && !updateAllowed)
                 {
-                    throw new ConflictException($"PartialImport failed to add user id: {seedUser.Id}, userName: {seedUser.Username}");
+                    return;
                 }
-            }
-            else if (user != null && updateAllowed)
-            {
-                await UpdateUser(
-                    keycloak,
-                    realm,
-                    user,
-                    seedUser,
-                    clientsDictionary,
-                    seederConfig,
-                    cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            }
-        }
+
+                var user = (await keycloak.GetUsersAsync(realm, username: seedUser.Username, cancellationToken: token).ConfigureAwait(ConfigureAwaitOptions.None)).SingleOrDefault(x => x.UserName == seedUser.Username);
+
+                if (user == null && createAllowed)
+                {
+                    var result = await keycloak.RealmPartialImportAsync(realm, CreatePartialImportUser(seedUser), token).ConfigureAwait(ConfigureAwaitOptions.None);
+                    if (result.Overwritten != 0 || result.Added != 1 || result.Skipped != 0)
+                    {
+                        throw new ConflictException($"PartialImport failed to add user id: {seedUser.Id}, userName: {seedUser.Username}");
+                    }
+                }
+                else if (user != null && updateAllowed)
+                {
+                    await UpdateUser(
+                        keycloak,
+                        realm,
+                        user,
+                        seedUser,
+                        clientsDictionary,
+                        seederConfig,
+                        token).ConfigureAwait(ConfigureAwaitOptions.None);
+                }
+            }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task UpdateUser(KeycloakClient keycloak, string realm, User user, UserModel seedUser, IReadOnlyDictionary<string, string> clientsDictionary, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
@@ -172,8 +174,8 @@ public class UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
         Self = update.Self
     };
 
+    // Roles, ClientConsents, Credentials, FederatedIdentities, are not in scope
     private static bool CompareUser(User user, UserModel update) =>
-        // Roles, ClientConsents, Credentials, FederatedIdentities, are not in scope
         user.CreatedTimestamp == update.CreatedTimestamp &&
         user.UserName == update.Username &&
         user.Enabled == update.Enabled &&
@@ -219,57 +221,62 @@ public class UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
 
     private static async Task UpdateFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
     {
+        var parallelOptions = ParallelOptionsExtensions.CreateParallelOptions(cancellationToken);
         var identities = await keycloak.GetUserSocialLoginsAsync(realm, userId).ConfigureAwait(ConfigureAwaitOptions.None);
-        await DeleteObsoleteFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await CreateMissingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await UpdateExistingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await DeleteObsoleteFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
+        await CreateMissingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
+        await UpdateExistingFederatedIdentities(keycloak, realm, username, userId, identities, updates, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task DeleteObsoleteFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var identity in identities
-                     .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Delete, x.IdentityProvider))
-                     .ExceptBy(updates.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        var fisToRemove = identities
+            .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Delete, x.IdentityProvider))
+            .ExceptBy(updates.Select(x => x.IdentityProvider), x => x.IdentityProvider);
+        await Parallel.ForEachAsync(fisToRemove, parallelOptions, async (identity, cancellationToken) =>
         {
             await keycloak.RemoveUserSocialLoginProviderAsync(
                 realm,
                 userId,
                 identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task CreateMissingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task CreateMissingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var update in updates
-                     .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Create, x.IdentityProvider))
-                     .ExceptBy(identities.Select(x => x.IdentityProvider), x => x.IdentityProvider))
+        var fisToCreate = updates
+            .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Create, x.IdentityProvider))
+            .ExceptBy(identities.Select(x => x.IdentityProvider), x => x.IdentityProvider);
+        await Parallel.ForEachAsync(fisToCreate, parallelOptions, async (identity, cancellationToken) =>
         {
             await keycloak.AddUserSocialLoginProviderAsync(
                 realm,
                 userId,
-                update.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
+                identity.IdentityProvider ?? throw new ConflictException($"federatedIdentity.IdentityProvider is null {userId}"),
                 new()
                 {
-                    IdentityProvider = update.IdentityProvider,
-                    UserId = update.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {update.IdentityProvider}"),
-                    UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
+                    IdentityProvider = identity.IdentityProvider,
+                    UserId = identity.UserId ?? throw new ConflictException($"federatedIdentity.UserId is null {userId}, {identity.IdentityProvider}"),
+                    UserName = identity.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {identity.IdentityProvider}")
                 },
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateExistingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task UpdateExistingFederatedIdentities(KeycloakClient keycloak, string realm, string username, string userId, IEnumerable<FederatedIdentity> identities, IEnumerable<FederatedIdentityModel> updates, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var (identity, update) in identities
+        var fisToUpdate = identities
             .Where(x => seederConfig.ModificationAllowed(username, ConfigurationKey.FederatedIdentities, ModificationType.Update, x.IdentityProvider))
             .Join(
                 updates,
                 x => x.IdentityProvider,
                 x => x.IdentityProvider,
                 (identity, update) => (Identity: identity, Update: update))
-            .Where(x => !CompareFederatedIdentity(x.Identity, x.Update)))
+            .Where(x => !CompareFederatedIdentity(x.Identity, x.Update));
+        await Parallel.ForEachAsync(fisToUpdate, parallelOptions, async (identityModel, cancellationToken) =>
         {
+            var (identity, update) = identityModel;
             await keycloak.RemoveUserSocialLoginProviderAsync(
                 realm,
                 userId,
@@ -287,7 +294,7 @@ public class UsersUpdater(IKeycloakFactory keycloakFactory, ISeedDataHandler see
                     UserName = update.UserName ?? throw new ConflictException($"federatedIdentity.UserName is null {userId}, {update.IdentityProvider}")
                 },
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static Credentials CreateUpdateCredentials(CredentialsModel update) =>

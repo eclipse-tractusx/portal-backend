@@ -35,14 +35,15 @@ public class LocalizationsUpdater(IKeycloakFactory keycloakFactory, ISeedDataHan
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.Localizations);
         var localizations = await keycloak.GetLocaleAsync(realm, cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         var updateRealmLocalizations = seedDataHandler.RealmLocalizations;
-
         await UpdateLocaleTranslations(keycloak, realm, localizations, updateRealmLocalizations, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        foreach (var deleteTranslation in localizations
-                     .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x))
-                     .ExceptBy(updateRealmLocalizations.Select(t => t.Locale), locale => locale))
+
+        var deleteTranslations = localizations
+            .Where(x => seederConfig.ModificationAllowed(ModificationType.Delete, x))
+            .ExceptBy(updateRealmLocalizations.Select(t => t.Locale), locale => locale);
+        await Parallel.ForEachAsync(deleteTranslations, ParallelOptionsExtensions.CreateParallelOptions(cancellationToken), async (deleteTranslation, ct) =>
         {
-            await keycloak.DeleteLocaleAsync(realm, deleteTranslation, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+            await keycloak.DeleteLocaleAsync(realm, deleteTranslation, ct).ConfigureAwait(ConfigureAwaitOptions.None);
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private static async Task UpdateLocaleTranslations(KeycloakClient keycloak, string realm, IEnumerable<string> locales,
