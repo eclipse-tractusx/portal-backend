@@ -2565,6 +2565,10 @@ components:
           type: string
           description: Phone number of the app's primary contact.
           nullable: true
+        displayTechnicalUser:
+          type: boolean
+          description: Technical User Status of app's primary contact.
+          nullable: true
         useCases:
           type: array
           items:
@@ -2863,18 +2867,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PrivacyPolicyId'
-          description: Price
+          description: PrivacyPolicies
         providerUri:
           type: string
-          description: Price
+          description: ProviderUri
           nullable: true
         contactEmail:
           type: string
-          description: Price
+          description: ContactEmail
           nullable: true
         contactNumber:
           type: string
-          description: Price
+          description: ContactNumber
+          nullable: true
+        displayTechnicalUser:
+          type: boolean
+          description: DisplayTechnicalUser
           nullable: true
       additionalProperties: false
       description: Request Model for App Creation.

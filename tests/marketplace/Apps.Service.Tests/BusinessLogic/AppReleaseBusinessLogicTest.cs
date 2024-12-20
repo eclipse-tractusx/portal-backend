@@ -336,7 +336,8 @@ public class AppReleaseBusinessLogicTest
             Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
             "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
             "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
-            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a",
+            true
         );
 
         Offer? created = null;
@@ -387,7 +388,8 @@ public class AppReleaseBusinessLogicTest
                 x.SalesManagerId == data.SalesManagerId &&
                 x.ContactEmail == data.ContactEmail &&
                 x.ContactNumber == data.ContactNumber &&
-                x.MarketingUrl == data.ProviderUri
+                x.MarketingUrl == data.ProviderUri &&
+                x.DisplayTechnicalUser == data.DisplayTechnicalUser
             );
     }
 
@@ -405,7 +407,8 @@ public class AppReleaseBusinessLogicTest
             Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
             "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
             "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
-            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+            "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a",
+            false
         );
 
         Offer? created = null;
@@ -515,7 +518,8 @@ public class AppReleaseBusinessLogicTest
         Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
         "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
         "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
-        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a",
+        true
     );
 
         // Act
@@ -541,7 +545,8 @@ public class AppReleaseBusinessLogicTest
         Enumerable.Repeat(PrivacyPolicyId.COMPANY_DATA, 1),
         "ProviderUri5ef769cd-9be3-4d3f-8a3e-c886793a732b",
         "ContactNumber13081a1d-24fc-4f32-8163-f77a8a7fb724",
-        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a"
+        "ContactEmailb6e3cdcc-7d08-4dd5-9e3c-c9564129558a",
+        true
     );
 
         Offer? initial = null;
