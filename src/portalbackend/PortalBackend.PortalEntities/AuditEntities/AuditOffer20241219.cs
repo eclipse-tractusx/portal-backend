@@ -42,6 +42,7 @@ public class AuditOffer20241219 : IAuditEntityV1
     public string? ContactEmail { get; set; }
 
     public string? ContactNumber { get; set; }
+
     public bool? DisplayTechnicalUser { get; set; }
 
     public OfferTypeId? OfferTypeId { get; set; }
