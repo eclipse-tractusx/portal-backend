@@ -37,13 +37,9 @@ public static class BpnDidResolverServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpnDidResolverSettings>>();
-        services.AddHttpClient(nameof(BpnDidResolverService), c =>
-        {
-            var baseAddress = settings.Value.BaseAddress;
-            c.BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/");
-            c.DefaultRequestHeaders.Add("X-Api-Key", settings.Value.ApiKey);
-        });
+        var baseAddress = settings.Value.BaseAddress;
         services
+            .AddCustomHttpClientWithAuthentication<BpnDidResolverService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/")
             .AddTransient<IBpnDidResolverService, BpnDidResolverService>()
             .AddTransient<IBpnDidResolverBusinessLogic, BpnDidResolverBusinessLogic>();
 
