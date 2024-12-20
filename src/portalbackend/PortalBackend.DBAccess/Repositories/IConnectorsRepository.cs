@@ -110,4 +110,5 @@ public interface IConnectorsRepository
     IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription();
     Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
     Task<bool> CheckConnectorExists(string name, string connectorUrl);
+    Task<VerifyProcessData?> GetProcessDataForConnectorId(Guid connectorId);
 }
