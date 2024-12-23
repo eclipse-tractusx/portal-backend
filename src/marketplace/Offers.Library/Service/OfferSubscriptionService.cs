@@ -105,8 +105,8 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
     public async Task<Guid> RemoveOfferSubscriptionAsync(Guid subscriptionId, OfferTypeId offerTypeId, string basePortalAddress)
     {
-        var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
-        var offerSubscriptionDetails = await offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
+        var offerSubscriptionDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
         var offerId = offerSubscriptionDetails.OfferId;
 
         if (string.IsNullOrEmpty(offerSubscriptionDetails.OfferName))
@@ -117,12 +117,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
         {
             throw new ForbiddenException("Only the providing company can decline the subscription request.");
         }
-        if (offerSubscriptionDetails.Status == OfferSubscriptionStatusId.INACTIVE)
+        if (offerSubscriptionDetails.Status != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ConflictException($"Subscription of {offerSubscriptionDetails.OfferName} is already {offerSubscriptionDetails.Status}");
+            throw new ConflictException($"Subscription of {offerSubscriptionDetails.OfferName} should be in {OfferSubscriptionStatusId.PENDING} state.");
         }
 
-        var offerSubscription = offerSubscriptionsRepository.DeleteOfferSubscription(subscriptionId, offerId, offerSubscriptionDetails.CompanyId, offerSubscriptionDetails.Status, offerSubscriptionDetails.RequesterId);
+        var offerSubscription = _portalRepositories.Remove(new OfferSubscription(subscriptionId, offerId, offerSubscriptionDetails.CompanyId, offerSubscriptionDetails.Status, offerSubscriptionDetails.RequesterId, DateTimeOffset.UtcNow));
         SendNotificationsToRequester(offerId, offerTypeId, basePortalAddress, offerSubscriptionDetails);
         await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 

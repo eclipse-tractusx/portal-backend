@@ -493,8 +493,7 @@ public class OfferSubscriptionServiceTests
         var subscription = new OfferSubscription();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
             .Returns(offerSubscriptionDetails);
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
-            .Returns(subscription);
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._));
 
         // Act
         await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
@@ -502,7 +501,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(_validSubscriptionId, offerSubscriptionDetails.OfferId, offerSubscriptionDetails.CompanyId, offerSubscriptionDetails.Status, offerSubscriptionDetails.RequesterId))
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _notificationRepository.CreateNotification(offerSubscriptionDetails.RequesterId,
                 offerTypeId == OfferTypeId.SERVICE
@@ -517,6 +516,7 @@ public class OfferSubscriptionServiceTests
                 && x["url"] == BasePortalUrl
                 && x["requesterName"] == string.Format("{0} {1}", offerSubscriptionDetails.RequesterFirstname, offerSubscriptionDetails.RequesterLastname))
                 )).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -538,7 +538,7 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(_validSubscriptionId, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
             .MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
             .MustNotHaveHappened();
@@ -566,7 +566,7 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(_validSubscriptionId, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
             .MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
             .MustNotHaveHappened();
@@ -595,13 +595,13 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(_validSubscriptionId, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
             .MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
-        ex.Message.Should().Be($"Subscription of {offerSubscriptionDetails.OfferName} is already {offerSubscriptionDetails.Status}");
+        ex.Message.Should().Be($"Subscription of {offerSubscriptionDetails.OfferName} should be in {OfferSubscriptionStatusId.PENDING} state.");
     }
 
     [Theory]
@@ -620,8 +620,8 @@ public class OfferSubscriptionServiceTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _offerSubscriptionsRepository.DeleteOfferSubscription(_validSubscriptionId, A<Guid>._, A<Guid>._, A<OfferSubscriptionStatusId>._, A<Guid>._))
-            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._)).
+            MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))

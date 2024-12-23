@@ -38,10 +38,6 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
         dbContext.OfferSubscriptions.Add(new OfferSubscription(Guid.NewGuid(), offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
 
     /// <inheritdoc />
-    public OfferSubscription DeleteOfferSubscription(Guid subscriptionId, Guid offerId, Guid companyId, OfferSubscriptionStatusId offerSubscriptionStatusId, Guid requesterId) =>
-        dbContext.OfferSubscriptions.Remove(new OfferSubscription(subscriptionId, offerId, companyId, offerSubscriptionStatusId, requesterId, DateTimeOffset.UtcNow)).Entity;
-
-    /// <inheritdoc />
     public Func<int, int, Task<Pagination.Source<OfferCompanySubscriptionStatusData>?>> GetOwnCompanyProvidedOfferSubscriptionStatusesUntrackedAsync(Guid userCompanyId, OfferTypeId offerTypeId, SubscriptionStatusSorting? sorting, IEnumerable<OfferSubscriptionStatusId> statusIds, Guid? offerId, string? companyName) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
                 skip,

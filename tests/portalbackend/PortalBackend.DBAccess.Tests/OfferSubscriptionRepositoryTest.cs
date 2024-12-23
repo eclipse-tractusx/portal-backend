@@ -1156,15 +1156,17 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     public async Task DeleteOfferSubscription_ReturnsExpectedResult()
     {
         // Arrange
-        var (sut, context) = await CreateSut();
+        var context = await _dbTestDbFixture.GetPortalDbContext();
+        var sut = new PortalRepositories(context);
 
         // Act
-        var results = sut.DeleteOfferSubscription(
+        var results = sut.Remove(new OfferSubscription(
             new Guid("eb98bdf5-14e1-4feb-a954-453eac0b93cd"),
             new Guid("ac1cf001-7fbc-1f2f-817f-bce0572c0007"),
             new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"),
             OfferSubscriptionStatusId.PENDING,
-            new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+            new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"),
+            DateTimeOffset.UtcNow));
 
         // Assert
         var changeTracker = context.ChangeTracker;
