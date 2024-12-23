@@ -490,7 +490,6 @@ public class OfferSubscriptionServiceTests
             .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
             .With(x => x.IsProviderCompany, true)
             .Create();
-        var subscription = new OfferSubscription();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
             .Returns(offerSubscriptionDetails);
         A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._));
