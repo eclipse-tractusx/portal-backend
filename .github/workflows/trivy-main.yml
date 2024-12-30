@@ -68,7 +68,7 @@ jobs:
           limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         if: always()
         with:
           sarif_file: "trivy-results1.sarif"
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results3.sarif"
 
@@ -141,7 +141,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results4.sarif"
 
@@ -177,7 +177,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results5.sarif"
 
@@ -213,7 +213,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results6.sarif"
 
@@ -249,7 +249,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results7.sarif"
 
@@ -285,7 +285,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results8.sarif"
 
@@ -321,7 +321,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results9.sarif"
 
@@ -357,7 +357,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results10.sarif"
 
@@ -392,7 +392,7 @@ jobs:
           limit-severities-for-sarif: true
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results11.sarif"
 
@@ -428,6 +428,6 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           sarif_file: "trivy-results12.sarif"
