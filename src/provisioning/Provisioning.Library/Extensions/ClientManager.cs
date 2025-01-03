@@ -154,5 +154,5 @@ public partial class ProvisioningManager
     }
 
     private async Task<string> GetNextClientIdAsync() =>
-        _settings.ClientPrefix + (await _provisioningDBAccess!.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None));
+        _settings.ClientPrefix + (await provisioningDbAccess!.GetNextClientSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None));
 }

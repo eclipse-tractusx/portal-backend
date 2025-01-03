@@ -28,20 +28,14 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 
-public partial class ProvisioningManager : IProvisioningManager
+public partial class ProvisioningManager(
+    IKeycloakFactory keycloakFactory,
+    IProvisioningDBAccess? provisioningDbAccess,
+    IOptions<ProvisioningSettings> options)
+    : IProvisioningManager
 {
-    private readonly KeycloakClient _centralIdp;
-    private readonly IKeycloakFactory _factory;
-    private readonly IProvisioningDBAccess? _provisioningDBAccess;
-    private readonly ProvisioningSettings _settings;
-
-    public ProvisioningManager(IKeycloakFactory keycloakFactory, IProvisioningDBAccess? provisioningDBAccess, IOptions<ProvisioningSettings> options)
-    {
-        _centralIdp = keycloakFactory.CreateKeycloakClient("central");
-        _factory = keycloakFactory;
-        _settings = options.Value;
-        _provisioningDBAccess = provisioningDBAccess;
-    }
+    private readonly KeycloakClient _centralIdp = keycloakFactory.CreateKeycloakClient("central");
+    private readonly ProvisioningSettings _settings = options.Value;
 
     public ProvisioningManager(IKeycloakFactory keycloakFactory, IOptions<ProvisioningSettings> options)
         : this(keycloakFactory, null, options)
@@ -52,7 +46,7 @@ public partial class ProvisioningManager : IProvisioningManager
     {
         var deleteSharedKeycloak = await GetSharedKeycloakClient(alias).ConfigureAwait(ConfigureAwaitOptions.None);
         await deleteSharedKeycloak.DeleteRealmAsync(alias).ConfigureAwait(ConfigureAwaitOptions.None);
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        var sharedKeycloak = keycloakFactory.CreateKeycloakClient("shared");
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 
@@ -97,11 +91,12 @@ public partial class ProvisioningManager : IProvisioningManager
     public async Task AddBpnAttributetoUserAsync(string centralUserId, IEnumerable<string> bpns)
     {
         var user = await _centralIdp.GetUserAsync(_settings.CentralRealm, centralUserId).ConfigureAwait(ConfigureAwaitOptions.None);
-        user.Attributes ??= new Dictionary<string, IEnumerable<string>>();
+        user.Attributes ??= new Dictionary<string, IEnumerable<string>?>();
+
         user.Attributes[_settings.MappedBpnAttribute] = user.Attributes.TryGetValue(_settings.MappedBpnAttribute, out var existingBpns)
-            ? existingBpns.Concat(bpns).Distinct()
+            ? existingBpns?.Concat(bpns).Distinct()
             : bpns;
-        await _centralIdp.UpdateUserAsync(_settings.CentralRealm, centralUserId.ToString(), user).ConfigureAwait(ConfigureAwaitOptions.None);
+        await _centralIdp.UpdateUserAsync(_settings.CentralRealm, centralUserId, user).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public Task AddProtocolMapperAsync(string clientId) =>
@@ -272,7 +267,7 @@ public partial class ProvisioningManager : IProvisioningManager
     private async Task<KeycloakClient> GetSharedKeycloakClient(string realm)
     {
         var (clientId, secret) = await GetSharedIdpServiceAccountSecretAsync(realm).ConfigureAwait(ConfigureAwaitOptions.None);
-        return _factory.CreateKeycloakClient("shared", clientId, secret);
+        return keycloakFactory.CreateKeycloakClient("shared", clientId, secret);
     }
 
     public async Task DeleteSharedRealmAsync(string alias)
@@ -283,7 +278,7 @@ public partial class ProvisioningManager : IProvisioningManager
 
     public async Task DeleteIdpSharedServiceAccount(string alias)
     {
-        var sharedKeycloak = _factory.CreateKeycloakClient("shared");
+        var sharedKeycloak = keycloakFactory.CreateKeycloakClient("shared");
         await DeleteSharedIdpServiceAccountAsync(sharedKeycloak, alias);
     }
 

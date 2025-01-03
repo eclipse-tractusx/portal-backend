@@ -61,7 +61,7 @@ public partial class ProvisioningManager
     }.ToImmutableDictionary();
 
     public async ValueTask<string> GetNextCentralIdentityProviderNameAsync() =>
-        $"{_settings.IdpPrefix}{await _provisioningDBAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None)}";
+        $"{_settings.IdpPrefix}{await provisioningDbAccess!.GetNextIdentityProviderSequenceAsync().ConfigureAwait(ConfigureAwaitOptions.None)}";
 
     public Task CreateCentralIdentityProviderAsync(string alias, string displayName)
         => CreateCentralIdentityProviderAsyncInternal(alias, displayName, _settings.CentralIdentityProvider);
