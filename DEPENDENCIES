@@ -11,9 +11,9 @@ nuget/nuget/-/Flurl.Http.Signed/4.0.2, MIT, approved, #16447
 nuget/nuget/-/Flurl.Signed/4.0.0, MIT, approved, #16448
 nuget/nuget/-/HtmlAgilityPack/1.11.71, MIT, approved, #9293
 nuget/nuget/-/Humanizer.Core/2.14.1, MIT, approved, #10060
-nuget/nuget/-/Json.More.Net/2.0.1.2, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15173
-nuget/nuget/-/JsonPointer.Net/5.0.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #15172
-nuget/nuget/-/JsonSchema.Net/7.3.0, MIT AND OFL-1.1, approved, #17607
+nuget/nuget/-/Json.More.Net/2.1.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #18191
+nuget/nuget/-/JsonPointer.Net/5.1.0, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #18192
+nuget/nuget/-/JsonSchema.Net/7.3.1, MIT AND OFL-1.1, approved, #17607
 nuget/nuget/-/Laraue.EfCoreTriggers.Common/8.1.2, MIT, approved, #16234
 nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/8.1.2, MIT, approved, #16240
 nuget/nuget/-/MailKit/4.9.0, MIT AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust), approved, #17941
