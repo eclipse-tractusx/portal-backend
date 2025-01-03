@@ -6030,18 +6030,18 @@ components:
     ClearinghouseResponseData:
       type: object
       properties:
-        bpn:
+        validationMode:
           type: string
-        status:
-          $ref: '#/components/schemas/ClearinghouseResponseStatus'
-        message:
-          type: string
-          nullable: true
+        validationUnits:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationUnits'
       additionalProperties: false
     ClearinghouseResponseStatus:
       enum:
-        - CONFIRM
-        - DECLINE
+        - VALID
+        - INVALID
+        - INCONCLUSIVE
       type: string
     CompanyAddressDetailData:
       type: object
@@ -7989,6 +7989,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ErrorDetails'
+      additionalProperties: false
+    ValidationUnits:
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/ClearinghouseResponseStatus'
+        type:
+          type: string
+        message:
+          type: string
+          nullable: true
       additionalProperties: false
   securitySchemes:
     Bearer:

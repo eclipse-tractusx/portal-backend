@@ -24,11 +24,12 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseTransferData(
-    [property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
-    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails,
-    [property: JsonPropertyName("callbackUrl")] string CallbackUrl,
-    [property: JsonPropertyName("exceptProfile")] bool ExceptProfile);
+    [property: JsonPropertyName("legalEntity")] LegalEntity LegalEntity,
+    [property: JsonPropertyName("validationMode")] string ValidationMode,
+    [property: JsonPropertyName("callback")] CallBack Callback
+);
 
-public record IdentityDetails(
-    [property: JsonPropertyName("did")] string Did,
-    [property: JsonPropertyName("uniqueIds")] IEnumerable<UniqueIdData> UniqueIds);
+public record CallBack(
+    [property: JsonPropertyName("url")] string Url,
+    [property: JsonPropertyName("headers")] IEnumerable<KeyValuePair<string, string>> Headers
+);

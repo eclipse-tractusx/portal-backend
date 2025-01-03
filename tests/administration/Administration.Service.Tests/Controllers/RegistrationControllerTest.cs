@@ -35,6 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class RegistrationControllerTest
 {
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
+    private static readonly string Bpn = "CAXLSHAREDIDPZZ";
     private readonly IRegistrationBusinessLogic _logic;
     private readonly RegistrationController _controller;
     private readonly IFixture _fixture;
@@ -126,7 +127,7 @@ public class RegistrationControllerTest
         var result = await _controller.ProcessClearinghouseResponse(data, cancellationToken);
 
         //Assert
-        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, cancellationToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, Bpn, cancellationToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

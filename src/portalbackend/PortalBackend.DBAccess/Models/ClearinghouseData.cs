@@ -25,18 +25,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record ClearinghouseData(
     CompanyApplicationStatusId ApplicationStatusId,
-    ParticipantDetails ParticipantDetails,
-    IEnumerable<UniqueIdData> UniqueIds);
+    string Bpn,
+    LegalEntity LegalEntity
+);
 
-public record ParticipantDetails(
-    [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("city")] string? City,
-    [property: JsonPropertyName("street")] string Street,
-    [property: JsonPropertyName("bpn")] string? Bpn,
+public record LegalEntity(
+    [property: JsonPropertyName("legalName")] string LegalName,
+    [property: JsonPropertyName("Address")] LegalAddress Address,
+    [property: JsonPropertyName("identifiers")] IEnumerable<UniqueIdData> Identifiers
+);
+
+public record LegalAddress(
+    [property: JsonPropertyName("country")] string? CountryAlpha2Code,
     [property: JsonPropertyName("region")] string? Region,
-    [property: JsonPropertyName("zipCode")] string? ZipCode,
-    [property: JsonPropertyName("country")] string? Country,
-    [property: JsonPropertyName("countryAlpha2Code")] string CountryAlpha2Code
+    [property: JsonPropertyName("locality")] string? City,
+    [property: JsonPropertyName("postalCode")] string? ZipCode,
+    [property: JsonPropertyName("addressLine")] string AddressLine
 );
 
 public record UniqueIdData([property: JsonPropertyName("type")] string Type, [property: JsonPropertyName("value")] string Value);
