@@ -36,6 +36,7 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
         var keycloak = keycloakFactory.CreateKeycloakClient(keycloakInstanceName);
         var realm = seedDataHandler.Realm;
         var seederConfig = seedDataHandler.GetSpecificConfiguration(ConfigurationKey.IdentityProviders);
+        var parallelOptions = ParallelOptionsExtensions.CreateParallelOptions(cancellationToken);
 
         foreach (var updateIdentityProvider in seedDataHandler.IdentityProviders)
         {
@@ -64,17 +65,19 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
             var updateMappers = seedDataHandler.IdentityProviderMappers.Where(x => x.IdentityProviderAlias == updateIdentityProvider.Alias);
             var mappers = await keycloak.GetIdentityProviderMappersAsync(realm, updateIdentityProvider.Alias, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-            await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await CreateMissingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await UpdateExistingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await DeleteObsoleteIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
+            await CreateMissingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
+            await UpdateExistingIdentityProviderMappers(keycloak, realm, updateIdentityProvider.Alias, mappers, updateMappers, seederConfig, parallelOptions).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 
-    private static async Task CreateMissingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task CreateMissingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var mapper in updateMappers
-                     .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Create, x.Name))
-                     .ExceptBy(mappers.Select(x => x.Name), x => x.Name))
+        var addMappers = updateMappers
+            .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers,
+                ModificationType.Create, x.Name))
+            .ExceptBy(mappers.Select(x => x.Name), x => x.Name);
+        await Parallel.ForEachAsync(addMappers, parallelOptions, async (mapper, cancellationToken) =>
         {
             await keycloak.AddIdentityProviderMapperAsync(
                 realm,
@@ -87,44 +90,46 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
                     },
                     mapper),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task UpdateExistingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task UpdateExistingIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
-        foreach (var (mapper, update) in mappers
+        var mappersToUpdate = mappers
             .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Update, x.Name))
             .Join(
                 updateMappers,
                 x => x.Name,
                 x => x.Name,
                 (mapper, update) => (Mapper: mapper, Update: update))
-            .Where(x => !CompareIdentityProviderMapper(x.Mapper, x.Update)))
+            .Where(x => !CompareIdentityProviderMapper(x.Mapper, x.Update));
+        await Parallel.ForEachAsync(mappersToUpdate, parallelOptions, async (mapperModel, cancellationToken) =>
         {
+            var (mapper, update) = mapperModel;
             await keycloak.UpdateIdentityProviderMapperAsync(
                 realm,
                 alias,
                 mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
                 UpdateIdentityProviderMapper(mapper, update),
                 cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+        }).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static async Task DeleteObsoleteIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, CancellationToken cancellationToken)
+    private static async Task DeleteObsoleteIdentityProviderMappers(KeycloakClient keycloak, string realm, string alias, IEnumerable<IdentityProviderMapper> mappers, IEnumerable<IdentityProviderMapperModel> updateMappers, KeycloakSeederConfigModel seederConfig, ParallelOptions parallelOptions)
     {
         if (mappers
             .Where(x => seederConfig.ModificationAllowed(alias, ConfigurationKey.IdentityProviderMappers, ModificationType.Delete, x.Name))
             .ExceptBy(updateMappers.Select(x => x.Name), x => x.Name)
             .IfAny(async deleteMappers =>
                 {
-                    foreach (var mapper in deleteMappers)
+                    await Parallel.ForEachAsync(deleteMappers, parallelOptions, async (mapper, cancellationToken) =>
                     {
                         await keycloak.DeleteIdentityProviderMapperAsync(
                             realm,
                             alias,
                             mapper.Id ?? throw new ConflictException($"identityProviderMapper.id must never be null {mapper.Name} {mapper.IdentityProviderAlias}"),
                             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-                    }
+                    }).ConfigureAwait(ConfigureAwaitOptions.None);
                 },
                 out var deleteMappersTask))
         {
@@ -206,7 +211,6 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
         config == null && update == null ||
         config != null && update != null &&
         config.HideOnLoginPage == update.HideOnLoginPage &&
-        //ClientSecret = update.ClientSecret &&
         config.DisableUserInfo == update.DisableUserInfo &&
         config.ValidateSignature == update.ValidateSignature &&
         config.ClientId == update.ClientId &&
@@ -220,7 +224,6 @@ public class IdentityProvidersUpdater(IKeycloakFactory keycloakFactory, ISeedDat
         config.UseJwksUrl == update.UseJwksUrl &&
         config.UserInfoUrl == update.UserInfoUrl &&
         config.Issuer == update.Issuer &&
-        // for Saml:
         config.NameIDPolicyFormat == update.NameIDPolicyFormat &&
         config.PrincipalType == update.PrincipalType &&
         config.SignatureAlgorithm == update.SignatureAlgorithm &&
