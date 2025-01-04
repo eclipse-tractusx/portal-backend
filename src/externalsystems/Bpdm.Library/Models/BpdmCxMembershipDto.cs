@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,23 +17,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using System.ComponentModel.DataAnnotations;
-
-namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
+using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 /// <summary>
-/// Settings used in business logic concerning connectors.
+/// Modal to send multiple data to BPDM.
 /// </summary>
-public class BpdmServiceSettings : KeyVaultAuthSettings
-{
-    [Required(AllowEmptyStrings = false)]
-    public string BaseAddress { get; set; } = null!;
+/// <param name="Memberships">List of memberships</param>
+public record BpdmCxMembership(
+    [property: JsonPropertyName("memberships")] IEnumerable<BpdmCxMembershipDto> Memberships
+);
 
-    public bool UseDimWallet { get; set; }
-
-    public bool StartSharingStateAsReady { get; set; }
-
-    [Required(AllowEmptyStrings = false)]
-    public string BusinessPartnerPoolBaseAddress { get; set; } = null!;
-}
+/// <summary>
+/// Modal to send single data to BPDM.
+/// </summary>
+/// <param name="Bpn">Business Partner Number</param>
+/// <param name="IsCatenaXMember">True, if BPN has added for Catena-X mambership</param>
+public record BpdmCxMembershipDto(
+    [property: JsonPropertyName("bpnL")] string Bpn,
+    [property: JsonPropertyName("isCatenaXMember")] bool IsCatenaXMember
+);

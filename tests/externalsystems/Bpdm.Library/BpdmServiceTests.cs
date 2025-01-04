@@ -48,6 +48,7 @@ public class BpdmServiceTests
             Scope = "test",
             Username = "user@name",
             BaseAddress = "https://base.address.com",
+            BusinessPartnerPoolBaseAddress = "https://business.partner.pool.base.address.com",
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
@@ -659,6 +660,52 @@ public class BpdmServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("call to external system bpdm-sharing-state failed with statuscode 400");
+    }
+
+    #endregion
+
+    #region SetCxMembership
+
+    [Fact]
+    public async Task SetCxMembership_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        var result = await sut.SetCxMembership(bpn, CancellationToken.None);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SetCxMembership_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient<BpdmService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.SetCxMembership(bpn, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Contain("bpdm-put-cx-membership");
     }
 
     #endregion

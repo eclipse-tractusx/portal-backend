@@ -155,6 +155,9 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.SET_MEMBERSHIP:
                 A.CallTo(() => _applicationActivationService.SetMembership(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
+            case ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM:
+                A.CallTo(() => _applicationActivationService.SetCxMembership(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+                break;
             case ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION:
                 A.CallTo(() => _applicationActivationService.SaveApplicationActivationToDatabase(context, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 break;
@@ -228,6 +231,10 @@ public class ChecklistHandlerServiceTests
             case ProcessStepTypeId.SET_MEMBERSHIP:
                 execution.ErrorFunc?.Should().NotBeNull();
                 A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_MEMBERSHIP)).MustHaveHappenedOnceExactly();
+                break;
+            case ProcessStepTypeId.SET_CX_MEMBERSHIP_IN_BPDM:
+                execution.ErrorFunc?.Should().NotBeNull();
+                A.CallTo(() => _checklistService.HandleServiceErrorAsync(error, ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM)).MustHaveHappenedOnceExactly();
                 break;
             case ProcessStepTypeId.FINISH_APPLICATION_ACTIVATION:
                 execution.ErrorFunc?.Should().BeNull();
