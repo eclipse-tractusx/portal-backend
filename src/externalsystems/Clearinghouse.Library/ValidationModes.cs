@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Microsoft and BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,22 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
-public enum ClearinghouseResponseStatus
+public static class ValidationModes
 {
     /// <summary>
-    /// In case the identifier has been found in the trust sources of clearing house.
+    /// DEFAULT - validates whether the identifiers themselves exists, indepenedent of their relationship to the legal entity provided
     /// </summary>
-    VALID = 1,
-
+    public const string IDENTIFIER = "IDENTIFIER";
     /// <summary>
-    /// In case the identifier format is not valid or the identifier was not found in the trust source of clearing house.
+    /// Validates whether the identifier is valid, and whether the name of the legal entity it is associated with matches the provided legal name
     /// </summary>
-    INVALID = 2,
-
+    public const string LEGAL_NAME = "LEGAL_NAME";
     /// <summary>
-    /// In case the validation can't be performed, due to the unavailablity of the trust source of clearing house.
+    /// Validates whether the identifier is valid, and whether the name of the legal entity, as well as the addresss it is associated with matches the provided ones.
     /// </summary>
-    INCONCLUSIVE = 3
+    public const string LEGAL_NAME_AND_ADDRESS = "LEGAL_NAME_AND_ADDRESS";
 }

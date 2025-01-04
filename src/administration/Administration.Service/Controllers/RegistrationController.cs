@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -183,7 +184,7 @@ public class RegistrationController(IRegistrationBusinessLogic logic)
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<NoContentResult> ProcessClearinghouseResponse([FromBody] ClearinghouseResponseData responseData, CancellationToken cancellationToken)
     {
-        await logic.ProcessClearinghouseResponseAsync(responseData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await this.WithBpn(bpn => logic.ProcessClearinghouseResponseAsync(responseData, bpn, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
         return NoContent();
     }
 

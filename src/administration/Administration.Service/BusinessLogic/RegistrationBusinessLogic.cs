@@ -298,18 +298,18 @@ public sealed class RegistrationBusinessLogic(
     private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 
     /// <inheritdoc />
-    public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken)
+    public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, string bpn, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Process SelfDescription called with the following data {Data}", data.ToString().Replace(Environment.NewLine, string.Empty));
-        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(data.BusinessPartnerNumber.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Process SelfDescription called with the following data {Data} and bpn {Bpn}", data.ToString().Replace(Environment.NewLine, string.Empty), bpn.ToString().Replace(Environment.NewLine, string.Empty));
+        var result = await portalRepositories.GetInstance<IApplicationRepository>().GetSubmittedApplicationIdsByBpn(bpn.ToUpper()).ToListAsync(cancellationToken).ConfigureAwait(false);
         if (!result.Any())
         {
-            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT, new ErrorParameter[] { new("businessPartnerNumber", data.BusinessPartnerNumber) });
+            throw NotFoundException.Create(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT, new ErrorParameter[] { new("businessPartnerNumber", bpn) });
         }
 
         if (result.Count > 1)
         {
-            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN, new ErrorParameter[] { new("businessPartnerNumber", data.BusinessPartnerNumber) });
+            throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN, new ErrorParameter[] { new("businessPartnerNumber", bpn) });
         }
 
         await clearinghouseBusinessLogic.ProcessEndClearinghouse(result.Single(), data, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

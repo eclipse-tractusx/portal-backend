@@ -33,7 +33,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogi
 public class ClearinghouseBusinessLogic(
     IPortalRepositories portalRepositories,
     IClearinghouseService clearinghouseService,
-    ICustodianBusinessLogic custodianBusinessLogic,
     IApplicationChecklistService checklistService,
     IDateTimeProvider dateTimeProvider,
     IOptions<ClearinghouseSettings> options)
@@ -43,37 +42,7 @@ public class ClearinghouseBusinessLogic(
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        var overwrite = context.ProcessStepTypeId switch
-        {
-            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE => true,
-            ProcessStepTypeId.START_CLEARING_HOUSE => false,
-            _ => throw new UnexpectedConditionException($"HandleClearingHouse called for unexpected processStepTypeId {context.ProcessStepTypeId}. Expected {ProcessStepTypeId.START_CLEARING_HOUSE} or {ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE}")
-        };
-
-        string companyDid;
-        if (_settings.UseDimWallet)
-        {
-            var (exists, did) = await portalRepositories.GetInstance<IApplicationRepository>()
-                .GetDidForApplicationId(context.ApplicationId).ConfigureAwait(ConfigureAwaitOptions.None);
-            if (!exists || string.IsNullOrWhiteSpace(did))
-            {
-                throw new ConflictException($"Did must be set for Application {context.ApplicationId}");
-            }
-
-            companyDid = did;
-        }
-        else
-        {
-            var walletData = await custodianBusinessLogic.GetWalletByBpnAsync(context.ApplicationId, cancellationToken);
-            if (walletData == null || string.IsNullOrEmpty(walletData.Did))
-            {
-                throw new ConflictException($"Decentralized Identifier for application {context.ApplicationId} is not set");
-            }
-
-            companyDid = walletData.Did;
-        }
-
-        await TriggerCompanyDataPost(context.ApplicationId, companyDid, overwrite, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await TriggerCompanyDataPost(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -84,7 +53,7 @@ public class ClearinghouseBusinessLogic(
             null);
     }
 
-    private async Task TriggerCompanyDataPost(Guid applicationId, string decentralizedIdentifier, bool overwrite, CancellationToken cancellationToken)
+    private async Task TriggerCompanyDataPost(Guid applicationId, CancellationToken cancellationToken)
     {
         var data = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -98,16 +67,21 @@ public class ClearinghouseBusinessLogic(
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
-        if (string.IsNullOrWhiteSpace(data.ParticipantDetails.Bpn))
+        if (string.IsNullOrWhiteSpace(data.Bpn))
         {
             throw new ConflictException("BusinessPartnerNumber is null");
         }
 
+        var headers = new List<KeyValuePair<string, string>>
+        {
+            new("Business-Partner-Number", data.Bpn)
+        }.AsEnumerable();
+
         var transferData = new ClearinghouseTransferData(
-            data.ParticipantDetails,
-            new IdentityDetails(decentralizedIdentifier, data.UniqueIds),
-            _settings.CallbackUrl,
-            overwrite);
+            data.LegalEntity,
+            ValidationModes.LEGAL_NAME,
+            new CallBack(_settings.CallbackUrl, headers)
+        );
 
         await clearinghouseService.TriggerCompanyDataPost(transferData, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
@@ -123,19 +97,23 @@ public class ClearinghouseBusinessLogic(
                 processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var declined = data.Status == ClearinghouseResponseStatus.DECLINE;
-
+        var validData = data.ValidationUnits.FirstOrDefault(s => s.Status == ClearinghouseResponseStatus.VALID);
+        var isInvalid = validData == null;
         checklistService.FinalizeChecklistEntryAndProcessSteps(
             context,
             null,
             item =>
             {
-                item.ApplicationChecklistEntryStatusId = declined
+                item.ApplicationChecklistEntryStatusId = isInvalid
                     ? ApplicationChecklistEntryStatusId.FAILED
                     : ApplicationChecklistEntryStatusId.DONE;
-                item.Comment = data.Message;
+
+                // There is not "Message" param available in the response in case of VALID so, thats why saving ClearinghouseResponseStatus param into the Comments in case of VALID only.
+                item.Comment = isInvalid
+                                ? data.ValidationUnits.FirstOrDefault(s => s.Status != ClearinghouseResponseStatus.VALID)!.Message
+                                : validData!.Status.ToString();
             },
-            declined
+            isInvalid
                 ? [ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE]
                 : [ProcessStepTypeId.START_SELF_DESCRIPTION_LP]);
     }

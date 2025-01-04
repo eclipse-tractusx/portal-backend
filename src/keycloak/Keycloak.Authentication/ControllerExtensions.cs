@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
@@ -29,6 +30,9 @@ public static class ControllerExtensions
 {
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
+
+    public static T WithBpn<T>(this ControllerBase controller, Func<string, T> bpnConsumingFunction) =>
+        bpnConsumingFunction(controller.GetBpn());
 
     private static string GetBearerToken(this ControllerBase controller)
     {
@@ -46,5 +50,23 @@ public static class ControllerExtensions
         }
 
         return bearer;
+    }
+
+    private static string GetBpn(this ControllerBase controller)
+    {
+        var headers = controller.Request.Headers.FirstOrDefault(x => x.Key == "Business-Partner-Number");
+        if (headers.Equals(default(KeyValuePair<string, StringValues>)))
+        {
+            throw new ControllerArgumentException("Request does not contain Business-Partner-Number header",
+                nameof(headers.Key));
+        }
+
+        var bpn = headers.Value.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(bpn))
+        {
+            throw new ControllerArgumentException("Business-Partner-Number in header must not be empty", nameof(bpn));
+        }
+
+        return bpn;
     }
 }

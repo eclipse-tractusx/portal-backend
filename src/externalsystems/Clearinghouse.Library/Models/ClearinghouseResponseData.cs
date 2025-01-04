@@ -23,6 +23,12 @@ using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseResponseData(
-    [property: JsonPropertyName("bpn")] string BusinessPartnerNumber,
-    [property: JsonPropertyName("status")] ClearinghouseResponseStatus Status,
-    [property: JsonPropertyName("message")] string? Message);
+    [property: JsonPropertyName("validationMode")] string ValidationMode,
+    [property: JsonPropertyName("validationUnits")] IEnumerable<ValidationUnits> ValidationUnits
+);
+
+public record ValidationUnits(
+    [property: JsonPropertyName("result")] ClearinghouseResponseStatus Status,
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("message")] string? Message
+);
