@@ -209,7 +209,7 @@ public class UserUploadBusinessLogic : IUserUploadBusinessLogic
                             _mailingProcessCreation.CreateMailProcess(creationData.UserCreationInfo.Email, "NewUserPasswordTemplate", mailParameters);
                         },
                         cancellationToken)
-                    .Select(x => (x.CompanyUserId != Guid.Empty, x.Error)),
+                    .Select(x => (x.Error == null, x.Error)),
             cancellationToken).ConfigureAwait(false);
 
         return new UserCreationStats(
