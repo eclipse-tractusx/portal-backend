@@ -59,7 +59,7 @@ nuget/nuget/-/Swashbuckle.AspNetCore/6.9.0, MIT AND Apache-2.0, approved, #16816
 nuget/nuget/-/Testcontainers.PostgreSql/4.1.0, MIT, approved, #17771
 nuget/nuget/-/Testcontainers/4.1.0, MIT, approved, #17776
 nuget/nuget/-/Xunit.Extensions.AssemblyFixture/2.6.0, MIT, approved, #17055
-nuget/nuget/-/coverlet.collector/6.0.2, MIT, approved, #10075
+nuget/nuget/-/coverlet.collector/6.0.3, MIT, approved, #10075
 nuget/nuget/-/xunit.abstractions/2.0.3, Apache-2.0, approved, clearlydefined
 nuget/nuget/-/xunit.analyzers/1.16.0, Apache-2.0 AND MIT, approved, #16332
 nuget/nuget/-/xunit.assert/2.9.2, Apache-2.0, approved, #16331
