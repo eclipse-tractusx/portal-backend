@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Org.Eclipse.TractusX.Portal.Backend.Notifications.Service
-  version: v2.4.0-alpha.1
+  version: v2.4.0-alpha.2
 paths:
   /api/notification/errormessage:
     get:
