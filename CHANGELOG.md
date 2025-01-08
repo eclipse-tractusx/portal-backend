@@ -4,6 +4,25 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.4.0-alpha.2
+
+### Feature
+
+* **Keycloak**
+  * adjusted the token handling [#1209](https://github.com/eclipse-tractusx/portal-backend/pull/1209)
+* **Administration Service**
+  * adjusted error handling to new structure [#1192](https://github.com/eclipse-tractusx/portal-backend/pull/1192)
+* **Services Service**
+  * adjusted error handling to new structure [#1195](https://github.com/eclipse-tractusx/portal-backend/pull/1195)
+* **Offers**
+  * added support for multiple technical users per offer [#1197](https://github.com/eclipse-tractusx/portal-backend/pull/1197)
+  * added property to define whether technical users should be displayed per offer [#1215](https://github.com/eclipse-tractusx/portal-backend/pull/1215)
+
+### Technical Support
+
+* **Dependencies**
+  * updated app dependencies [#1213](https://github.com/eclipse-tractusx/portal-backend/pull/1213), [#1214](https://github.com/eclipse-tractusx/portal-backend/pull/1214), [#1218](https://github.com/eclipse-tractusx/portal-backend/pull/1218), [#1219](https://github.com/eclipse-tractusx/portal-backend/pull/1219), [#1223](https://github.com/eclipse-tractusx/portal-backend/pull/1223), [#1224](https://github.com/eclipse-tractusx/portal-backend/pull/1224)
+
 ## 2.4.0-alpha.1
 
 ### Feature
