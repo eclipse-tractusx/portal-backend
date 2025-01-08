@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20241219092737_new_paramter_add_offers")]
-    partial class new_paramter_add_offers
+    [Migration("20250107114624_2.4.0-alpha.2")]
+    partial class _240alpha2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
