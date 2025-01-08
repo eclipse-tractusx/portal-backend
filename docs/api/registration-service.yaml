@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Org.Eclipse.TractusX.Portal.Backend.Registration.Service
-  version: v2.4.0-alpha.1
+  version: v2.4.0-alpha.2
 paths:
   /api/registration/errormessage:
     get:
