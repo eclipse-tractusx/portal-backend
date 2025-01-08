@@ -132,10 +132,10 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
+    public Task<(Guid ProviderCompanyDetailId, string Url, string? CallbackUrl)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
         context.ProviderCompanyDetails.AsNoTracking()
             .Where(details => details.CompanyId == companyId)
-            .Select(details => new ValueTuple<Guid, string>(details.Id, details.AutoSetupUrl))
+            .Select(details => new ValueTuple<Guid, string, string?>(details.Id, details.AutoSetupUrl, details.AutoSetupCallbackUrl))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -458,4 +458,14 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .Where(x => x.BusinessPartnerNumber == bpn)
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
             .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<VerifyProcessData> GetOfferSubscriptionProcessesForCompanyId(Guid companyId) =>
+        context.Companies
+            .Where(c => c.Id == companyId)
+            .SelectMany(c => c.ProvidedOffers.SelectMany(po =>
+                po.OfferSubscriptions.Select(os =>
+                    new VerifyProcessData(
+                        os.Process,
+                        os.Process!.ProcessSteps.Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)))))
+            .ToAsyncEnumerable();
 }
