@@ -21,6 +21,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -106,20 +107,20 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     public async Task<Guid> RemoveOfferSubscriptionAsync(Guid subscriptionId, OfferTypeId offerTypeId, string basePortalAddress)
     {
         var offerSubscriptionDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
+            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw NotFoundException.Create(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
         var offerId = offerSubscriptionDetails.OfferId;
 
         if (string.IsNullOrEmpty(offerSubscriptionDetails.OfferName))
         {
-            throw new NotFoundException($"Offer {offerId} does not exist.");
+            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
         if (!offerSubscriptionDetails.IsProviderCompany)
         {
-            throw new ForbiddenException("Only the providing company can decline the subscription request.");
+            throw ForbiddenException.Create(OfferSubscriptionServiceErrors.NON_PROVIDER_IS_FORBIDDEN);
         }
         if (offerSubscriptionDetails.Status != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ConflictException($"Subscription of {offerSubscriptionDetails.OfferName} should be in {OfferSubscriptionStatusId.PENDING} state.");
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.OFFER_STATUS_CONFLICT_INCORR_OFFER_STATUS, new ErrorParameter[] { new("offerName", offerSubscriptionDetails.OfferName), new("offerStatus", OfferSubscriptionStatusId.PENDING.ToString()) });
         }
 
         var offerSubscription = _portalRepositories.Remove(new OfferSubscription(subscriptionId, offerId, offerSubscriptionDetails.CompanyId, offerSubscriptionDetails.Status, offerSubscriptionDetails.RequesterId, DateTimeOffset.UtcNow));
@@ -147,16 +148,21 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                     notification.CreatorUserId = _identityData.IdentityId;
                     notification.Content = content;
                 });
-        var mailParameters = ImmutableDictionary.CreateRange(
+
+        if (!string.IsNullOrWhiteSpace(offerSubscriptionDetails.RequesterEmail))
+        {
+            var mailParameters = ImmutableDictionary.CreateRange(
             [
                 KeyValuePair.Create("offerName", offerSubscriptionDetails.OfferName!),
                 KeyValuePair.Create("url", basePortalAddress),
                 KeyValuePair.Create("requesterName", string.Format("{0} {1}", offerSubscriptionDetails.RequesterFirstname, offerSubscriptionDetails.RequesterLastname))
             ]);
-        _mailingProcessCreation.CreateMailProcess(
-            offerSubscriptionDetails.RequesterEmail!,
-            $"{offerTypeId.ToString().ToLower()}-subscription-decline",
-            mailParameters);
+
+            _mailingProcessCreation.CreateMailProcess(
+                offerSubscriptionDetails.RequesterEmail,
+                $"{offerTypeId.ToString().ToLower()}-subscription-decline",
+                mailParameters);
+        }
     }
 
     private void CreateProcessSteps(OfferSubscription offerSubscription)

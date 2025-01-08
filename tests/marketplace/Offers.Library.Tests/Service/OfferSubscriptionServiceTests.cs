@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -543,7 +544,7 @@ public class OfferSubscriptionServiceTests
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
-        ex.Message.Should().Be($"Offer {offerSubscriptionDetails.OfferId} does not exist.");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NOTFOUND.ToString());
     }
 
     [Theory]
@@ -571,7 +572,7 @@ public class OfferSubscriptionServiceTests
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
-        ex.Message.Should().Be($"Only the providing company can decline the subscription request.");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.NON_PROVIDER_IS_FORBIDDEN.ToString());
     }
 
     [Theory]
@@ -600,7 +601,7 @@ public class OfferSubscriptionServiceTests
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
-        ex.Message.Should().Be($"Subscription of {offerSubscriptionDetails.OfferName} should be in {OfferSubscriptionStatusId.PENDING} state.");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_STATUS_CONFLICT_INCORR_OFFER_STATUS.ToString());
     }
 
     [Theory]
@@ -625,7 +626,7 @@ public class OfferSubscriptionServiceTests
             .MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
             .MustNotHaveHappened();
-        ex.Message.Should().Be($"Subscription {_validSubscriptionId} does not exist.");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND.ToString());
     }
 
     #endregion
