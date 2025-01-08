@@ -19,7 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 public static class UniqueIdentifiersExtension
 {
@@ -31,6 +31,6 @@ public static class UniqueIdentifiersExtension
             UniqueIdentifierId.LEI_CODE => "schema:leiCode",
             UniqueIdentifierId.VIES => "EUID",
             UniqueIdentifierId.EORI => "gx:eori",
-            _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Unique Identifier not found for SdFactory Conversion")
+            _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Unique Identifier not found for Clearing House Conversion")
         };
 }

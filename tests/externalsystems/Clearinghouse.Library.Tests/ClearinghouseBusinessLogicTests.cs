@@ -82,6 +82,36 @@ public class ClearinghouseBusinessLogicTests
 
     #region HandleStartClearingHouse
 
+    [Theory]
+    [InlineData(ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION)]
+    [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PUSH)]
+    [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL)]
+    [InlineData(ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_MANUAL)]
+    [InlineData(ProcessStepTypeId.CREATE_IDENTITY_WALLET)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_IDENTITY_WALLET)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
+    [InlineData(ProcessStepTypeId.START_SELF_DESCRIPTION_LP)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_LP)]
+    [InlineData(ProcessStepTypeId.ASSIGN_INITIAL_ROLES)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH)]
+    [InlineData(ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL)]
+    [InlineData(ProcessStepTypeId.MANUAL_TRIGGER_OVERRIDE_CLEARING_HOUSE)]
+    [InlineData(ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_LP_RESPONSE)]
+    public async Task HandleStartClearingHouse_ForInvalidProcessStepTypeId_ThrowsUnexpectedCondition(ProcessStepTypeId stepTypeId)
+    {
+        // Arrange
+        var checklist = _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>>().ToImmutableDictionary();
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(Guid.NewGuid(), stepTypeId, checklist, Enumerable.Empty<ProcessStepTypeId>());
+
+        // Act
+        async Task Act() => await _logic.HandleClearinghouse(context, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
+        ex.Message.Should().Be($"HandleClearingHouse called for unexpected processStepTypeId {stepTypeId}. Expected START_CLEARING_HOUSE or START_OVERRIDE_CLEARING_HOUSE");
+    }
+
     [Fact]
     public async Task HandleStartClearingHouse_WithNotExistingApplication_ThrowsConflictException()
     {
@@ -152,6 +182,7 @@ public class ClearinghouseBusinessLogicTests
 
     [Theory]
     [InlineData(ProcessStepTypeId.START_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
+    [InlineData(ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE, ApplicationChecklistEntryStatusId.IN_PROGRESS, ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE)]
     public async Task HandleStartClearingHouse_WithValidData_CallsExpected(ProcessStepTypeId stepTypeId, ApplicationChecklistEntryStatusId statusId, ProcessStepTypeId expectedProcessTypeId)
     {
         // Arrange
@@ -208,7 +239,7 @@ public class ClearinghouseBusinessLogicTests
         // Assert
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_SELF_DESCRIPTION_LP) == 1))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
-        entry.Comment.Should().BeNull();
+        entry.Comment.Should().Be("VALID");
         entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.DONE);
     }
 
@@ -217,9 +248,13 @@ public class ClearinghouseBusinessLogicTests
     {
         // Arrange
         var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        var validationUnits = _fixture.Build<ValidationUnits>()
+            .With(x => x.Status, ClearinghouseResponseStatus.INVALID)
+            .With(x => x.Message, "Comment about the error")
+            .CreateMany(2);
+
         var data = _fixture.Build<ClearinghouseResponseData>()
-            //.With(x => x.Status, ClearinghouseResponseStatus.INVALID)
-            //.With(x => x.Message, "Comment about the error")
+            .With(x => x.ValidationUnits, validationUnits)
             .Create();
         SetupForProcessClearinghouseResponse(entry);
 

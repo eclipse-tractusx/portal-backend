@@ -43,7 +43,14 @@ public class ClearinghouseBusinessLogic(
 
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        await TriggerCompanyDataPost(context.ApplicationId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var validationMode = context.ProcessStepTypeId switch
+        {
+            ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE => ValidationModes.IDENTIFIER,
+            ProcessStepTypeId.START_CLEARING_HOUSE => ValidationModes.LEGAL_NAME,
+            _ => throw new UnexpectedConditionException($"HandleClearingHouse called for unexpected processStepTypeId {context.ProcessStepTypeId}. Expected {ProcessStepTypeId.START_CLEARING_HOUSE} or {ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE}")
+        };
+
+        await TriggerCompanyDataPost(context.ApplicationId, validationMode, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -54,7 +61,7 @@ public class ClearinghouseBusinessLogic(
             null);
     }
 
-    private async Task TriggerCompanyDataPost(Guid applicationId, CancellationToken cancellationToken)
+    private async Task TriggerCompanyDataPost(Guid applicationId, string validationMode, CancellationToken cancellationToken)
     {
         var data = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetClearinghouseDataForApplicationId(applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -80,7 +87,7 @@ public class ClearinghouseBusinessLogic(
 
         var transferData = new ClearinghouseTransferData(
             data.LegalEntity,
-            ValidationModes.LEGAL_NAME,
+            validationMode,
             new CallBack(_settings.CallbackUrl, headers)
         );
 
@@ -98,6 +105,7 @@ public class ClearinghouseBusinessLogic(
                 processStepTypeIds: [ProcessStepTypeId.START_SELF_DESCRIPTION_LP])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
+        // Company data is valid if any one of the provided identifiers was responded valid from CH
         var validData = data.ValidationUnits.FirstOrDefault(s => s.Status == ClearinghouseResponseStatus.VALID);
         var isInvalid = validData == null;
         checklistService.FinalizeChecklistEntryAndProcessSteps(
