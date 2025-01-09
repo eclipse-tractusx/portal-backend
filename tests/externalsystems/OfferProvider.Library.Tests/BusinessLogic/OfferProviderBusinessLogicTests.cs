@@ -68,8 +68,8 @@ public class OfferProviderBusinessLogicTests
         {
             EncryptionConfigs =
                     [
-                new() { Index=0, EncryptionKey="2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
-                new() { Index=1, EncryptionKey="5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index = 0, EncryptionKey = "2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode = CipherMode.CFB, PaddingMode = PaddingMode.PKCS7 },
+                        new() { Index = 1, EncryptionKey = "5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode = CipherMode.CBC, PaddingMode = PaddingMode.PKCS7 },
                     ],
             EncryptionConfigIndex = 1
         };

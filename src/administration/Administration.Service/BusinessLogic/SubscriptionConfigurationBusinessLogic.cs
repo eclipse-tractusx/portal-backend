@@ -17,19 +17,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Extensions;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
