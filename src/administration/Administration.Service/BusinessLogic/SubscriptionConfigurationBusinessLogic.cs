@@ -163,7 +163,7 @@ public class SubscriptionConfigurationBusinessLogic(
 
         if (!isCompanyRoleOwner)
         {
-            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, [new(nameof(companyId), companyId.ToString())]);
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, [new ErrorParameter(nameof(companyId), companyId.ToString())]);
         }
 
         companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, data.AuthUrl, data.ClientId, secret, initializationVector, index, providerDetails =>
