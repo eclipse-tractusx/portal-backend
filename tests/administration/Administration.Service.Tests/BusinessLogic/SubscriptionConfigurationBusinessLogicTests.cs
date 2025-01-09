@@ -53,7 +53,6 @@ public class SubscriptionConfigurationBusinessLogicTests
     private readonly IIdentityService _identityService;
     private readonly OfferProviderSettings _options;
 
-
     public SubscriptionConfigurationBusinessLogicTests()
     {
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
@@ -80,8 +79,8 @@ public class SubscriptionConfigurationBusinessLogicTests
         {
             EncryptionConfigs =
                    [
-                new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
-                new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index = 0, EncryptionKey = Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode = CipherMode.CFB, PaddingMode = PaddingMode.PKCS7 },
+                       new() { Index = 1, EncryptionKey = Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode = CipherMode.CBC, PaddingMode = PaddingMode.PKCS7 },
                    ],
             EncryptionConfigIndex = 1
         };
