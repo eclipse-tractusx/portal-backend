@@ -73,7 +73,7 @@ public class SubscriptionConfigurationBusinessLogic(
 
         if (data.Url is { Length: > 100 })
         {
-            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new("Url", nameof(data.Url))]);
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new ErrorParameter("Url", nameof(data.Url))]);
         }
 
         if (string.IsNullOrWhiteSpace(data.ClientId))
@@ -158,7 +158,7 @@ public class SubscriptionConfigurationBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidCompanyId)
         {
-            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new("Url", nameof(data.Url))]);
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new ErrorParameter("Url", nameof(data.Url))]);
         }
 
         if (!isCompanyRoleOwner)
