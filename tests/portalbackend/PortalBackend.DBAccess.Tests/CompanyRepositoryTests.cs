@@ -60,7 +60,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url, entity =>
+        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url, string.Empty, string.Empty, A<byte[]>._, A<byte[]>._, A<int>._, entity =>
         {
             entity.AutoSetupCallbackUrl = "https://test.de";
         });
@@ -151,7 +151,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
 
         // Assert
         result.Should().NotBe(default);
@@ -167,7 +167,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, Guid.NewGuid());
+        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, Guid.NewGuid());
 
         // Assert
         result.Should().Be(default);
@@ -180,7 +180,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(CompanyRoleId.OPERATOR, new("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, new("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
 
         // Assert
         result.Should().NotBe(default);

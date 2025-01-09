@@ -43,8 +43,14 @@ public class OfferProviderService : IOfferProviderService
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, CancellationToken cancellationToken)
+    public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, string authUrl, string clientId, string clientSecret, CancellationToken cancellationToken)
     {
+        var settings = new KeyVaultAuthSettings
+        {
+            TokenAddress = authUrl,
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData, cancellationToken)
@@ -55,8 +61,14 @@ public class OfferProviderService : IOfferProviderService
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, CancellationToken cancellationToken)
+    public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, string authUrl, string clientId, string clientSecret, CancellationToken cancellationToken)
     {
+        var settings = new KeyVaultAuthSettings
+        {
+            TokenAddress = authUrl,
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)

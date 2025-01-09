@@ -96,6 +96,28 @@ public class SubscriptionConfigurationController : ControllerBase
     }
 
     /// <summary>
+    /// Delete the auto setup configuration for app/service provider
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>Example: DELETE: api/administration/subscriptionconfiguration/owncompany</remarks>
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="409">Auto setup configuration was not found.</response>
+    [HttpDelete]
+    [Route("owncompany")]
+    [Authorize(Roles = "add_service_offering, add_apps")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> DeleteProviderCompanyDetail()
+    {
+        await _businessLogic.DeleteOfferProviderCompanyDetailsAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Gets the process steps for the given offer subscription id
     /// </summary>
     /// <param name="offerSubscriptionId" example="22dbc488-8f90-40b4-9fbd-ea0b246e827b">Id of the offer subscription that should be triggered</param>
