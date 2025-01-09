@@ -70,7 +70,7 @@ public class OfferProviderServiceTests
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         var result = await service.TriggerOfferProvider(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
@@ -89,7 +89,7 @@ public class OfferProviderServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
@@ -108,7 +108,7 @@ public class OfferProviderServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
@@ -132,7 +132,7 @@ public class OfferProviderServiceTests
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         var result = await service.TriggerOfferProviderCallback(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
@@ -151,7 +151,7 @@ public class OfferProviderServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
@@ -170,7 +170,7 @@ public class OfferProviderServiceTests
         A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
         async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
