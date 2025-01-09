@@ -33,7 +33,6 @@ public class OfferProviderServiceTests
 
     private readonly IFixture _fixture;
     private readonly ITokenService _tokenService;
-    private readonly IOptions<OfferProviderSettings> _options;
 
     public OfferProviderServiceTests()
     {
@@ -41,17 +40,6 @@ public class OfferProviderServiceTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        _options = Options.Create(new OfferProviderSettings
-        {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            TokenAddress = "https://key.cloak.com",
-        });
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -66,7 +54,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
@@ -86,7 +74,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
         var service = new OfferProviderService(_tokenService);
@@ -105,7 +93,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
         var service = new OfferProviderService(_tokenService);
@@ -128,7 +116,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferProviderCallbackData>();
@@ -148,7 +136,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
         var service = new OfferProviderService(_tokenService);
@@ -167,7 +155,7 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
         var service = new OfferProviderService(_tokenService);
