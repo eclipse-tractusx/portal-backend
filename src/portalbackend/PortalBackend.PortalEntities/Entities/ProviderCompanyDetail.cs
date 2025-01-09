@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -24,32 +23,24 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditProviderCompanyDetail20231115))]
-public class ProviderCompanyDetail : IAuditableV1, IBaseEntity
+[AuditEntityV1(typeof(AuditProviderCompanyDetail20250415))]
+public class ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, string authUrl, string clientId, byte[] clientSecret, int encryptionMode) : IAuditableV1, IBaseEntity
 {
-    private ProviderCompanyDetail()
-    {
-        AutoSetupUrl = null!;
-    }
+    public Guid Id { get; private set; } = id;
 
-    public ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated)
-        : this()
-    {
-        Id = id;
-        CompanyId = companyId;
-        AutoSetupUrl = autoSetupUrl;
-        DateCreated = dateCreated;
-    }
+    public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
-    public Guid Id { get; private set; }
-
-    public DateTimeOffset DateCreated { get; private set; }
-
-    public string AutoSetupUrl { get; set; }
+    public string AutoSetupUrl { get; set; } = autoSetupUrl;
 
     public string? AutoSetupCallbackUrl { get; set; }
 
-    public Guid CompanyId { get; set; }
+    public Guid CompanyId { get; set; } = companyId;
+    public string AuthUrl { get; set; } = authUrl;
+    public string ClientId { get; set; } = clientId;
+
+    public byte[] ClientSecret { get; set; } = clientSecret;
+    public byte[]? InitializationVector { get; set; }
+    public int EncryptionMode { get; set; } = encryptionMode;
 
     [LastChangedV1]
     public DateTimeOffset? DateLastChanged { get; set; }

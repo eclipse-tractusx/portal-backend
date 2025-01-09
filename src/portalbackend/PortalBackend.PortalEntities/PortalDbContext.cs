@@ -91,6 +91,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
     public virtual DbSet<AuditIdentityAssignedRole20230522> AuditIdentityAssignedRole20230522 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20230614> AuditProviderCompanyDetail20230614 { get; set; } = default!;
     public virtual DbSet<AuditProviderCompanyDetail20231115> AuditProviderCompanyDetail20231115 { get; set; } = default!;
+    public virtual DbSet<AuditProviderCompanyDetail20250415> AuditProviderCompanyDetail20241210 { get; set; } = default!;
     public virtual DbSet<AuditDocument20231108> AuditDocument20231108 { get; set; } = default!;
     public virtual DbSet<AuditDocument20231115> AuditDocument20231115 { get; set; } = default!;
     public virtual DbSet<AuditDocument20241120> AuditDocument20241120 { get; set; } = default!;
@@ -577,7 +578,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
                 .WithOne(e => e.ProviderCompanyDetail)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<ProviderCompanyDetail, AuditProviderCompanyDetail20231115>();
+            entity.HasAuditV1Triggers<ProviderCompanyDetail, AuditProviderCompanyDetail20250415>();
         });
 
         modelBuilder.Entity<CompanyApplication>(entity =>

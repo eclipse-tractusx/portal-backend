@@ -33,7 +33,6 @@ public class OfferProviderServiceTests
 
     private readonly IFixture _fixture;
     private readonly ITokenService _tokenService;
-    private readonly IOptions<OfferProviderSettings> _options;
 
     public OfferProviderServiceTests()
     {
@@ -41,17 +40,6 @@ public class OfferProviderServiceTests
         _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-
-        _options = Options.Create(new OfferProviderSettings
-        {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            TokenAddress = "https://key.cloak.com",
-        });
         _tokenService = A.Fake<ITokenService>();
     }
 
@@ -66,14 +54,14 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None);
+        var result = await service.TriggerOfferProvider(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -86,13 +74,13 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -105,13 +93,13 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferThirdPartyAutoSetupData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -128,14 +116,14 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         const string url = "https://trigger.com";
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None);
+        var result = await service.TriggerOfferProviderCallback(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -148,13 +136,13 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -167,13 +155,13 @@ public class OfferProviderServiceTests
         var httpMessageHandlerMock =
             new HttpMessageHandlerMock(HttpStatusCode.BadRequest, ex: new HttpRequestException("DNS Error"));
         using var httpClient = new HttpClient(httpMessageHandlerMock);
-        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(_options.Value, A<CancellationToken>._))
+        A.CallTo(() => _tokenService.GetAuthorizedClient<OfferProviderService>(A<KeyVaultAuthSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
         var data = _fixture.Create<OfferProviderCallbackData>();
-        var service = new OfferProviderService(_tokenService, _options);
+        var service = new OfferProviderService(_tokenService);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);

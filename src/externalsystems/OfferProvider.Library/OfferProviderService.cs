@@ -17,10 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
-using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using System.Net.Http.Json;
 
@@ -29,23 +27,27 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library;
 public class OfferProviderService : IOfferProviderService
 {
     private readonly ITokenService _tokenService;
-    private readonly OfferProviderSettings _settings;
 
     /// <summary>
     /// Creates a new instance of <see cref="OfferProviderService"/>
     /// </summary>
     /// <param name="tokenService"></param>
     /// <param name="options"></param>
-    public OfferProviderService(ITokenService tokenService, IOptions<OfferProviderSettings> options)
+    public OfferProviderService(ITokenService tokenService)
     {
         _tokenService = tokenService;
-        _settings = options.Value;
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, CancellationToken cancellationToken)
+    public async Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, string authUrl, string clientId, string clientSecret, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
+        var settings = new KeyVaultAuthSettings
+        {
+            TokenAddress = authUrl,
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
+        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(autoSetupUrl, autoSetupData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider")
@@ -55,9 +57,15 @@ public class OfferProviderService : IOfferProviderService
     }
 
     /// <inheritdoc />
-    public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, CancellationToken cancellationToken)
+    public async Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, string authUrl, string clientId, string clientSecret, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(_settings, cancellationToken)
+        var settings = new KeyVaultAuthSettings
+        {
+            TokenAddress = authUrl,
+            ClientId = clientId,
+            ClientSecret = clientSecret
+        };
+        using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         await httpClient.PostAsJsonAsync(callbackUrl, callbackData, cancellationToken)
             .CatchingIntoServiceExceptionFor("trigger-offer-provider-callback")

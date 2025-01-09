@@ -17,8 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -32,6 +35,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly OfferProviderSettings _settings;
 
     /// <summary>
     /// Constructor.
@@ -43,11 +47,13 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     public OfferProviderBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferProviderService offerProviderService,
-        IProvisioningManager provisioningManager)
+        IProvisioningManager provisioningManager,
+        IOptions<OfferProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
         _offerProviderService = offerProviderService;
         _provisioningManager = provisioningManager;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -63,6 +69,8 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         {
             throw new ConflictException("Country should be set for the company");
         }
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
@@ -78,7 +86,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                     data.OfferId)
             );
             await _offerProviderService
-                .TriggerOfferProvider(autoSetupData, data.AutoSetupUrl!, cancellationToken)
+                .TriggerOfferProvider(autoSetupData, data.AutoSetupUrl!, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
@@ -155,8 +163,11 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             technicalUsersInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
         await _offerProviderService
-            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, cancellationToken)
+            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (
