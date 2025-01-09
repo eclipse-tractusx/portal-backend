@@ -82,7 +82,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         {
             EncryptionConfigs =
                    [
-                new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CFB, PaddingMode=PaddingMode.PKCS7 },
                 new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
                    ],
             EncryptionConfigIndex = 1
@@ -433,7 +433,6 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Arrange
         SetupProviderCompanyDetails();
         var detailsId = Guid.NewGuid();
-        var existingUrl = _fixture.Create<string>();
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((default, null!));
