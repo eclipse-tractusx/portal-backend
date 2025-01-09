@@ -73,7 +73,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProvider(data, url, CancellationToken.None);
+        var result = await service.TriggerOfferProvider(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -92,7 +92,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -111,7 +111,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProvider(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -135,7 +135,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        var result = await service.TriggerOfferProviderCallback(data, url, CancellationToken.None);
+        var result = await service.TriggerOfferProviderCallback(data, url, "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         result.Should().Be(true);
@@ -154,7 +154,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);
@@ -173,7 +173,7 @@ public class OfferProviderServiceTests
         var service = new OfferProviderService(_tokenService, _options);
 
         // Act
-        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", CancellationToken.None);
+        async Task Act() => await service.TriggerOfferProviderCallback(data, "https://callback.com", "https://auth.url", "test1", "Sup3rS3cureTest!", CancellationToken.None);
 
         // Assert
         await Assert.ThrowsAsync<ServiceException>(Act);

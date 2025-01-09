@@ -71,4 +71,9 @@ public interface ISubscriptionConfigurationBusinessLogic
     /// </summary>
     /// <param name="data">Detail data for the service provider</param>
     Task SetProviderCompanyDetailsAsync(ProviderDetailData data);
+
+    /// <summary>
+    /// Deletes auto setup configuration for app/service provider
+    /// </summary>
+    Task DeleteOfferProviderCompanyDetailsAsync();
 }

@@ -64,24 +64,30 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
+    Task<(Guid ProviderCompanyDetailId, ProviderDetails providerDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
     /// <param name="dataUrl">Url for the service provider</param>
+    /// <param name="authUrl">Authentication url to connect with auto setup and callback url</param>
+    /// <param name="clientId">client id to get the token</param>
+    /// <param name="clientSecret">client secret to get the token</param>
+    /// <param name="initializationVector">Initialization Vector</param>
+    /// <param name="encryptionMode">Encryption Mode</param>
     /// <param name="setOptionalParameter">action to set optional parameter</param>
     /// <returns>Returns the newly created entity</returns>
-    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter = null);
+    /// </summary>
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, Action<ProviderCompanyDetail>? setOptionalParameter = null);
 
     /// <summary>
     /// Gets the service provider company details data
     /// </summary>
-    /// <param name="companyRoleId">Id of the details</param>
-    /// <param name="companyId">Id of the users company</param>
+    /// <param name="requiredCompanyRoleId">required company role id which is allowed to modify the provider details</param>
+    /// <param name="companyId">required Id of the users company</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(IEnumerable<CompanyRoleId> requiredCompanyRoleId, Guid companyId);
 
     /// <summary>
     /// Updates the service provider company details

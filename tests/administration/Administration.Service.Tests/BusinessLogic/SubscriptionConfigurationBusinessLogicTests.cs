@@ -17,9 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -29,6 +31,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identitie
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Security.Cryptography;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -48,6 +51,8 @@ public class SubscriptionConfigurationBusinessLogicTests
     private readonly IFixture _fixture;
     private readonly ISubscriptionConfigurationBusinessLogic _sut;
     private readonly IIdentityService _identityService;
+    private readonly OfferProviderSettings _options;
+
 
     public SubscriptionConfigurationBusinessLogicTests()
     {
@@ -71,8 +76,16 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionsRepository);
-
-        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories, _identityService);
+        _options = new OfferProviderSettings
+        {
+            EncryptionConfigs =
+                   [
+                new() { Index=0, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.ECB, PaddingMode=PaddingMode.PKCS7 },
+                new() { Index=1, EncryptionKey=Convert.ToHexString(_fixture.CreateMany<byte>(32).ToArray()), CipherMode=CipherMode.CBC, PaddingMode=PaddingMode.PKCS7 },
+                   ],
+            EncryptionConfigIndex = 1
+        };
+        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories, _identityService, Options.Create(_options));
     }
 
     #region GetProcessStepsForSubscription
@@ -190,7 +203,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         // Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com");
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com", "https://auth.url", "test", "Sup3rS3cureTest!");
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((Guid.Empty, null!));
 
@@ -198,50 +211,83 @@ public class SubscriptionConfigurationBusinessLogicTests
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         _serviceProviderDetails.Should().ContainSingle();
     }
 
     [Fact]
-    public async Task SetProviderCompanyDetailsAsync_WithNotExistingAndUrlNull_DoesNothing()
+    public async Task SetProviderCompanyDetailsAsync_WithUrlNull_ThrowException()
     {
         // Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData(null, null);
+        var providerDetailData = new ProviderDetailData(string.Empty, "https://www.test.com", "https://auth.url", "client-id", "Sup3rS3cureTest!");
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((Guid.Empty, null!));
 
-        // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
-        // Assert
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        //Assert
+        await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        _serviceProviderDetails.Should().BeEmpty();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithClientIdNull_ThrowException()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com", "https://auth.url", string.Empty, "Sup3rS3cureTest!");
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((Guid.Empty, null!));
+
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_CLIENT_MUST_SET.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task SetProviderCompanyDetailsAsync_WithProviderDetailsAndNoUrl_RemovesProviderDetails()
+    public async Task SetProviderCompanyDetailsAsync_WithAuthUrlNull_ThrowException()
     {
         // Arrange
         SetupProviderCompanyDetails();
-        var providerCompanyId = Guid.NewGuid();
-        var providerDetailData = new ProviderDetailData(null, null);
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com", string.Empty, "client-id", "Sup3rS3cureTest!");
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((providerCompanyId, null!));
+            .Returns((Guid.Empty, null!));
 
-        // Act
-        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
-        // Assert
-        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(providerCompanyId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
-        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        //Assert
+        await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithClientSecretNull_ThrowException()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com", "https://auth.url", "test", string.Empty);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((Guid.Empty, null!));
+
+        //Act
+        async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_SECRET_MUST_SET.ToString());
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
     }
 
@@ -253,19 +299,19 @@ public class SubscriptionConfigurationBusinessLogicTests
         const string changedUrl = "https://www.service-url.com";
         var detailsId = Guid.NewGuid();
         var existingUrl = _fixture.Create<string>();
-        var providerDetailData = new ProviderDetailData(changedUrl, null);
+        var providerDetailData = new ProviderDetailData(changedUrl, null, "https://auth.url", "test", "Sup3rS3cureTest!");
 
         ProviderCompanyDetail? initialDetail = null;
         ProviderCompanyDetail? modifyDetail = null;
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((detailsId, existingUrl));
+            .Returns((detailsId, new ProviderDetails(existingUrl, string.Empty, "https://auth.url", "test", _fixture.CreateMany<byte>(32).ToArray(), null, 0)));
 
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._))
             .Invokes((Guid id, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modifiy) =>
             {
-                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
-                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default);
+                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default, null!, null!, null!, default, default);
+                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default, null!, null!, null!, default, default);
                 initialize(initialDetail);
                 modifiy(modifyDetail);
             });
@@ -274,7 +320,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, null)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, null)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         initialDetail.Should().NotBeNull();
@@ -289,7 +335,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         //Arrange
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", null, "https://auth.url", "test", "Sup3rS3cureTest!");
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -307,14 +353,14 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _identity.CompanyId).Returns(NoServiceProviderCompanyId);
 
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData("https://www.service-url.com", null);
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", null, "https://auth.url", "test", "Sup3rS3cureTest!");
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER.ToString());
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER.ToString());
         _serviceProviderDetails.Should().BeEmpty();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
@@ -327,7 +373,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         //Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData(url, null);
+        var providerDetailData = new ProviderDetailData(url, null, string.Empty, string.Empty, string.Empty);
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -345,7 +391,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         //Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData(url, null);
+        var providerDetailData = new ProviderDetailData(url, null, "https://auth.url", "test", "Sup3rS3cureTest!");
 
         //Act
         async Task Action() => await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -355,6 +401,48 @@ public class SubscriptionConfigurationBusinessLogicTests
         ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    #endregion
+
+    #region Delete Auto setup configuration
+
+    [Fact]
+    public async Task DeleteOfferProviderCompanyDetailsAsync_ReturnsExpectedResult()
+    {
+        //Arrange
+        SetupProviderCompanyDetails();
+        var detailsId = Guid.NewGuid();
+        var existingUrl = _fixture.Create<string>();
+
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((detailsId, new ProviderDetails(existingUrl, string.Empty, "https://auth.url", "test", _fixture.CreateMany<byte>(32).ToArray(), null, 0)));
+        //Act
+        await _sut.DeleteOfferProviderCompanyDetailsAsync();
+
+        //Assert
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(detailsId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteOfferProviderCompanyDetailsAsync_No_Configuration_Exist()
+    {
+        //Arrange
+        SetupProviderCompanyDetails();
+        var detailsId = Guid.NewGuid();
+        var existingUrl = _fixture.Create<string>();
+
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((default, null!));
+        //Act
+        async Task Action() => await _sut.DeleteOfferProviderCompanyDetailsAsync();
+
+        //Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Action);
+        ex.Message.Should().Be(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_AUTO_SETUP_NOT_FOUND.ToString());
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(detailsId)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
     #endregion
@@ -393,8 +481,8 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         //Arrange
         SetupProviderCompanyDetails();
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, ExistingCompanyId))
-            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), false));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, ExistingCompanyId))
+            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de", "https://auth.url", "client-id", "Sup3rS3cureTest!"), false));
 
         //Act
         async Task Action() => await _sut.GetProviderCompanyDetailsAsync();
@@ -416,21 +504,21 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId || x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns<(bool, bool)>(default);
 
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>?>._))
-            .Invokes((Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter) =>
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, A<Action<ProviderCompanyDetail>?>._))
+            .Invokes((Guid companyId, string dataUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, Action<ProviderCompanyDetail>? setOptionalParameter) =>
             {
-                var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
+                var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow, authUrl, clientId, clientSecret, initializationVector, encryptionMode);
                 setOptionalParameter?.Invoke(providerCompanyDetail);
                 _serviceProviderDetails.Add(providerCompanyDetail);
             });
 
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Matches(x => x == ExistingCompanyId)))
-            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de"), true));
-        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<CompanyRoleId>.That.Matches(x => x == CompanyRoleId.SERVICE_PROVIDER), A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>.That.Matches(x => x.Contains(CompanyRoleId.SERVICE_PROVIDER) || x.Contains(CompanyRoleId.APP_PROVIDER)), A<Guid>.That.Matches(x => x == ExistingCompanyId)))
+            .Returns((new ProviderDetailReturnData(Guid.NewGuid(), Guid.NewGuid(), "https://new-test-service.de", "https://auth.url", "client-id", "Sup3rS3cureTest!"), true));
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>.That.Matches(x => x.Contains(CompanyRoleId.SERVICE_PROVIDER) || x.Contains(CompanyRoleId.APP_PROVIDER)), A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
             .Returns<(ProviderDetailReturnData, bool)>(default);
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Matches(x => x == ExistingCompanyId)))
-            .Returns((Guid.NewGuid(), _fixture.Create<string>()));
+            .Returns((Guid.NewGuid(), _fixture.Create<ProviderDetails>()));
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
             .Returns((Guid.Empty, null!));
     }
