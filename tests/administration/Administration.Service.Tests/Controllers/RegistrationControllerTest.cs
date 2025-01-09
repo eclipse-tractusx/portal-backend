@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -52,6 +53,7 @@ public class RegistrationControllerTest
         _logic = A.Fake<IRegistrationBusinessLogic>();
         _controller = new RegistrationController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(AccessToken, identity);
+        _controller.HttpContext.Request.Headers.Append("Business-Partner-Number", Bpn);
     }
 
     [Fact]
