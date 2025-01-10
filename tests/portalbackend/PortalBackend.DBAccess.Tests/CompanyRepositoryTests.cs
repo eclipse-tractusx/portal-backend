@@ -57,26 +57,38 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         const string url = "https://service-url.com";
+        var autoSetupCallbackUrl = "https://test.de";
         var (sut, context) = await CreateSut();
+        const string authUrl = "https://auth-url.com";
+        const string clientId = "client-id";
+        var secret = A<byte[]>._;
+        var encryptionMode = A<int>._;
+        var initializationVector = A<byte[]>._;
 
         // Act
-        var results = sut.CreateProviderCompanyDetail(_validCompanyId, url, string.Empty, string.Empty, A<byte[]>._, A<byte[]>._, A<int>._, entity =>
+        var results = sut.CreateProviderCompanyDetail(_validCompanyId, new ProviderDetailsCreationData(url, authUrl, clientId, secret, encryptionMode), entity =>
         {
-            entity.AutoSetupCallbackUrl = "https://test.de";
+            entity.AutoSetupCallbackUrl = autoSetupCallbackUrl;
+            entity.InitializationVector = initializationVector;
         });
 
         // Assert
         var changeTracker = context.ChangeTracker;
         results.CompanyId.Should().Be(_validCompanyId);
         results.AutoSetupUrl.Should().Be(url);
-        results.AutoSetupCallbackUrl.Should().Be("https://test.de");
+        results.AutoSetupCallbackUrl.Should().Be(autoSetupCallbackUrl);
         changeTracker.HasChanges().Should().BeTrue();
         changeTracker.Entries().ToList()
             .Should().ContainSingle()
             .Which.Entity.Should().BeOfType<ProviderCompanyDetail>()
             .Which.Should().Match<ProviderCompanyDetail>(x =>
                 x.AutoSetupUrl == url &&
-                x.AutoSetupCallbackUrl == "https://test.de"
+                x.AutoSetupCallbackUrl == autoSetupCallbackUrl &&
+                x.AuthUrl == authUrl &&
+                x.ClientId == clientId &&
+                x.ClientSecret == secret &&
+                x.InitializationVector == initializationVector &&
+                x.EncryptionMode == encryptionMode
             );
     }
 

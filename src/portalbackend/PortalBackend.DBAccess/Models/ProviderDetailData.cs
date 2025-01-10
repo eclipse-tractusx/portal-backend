@@ -35,3 +35,12 @@ public record ProviderDetails
     byte[]? InitializationVector,
     int EncryptionMode
 );
+
+public record ProviderDetailsCreationData
+(
+    string AutoSetupUrl,
+    string AuthUrl,
+    string ClientId,
+    byte[] ClientSecret,
+    int EncryptionMode
+);
