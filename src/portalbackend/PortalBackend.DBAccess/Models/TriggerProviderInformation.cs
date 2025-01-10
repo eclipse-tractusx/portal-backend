@@ -25,7 +25,7 @@ public record TriggerProviderInformation(
     Guid OfferId,
     string? OfferName,
     string? AutoSetupUrl,
-    ProviderAuthInformation AuthDetails,
+    ProviderAuthInformation? AuthDetails,
     CompanyInformationData CompanyInformationData,
     OfferTypeId OfferTypeId,
     Guid? SalesManagerId,

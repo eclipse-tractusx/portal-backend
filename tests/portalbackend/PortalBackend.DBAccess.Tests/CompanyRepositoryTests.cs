@@ -61,9 +61,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
         const string authUrl = "https://auth-url.com";
         const string clientId = "client-id";
-        var secret = A<byte[]>._;
-        var encryptionMode = A<int>._;
-        var initializationVector = A<byte[]>._;
+        var secret = Convert.FromHexString("2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6");
+        var initializationVector = Convert.FromBase64String("JHcycHPDfRwjT1J1NqBJtQ==");
+        var encryptionMode = 5;
+
 
         // Act
         var results = sut.CreateProviderCompanyDetail(_validCompanyId, new ProviderDetailsCreationData(url, authUrl, clientId, secret, encryptionMode), entity =>
@@ -163,7 +164,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
+        var result = await sut.GetProviderCompanyDetailAsync([CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER], new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd"));
 
         // Assert
         result.Should().NotBe(default);
@@ -179,7 +180,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, Guid.NewGuid());
+        var result = await sut.GetProviderCompanyDetailAsync([CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER], Guid.NewGuid());
 
         // Assert
         result.Should().Be(default);
@@ -192,7 +193,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetProviderCompanyDetailAsync(A<IEnumerable<CompanyRoleId>>._, new("ac861325-bc54-4583-bcdc-9e9f2a38ff84"));
+        var result = await sut.GetProviderCompanyDetailAsync([CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER], new("41fd2ab8-71cd-4546-9bef-a388d91b2542"));
 
         // Assert
         result.Should().NotBe(default);
