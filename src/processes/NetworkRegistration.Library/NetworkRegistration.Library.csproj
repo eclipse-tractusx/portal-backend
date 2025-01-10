@@ -35,7 +35,7 @@
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\Mailing.Library\Mailing.Library.csproj" />
   </ItemGroup>
 

@@ -26,7 +26,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -563,9 +562,9 @@ public class RegistrationBusinessLogic(
 
         var entries = await checklistService.CreateInitialChecklistAsync(applicationId);
 
-        var process = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
+        var process = portalRepositories.GetInstance<IPortalProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST);
 
-        portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()
+        portalRepositories.GetInstance<IPortalProcessStepRepository>()
             .CreateProcessStepRange(
                 checklistService
                     .GetInitialProcessStepTypeIds(entries)
@@ -975,7 +974,7 @@ public class RegistrationBusinessLogic(
     private void ScheduleDeleteIdentityProviders(Guid companyId, IEnumerable<IdentityProviderStatusData> identityProviderStatusDatas)
     {
         var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
 
         identityProviderStatusDatas
             .Where(data => data.IdentityProviderTypeId == IdentityProviderTypeId.MANAGED)
@@ -1032,7 +1031,7 @@ public class RegistrationBusinessLogic(
             .DeleteCompanyUserAssignedRoles(
                 companyUserDatas.SelectMany(data => data.IdentityAssignedRoleIds.Select(roleId => (data.CompanyUserId, roleId))));
 
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
         var processIds = processStepRepository
             .CreateProcessRange(Enumerable.Repeat(ProcessTypeId.USER_PROVISIONING, companyUserDatas.Count()))
             .Select(x => x.Id)

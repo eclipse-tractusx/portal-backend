@@ -19,19 +19,21 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 
-public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId>(ProcessDbContext<TProcessTypeId, TProcessStepTypeId> dbContext) : IProcessRepositories
+public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId>(IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId> dbContext) : IProcessRepositories
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    private static KeyValuePair<Type, Func<ProcessDbContext<TProcessTypeId, TProcessStepTypeId>, object>> CreateTypeEntry<T>(Func<ProcessDbContext<TProcessTypeId, TProcessStepTypeId>, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
+    private static KeyValuePair<Type, Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object>> CreateTypeEntry<T>(Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
 
-    protected static readonly IReadOnlyDictionary<Type, Func<ProcessDbContext<TProcessTypeId, TProcessStepTypeId>, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(new[]
+    protected static readonly IReadOnlyDictionary<Type, Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(new[]
     {
-        CreateTypeEntry<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>(context => new ProcessStepRepository<TProcessTypeId, TProcessStepTypeId>(context))
+        CreateTypeEntry<IProcessStepRepository<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>>(context => new ProcessStepRepository<TProcessTypeId, TProcessStepTypeId>(context))
     });
 
     public virtual RepositoryType GetInstance<RepositoryType>()

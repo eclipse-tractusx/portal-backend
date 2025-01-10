@@ -42,7 +42,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
-      <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+      <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
       <ProjectReference Include="..\..\..\src\notifications\Notifications.Service\Notifications.Service.csproj" />
       <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />

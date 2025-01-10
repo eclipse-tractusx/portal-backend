@@ -17,35 +17,33 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class Process<TProcessTypeId, TProcessStepTypeId> : IBaseEntity, ILockableEntity
+public class ProcessStepStatus<TProcessTypeId, TProcessStepTypeId> : IProcessStepStatus
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    private Process()
+    private ProcessStepStatus()
     {
+        Label = null!;
         ProcessSteps = new HashSet<ProcessStep<TProcessTypeId, TProcessStepTypeId>>();
     }
 
-    public Process(Guid id, TProcessTypeId processTypeId, Guid version) : this()
+    public ProcessStepStatus(ProcessStepStatusId processStepStatusId) : this()
     {
-        Id = id;
-        ProcessTypeId = processTypeId;
-        Version = version;
+        Id = processStepStatusId;
+        Label = processStepStatusId.ToString();
     }
 
-    public Guid Id { get; private set; }
+    public ProcessStepStatusId Id { get; private set; }
 
-    public TProcessTypeId ProcessTypeId { get; set; }
+    [MaxLength(255)]
+    public string Label { get; private set; }
 
-    public DateTimeOffset? LockExpiryDate { get; set; }
-
-    [ConcurrencyCheck]
-    public Guid Version { get; set; }
-
+    // Navigation properties
     public virtual ICollection<ProcessStep<TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; private set; }
 }

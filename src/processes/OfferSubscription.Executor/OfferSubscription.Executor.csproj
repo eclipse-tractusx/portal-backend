@@ -31,7 +31,7 @@
         <ProjectReference Include="..\..\externalsystems\OfferProvider.Library\OfferProvider.Library.csproj" />
         <ProjectReference Include="..\..\marketplace\Offers.Library\Offers.Library.csproj" />
         <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
-        <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+        <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     </ItemGroup>
 
 </Project>

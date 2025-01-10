@@ -24,15 +24,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 
 public static class VerifyProcessDataExtensions
 {
-    public static ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> CreateManualProcessData<TProcessTypeId, TProcessStepTypeId>(
-        this VerifyProcessData<TProcessTypeId, TProcessStepTypeId>? processData,
+    public static IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> CreateManualProcessData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(
+        this IVerifyProcessData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>? processData,
         TProcessStepTypeId? processStepTypeId,
         IProcessRepositories processRepositories,
         Func<string> getProcessEntityName)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
@@ -66,13 +68,15 @@ public static class VerifyProcessDataExtensions
             throw new ConflictException($"{getProcessEntityName()}, process step {processStepTypeId} is not eligible to run");
         }
 
-        return new(processStepTypeId, processData.Process, processData.ProcessSteps, processRepositories);
+        return new ManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(processStepTypeId, processData.Process, processData.ProcessSteps, processRepositories);
     }
 }
 
 public static class ManualProcessStepDataExtensions
 {
-    public static void RequestLock<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, DateTimeOffset lockExpiryDate)
+    public static void RequestLock<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> context, DateTimeOffset lockExpiryDate)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
@@ -85,46 +89,54 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
-    public static void SkipProcessSteps<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+    public static void SkipProcessSteps<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible =>
-        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>()
+        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
                     .Where(step => !context.ProcessStepTypeId.HasValue || !step.ProcessStepTypeId.Equals(context.ProcessStepTypeId.Value))
                     .GroupBy(step => step.ProcessStepTypeId)
                     .IntersectBy(processStepTypeIds, group => group.Key)
-                    .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
+                    .SelectMany(group => ModifyStepStatusRange<TProcessStepType, TProcessStepTypeId>(group, ProcessStepStatusId.SKIPPED)));
 
-    public static void SkipProcessStepsExcept<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+    public static void SkipProcessStepsExcept<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible =>
-        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>()
+        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
             .AttachAndModifyProcessSteps(
                 context.ProcessSteps
                     .Where(step => !context.ProcessStepTypeId.HasValue || !step.ProcessStepTypeId.Equals(context.ProcessStepTypeId.Value))
                     .GroupBy(step => step.ProcessStepTypeId)
                     .ExceptBy(processStepTypeIds, group => group.Key)
-                    .SelectMany(group => ModifyStepStatusRange(group, ProcessStepStatusId.SKIPPED)));
+                    .SelectMany(group => ModifyStepStatusRange<TProcessStepType, TProcessStepTypeId>(group, ProcessStepStatusId.SKIPPED)));
 
-    public static void ScheduleProcessSteps<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+    public static void ScheduleProcessSteps<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> context, IEnumerable<TProcessStepTypeId> processStepTypeIds)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible =>
-        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>()
+        context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
             .CreateProcessStepRange(
                 processStepTypeIds
                     .Select(x => x)
                     .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
                     .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
 
-    public static void FinalizeProcessStep<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context)
+    public static void FinalizeProcessStep<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> context)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
         if (context.ProcessStepTypeId != null)
         {
-            context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().AttachAndModifyProcessSteps(
-                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId.Equals(context.ProcessStepTypeId!.Value)), ProcessStepStatusId.DONE));
+            context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>().AttachAndModifyProcessSteps(
+                ModifyStepStatusRange<TProcessStepType, TProcessStepTypeId>(context.ProcessSteps.Where(step => step.ProcessStepTypeId.Equals(context.ProcessStepTypeId!.Value)), ProcessStepStatusId.DONE));
         }
 
         context.ProcessRepositories.Attach(context.Process);
@@ -134,8 +146,8 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
-    private static IEnumerable<(Guid, Action<ProcessStep<TProcessTypeId, TProcessStepTypeId>>?, Action<ProcessStep<TProcessTypeId, TProcessStepTypeId>>)> ModifyStepStatusRange<TProcessTypeId, TProcessStepTypeId>(IEnumerable<ProcessStep<TProcessTypeId, TProcessStepTypeId>> steps, ProcessStepStatusId processStepStatusId)
-        where TProcessTypeId : struct, IConvertible
+    private static IEnumerable<(Guid, Action<TProcessStepType>?, Action<TProcessStepType>)> ModifyStepStatusRange<TProcessStepType, TProcessStepTypeId>(IEnumerable<TProcessStepType> steps, ProcessStepStatusId processStepStatusId)
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessStepTypeId : struct, IConvertible
     {
         using var enumerator = steps.GetEnumerator();

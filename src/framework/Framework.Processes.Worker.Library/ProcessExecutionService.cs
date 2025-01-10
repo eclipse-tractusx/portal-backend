@@ -33,14 +33,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library
 /// <summary>
 /// Service that reads all open/pending processSteps of a checklist and triggers their execution.
 /// </summary>
-public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
+public class ProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
+    where TProcessType : class, IProcess<TProcessTypeId>
+    where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly TimeSpan _lockExpiryTime;
-    private readonly ILogger<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>> _logger;
+    private readonly ILogger<ProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> _logger;
 
     /// <summary>
     /// Creates a new instance of <see cref="ProcessExecutionService"/>
@@ -53,7 +55,7 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
         IServiceScopeFactory serviceScopeFactory,
         IDateTimeProvider dateTimeProvider,
         IOptions<ProcessExecutionServiceSettings> options,
-        ILogger<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>> logger)
+        ILogger<ProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _dateTimeProvider = dateTimeProvider;
@@ -79,7 +81,7 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IProcessRepositories>();
 
-            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds(), _dateTimeProvider.OffsetNow);
+            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds(), _dateTimeProvider.OffsetNow);
             await foreach (var process in activeProcesses.WithCancellation(stoppingToken).ConfigureAwait(false))
             {
                 try
@@ -128,7 +130,7 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
         }
     }
 
-    private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor<TProcessTypeId, TProcessStepTypeId> processExecutor, Process<TProcessTypeId, TProcessStepTypeId> process, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor<TProcessTypeId, TProcessStepTypeId> processExecutor, TProcessType process, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, cancellationToken).ConfigureAwait(false))
         {

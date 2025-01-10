@@ -31,7 +31,7 @@
       <ProjectReference Include="..\..\externalsystems\BpnDidResolver.Library\BpnDidResolver.Library.csproj" />
       <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
       <ProjectReference Include="..\..\externalsystems\IssuerComponent.Library\IssuerComponent.Library.csproj" />
-      <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+      <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
       <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
       <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
       <ProjectReference Include="..\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />

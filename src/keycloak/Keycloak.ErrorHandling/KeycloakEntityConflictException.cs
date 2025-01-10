@@ -24,5 +24,5 @@ public class KeycloakEntityConflictException : Exception
 {
     public KeycloakEntityConflictException() { }
     public KeycloakEntityConflictException(string message) : base(message) { }
-    public KeycloakEntityConflictException(string message, System.Exception inner) : base(message, inner) { }
+    public KeycloakEntityConflictException(string message, Exception inner) : base(message, inner) { }
 }

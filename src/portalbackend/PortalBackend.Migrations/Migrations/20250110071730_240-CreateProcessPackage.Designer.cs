@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,7 +32,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20250107070026_240-CreateProcessPackage")]
+    [Migration("20250110071730_240-CreateProcessPackage")]
     partial class _240CreateProcessPackage
     {
         /// <inheritdoc />
@@ -7886,7 +7886,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("ProcessStepStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_process_steps_process_step_statuses_process_step_status_id");
+                        .HasConstraintName("fk_process_steps_process_step_status_process_type_id_process_s");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ProcessStepType", null)
                         .WithMany("ProcessSteps")
@@ -8167,7 +8167,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities.Process<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessTypeId, Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessStepTypeId>", "SdCreationProcess")
                         .WithOne()
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Company", "SdCreationProcessId")
-                        .HasConstraintName("fk_companies_processes_sd_creation_process_id");
+                        .HasConstraintName("fk_companies_process_process_type_id_process_step_type_id_sd_c");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "SelfDescriptionDocument")
                         .WithMany("Companies")
@@ -8195,7 +8195,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities.Process<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessTypeId, Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessStepTypeId>", "ChecklistProcess")
                         .WithMany()
                         .HasForeignKey("ChecklistProcessId")
-                        .HasConstraintName("fk_company_applications_processes_checklist_process_id");
+                        .HasConstraintName("fk_company_applications_process_process_type_id_process_step_t");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyApplicationType", "CompanyApplicationType")
                         .WithMany("CompanyApplications")
@@ -8419,7 +8419,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithOne()
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyInvitation", "ProcessId")
                         .IsRequired()
-                        .HasConstraintName("fk_company_invitations_processes_process_id");
+                        .HasConstraintName("fk_company_invitations_process_process_type_id_process_step_ty");
 
                     b.Navigation("Application");
 
@@ -8565,7 +8565,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("ProcessId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_company_user_assigned_processes_processes_process_id");
+                        .HasConstraintName("fk_company_user_assigned_processes_process_process_type_id_pro");
 
                     b.Navigation("CompanyUser");
 
@@ -8613,7 +8613,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities.Process<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessTypeId, Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessStepTypeId>", "SdCreationProcess")
                         .WithOne()
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Connector", "SdCreationProcessId")
-                        .HasConstraintName("fk_connectors_processes_sd_creation_process_id");
+                        .HasConstraintName("fk_connectors_process_process_type_id_process_step_type_id_sd_");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Document", "SelfDescriptionDocument")
                         .WithOne("Connector")
@@ -8862,7 +8862,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithOne()
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.ExternalTechnicalUserCreationData", "ProcessId")
                         .IsRequired()
-                        .HasConstraintName("fk_external_technical_user_creation_data_processes_process_id");
+                        .HasConstraintName("fk_external_technical_user_creation_data_process_process_type_");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.TechnicalUser", "TechnicalUser")
                         .WithOne("ExternalTechnicalUserCreationData")
@@ -8987,7 +8987,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("ProcessId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_identity_provider_assigned_processes_processes_process_id");
+                        .HasConstraintName("fk_identity_provider_assigned_processes_process_process_type_i");
 
                     b.Navigation("IdentityProvider");
 
@@ -9053,7 +9053,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .WithOne()
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.MailingInformation", "ProcessId")
                         .IsRequired()
-                        .HasConstraintName("fk_mailing_informations_processes_process_id");
+                        .HasConstraintName("fk_mailing_informations_process_process_type_id_process_step_t");
 
                     b.Navigation("MailingStatus");
 
@@ -9087,7 +9087,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         .HasForeignKey("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.NetworkRegistration", "ProcessId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_network_registrations_processes_process_id");
+                        .HasConstraintName("fk_network_registrations_process_process_type_id_process_step_");
 
                     b.Navigation("Company");
 
@@ -9300,7 +9300,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities.Process<Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessTypeId, Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums.ProcessStepTypeId>", "Process")
                         .WithMany()
                         .HasForeignKey("ProcessId")
-                        .HasConstraintName("fk_offer_subscriptions_processes_process_id");
+                        .HasConstraintName("fk_offer_subscriptions_process_process_type_id_process_step_ty");
 
                     b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.CompanyUser", "Requester")
                         .WithMany("RequestedSubscriptions")

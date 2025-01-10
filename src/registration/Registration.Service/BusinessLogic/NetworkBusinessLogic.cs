@@ -20,9 +20,8 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -89,9 +88,10 @@ public class NetworkBusinessLogic(
         portalRepositories.GetInstance<IConsentRepository>()
             .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
 
-        var entries = await checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
-        var processId = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
-        portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()
+        var entries = await _checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
+        var portalProcessStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+        var processId = portalProcessStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
+        portalProcessStepRepository
             .CreateProcessStepRange(
                 checklistService
                     .GetInitialProcessStepTypeIds(entries)

@@ -22,23 +22,26 @@ using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 
-public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecutor<TProcessTypeId, TProcessStepTypeId>
+public class ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> : IProcessExecutor<TProcessTypeId, TProcessStepTypeId>
+    where TProcessType : class, IProcess<TProcessTypeId>
+    where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
     private readonly ImmutableDictionary<TProcessTypeId, IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> _executors;
-    private readonly IProcessStepRepository<TProcessTypeId, TProcessStepTypeId> _processStepRepository;
-    private readonly ILogger<ProcessExecutor<TProcessTypeId, TProcessStepTypeId>> _logger;
+    private readonly IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> _processStepRepository;
+    private readonly ILogger<ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> _logger;
 
-    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> executors, IProcessRepositories processRepositories, ILogger<ProcessExecutor<TProcessTypeId, TProcessStepTypeId>> logger)
+    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> executors, IProcessRepositories processRepositories, ILogger<ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> logger)
     {
-        _processStepRepository = processRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>();
+        _processStepRepository = processRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>();
         _executors = executors.ToImmutableDictionary(executor => executor.GetProcessTypeId());
         _logger = logger;
     }
@@ -208,6 +211,7 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
                 item = default;
                 return false;
             }
+
             item = enumerator.Current;
             _items.Remove(item);
             return true;

@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -65,7 +64,7 @@ public class NetworkBusinessLogic(
         var ownerCompanyId = _identityData.CompanyId;
         var networkRepository = portalRepositories.GetInstance<INetworkRepository>();
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
-        var processStepRepository = portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
         var identityProviderRepository = portalRepositories.GetInstance<IIdentityProviderRepository>();
 
         var (roleData, identityProviderIdAliase, singleIdentityProviderIdAlias, allIdentityProviderIds) = await ValidatePartnerRegistrationData(data, networkRepository, identityProviderRepository, ownerCompanyId).ConfigureAwait(ConfigureAwaitOptions.None);

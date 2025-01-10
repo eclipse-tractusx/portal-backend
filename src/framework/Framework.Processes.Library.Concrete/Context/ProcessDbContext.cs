@@ -18,12 +18,15 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 
-public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> : DbContext
+public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> :
+    DbContext,
+    IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
@@ -48,17 +51,31 @@ public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ProcessStep<TProcessTypeId, TProcessStepTypeId>>()
-            .HasOne(d => d.Process)
-            .WithMany(p => p.ProcessSteps)
-            .HasForeignKey(d => d.ProcessId)
-            .OnDelete(DeleteBehavior.ClientSetNull);
+        modelBuilder.Entity<Process<TProcessTypeId, TProcessStepTypeId>>(p =>
+        {
+            p.ToTable("processes");
+        });
 
-        modelBuilder.Entity<ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>>()
-            .HasData(
+        modelBuilder.Entity<ProcessStep<TProcessTypeId, TProcessStepTypeId>>(ps =>
+        {
+            ps
+                .HasOne(d => d.Process)
+                .WithMany(p => p.ProcessSteps)
+                .HasForeignKey(d => d.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            ps.ToTable("process_steps");
+        });
+
+        modelBuilder.Entity<ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>>(pss =>
+        {
+            pss.HasData(
                 Enum.GetValues(typeof(ProcessStepStatusId))
                     .Cast<ProcessStepStatusId>()
                     .Select(e => new ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>(e))
             );
+
+            pss.ToTable("process_step_statuses");
+        });
     }
 }
