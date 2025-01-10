@@ -24,11 +24,11 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 [AuditEntityV1(typeof(AuditProviderCompanyDetail20250109))]
-public class ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, DateTimeOffset dateCreated, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode) : IAuditableV1, IBaseEntity
+public class ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl, string authUrl, string clientId, byte[] clientSecret, int encryptionMode) : IAuditableV1, IBaseEntity
 {
     public Guid Id { get; private set; } = id;
 
-    public DateTimeOffset DateCreated { get; private set; } = dateCreated;
+    public DateTimeOffset DateCreated { get; set; }
 
     public string AutoSetupUrl { get; set; } = autoSetupUrl;
 
@@ -39,7 +39,7 @@ public class ProviderCompanyDetail(Guid id, Guid companyId, string autoSetupUrl,
     public string ClientId { get; set; } = clientId;
 
     public byte[] ClientSecret { get; set; } = clientSecret;
-    public byte[]? InitializationVector { get; set; } = initializationVector;
+    public byte[]? InitializationVector { get; set; }
     public int EncryptionMode { get; set; } = encryptionMode;
 
     [LastChangedV1]

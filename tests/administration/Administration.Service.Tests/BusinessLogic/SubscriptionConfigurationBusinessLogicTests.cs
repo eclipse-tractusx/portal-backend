@@ -210,7 +210,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<ProviderDetailsCreationData>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         _serviceProviderDetails.Should().ContainSingle();
@@ -309,8 +309,8 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._))
             .Invokes((Guid id, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modifiy) =>
             {
-                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default, null!, null!, null!, default, default);
-                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, default, null!, null!, null!, default, default);
+                initialDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, null!, null!, null!, default);
+                modifyDetail = new ProviderCompanyDetail(id, Guid.Empty, null!, null!, null!, null!, default);
                 initialize(initialDetail);
                 modifiy(modifyDetail);
             });
@@ -319,7 +319,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
 
         //Assert
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, null)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<ProviderDetailsCreationData>._, null)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(detailsId, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         initialDetail.Should().NotBeNull();
@@ -502,10 +502,10 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.IsValidCompanyRoleOwner(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId || x == NoServiceProviderCompanyId), A<IEnumerable<CompanyRoleId>>._))
             .Returns<(bool, bool)>(default);
 
-        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<string>._, A<string>._, A<byte[]>._, A<byte[]>._, A<int>._, A<Action<ProviderCompanyDetail>?>._))
-            .Invokes((Guid companyId, string dataUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, Action<ProviderCompanyDetail>? setOptionalParameter) =>
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<ProviderDetailsCreationData>._, A<Action<ProviderCompanyDetail>?>._))
+            .Invokes((Guid companyId, ProviderDetailsCreationData providerDetailsCreationData, Action<ProviderCompanyDetail>? setOptionalParameter) =>
             {
-                var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow, authUrl, clientId, clientSecret, initializationVector, encryptionMode);
+                var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, providerDetailsCreationData.AutoSetupUrl, providerDetailsCreationData.AuthUrl, providerDetailsCreationData.ClientId, providerDetailsCreationData.ClientSecret, providerDetailsCreationData.EncryptionMode);
                 setOptionalParameter?.Invoke(providerCompanyDetail);
                 _serviceProviderDetails.Add(providerCompanyDetail);
             });

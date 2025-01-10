@@ -142,7 +142,7 @@ public class SubscriptionConfigurationBusinessLogic(
         (var providerCompanyDetailId, _) = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (providerCompanyDetailId == default)
+        if (providerCompanyDetailId == Guid.Empty)
         {
             throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_AUTO_SETUP_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
@@ -166,12 +166,13 @@ public class SubscriptionConfigurationBusinessLogic(
             throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, [new ErrorParameter(nameof(companyId), companyId.ToString())]);
         }
 
-        companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, data.AuthUrl, data.ClientId, secret, initializationVector, index, providerDetails =>
+        companyRepository.CreateProviderCompanyDetail(companyId, new ProviderDetailsCreationData(data.Url!, data.AuthUrl, data.ClientId, secret, index), providerDetails =>
         {
             if (data.CallbackUrl != null)
             {
                 providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
             }
+            providerDetails.InitializationVector = initializationVector;
             providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
         });
     }

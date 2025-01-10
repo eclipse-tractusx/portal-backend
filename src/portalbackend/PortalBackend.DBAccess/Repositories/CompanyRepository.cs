@@ -146,9 +146,9 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    ProviderCompanyDetail ICompanyRepository.CreateProviderCompanyDetail(Guid companyId, string dataUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, Action<ProviderCompanyDetail>? setOptionalParameter)
+    ProviderCompanyDetail ICompanyRepository.CreateProviderCompanyDetail(Guid companyId, ProviderDetailsCreationData providerDetailsCreationData, Action<ProviderCompanyDetail>? setOptionalParameter)
     {
-        var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow, authUrl, clientId, clientSecret, initializationVector, encryptionMode);
+        var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, providerDetailsCreationData.AutoSetupUrl, providerDetailsCreationData.AuthUrl, providerDetailsCreationData.ClientId, providerDetailsCreationData.ClientSecret, providerDetailsCreationData.EncryptionMode);
         setOptionalParameter?.Invoke(providerCompanyDetail);
         return context.ProviderCompanyDetails.Add(providerCompanyDetail).Entity;
     }
@@ -172,7 +172,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
     /// <inheritdoc />
     public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify)
     {
-        var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default, null!, null!, null!, null, default);
+        var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, null!, null!, null!, default);
         initialize(details);
         context.Attach(details);
         modify(details);
@@ -415,7 +415,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
 
     public void RemoveProviderCompanyDetails(Guid providerCompanyDetailId) =>
         context.ProviderCompanyDetails
-            .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default, null!, null!, null!, null, default));
+            .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, null!, null!, null!, default));
 
     public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() =>
         (skip, take) => Pagination.CreateSourceQueryAsync(

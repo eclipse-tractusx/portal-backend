@@ -70,16 +70,11 @@ public interface ICompanyRepository
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
-    /// <param name="dataUrl">Url for the service provider</param>
-    /// <param name="authUrl">Authentication url to connect with auto setup and callback url</param>
-    /// <param name="clientId">client id to get the token</param>
-    /// <param name="clientSecret">client secret to get the token</param>
-    /// <param name="initializationVector">Initialization Vector</param>
-    /// <param name="encryptionMode">Encryption Mode</param>
+    /// <param name="providerDetailsCreationData">provider company details of app/service provider</param>
     /// <param name="setOptionalParameter">action to set optional parameter</param>
     /// <returns>Returns the newly created entity</returns>
     /// </summary>
-    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, string authUrl, string clientId, byte[] clientSecret, byte[]? initializationVector, int encryptionMode, Action<ProviderCompanyDetail>? setOptionalParameter = null);
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, ProviderDetailsCreationData providerDetailsCreationData, Action<ProviderCompanyDetail>? setOptionalParameter = null);
 
     /// <summary>
     /// Gets the service provider company details data
@@ -87,7 +82,7 @@ public interface ICompanyRepository
     /// <param name="requiredCompanyRoleId">required company role id which is allowed to modify the provider details</param>
     /// <param name="companyId">required Id of the users company</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(IEnumerable<CompanyRoleId> requiredCompanyRoleId, Guid companyId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(IEnumerable<CompanyRoleId> requiredCompanyRoleIds, Guid companyId);
 
     /// <summary>
     /// Updates the service provider company details
