@@ -65,7 +65,6 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var initializationVector = Convert.FromBase64String("JHcycHPDfRwjT1J1NqBJtQ==");
         var encryptionMode = 5;
 
-
         // Act
         var results = sut.CreateProviderCompanyDetail(_validCompanyId, new ProviderDetailsCreationData(url, authUrl, clientId, secret, encryptionMode), entity =>
         {
