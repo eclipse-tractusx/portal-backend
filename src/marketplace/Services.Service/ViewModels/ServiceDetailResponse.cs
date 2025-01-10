@@ -31,6 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Provider">Provider of the app.</param>
 /// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="ContactEmail">Contact email address.</param>
+/// <param name="DisplayTechnicalUser">Display Technical User.</param>
 /// <param name="Description">The description of the service.</param>
 /// <param name="LicenseType">LicenseType for offer</param>
 /// <param name="Price">Pricing information of the app.</param>
@@ -46,6 +47,7 @@ public record ServiceDetailResponse(
     string Provider,
     Guid? LeadPictureId,
     string? ContactEmail,
+    bool? DisplayTechnicalUser,
     string? Description,
     LicenseTypeId LicenseType,
     string Price,

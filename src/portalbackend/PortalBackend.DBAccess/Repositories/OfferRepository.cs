@@ -278,6 +278,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.ProviderCompany!.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ContactEmail,
+                offer.DisplayTechnicalUser,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
                 offer.OfferLicenses.FirstOrDefault()!.Licensetext,
                 offer.MarketingUrl,
