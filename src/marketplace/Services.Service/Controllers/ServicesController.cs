@@ -282,7 +282,7 @@ public class ServicesController : ControllerBase
     /// <response code="403">User's company does not provide the service.</response>
     /// <response code="404">No service or subscription found.</response>
     [HttpGet]
-    [Authorize(Roles = "subscribe_service")]
+    [Authorize(Roles = "view_service_subscriptions")]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("{serviceId}/subscription/{subscriptionId}/subscriber")]
     [ProducesResponseType(typeof(SubscriberSubscriptionDetailData), StatusCodes.Status200OK)]
