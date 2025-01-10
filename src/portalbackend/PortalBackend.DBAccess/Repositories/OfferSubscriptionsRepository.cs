@@ -358,7 +358,6 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             ))
             .SingleOrDefaultAsync();
 
-
     /// <inheritdoc />
     public Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId) =>
         dbContext.OfferSubscriptions
