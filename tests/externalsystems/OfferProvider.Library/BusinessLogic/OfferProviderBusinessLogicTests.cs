@@ -17,9 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -28,6 +30,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
+using System.Security.Cryptography;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Tests.BusinessLogic;
 
@@ -39,12 +42,14 @@ public class OfferProviderBusinessLogicTests
     private readonly Guid _companyUserId = Guid.NewGuid();
     private readonly Guid _salesManagerId = Guid.NewGuid();
     private readonly Guid _receiverId = Guid.NewGuid();
+    private readonly ProviderAuthInformation _providerAuth = new("https://auth.url", "test1", Convert.FromBase64String("hzl/2shJlzl64Y4FGNYtuFjR2c4VKXsfBz4UeQKDovQ="), Convert.FromBase64String("7hFxEXvfoiRTrHYMA+vkug=="), 1);
 
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IUserRolesRepository _userRolesRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly OfferProviderSettings _settings;
     private readonly OfferProviderBusinessLogic _sut;
 
     public OfferProviderBusinessLogicTests()
@@ -58,6 +63,15 @@ public class OfferProviderBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _userRepository = A.Fake<IUserRepository>();
 
+        _settings = new OfferProviderSettings
+        {
+            EncryptionConfigs =
+                    [
+                new() { Index = 0, EncryptionKey = "2b7e151628aed2a6abf715892b7e151628aed2a6abf715892b7e151628aed2a6", CipherMode = CipherMode.CFB, PaddingMode = PaddingMode.PKCS7 },
+                        new() { Index = 1, EncryptionKey = "5892b7e151628aed2a6abf715892b7e151628aed2a62b7e151628aed2a6abf71", CipherMode = CipherMode.CBC, PaddingMode = PaddingMode.PKCS7 },
+                    ],
+            EncryptionConfigIndex = 1
+        };
         A.CallTo(() => portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionRepository);
         A.CallTo(() => portalRepositories.GetInstance<IUserRolesRepository>())
@@ -71,7 +85,7 @@ public class OfferProviderBusinessLogicTests
         _sut = new OfferProviderBusinessLogic(
             portalRepositories,
             _offerProviderService,
-            _provisioningManager);
+            _provisioningManager, Options.Create(_settings));
     }
 
     #region TriggerProvider
@@ -107,7 +121,7 @@ public class OfferProviderBusinessLogicTests
             .And.Satisfy(x => x == ProcessStepTypeId.AWAIT_START_AUTOSETUP);
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         A.CallTo(() =>
-                _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._,
+                _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._, A<string>._, A<string>._, A<string>._,
                     A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
@@ -128,7 +142,7 @@ public class OfferProviderBusinessLogicTests
             .And.Satisfy(x => x == ProcessStepTypeId.SINGLE_INSTANCE_SUBSCRIPTION_DETAILS_CREATION);
         result.stepStatusId.Should().Be(ProcessStepStatusId.SKIPPED);
         A.CallTo(() =>
-                _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._,
+                _offerProviderService.TriggerOfferProvider(A<OfferThirdPartyAutoSetupData>._, A<string>._, A<string>._, A<string>._, A<string>._,
                     A<CancellationToken>._))
             .MustNotHaveHappened();
     }
@@ -143,7 +157,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns<(IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, OfferSubscriptionStatusId)>(default);
+            .Returns<(IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, ProviderAuthInformation, OfferSubscriptionStatusId)>(default);
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -159,7 +173,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), string.Empty, "callback", OfferSubscriptionStatusId.PENDING));
+            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), string.Empty, "callback", _providerAuth, OfferSubscriptionStatusId.PENDING));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -175,7 +189,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), null, "callback", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), null, "callback", _providerAuth, OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -191,7 +205,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), "cl1", null, OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), "cl1", null, _providerAuth, OfferSubscriptionStatusId.ACTIVE));
 
         // Act
         var result = await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
@@ -207,7 +221,7 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var fakeId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), "cl1", "https://callback.com", _providerAuth, OfferSubscriptionStatusId.ACTIVE));
 
         // Act
         var result = await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
@@ -216,7 +230,7 @@ public class OfferProviderBusinessLogicTests
         result.nextStepTypeIds.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo == null), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo == null), A<string>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
     }
@@ -232,7 +246,7 @@ public class OfferProviderBusinessLogicTests
             new(Guid.NewGuid(), "sa2", TechnicalUserKindId.INTERNAL)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((serviceAccounts, "cl1", "https://callback.com", _providerAuth, OfferSubscriptionStatusId.ACTIVE));
         async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
 
         // Act
@@ -254,7 +268,7 @@ public class OfferProviderBusinessLogicTests
             new(technicalUserId, technicalUserClientId, TechnicalUserKindId.INTERNAL)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
-            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((serviceAccounts, "cl1", "https://callback.com", _providerAuth, OfferSubscriptionStatusId.ACTIVE));
         A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(technicalUserClientId))
             .Returns(technicalUserInternalClientId);
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(technicalUserInternalClientId))
@@ -267,7 +281,7 @@ public class OfferProviderBusinessLogicTests
         result.nextStepTypeIds.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == "test123"), A<string>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -282,7 +296,7 @@ public class OfferProviderBusinessLogicTests
             new(technicalUserId, technicalUserClientId, TechnicalUserKindId.EXTERNAL)
         };
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
-            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+            .Returns((serviceAccounts, "cl1", "https://callback.com", _providerAuth, OfferSubscriptionStatusId.ACTIVE));
 
         // Act
         var result = await _sut.TriggerProviderCallback(_subscriptionId, CancellationToken.None);
@@ -295,7 +309,7 @@ public class OfferProviderBusinessLogicTests
             .MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == null), A<string>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -310,6 +324,7 @@ public class OfferProviderBusinessLogicTests
                 _offerId,
                 "Test App",
                 "https://www.test.com",
+                _providerAuth,
                 new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST", "test@email.com"),
                 offerTypeId,
                 _salesManagerId,
@@ -322,6 +337,7 @@ public class OfferProviderBusinessLogicTests
                 _offerId,
                 "Single Test App",
                 "https://www.test.com",
+                _providerAuth,
                 new CompanyInformationData(Guid.NewGuid(), "Stark", "DE", "BPNL0000123TEST",
                     "test@email.com"),
                 offerTypeId,

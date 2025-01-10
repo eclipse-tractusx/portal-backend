@@ -33,4 +33,11 @@ public class OfferProviderSettings : KeyVaultAuthSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
+
+    [Required]
+    [DistinctValues("x => x.Index")]
+    public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
+
+    [Required]
+    public int EncryptionConfigIndex { get; set; }
 }
