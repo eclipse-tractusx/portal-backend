@@ -63,6 +63,7 @@ public record ServiceDetailData(
     string Provider,
     Guid? LeadPictureId,
     string? ContactEmail,
+    bool? DisplayTechnicalUser,
     string? Description,
     string Price,
     string? ProviderUri,

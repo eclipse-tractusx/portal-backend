@@ -2391,6 +2391,10 @@ components:
           type: string
           description: Contact email address.
           nullable: true
+        displayTechnicalUser:
+          type: boolean
+          description: Display Technical User.
+          nullable: true
         description:
           type: string
           description: The description of the service.
