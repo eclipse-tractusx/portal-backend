@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.Identity\Framework.Identity.csproj" />
-    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\..\..\src\registration\Registration.Service\Registration.Service.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>

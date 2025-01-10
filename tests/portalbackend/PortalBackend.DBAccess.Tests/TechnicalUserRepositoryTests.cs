@@ -170,7 +170,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull()
-            .And.Match<Models.TechnicalUserDetailedData>(x =>
+            .And.Match<TechnicalUserDetailedData>(x =>
                 x.TechnicalUserTypeId == TechnicalUserTypeId.OWN &&
                 x.Status == UserStatusId.ACTIVE &&
                 x.CompanyLastEditorData != null &&
@@ -231,7 +231,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull()
-            .And.Match<Models.TechnicalUserDetailedData>(x =>
+            .And.Match<TechnicalUserDetailedData>(x =>
                 x.ClientClientId == "sa-x-inactive" &&
                 x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 x.Status == UserStatusId.INACTIVE);
@@ -254,12 +254,12 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull()
-            .And.Match<Framework.Models.Pagination.Source<Models.CompanyServiceAccountData>>(x =>
+            .And.Match<Framework.Models.Pagination.Source<CompanyServiceAccountData>>(x =>
                 x.Count == count &&
                 x.Data.Count() == expected);
         if (expected > 0)
         {
-            result!.Data.First().Should().Match<Models.CompanyServiceAccountData>(y =>
+            result!.Data.First().Should().Match<CompanyServiceAccountData>(y =>
                 y.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&
                 y.IsOwner &&
                 !y.IsProvider);
@@ -388,7 +388,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.Count.Should().Be(1);
         result.Data.Should().ContainSingle()
-            .Which.Should().Match<Models.CompanyServiceAccountData>(x =>
+            .Which.Should().Match<CompanyServiceAccountData>(x =>
                 x.TechnicalUserId == new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d") &&
                 x.ClientId == "sa-x-inactive" &&
                 x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED &&

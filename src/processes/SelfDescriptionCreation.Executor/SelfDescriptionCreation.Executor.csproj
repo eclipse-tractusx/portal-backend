@@ -30,7 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\SdFactory.Library\SdFactory.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,16 +17,20 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 
-public record ManualProcessStepData<TProcessTypeId, TProcessStepTypeId>(
-    TProcessStepTypeId? ProcessStepTypeId,
-    Process<TProcessTypeId, TProcessStepTypeId> Process,
-    IEnumerable<ProcessStep<TProcessTypeId, TProcessStepTypeId>> ProcessSteps,
-    IProcessRepositories ProcessRepositories
-)
-where TProcessTypeId : struct, IConvertible
-where TProcessStepTypeId : struct, IConvertible;
+public interface IProcessDbContext<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId> : IDbContext
+    where TProcessType : class, IProcess<TProcessTypeId>
+    where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
+    where TProcessStepStatusType : class, IProcessStepStatus
+    where TProcessTypeId : struct, IConvertible
+    where TProcessStepTypeId : struct, IConvertible
+{
+    DbSet<TProcessType> Processes { get; set; }
+    DbSet<TProcessStepType> ProcessSteps { get; set; }
+    DbSet<TProcessStepStatusType> ProcessStepStatuses { get; set; }
+}

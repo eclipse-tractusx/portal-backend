@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 
 public static class ProcessStepExtensions
 {
-    public static ProcessStepTypeId? GetProcessStepTypeId(this IEnumerable<(ProcessStepTypeId ProcessStepTypeId, Framework.Processes.Library.Enums.ProcessStepStatusId ProcessStepStatusId)> processSteps, Guid offerId)
+    public static ProcessStepTypeId? GetProcessStepTypeId(this IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> processSteps, Guid offerId)
     {
         try
         {

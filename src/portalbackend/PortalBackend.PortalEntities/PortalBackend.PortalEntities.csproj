@@ -46,7 +46,7 @@
     <ProjectReference Include="..\..\framework\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Identity\Framework.Identity.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
   </ItemGroup>
 
 </Project>

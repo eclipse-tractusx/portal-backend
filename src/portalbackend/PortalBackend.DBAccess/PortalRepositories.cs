@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -55,7 +57,8 @@ public class PortalRepositories(PortalDbContext portalDbContext)
         CreateTypeEntry<INetworkRepository>(context => new NetworkRepository(context)),
         CreateTypeEntry<IOfferRepository>(context => new OfferRepository(context)),
         CreateTypeEntry<IOfferSubscriptionsRepository>(context => new OfferSubscriptionsRepository(context)),
-        CreateTypeEntry<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>(context => new ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>(context)),
+        CreateTypeEntry<IPortalProcessStepRepository>(context => new ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>(context)),
+        CreateTypeEntry<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>(context => new ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>(context)),
         CreateTypeEntry<ITechnicalUserRepository>(context => new TechnicalUserRepository(context)),
         CreateTypeEntry<IStaticDataRepository>(context => new StaticDataRepository(context)),
         CreateTypeEntry<ITechnicalUserProfileRepository>(context => new TechnicalUserProfileRepository(context)),

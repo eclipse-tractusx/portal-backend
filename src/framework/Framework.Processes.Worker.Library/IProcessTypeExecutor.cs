@@ -33,12 +33,12 @@ public interface IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>
     ValueTask<bool> IsLockRequested(TProcessStepTypeId processStepTypeId);
 
     /// <summary>
-    /// tbd
+    /// Executes the process step and returns the result
     /// </summary>
-    /// <param name="processStepTypeId"></param>
-    /// <param name="processStepTypeIds"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="processStepTypeId">Id of the processStepType that is being executed</param>
+    /// <param name="processStepTypeIds">List of the processStepTypeIds</param>
+    /// <param name="cancellationToken">Cancellation Token</param>
+    /// <returns>The result of the execution</returns>
     ValueTask<StepExecutionResult> ExecuteProcessStep(TProcessStepTypeId processStepTypeId, IEnumerable<TProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken);
 
     bool IsExecutableStepTypeId(TProcessStepTypeId processStepTypeId);

@@ -18,9 +18,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -36,7 +36,7 @@ public class OfferSubscriptionProcessServiceTests
 
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionsRepository;
-    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IPortalProcessStepRepository _processStepRepository;
 
     private readonly IOfferSubscriptionProcessService _service;
 
@@ -49,10 +49,11 @@ public class OfferSubscriptionProcessServiceTests
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionsRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
 
         _service = new OfferSubscriptionProcessService(_portalRepositories);
     }
@@ -278,7 +279,7 @@ public class OfferSubscriptionProcessServiceTests
         var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
-        var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
+        var context = new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
             new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
@@ -346,7 +347,7 @@ public class OfferSubscriptionProcessServiceTests
         var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
-        var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
+        var context = new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
             new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
@@ -415,7 +416,7 @@ public class OfferSubscriptionProcessServiceTests
         var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
-        var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
+        var context = new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
             new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },

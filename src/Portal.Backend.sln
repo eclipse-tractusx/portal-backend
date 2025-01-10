@@ -284,11 +284,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfDescriptionCreation.Exe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Identity", "framework\Framework.Identity\Framework.Identity.csproj", "{6ED01D72-BE48-45A6-A615-BFA83DF99EF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Library", "framework\Framework.Processes.Library\Framework.Processes.Library.csproj", "{124683B4-17F3-4E0A-818C-32DB91324ABB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Library.Concrete", "framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj", "{124683B4-17F3-4E0A-818C-32DB91324ABB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.ProcessIdentity", "framework\Framework.Processes.ProcessIdentity\Framework.Processes.ProcessIdentity.csproj", "{96F978B7-71C1-4866-BFB5-8631F4743FA5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Worker.Library", "framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj", "{BD0268EB-65A9-4A0A-B724-214A6D2591B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Framework.Processes.Library", "framework\Framework.Processes.Library\Framework.Processes.Library.csproj", "{28007753-C8F8-43B0-A1C3-8FDC22727F44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1860,6 +1862,18 @@ Global
 		{BD0268EB-65A9-4A0A-B724-214A6D2591B5}.Release|x64.Build.0 = Release|Any CPU
 		{BD0268EB-65A9-4A0A-B724-214A6D2591B5}.Release|x86.ActiveCfg = Release|Any CPU
 		{BD0268EB-65A9-4A0A-B724-214A6D2591B5}.Release|x86.Build.0 = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|x64.Build.0 = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Debug|x86.Build.0 = Debug|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|x64.ActiveCfg = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|x64.Build.0 = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|x86.ActiveCfg = Release|Any CPU
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1998,5 +2012,6 @@ Global
 		{124683B4-17F3-4E0A-818C-32DB91324ABB} = {B42CFF96-B8DB-48A6-A9CA-72BFB5F0117B}
 		{96F978B7-71C1-4866-BFB5-8631F4743FA5} = {B42CFF96-B8DB-48A6-A9CA-72BFB5F0117B}
 		{BD0268EB-65A9-4A0A-B724-214A6D2591B5} = {B42CFF96-B8DB-48A6-A9CA-72BFB5F0117B}
+		{28007753-C8F8-43B0-A1C3-8FDC22727F44} = {B42CFF96-B8DB-48A6-A9CA-72BFB5F0117B}
 	EndGlobalSection
 EndGlobal

@@ -19,21 +19,24 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 
 public static class RetriggerExtensions
 {
-    public static async Task TriggerProcessStep<TProcessTypeId, TProcessStepTypeId>(
+    public static async Task TriggerProcessStep<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(
         this TProcessStepTypeId stepToTrigger, Guid processId,
         IProcessRepositories processRepositories,
         Func<TProcessStepTypeId, (TProcessTypeId, TProcessStepTypeId)> getProcessStepForRetrigger)
+        where TProcessType : class, IProcess<TProcessTypeId>
+        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
         var (processType, nextStep) = getProcessStepForRetrigger(stepToTrigger);
 
-        var (validProcessId, processData) = await processRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (validProcessId, processData) = await processRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");

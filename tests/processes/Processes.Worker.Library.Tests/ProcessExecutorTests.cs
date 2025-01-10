@@ -19,8 +19,8 @@
 
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
@@ -33,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 public class ProcessExecutorTests
 {
     private readonly IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId> _processTypeExecutor;
-    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _sut;
     private readonly IFixture _fixture;
 
@@ -45,18 +45,18 @@ public class ProcessExecutorTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _processTypeExecutor = A.Fake<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>>();
-        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        var logger = A.Fake<ILogger<ProcessExecutor<ProcessTypeId, ProcessStepTypeId>>>();
+        var logger = A.Fake<ILogger<ProcessExecutor<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>>();
 
-        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         A.CallTo(() => _processTypeExecutor.GetProcessTypeId())
             .Returns(ProcessTypeId.APPLICATION_CHECKLIST);
 
-        _sut = new ProcessExecutor<ProcessTypeId, ProcessStepTypeId>(
+        _sut = new ProcessExecutor<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(
             new[] { _processTypeExecutor },
             portalRepositories,
             logger);

@@ -52,7 +52,6 @@
     <ProjectReference Include="..\OfferSubscription.Executor\OfferSubscription.Executor.csproj" />
     <ProjectReference Include="..\NetworkRegistration.Executor\NetworkRegistration.Executor.csproj" />
     <ProjectReference Include="..\Processes.ProcessIdentity\Processes.ProcessIdentity.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\ApplicationChecklist.Executor\ApplicationChecklist.Executor.csproj" />
     <ProjectReference Include="..\IdentityProviderProvisioning.Executor\IdentityProviderProvisioning.Executor.csproj" />
     <ProjectReference Include="..\UserProvisioning.Executor\UserProvisioning.Executor.csproj" />

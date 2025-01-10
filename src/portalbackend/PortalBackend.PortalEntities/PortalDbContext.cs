@@ -19,7 +19,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -178,6 +179,9 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<OnboardingServiceProviderDetail> OnboardingServiceProviderDetails { get; set; } = default!;
+    public virtual DbSet<Process<ProcessTypeId, ProcessStepTypeId>> Processes { get; set; } = default!;
+    public virtual DbSet<ProcessStep<ProcessTypeId, ProcessStepTypeId>> ProcessSteps { get; set; } = default!;
+    public virtual DbSet<ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>> ProcessStepStatuses { get; set; } = default!;
     public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
     public virtual DbSet<ProcessType> ProcessTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
@@ -203,6 +207,11 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
     public virtual DbSet<AgreementStatus> AgreementStatuses { get; set; } = default!;
     public virtual DbSet<AgreementView> AgreementView { get; set; } = default!;
     public virtual DbSet<CompanyWalletData> CompanyWalletDatas { get; set; } = default!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSnakeCaseNamingConvention();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

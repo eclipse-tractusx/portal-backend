@@ -18,34 +18,35 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessStep<TProcessTypeId, TProcessStepTypeId>(
-    Guid id,
-    TProcessStepTypeId processStepTypeId,
-    ProcessStepStatusId processStepStatusId,
-    Guid processId,
-    DateTimeOffset dateCreated)
-    : IBaseEntity
+public class Process<TProcessTypeId, TProcessStepTypeId> : IProcess<TProcessTypeId>, IBaseEntity
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    public Guid Id { get; private set; } = id;
+    private Process()
+    {
+        ProcessSteps = new HashSet<ProcessStep<TProcessTypeId, TProcessStepTypeId>>();
+    }
 
-    public TProcessStepTypeId ProcessStepTypeId { get; private set; } = processStepTypeId;
+    public Process(Guid id, TProcessTypeId processTypeId, Guid version) : this()
+    {
+        Id = id;
+        ProcessTypeId = processTypeId;
+        Version = version;
+    }
 
-    public ProcessStepStatusId ProcessStepStatusId { get; set; } = processStepStatusId;
+    public Guid Id { get; private set; }
 
-    public Guid ProcessId { get; private set; } = processId;
+    public TProcessTypeId ProcessTypeId { get; set; }
 
-    public DateTimeOffset DateCreated { get; private set; } = dateCreated;
+    public DateTimeOffset? LockExpiryDate { get; set; }
 
-    public DateTimeOffset? DateLastChanged { get; set; }
+    [ConcurrencyCheck]
+    public Guid Version { get; set; }
 
-    public string? Message { get; set; }
-
-    // Navigation properties
-    public virtual Process<TProcessTypeId, TProcessStepTypeId>? Process { get; private set; }
+    public virtual ICollection<ProcessStep<TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; private set; }
 }

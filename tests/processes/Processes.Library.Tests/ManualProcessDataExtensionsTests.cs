@@ -18,10 +18,11 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -32,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library.Tests;
 public class ManualProcessDataExtensionsTests
 {
     private readonly IProcessRepositories _processRepositories;
-    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly string _entityName;
     private readonly Func<string> _getProcessEntityName;
     private readonly IFixture _fixture;
@@ -43,9 +44,9 @@ public class ManualProcessDataExtensionsTests
         _fixture.ConfigureFixture();
 
         _processRepositories = A.Fake<IProcessRepositories>();
-        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
+        A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         _entityName = _fixture.Create<string>();
@@ -71,7 +72,7 @@ public class ManualProcessDataExtensionsTests
         var result = sut.CreateManualProcessData(stepTypeId, _processRepositories, _getProcessEntityName);
 
         // Assert
-        result.Should().NotBeNull().And.BeOfType<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>().And.Match<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>(
+        result.Should().NotBeNull().And.BeOfType<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>().And.Match<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>(
             data =>
                 data.ProcessStepTypeId == stepTypeId &&
                 data.Process == sut.Process &&
@@ -203,7 +204,7 @@ public class ManualProcessDataExtensionsTests
         // Arrange
         var expiryDate = _fixture.Create<DateTimeOffset>();
         var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
-        var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
+        var sut = _fixture.Build<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
             .Create();
@@ -222,7 +223,7 @@ public class ManualProcessDataExtensionsTests
         // Arrange
         var expiryDate = _fixture.Create<DateTimeOffset>();
         var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = expiryDate };
-        var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
+        var sut = _fixture.Build<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
             .Create();
@@ -303,7 +304,7 @@ public class ManualProcessDataExtensionsTests
                 }
             });
 
-        var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
+        var sut = _fixture.Build<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.ProcessStepTypeId, stepTypeIds[3])
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
@@ -393,7 +394,7 @@ public class ManualProcessDataExtensionsTests
                 }
             });
 
-        var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
+        var sut = _fixture.Build<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.ProcessStepTypeId, stepTypeIds[3])
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
@@ -433,7 +434,7 @@ public class ManualProcessDataExtensionsTests
                 return createdSteps;
             });
 
-        var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
+        var sut = _fixture.Build<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.ProcessRepositories, _processRepositories)
             .Create();
 
@@ -488,10 +489,10 @@ public class ManualProcessDataExtensionsTests
                 }
             });
 
-        var sut = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(stepTypeIds[1], process, processSteps, _processRepositories);
+        var sut = new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(stepTypeIds[1], process, processSteps, _processRepositories);
 
         // Act
-        sut.FinalizeProcessStep<ProcessTypeId, ProcessStepTypeId>();
+        sut.FinalizeProcessStep();
 
         // Assert
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>?, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>)>>._))

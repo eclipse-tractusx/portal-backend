@@ -55,7 +55,7 @@
     <ProjectReference Include="..\..\framework\Framework.Identity\Framework.Identity.csproj" />
     <ProjectReference Include="..\..\framework\Framework.IO\Framework.IO.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\processes\ApplicationChecklist.Config\ApplicationChecklist.Config.csproj" />

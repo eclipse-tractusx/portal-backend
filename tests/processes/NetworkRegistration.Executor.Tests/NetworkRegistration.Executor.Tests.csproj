@@ -39,7 +39,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
+    <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\..\..\src\processes\NetworkRegistration.Executor\NetworkRegistration.Executor.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
