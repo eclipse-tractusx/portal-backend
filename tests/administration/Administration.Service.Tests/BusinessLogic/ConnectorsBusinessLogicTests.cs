@@ -60,7 +60,7 @@ public class ConnectorsBusinessLogicTests
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
-    private readonly ConnectorsBusinessLogic _logic;
+    private ConnectorsBusinessLogic _logic;
     private readonly IDocumentRepository _documentRepository;
     private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IIdentityService _identityService;
@@ -740,6 +740,32 @@ public class ConnectorsBusinessLogicTests
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+
+        // Act
+        await _logic.DeleteConnectorAsync(connectorId, true);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnector(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _connectorsRepository.DeleteConnectorAssignedSubscriptions(connectorId, A<IEnumerable<Guid>>.That.Matches(x => x.Count() == 2))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task DeleteConnectorAsync_WithActiveAndWithoutDocumentId_ExpectedCalls()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var options = A.Fake<IOptions<ConnectorsSettings>>();
+        var settings = new ConnectorsSettings { ClearinghouseConnectDisabled = true };
+        A.CallTo(() => options.Value).Returns(settings);
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        var connectorOfferSubscriptions = new[] {
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+            new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
+        };
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId, true);
