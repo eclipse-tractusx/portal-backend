@@ -311,7 +311,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
 
     /// <inheritdoc />
     public Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId) =>
-        dbContext.OfferSubscriptions
+         dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new
             {
@@ -334,7 +334,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 x.OfferId,
                 x.OfferName,
                 x.AutoSetupUrl,
-               new ProviderAuthInformation(
+               x.AuthUrl == null ? null : new ProviderAuthInformation(
                     x.AuthUrl,
                     x.ClientId,
                     x.ClientSecret,
@@ -354,6 +354,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 x.IsSingleInstance
             ))
             .SingleOrDefaultAsync();
+
 
     /// <inheritdoc />
     public Task<SubscriptionActivationData?> GetSubscriptionActivationDataByIdAsync(Guid offerSubscriptionId) =>
@@ -435,14 +436,14 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, TechnicalUserKindId TechnicalUserKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, ProviderAuthInformation AuthDetails, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, TechnicalUserKindId TechnicalUserKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, ProviderAuthInformation? AuthDetails, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, ProviderAuthInformation, OfferSubscriptionStatusId>(
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, ProviderAuthInformation?, OfferSubscriptionStatusId>(
                     x.Technicalusers.Select(sa => new ValueTuple<Guid, string?, TechnicalUserKindId>(sa.Id, sa.ClientClientId, sa.TechnicalUserKindId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
-                    new ProviderAuthInformation(x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AuthUrl,
+                    x.Offer.ProviderCompany.ProviderCompanyDetail!.AuthUrl == null ? null : new ProviderAuthInformation(x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AuthUrl,
                                                  x.Offer!.ProviderCompany!.ProviderCompanyDetail!.ClientId,
                                                  x.Offer!.ProviderCompany!.ProviderCompanyDetail!.ClientSecret,
                                                  x.Offer!.ProviderCompany!.ProviderCompanyDetail!.InitializationVector,

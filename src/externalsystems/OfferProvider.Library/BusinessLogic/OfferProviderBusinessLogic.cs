@@ -68,8 +68,8 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         {
             throw new ConflictException("Country should be set for the company");
         }
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(data.AuthDetails.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
@@ -159,8 +159,8 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             technicalUserInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(data.AuthDetails.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
+        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         await _offerProviderService
             .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)
