@@ -123,7 +123,6 @@ public static class ManualProcessStepDataExtensions
         context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
             .CreateProcessStepRange(
                 processStepTypeIds
-                    .Select(x => x)
                     .Except(context.ProcessSteps.Select(step => step.ProcessStepTypeId))
                     .Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.Process.Id)));
 
