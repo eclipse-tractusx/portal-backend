@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -28,20 +29,16 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 
-public class MailingProcessCreation : IMailingProcessCreation
+public class MailingProcessCreation(
+    IPortalRepositories portalRepositories,
+    IOptions<MailingProcessCreationSettings> options)
+    : IMailingProcessCreation
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly MailingProcessCreationSettings _settings;
-
-    public MailingProcessCreation(IPortalRepositories portalRepositories, IOptions<MailingProcessCreationSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _settings = options.Value;
-    }
+    private readonly MailingProcessCreationSettings _settings = options.Value;
 
     public void CreateMailProcess(string email, string template, IReadOnlyDictionary<string, string> mailParameters)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
         var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
         processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
         CreateMailingInformation(processId, email, template, mailParameters);
@@ -50,7 +47,7 @@ public class MailingProcessCreation : IMailingProcessCreation
     public async Task RoleBaseSendMail(IEnumerable<UserRoleConfig> receiverRoles, IEnumerable<(string ParameterName, string ParameterValue)> parameters, (string ParameterName, string ParameterValue)? userNameParameter, IEnumerable<string> templates, Guid companyId)
     {
         var roleData = await GetRoleData(receiverRoles);
-        var companyUserWithRoleIdForCompany = _portalRepositories.GetInstance<IUserRepository>()
+        var companyUserWithRoleIdForCompany = portalRepositories.GetInstance<IUserRepository>()
             .GetCompanyUserEmailForCompanyAndRoleId(roleData, companyId);
         await CreateMailProcesses(parameters, userNameParameter, templates, companyUserWithRoleIdForCompany);
     }
@@ -61,7 +58,7 @@ public class MailingProcessCreation : IMailingProcessCreation
         Guid identityProviderId)
     {
         var roleData = await GetRoleData(receiverRoles);
-        var companyUserWithRoleIdForIdp = _portalRepositories.GetInstance<IIdentityProviderRepository>()
+        var companyUserWithRoleIdForIdp = portalRepositories.GetInstance<IIdentityProviderRepository>()
             .GetCompanyUserEmailForIdpWithoutOwnerAndRoleId(roleData, identityProviderId);
         await CreateMailProcesses(parameters, userNameParameter, templates, companyUserWithRoleIdForIdp);
     }
@@ -69,7 +66,7 @@ public class MailingProcessCreation : IMailingProcessCreation
     public async Task<IEnumerable<Guid>> GetRoleData(IEnumerable<UserRoleConfig> receiverRoles)
     {
         var receiverUserRoles = receiverRoles;
-        var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
+        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
         var roleData = await userRolesRepository
             .GetUserRoleIdsUntrackedAsync(receiverUserRoles)
             .ToListAsync()
@@ -102,7 +99,7 @@ public class MailingProcessCreation : IMailingProcessCreation
                 return parameters;
             }
 
-            var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+            var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
             var processId = processStepRepository.CreateProcess(ProcessTypeId.MAILING).Id;
             processStepRepository.CreateProcessStep(ProcessStepTypeId.SEND_MAIL, ProcessStepStatusId.TODO, processId);
             foreach (var template in templates)
@@ -116,6 +113,6 @@ public class MailingProcessCreation : IMailingProcessCreation
     {
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
         var (secret, initializationVector) = CryptoHelper.Encrypt(JsonSerializer.Serialize(mailParameters), Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-        _portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, email, template, secret, initializationVector, _settings.EncryptionConfigIndex);
+        portalRepositories.GetInstance<IMailingInformationRepository>().CreateMailingInformation(processId, email, template, secret, initializationVector, _settings.EncryptionConfigIndex);
     }
 }

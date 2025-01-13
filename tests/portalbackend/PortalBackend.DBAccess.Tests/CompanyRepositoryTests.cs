@@ -266,7 +266,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
-        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Modified);
+        entry.State.Should().Be(EntityState.Modified);
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<ProviderCompanyDetail>().Which.AutoSetupUrl.Should().Be(url);
-        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Unchanged);
+        entry.State.Should().Be(EntityState.Unchanged);
     }
 
     #endregion
@@ -317,7 +317,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
-        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Modified);
+        entry.State.Should().Be(EntityState.Modified);
     }
 
     [Fact]
@@ -340,7 +340,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         changedEntries.Should().HaveCount(1);
         var entry = changedEntries.Single();
         entry.Entity.Should().BeOfType<Address>().Which.City.Should().Be(city);
-        entry.State.Should().Be(Microsoft.EntityFrameworkCore.EntityState.Unchanged);
+        entry.State.Should().Be(EntityState.Unchanged);
     }
 
     #endregion

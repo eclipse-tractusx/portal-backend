@@ -635,9 +635,9 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         changeTracker.HasChanges().Should().BeTrue();
         changedEntries.Should().AllSatisfy(entry => entry.Entity.Should().BeOfType<AppAssignedUseCase>());
         changedEntries.Should().HaveCount(addedEntities.Length + removedEntities.Length);
-        var added = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Added).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
-        var modified = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Modified).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
-        var deleted = changedEntries.Where(entry => entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+        var added = changedEntries.Where(entry => entry.State == EntityState.Added).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+        var modified = changedEntries.Where(entry => entry.State == EntityState.Modified).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
+        var deleted = changedEntries.Where(entry => entry.State == EntityState.Deleted).Select(x => (AppAssignedUseCase)x.Entity).ToImmutableArray();
 
         added.Should().HaveSameCount(addedEntities);
         added.OrderBy(x => x.UseCaseId).Zip(addedEntities).Should().AllSatisfy(x => (x.First.AppId == x.Second.AppId && x.First.UseCaseId == x.Second.UseCaseId).Should().BeTrue());
