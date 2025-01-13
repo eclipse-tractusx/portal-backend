@@ -51,7 +51,9 @@ public class Seeding : IBaseSeeding
             new(NotificationTypeId.SERVICE_RELEASE_REQUEST, NotificationTopicId.OFFER),
             new(NotificationTypeId.SERVICE_RELEASE_APPROVAL, NotificationTopicId.OFFER),
             new(NotificationTypeId.APP_RELEASE_REJECTION, NotificationTopicId.OFFER),
-            new(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER)
+            new(NotificationTypeId.SERVICE_RELEASE_REJECTION, NotificationTopicId.OFFER),
+            new(NotificationTypeId.APP_SUBSCRIPTION_DECLINE, NotificationTopicId.OFFER),
+            new(NotificationTypeId.SERVICE_SUBSCRIPTION_DECLINE, NotificationTopicId.OFFER)
         });
 
         dbContext.Notifications.AddRange(new List<Notification>

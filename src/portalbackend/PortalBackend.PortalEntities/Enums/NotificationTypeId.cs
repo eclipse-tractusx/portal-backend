@@ -153,5 +153,15 @@ public enum NotificationTypeId
     /// <summary>
     /// Notification when a credential is expired
     /// </summary>
-    CREDENTIAL_EXPIRY = 26
+    CREDENTIAL_EXPIRY = 26,
+
+    /// <summary>
+    /// Notification when an app is declined
+    /// </summary>
+    APP_SUBSCRIPTION_DECLINE = 27,
+
+    /// <summary>
+    /// Notification when a service is declined
+    /// </summary>
+    SERVICE_SUBSCRIPTION_DECLINE = 28,
 }

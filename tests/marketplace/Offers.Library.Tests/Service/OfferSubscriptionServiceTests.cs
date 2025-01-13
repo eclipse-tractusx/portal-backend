@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -474,6 +475,158 @@ public class OfferSubscriptionServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
         ex.Message.Should().Be($"{offerTypeId} providing company is not set");
+    }
+
+    #endregion
+
+    #region Remove Offer Subscription
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task RemoveOfferSubscription_ReturnsExpected(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerSubscriptionDetails = _fixture.Build<OfferSubscriptionTransferData>()
+            .With(x => x.Status, OfferSubscriptionStatusId.PENDING)
+            .With(x => x.IsProviderCompany, true)
+            .Create();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
+            .Returns(offerSubscriptionDetails);
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._));
+
+        // Act
+        await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
+
+        // Assert
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _notificationRepository.CreateNotification(offerSubscriptionDetails.RequesterId,
+                offerTypeId == OfferTypeId.SERVICE
+                    ? NotificationTypeId.SERVICE_SUBSCRIPTION_DECLINE
+                    : NotificationTypeId.APP_SUBSCRIPTION_DECLINE, false, A<Action<Notification>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(
+            A<string>.That.IsEqualTo(offerSubscriptionDetails.RequesterEmail!),
+            A<string>.That.IsEqualTo($"{offerTypeId.ToString().ToLower()}-subscription-decline"),
+            A<IReadOnlyDictionary<string, string>>.That.Matches(x =>
+                x["offerName"] == offerSubscriptionDetails.OfferName
+                && x["url"] == BasePortalUrl
+                && x["requesterName"] == string.Format("{0} {1}", offerSubscriptionDetails.RequesterFirstname, offerSubscriptionDetails.RequesterLastname))
+                )).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task RemoveOfferSubscription_NoOfferDetails_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    {
+        // Arrange 
+        var offerSubscriptionDetails = _fixture.Build<OfferSubscriptionTransferData>()
+            .With(x => x.OfferName, string.Empty)
+            .Create();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
+            .Returns(offerSubscriptionDetails);
+
+        // Act
+        async Task Action() => await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NOTFOUND.ToString());
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task RemoveOfferSubscription_NotProviderCompany_ThrowsForbiddenException(OfferTypeId offerTypeId)
+    {
+        // Arrange 
+        var offerSubscriptionDetails = _fixture.Build<OfferSubscriptionTransferData>()
+            .With(x => x.IsProviderCompany, false)
+            .Create();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
+            .Returns(offerSubscriptionDetails);
+
+        // Act
+        async Task Action() => await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.NON_PROVIDER_IS_FORBIDDEN.ToString());
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task RemoveOfferSubscription_AlreadyInActiveSubscription_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange 
+        var offerSubscriptionDetails = _fixture.Build<OfferSubscriptionTransferData>()
+            .With(x => x.IsProviderCompany, true)
+            .With(x => x.Status, OfferSubscriptionStatusId.INACTIVE)
+            .Create();
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
+            .Returns(offerSubscriptionDetails);
+
+        // Act
+        async Task Action() => await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Action);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_STATUS_CONFLICT_INCORR_OFFER_STATUS.ToString());
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.SERVICE)]
+    [InlineData(OfferTypeId.APP)]
+    public async Task RemoveOfferSubscription_NoSubscriptionDetails_ThrowsNotFoundException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(A<Guid>._, A<Guid>._, offerTypeId))
+            .Returns<OfferSubscriptionTransferData?>(null);
+
+        // Act
+        async Task Action() => await _sut.RemoveOfferSubscriptionAsync(_validSubscriptionId, offerTypeId, BasePortalUrl);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(_validSubscriptionId, _identity.CompanyId, offerTypeId))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.Remove(A<OfferSubscription>._)).
+            MustNotHaveHappened();
+        A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, false, A<Action<Notification>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
+            .MustNotHaveHappened();
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND.ToString());
     }
 
     #endregion

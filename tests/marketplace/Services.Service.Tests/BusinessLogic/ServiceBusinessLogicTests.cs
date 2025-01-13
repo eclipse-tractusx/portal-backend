@@ -185,6 +185,34 @@ public class ServiceBusinessLogicTests
 
     #endregion
 
+    #region Decline Service Subscription
+
+    [Fact]
+    public async Task DeclineServiceSubscription_ReturnsExpected()
+    {
+        // Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionService.RemoveOfferSubscriptionAsync(A<Guid>._, OfferTypeId.SERVICE, A<string>._))
+            .Returns(offerSubscriptionId);
+        var serviceSettings = new ServiceSettings
+        {
+            BasePortalAddress = "https://base-portal-address-test.de"
+        };
+        var sut = new ServiceBusinessLogic(null!, null!, _offerSubscriptionService, null!, _identityService, Options.Create(serviceSettings));
+
+        // Act
+        await sut.DeclineServiceSubscriptionAsync(offerSubscriptionId);
+
+        // Assert
+        A.CallTo(() => _offerSubscriptionService.RemoveOfferSubscriptionAsync(
+                A<Guid>.That.IsEqualTo(offerSubscriptionId),
+                A<OfferTypeId>.That.Matches(x => x == OfferTypeId.SERVICE),
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    #endregion
+
     #region GetCompanyProvidedServiceSubscriptionStatusesForUser
 
     [Theory]

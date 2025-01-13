@@ -186,6 +186,10 @@ public class AppsBusinessLogic : IAppsBusinessLogic
         _offerSubscriptionService.AddOfferSubscriptionAsync(appId, offerAgreementConsentData, OfferTypeId.APP, _settings.BasePortalAddress, _settings.SubscriptionManagerRoles, _settings.ServiceManagerRoles);
 
     /// <inheritdoc/>
+    public Task DeclineAppSubscriptionAsync(Guid subscriptionId) =>
+        _offerSubscriptionService.RemoveOfferSubscriptionAsync(subscriptionId, OfferTypeId.APP, _settings.BasePortalAddress);
+
+    /// <inheritdoc/>
     public Task TriggerActivateOfferSubscription(Guid subscriptionId) =>
         _offerSetupService.TriggerActivateSubscription(subscriptionId);
 
