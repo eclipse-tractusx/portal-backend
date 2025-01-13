@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
@@ -35,6 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Contr
 public class RegistrationControllerTest
 {
     private static readonly string AccessToken = "THISISTHEACCESSTOKEN";
+    private static readonly string Bpn = "CAXLSHAREDIDPZZ";
     private readonly IRegistrationBusinessLogic _logic;
     private readonly RegistrationController _controller;
     private readonly IFixture _fixture;
@@ -51,6 +53,7 @@ public class RegistrationControllerTest
         _logic = A.Fake<IRegistrationBusinessLogic>();
         _controller = new RegistrationController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(AccessToken, identity);
+        _controller.HttpContext.Request.Headers.Append("Business-Partner-Number", Bpn);
     }
 
     [Fact]
@@ -126,7 +129,7 @@ public class RegistrationControllerTest
         var result = await _controller.ProcessClearinghouseResponse(data, cancellationToken);
 
         //Assert
-        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, cancellationToken)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, Bpn, cancellationToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
     }
 

@@ -19,6 +19,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -401,16 +402,19 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Select(ca => new { ca.ApplicationStatusId, ca.Company, ca.Company!.Address, ca.Company.CompanyIdentifiers })
             .Select(ca => new ClearinghouseData(
                 ca.ApplicationStatusId,
-                new ParticipantDetails(
+                ca.Company!.BusinessPartnerNumber!,
+                new LegalEntity(
                     ca.Company!.Name,
-                    ca.Address!.City,
-                    ca.Address.Streetname,
-                    ca.Company.BusinessPartnerNumber,
-                    ca.Address.Region,
-                    ca.Address.Zipcode,
-                    ca.Address.Country!.CountryLongNames.Where(cln => cln.ShortName == "en").Select(cln => cln.LongName).SingleOrDefault(),
-                    ca.Address.CountryAlpha2Code),
-                ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifier!.Label, ci.Value))))
+                    new LegalAddress(
+                        ca.Address!.CountryAlpha2Code,
+                        ca.Address.Region,
+                        ca.Address.City,
+                        ca.Address.Zipcode,
+                        !string.IsNullOrEmpty(ca.Address.Streetnumber) ? string.Format("{0} {1}", ca.Address.Streetname, ca.Address.Streetnumber) : ca.Address.Streetname
+                    ),
+                    ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifierId.GetUniqueIdentifierValue(), ci.Value))
+                )
+            ))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
