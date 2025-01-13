@@ -64,7 +64,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
+    Task<(Guid ProviderCompanyDetailId, string Url, string? CallbackUrl)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
@@ -183,4 +183,5 @@ public interface ICompanyRepository
     Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId);
     Task<bool> IsExistingCompany(Guid companyId);
     Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
+    IAsyncEnumerable<VerifyProcessData> GetOfferSubscriptionProcessesForCompanyId(Guid companyId);
 }
