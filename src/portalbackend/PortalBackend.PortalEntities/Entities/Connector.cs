@@ -25,7 +25,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditConnector20241008))]
+[AuditEntityV1(typeof(AuditConnector20250113))]
 public class Connector : IAuditableV1, IBaseEntity
 {
     public Connector(Guid id, string name, string locationId, string connectorUrl)
@@ -69,6 +69,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public Guid? TechnicalUserId { get; set; }
 
     public Guid? SdCreationProcessId { get; set; }
+    public DateTimeOffset? SdSkippedDate { get; set; }
 
     [LastEditorV1]
     public Guid? LastEditorId { get; private set; }
