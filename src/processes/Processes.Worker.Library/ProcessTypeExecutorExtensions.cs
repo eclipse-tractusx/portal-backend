@@ -19,15 +19,24 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Extensions;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
+namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 
-public static class UserProvisioningExtensisons
+public static class ProcessTypeExecutorExtensions
 {
-    public static IEnumerable<ProcessStepTypeId>? GetUserProvisioningRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
-        processStepTypeId switch
+    public static (ProcessStepStatusId StatusId, string? ProcessMessage, IEnumerable<ProcessStepTypeId>? nextSteps) ProcessError(this Exception ex, ProcessStepTypeId processStepTypeId, ProcessTypeId processTypeId)
+    {
+        var (expectedProcessTypeId, retriggerStep) = processStepTypeId.GetProcessStepForRetrigger();
+        if (expectedProcessTypeId != processTypeId)
         {
-            ProcessStepTypeId.DELETE_CENTRAL_USER => [ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER],
-            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process UserProvisioning")
+            throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process {processTypeId}");
+        }
+
+        return ex switch
+        {
+            ServiceException { IsRecoverable: true } => (ProcessStepStatusId.TODO, ex.Message, null),
+            _ => (ProcessStepStatusId.FAILED, ex.Message, Enumerable.Repeat(retriggerStep, 1))
         };
+    }
 }
