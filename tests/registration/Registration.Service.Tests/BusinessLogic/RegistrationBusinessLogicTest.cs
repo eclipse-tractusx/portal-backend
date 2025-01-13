@@ -74,6 +74,7 @@ public class RegistrationBusinessLogicTest
     private readonly Guid _existingApplicationId;
     private readonly string _displayName;
     private readonly string _alpha2code;
+    private readonly string _vatId;
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
     private readonly IStaticDataRepository _staticDataRepository;
@@ -132,6 +133,7 @@ public class RegistrationBusinessLogicTest
         _existingApplicationId = _fixture.Create<Guid>();
         _displayName = _fixture.Create<string>();
         _alpha2code = "XY";
+        _vatId = "DE123456789";
         _error = _fixture.Create<TestException>();
 
         _processLine =
@@ -639,6 +641,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
         A.CallTo(() => _companyRepository.CheckBpnExists("BPNL00000001TEST")).Returns(true);
 
@@ -702,6 +705,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
         var sut = new RegistrationBusinessLogic(
@@ -766,6 +770,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
         var sut = new RegistrationBusinessLogic(
@@ -831,6 +836,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, bpn)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -898,6 +904,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -996,6 +1003,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -1087,11 +1095,17 @@ public class RegistrationBusinessLogicTest
         var uniqueIdentifiers = _fixture.CreateMany<UniqueIdentifierId>(4);
 
         var firstIdData = _fixture.Build<CompanyUniqueIdData>()
-            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.First()).Create(); // shall not modify
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.First())
+            .With(x => x.Value, "HRB123456")
+            .Create(); // shall not modify
         var secondIdData = _fixture.Build<CompanyUniqueIdData>()
-            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(1)).Create(); // shall modify
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(1))
+            .With(x => x.Value, "DE124356789")
+            .Create(); // shall modify
         var thirdIdData = _fixture.Build<CompanyUniqueIdData>()
-            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2)).Create(); // shall create new
+            .With(x => x.UniqueIdentifierId, uniqueIdentifiers.ElementAt(2))
+            .With(x => x.Value, "54930084UKLVMY22DS16")
+            .Create(); // shall create new
 
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, default(string?))
@@ -1179,6 +1193,7 @@ public class RegistrationBusinessLogicTest
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
         var identityData = A.Fake<IIdentityData>();
         A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
@@ -1226,7 +1241,10 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.UniqueIds,
                 identifiers.Select(id =>
-                    _fixture.Build<CompanyUniqueIdData>().With(x => x.UniqueIdentifierId, id).Create()))
+                    _fixture.Build<CompanyUniqueIdData>()
+                    .With(x => x.UniqueIdentifierId, id)
+                    .With(x => x.Value, _vatId)
+                    .Create()))
             .Create();
 
         var sut = new RegistrationBusinessLogic(
