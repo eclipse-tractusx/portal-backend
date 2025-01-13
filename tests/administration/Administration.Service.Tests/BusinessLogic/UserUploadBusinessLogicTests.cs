@@ -405,6 +405,45 @@ public class UserUploadBusinessLogicTests
     }
 
     [Fact]
+    public async Task TestDuplicateUserCreationError()
+    {
+        var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
+        var detailError = ConflictException.Create(ProvisioningServiceErrors.USER_CREATION_FAILURE, [new("userName", "foo"), new("realm", "bar")]);
+
+        SetupFakes([
+            HeaderLineSharedIdp(),
+            NextLineSharedIdp(),
+            NextLineSharedIdp(creationInfo),
+            NextLineSharedIdp()
+        ]);
+
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._))
+            .ReturnsLazily(
+                (CompanyNameIdpAliasData _, UserCreationRoleDataIdpInfo creationInfo, Action<UserCreationCallbackData>? _) => _fixture.Build<(Guid CompanyUserId, string UserName, string? Password, Exception? Error)>()
+                    .With(x => x.CompanyUserId, Guid.NewGuid())
+                    .With(x => x.UserName, creationInfo.UserName)
+                    .With(x => x.Error, detailError)
+                    .Create());
+
+        var sut = new UserUploadBusinessLogic(_userProvisioningService, _identityProviderProvisioningService, _mailingProcessCreation, _identityService, _errorMessageService, _options);
+
+        var result = await sut.UploadOwnCompanySharedIdpUsersAsync(_document, CancellationToken.None);
+
+        A.CallTo(() => _processLine(A<CompanyNameIdpAliasData>._, A<UserCreationRoleDataIdpInfo>.That.Matches(info => CreationInfoMatchesSharedIdp(info, creationInfo)), A<Action<UserCreationCallbackData>>._)).MustHaveHappened();
+
+        result.Should().NotBeNull();
+        result.Created.Should().Be(2);
+        result.Error.Should().Be(1);
+        result.Total.Should().Be(3);
+        result.Errors.Should().HaveCount(1);
+        result.Errors.Should().ContainSingle().Which.Should().Match<UserCreationError>(x => x.Line == 2 && x.Message.Contains("USER_CREATION_FAILURE"));
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(2, Times.Exactly);
+        A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, "NewUserPasswordTemplate", A<IReadOnlyDictionary<string, string>>._))
+            .MustHaveHappened(2, Times.Exactly);
+    }
+
+    [Fact]
     public async Task TestUserCreationSharedIdpCreationError()
     {
         var creationInfo = _fixture.Create<UserCreationRoleDataIdpInfo>();
