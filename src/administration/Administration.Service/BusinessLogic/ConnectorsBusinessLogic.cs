@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
@@ -46,6 +47,7 @@ public class ConnectorsBusinessLogic(
     ISdFactoryBusinessLogic sdFactoryBusinessLogic,
     IIdentityService identityService,
     IServiceAccountManagement serviceAccountManagement,
+    IDateTimeProvider dateTimeProvider,
     ILogger<ConnectorsBusinessLogic> logger)
     : IConnectorsBusinessLogic
 {
@@ -230,6 +232,7 @@ public class ConnectorsBusinessLogic(
                 connector.TypeId = type;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
                 connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
+                connector.SdSkippedDate = _settings.ClearinghouseConnectDisabled ? dateTimeProvider.OffsetNow : null;
                 if (technicalUserId != null)
                 {
                     connector.TechnicalUserId = technicalUserId;
