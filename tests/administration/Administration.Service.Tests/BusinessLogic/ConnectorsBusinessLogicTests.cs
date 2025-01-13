@@ -1027,13 +1027,13 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
-    public async Task UpdateConnectorUrl_WithUserNotOfHostCompany_ThrowsForbiddenException()
+    public async Task UpdateConnectorUrl_WithUserNotOfProviderCompany_ThrowsForbiddenException()
     {
         // Arrange
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, false)
+            .With(x => x.IsProviderCompany, false)
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
             .Returns(data);
@@ -1043,7 +1043,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY.ToString());
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY.ToString());
     }
 
     [Fact]
@@ -1053,7 +1053,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.INACTIVE)
             .Create();
         A.CallTo(() => _connectorsRepository.GetConnectorUpdateInformation(connectorId, _identity.CompanyId))
@@ -1074,7 +1074,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, default(string?))
@@ -1097,7 +1097,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.COMPANY_CONNECTOR)
             .With(x => x.Bpn, "BPNL123456789")
@@ -1127,7 +1127,7 @@ public class ConnectorsBusinessLogicTests
             .Create();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
@@ -1170,7 +1170,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var data = _fixture.Build<ConnectorUpdateInformation>()
             .With(x => x.ConnectorUrl, "https://old.de")
-            .With(x => x.IsHostCompany, true)
+            .With(x => x.IsProviderCompany, true)
             .With(x => x.Status, ConnectorStatusId.ACTIVE)
             .With(x => x.Type, ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
             .With(x => x.Bpn, "BPNL123456789")
