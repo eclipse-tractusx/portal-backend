@@ -292,7 +292,7 @@ public class SdFactoryBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Please provide a messsage");
+        ex.Message.Should().Be("Please provide a message");
     }
 
     [Fact]
@@ -411,7 +411,7 @@ public class SdFactoryBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Please provide a messsage");
+        ex.Message.Should().Be("Please provide a message");
     }
 
     #endregion

@@ -122,7 +122,25 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
-    private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId)
+    public static void FailProcessStep(this ManualProcessStepData context, string message)
+    {
+        if (context.ProcessStepTypeId.HasValue)
+        {
+            context.PortalRepositories.GetInstance<IProcessStepRepository>().AttachAndModifyProcessSteps(
+                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId == context.ProcessStepTypeId.Value), ProcessStepStatusId.FAILED, message));
+        }
+
+        context.PortalRepositories.Attach(context.Process);
+        if (!context.Process.ReleaseLock())
+        {
+            context.Process.UpdateVersion();
+        }
+    }
+
+    private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId) =>
+        ModifyStepStatusRange(steps, processStepStatusId, null);
+
+    private static IEnumerable<(Guid, Action<ProcessStep>?, Action<ProcessStep>)> ModifyStepStatusRange(IEnumerable<ProcessStep> steps, ProcessStepStatusId processStepStatusId, string? message)
     {
         using var enumerator = steps.GetEnumerator();
         if (!enumerator.MoveNext())
@@ -134,8 +152,17 @@ public static class ManualProcessStepDataExtensions
 
         yield return (
             current.Id,
-            ps => ps.ProcessStepStatusId = current.ProcessStepStatusId,
-            ps => ps.ProcessStepStatusId = processStepStatusId);
+            ps =>
+            {
+                ps.ProcessStepStatusId = current.ProcessStepStatusId;
+                ps.Message = null;
+            },
+            ps =>
+            {
+                ps.ProcessStepStatusId = processStepStatusId;
+                ps.Message = message;
+            }
+        );
 
         while (enumerator.MoveNext())
         {
