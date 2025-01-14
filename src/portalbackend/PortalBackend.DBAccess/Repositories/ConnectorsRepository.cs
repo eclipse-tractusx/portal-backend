@@ -219,9 +219,11 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
             connector => connector.OrderByDescending(c => c.Name),
             con => new ConnectorMissingSdDocumentData(
                 con.Id,
+                con.TypeId,
                 con.Name,
                 con.HostId ?? con.ProviderId,
-                con.HostId != null ? con.Host!.Name : con.Provider!.Name)
+                con.HostId != null ? con.Host!.Name : con.Provider!.Name,
+                con.SdSkippedDate)
         ).SingleOrDefaultAsync();
 
     public IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription() =>
