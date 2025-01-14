@@ -72,14 +72,14 @@ public class ProcessExecutionService<TProcessType, TProcessStepType, TProcessTyp
         try
         {
             using var processServiceScope = _serviceScopeFactory.CreateScope();
-            var executorRepositories = processServiceScope.ServiceProvider.GetRequiredService<IProcessRepositories>();
+            var executorRepositories = processServiceScope.ServiceProvider.GetRequiredService<IRepositories>();
             var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>>();
             var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
             //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
             await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(ConfigureAwaitOptions.None);
 
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
-            var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IProcessRepositories>();
+            var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IRepositories>();
 
             var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds(), _dateTimeProvider.OffsetNow);
             await foreach (var process in activeProcesses.WithCancellation(stoppingToken).ConfigureAwait(false))

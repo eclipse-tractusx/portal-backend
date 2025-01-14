@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
@@ -29,7 +30,7 @@ public static class RetriggerExtensions
     public static async Task TriggerProcessStep<TProcessTypeId, TProcessStepTypeId>(
         this TProcessStepTypeId stepToTrigger,
         Guid processId,
-        IProcessRepositories processRepositories,
+        IRepositories processRepositories,
         Func<TProcessStepTypeId, (TProcessTypeId, TProcessStepTypeId)> getProcessStepForRetrigger)
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible

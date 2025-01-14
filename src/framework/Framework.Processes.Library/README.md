@@ -12,7 +12,7 @@ dotnet add package Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Libra
 
 ## Usage
 
-To use the package make sure to implement the interfaces of the repositories: `IProcessRepositories`, `IProcessStepRepository<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>`.
+To use the package make sure to implement the interfaces of the repositories: `IRepositories`, `IProcessStepRepository<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>`.
 Provide an implementation for `IProcess`, `IProcessStep` & `IProcessStepStatus`.
 
 An alternative option is to use the `Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete` package

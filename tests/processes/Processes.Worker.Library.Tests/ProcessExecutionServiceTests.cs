@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
@@ -34,7 +35,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 public class ProcessExecutionServiceTests
 {
     private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
-    private readonly IProcessRepositories _processRepositories;
+    private readonly IRepositories _processRepositories;
     private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _processExecutor;
     private readonly IMockLogger<ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>> _mockLogger;
     private readonly ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _service;
@@ -49,7 +50,7 @@ public class ProcessExecutionServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var dateTimeProvider = A.Fake<IDateTimeProvider>();
-        _processRepositories = A.Fake<IProcessRepositories>();
+        _processRepositories = A.Fake<IRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
         _processExecutor = A.Fake<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>>();
         _processIdentityDataDetermination = A.Fake<IProcessIdentityDataDetermination>();
@@ -64,7 +65,7 @@ public class ProcessExecutionServiceTests
 
         var options = Options.Create(settings);
         var serviceProvider = A.Fake<IServiceProvider>();
-        A.CallTo(() => serviceProvider.GetService(typeof(IProcessRepositories))).Returns(_processRepositories);
+        A.CallTo(() => serviceProvider.GetService(typeof(IRepositories))).Returns(_processRepositories);
         A.CallTo(() => serviceProvider.GetService(typeof(IProcessExecutor<ProcessTypeId, ProcessStepTypeId>))).Returns(_processExecutor);
         A.CallTo(() => serviceProvider.GetService(typeof(IProcessIdentityDataDetermination))).Returns(_processIdentityDataDetermination);
         var serviceScope = A.Fake<IServiceScope>();

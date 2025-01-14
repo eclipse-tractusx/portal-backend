@@ -20,6 +20,7 @@
 
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
@@ -39,7 +40,7 @@ public class ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TPr
     private readonly IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> _processStepRepository;
     private readonly ILogger<ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> _logger;
 
-    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> executors, IProcessRepositories processRepositories, ILogger<ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> logger)
+    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> executors, IRepositories processRepositories, ILogger<ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>> logger)
     {
         _processStepRepository = processRepositories.GetInstance<IProcessStepRepository<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>();
         _executors = executors.ToImmutableDictionary(executor => executor.GetProcessTypeId());

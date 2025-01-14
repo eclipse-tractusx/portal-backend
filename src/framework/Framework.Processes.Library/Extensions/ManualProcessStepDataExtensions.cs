@@ -31,7 +31,7 @@ public static class VerifyProcessDataExtensions
     public static IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId> CreateManualProcessData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(
         this IVerifyProcessData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>? processData,
         TProcessStepTypeId? processStepTypeId,
-        IProcessRepositories processRepositories,
+        IRepositories processRepositories,
         Func<string> getProcessEntityName)
         where TProcessType : class, IProcess<TProcessTypeId>
         where TProcessStepType : class, IProcessStep<TProcessStepTypeId>

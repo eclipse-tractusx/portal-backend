@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
@@ -31,14 +31,14 @@ public interface IManualProcessStepData<TProcessType, TProcessStepType, TProcess
     TProcessStepTypeId? ProcessStepTypeId { get; }
     TProcessType Process { get; }
     IEnumerable<TProcessStepType> ProcessSteps { get; }
-    IProcessRepositories ProcessRepositories { get; }
+    IRepositories ProcessRepositories { get; }
 }
 
 public record ManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(
     TProcessStepTypeId? ProcessStepTypeId,
     TProcessType Process,
     IEnumerable<TProcessStepType> ProcessSteps,
-    IProcessRepositories ProcessRepositories
+    IRepositories ProcessRepositories
 ) : IManualProcessStepData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
 where TProcessType : class, IProcess<TProcessTypeId>
 where TProcessStepType : class, IProcessStep<TProcessStepTypeId>

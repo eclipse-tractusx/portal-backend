@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
@@ -25,7 +26,7 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 
-public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId>(IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId> dbContext) : IProcessRepositories
+public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId>(IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId> dbContext) : IRepositories
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {

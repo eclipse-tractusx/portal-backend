@@ -22,10 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.ApplicationActivation.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.BpnDidResolver.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
@@ -57,7 +57,7 @@ try
         {
             services
                 .AddMailingAndTemplateManager(hostContext.Configuration)
-                .AddScoped<IProcessRepositories, ProcessRepositories<ProcessTypeId, ProcessStepTypeId>>()
+                .AddScoped<IRepositories, ProcessRepositories<ProcessTypeId, ProcessStepTypeId>>()
                 .AddProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)

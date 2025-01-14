@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Models;
@@ -32,7 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Library.Tests;
 
 public class ManualProcessDataExtensionsTests
 {
-    private readonly IProcessRepositories _processRepositories;
+    private readonly IRepositories _processRepositories;
     private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly string _entityName;
     private readonly Func<string> _getProcessEntityName;
@@ -43,7 +44,7 @@ public class ManualProcessDataExtensionsTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.ConfigureFixture();
 
-        _processRepositories = A.Fake<IProcessRepositories>();
+        _processRepositories = A.Fake<IRepositories>();
         _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>())

@@ -17,9 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
-public interface IProcessRepositories
+public interface IRepositories
 {
     /// <summary>
     /// Attaches the given Entity to the database
