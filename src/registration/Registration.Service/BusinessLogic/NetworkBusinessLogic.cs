@@ -53,32 +53,32 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
-            throw new NotFoundException($"Company {companyId} not found");
+            throw NotFoundException.Create(NetworkErrors.NETWORK_COMPANY_NOT_FOUND, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (data.CompanyApplications.Count() != 1)
         {
-            throw new ConflictException($"Company {companyId} has no or more than one application");
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (data.ProcessId == null)
         {
-            throw new ConflictException("There must be an process");
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_PROCESS_MUST_EXIST);
         }
 
         var companyApplication = data.CompanyApplications.Single();
         if (companyApplication.CompanyApplicationStatusId != CompanyApplicationStatusId.CREATED)
         {
-            throw new ConflictException($"Application {companyApplication.CompanyApplicationId} is not in state CREATED");
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_APP_NOT_CREATED_STATE, new ErrorParameter[] { new("companyApplicationId", companyApplication.CompanyApplicationId.ToString()) });
         }
 
         submitData.Agreements.Where(x => x.ConsentStatusId != ConsentStatusId.ACTIVE).IfAny(inactive =>
-            throw new ControllerArgumentException($"All agreements must be agreed to. Agreements that are not active: {string.Join(",", inactive.Select(x => x.AgreementId))}", nameof(submitData.Agreements)));
+            throw ControllerArgumentException.Create(NetworkErrors.NETWORK_ARG_NOT_ACTIVE_AGREEMENTS, new ErrorParameter[] { new(nameof(submitData.Agreements), nameof(submitData.Agreements)), new("agreementId", string.Join(",", inactive.Select(x => x.AgreementId))) }));
 
         data.CompanyRoleAgreementIds
             .ExceptBy(submitData.CompanyRoles, x => x.CompanyRoleId)
             .IfAny(missing =>
-                throw new ControllerArgumentException($"CompanyRoles {string.Join(",", missing.Select(x => x.CompanyRoleId))} are missing", nameof(submitData.CompanyRoles)));
+                throw ControllerArgumentException.Create(NetworkErrors.NETWORK_ARG_COMPANY_ROLES_MISSING, new ErrorParameter[] { new(nameof(submitData.CompanyRoles), nameof(submitData.CompanyRoles)), new("companyRoleId", string.Join(",", missing.Select(x => x.CompanyRoleId))) }));
 
         var requiredAgreementIds = data.CompanyRoleAgreementIds
             .SelectMany(x => x.AgreementIds)
@@ -86,7 +86,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
 
         requiredAgreementIds.Except(submitData.Agreements.Where(x => x.ConsentStatusId == ConsentStatusId.ACTIVE).Select(x => x.AgreementId))
             .IfAny(missing =>
-                throw new ControllerArgumentException($"All Agreements for the company roles must be agreed to, missing agreementIds: {string.Join(",", missing)}", nameof(submitData.Agreements)));
+                throw ControllerArgumentException.Create(NetworkErrors.NETWORK_ARG_ALL_AGREEMNTS_COMPANY_SHOULD_AGREED, new ErrorParameter[] { new(nameof(submitData.Agreements), nameof(submitData.Agreements)), new("agreementIds", string.Join(",", missing)) }));
 
         _portalRepositories.GetInstance<IConsentRepository>()
             .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
@@ -124,22 +124,22 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
+            throw NotFoundException.Create(NetworkErrors.NETWORK_COMPANY_APPLICATION_NOT_EXIST, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         if (!data.IsValidCompany)
         {
-            throw new ForbiddenException($"User is not allowed to decline application {applicationId}");
+            throw ForbiddenException.Create(NetworkErrors.NETWORK_FORBIDDEN_USER_NOT_ALLOWED_DECLINE_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         if (!data.IsValidTypeId)
         {
-            throw new ConflictException("Only external registrations can be declined");
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_EXTERNAL_REGISTRATIONS_DECLINED);
         }
 
         if (!data.IsValidStatusId)
         {
-            throw new ConflictException($"The status of the application {applicationId} must be one of the following: {string.Join(",", validStatus.Select(x => x.ToString()))}");
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_CHECK_APPLICATION_STATUS, new ErrorParameter[] { new("applicationId", applicationId.ToString()), new("validStatus", string.Join(",", validStatus.Select(x => x.ToString()))) });
         }
 
         var (companyData, invitationData, processData) = data.Data!.Value;

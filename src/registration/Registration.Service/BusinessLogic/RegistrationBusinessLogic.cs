@@ -68,7 +68,7 @@ public class RegistrationBusinessLogic(
     {
         if (!bpnRegex.IsMatch(businessPartnerNumber))
         {
-            throw new ControllerArgumentException("BPN must contain exactly 16 digits or letters.", nameof(businessPartnerNumber));
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_BPN_NOT_HAVING_SIXTEEN_LENGTH, new ErrorParameter[] { new(nameof(businessPartnerNumber), businessPartnerNumber.ToString()) });
         }
         return GetCompanyBpdmDetailDataByBusinessPartnerNumberInternal(businessPartnerNumber.ToUpper(), token, cancellationToken);
     }
@@ -78,11 +78,11 @@ public class RegistrationBusinessLogic(
         var legalEntity = await bpnAccess.FetchLegalEntityByBpn(businessPartnerNumber, token, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!businessPartnerNumber.Equals(legalEntity.Bpn, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ConflictException("Bpdm did return incorrect bpn legal-entity-data");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_BPDM_RETURN_INCORRECT_PIN);
         }
 
         var country = legalEntity.LegalEntityAddress?.PhysicalPostalAddress?.Country?.TechnicalKey ??
-                      throw new ConflictException("Legal-entity-data did not contain a valid country identifier");
+                      throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_LEGAL_INVALID_COUNTRY_IN_LEGAL_ENTITY);
 
         var bpdmIdentifiers = ParseBpdmIdentifierDtos(legalEntity.Identifiers).ToList();
         var assignedIdentifiersResult = await portalRepositories.GetInstance<IStaticDataRepository>()
@@ -90,7 +90,7 @@ public class RegistrationBusinessLogic(
 
         if (!assignedIdentifiersResult.IsValidCountry)
         {
-            throw new ConflictException($"Bpdm did return invalid country {country} in address-data");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_LEGAL_INVALID_COUNTRY_IN_ADDRESS_DATA, new ErrorParameter[] { new("country", country.ToString()) });
         }
 
         var portalIdentifiers = assignedIdentifiersResult.Identifiers.Join(
@@ -125,24 +125,24 @@ public class RegistrationBusinessLogic(
     {
         if (string.IsNullOrEmpty(document.FileName))
         {
-            throw new ControllerArgumentException("File name is must not be null");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_FILE_NAME_NOT_NULL);
         }
 
         // Check if document is a pdf file (also see https://www.rfc-editor.org/rfc/rfc3778.txt)
         if (!document.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnsupportedMediaTypeException("Only .pdf files are allowed.");
+            throw UnsupportedMediaTypeException.Create(RegistrationErrors.REGISTRATION_UNSUPPORTED_MEDIA_ONLY_PDF_ALLOWED);
         }
 
         if (!_settings.DocumentTypeIds.Contains(documentTypeId))
         {
-            throw new ControllerArgumentException($"documentType must be either: {string.Join(",", _settings.DocumentTypeIds)}");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_CHECK_DOCUMENT_TYPE, new ErrorParameter[] { new("documentType", string.Join(",", _settings.DocumentTypeIds)) });
         }
 
         var validApplicationForCompany = await portalRepositories.GetInstance<IApplicationRepository>().IsValidApplicationForCompany(applicationId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validApplicationForCompany)
         {
-            throw new ForbiddenException($"The users company is not assigned with application {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_COMPANY_NOT_ASSIGNED_APPLICATION_ID, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, application =>
@@ -166,23 +166,23 @@ public class RegistrationBusinessLogic(
         var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails.DocumentId == Guid.Empty)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (!documentDetails.IsSameUser && !documentDetails.IsRoleOperator)
         {
-            throw new ForbiddenException($"The user is not permitted to access document {documentId}.");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_NOT_PERMITTED_DOCUMENT_ACCESS, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (documentDetails.IsStatusConfirmed)
         {
-            throw new ForbiddenException($"Documents not accessible as onboarding process finished {documentId}.");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (document is null)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
@@ -210,11 +210,11 @@ public class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetCompanyApplicationDetailDataAsync(applicationId, _identityData.CompanyId, null).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (!result.IsUserOfCompany)
         {
-            throw new ForbiddenException($"The users company is not assigned with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_COMPANY_NOT_ASSIGNED_APPLICATION_ID, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return new CompanyDetailData(
             result.CompanyId,
@@ -278,13 +278,12 @@ public class RegistrationBusinessLogic(
 
         if (companyApplicationData == null)
         {
-            throw new NotFoundException(
-                $"CompanyApplication {applicationId} for CompanyId {companyDetails.CompanyId} not found");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_FOR_COMPANY_ID_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()), new("companyId", companyDetails.CompanyId.ToString()) });
         }
 
         if (!companyApplicationData.IsUserOfCompany)
         {
-            throw new ForbiddenException($"users company is not assigned with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return companyApplicationData;
     }
@@ -359,7 +358,7 @@ public class RegistrationBusinessLogic(
     {
         if (string.IsNullOrEmpty(userCreationInfo.eMail))
         {
-            throw new ControllerArgumentException($"email must not be empty");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARGUMENT_EMAIL_MUST_NOT_EMPTY);
         }
         return InviteNewUserInternalAsync(applicationId, userCreationInfo);
     }
@@ -368,7 +367,7 @@ public class RegistrationBusinessLogic(
     {
         if (await portalRepositories.GetInstance<IUserRepository>().IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, _identityData.CompanyId))
         {
-            throw new ControllerArgumentException($"user with email {userCreationInfo.eMail} does already exist");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARGUMENT_EMAIL_ALREADY_EXIST, new ErrorParameter[] { new("email", userCreationInfo.eMail) });
         }
 
         var (companyNameIdpAliasData, createdByName) = await userProvisioningService.GetCompanyNameSharedIdpAliasData(_identityData.IdentityId, applicationId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -435,14 +434,14 @@ public class RegistrationBusinessLogic(
     {
         if (status == 0)
         {
-            throw new ControllerArgumentException("status must not be null");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_STATUS_NOT_NULL);
         }
 
         var applicationRepository = portalRepositories.GetInstance<IApplicationRepository>();
         var applicationUserData = await applicationRepository.GetOwnCompanyApplicationUserDataAsync(applicationId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!applicationUserData.Exists)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         if (applicationUserData.StatusId != status)
@@ -459,11 +458,11 @@ public class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IApplicationRepository>().GetOwnCompanyApplicationStatusUserDataUntrackedAsync(applicationId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!result.Exists)
         {
-            throw new NotFoundException($"CompanyApplication {applicationId} not found");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (!result.IsUserOfCompany)
         {
-            throw new ForbiddenException($"users company is not associated with application {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return result.ApplicationStatus;
     }
@@ -480,7 +479,7 @@ public class RegistrationBusinessLogic(
 
         if (companyRoleAgreementConsentData == null)
         {
-            throw new NotFoundException($"application {applicationId} does not exist");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         var companyId = _identityData.CompanyId;
@@ -488,7 +487,7 @@ public class RegistrationBusinessLogic(
         var (applicationCompanyId, applicationStatusId, companyAssignedRoleIds, consents) = companyRoleAgreementConsentData;
         if (applicationCompanyId != companyId)
         {
-            throw new ForbiddenException($"The users company is not assigned with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         var companyRoleAssignedAgreements = await companyRolesRepository.GetAgreementAssignedCompanyRolesUntrackedAsync(companyRoleIdsToSet)
@@ -498,7 +497,7 @@ public class RegistrationBusinessLogic(
         var invalidRoles = companyRoleIdsToSet.Except(companyRoleAssignedAgreements.Keys);
         if (invalidRoles.Any())
         {
-            throw new ControllerArgumentException($"invalid companyRole: {string.Join(", ", invalidRoles)}");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES, new ErrorParameter[] { new("companyRoles", string.Join(", ", invalidRoles)) });
         }
         if (!companyRoleIdsToSet
             .All(companyRoleIdToSet =>
@@ -508,13 +507,13 @@ public class RegistrationBusinessLogic(
                             agreementConsent.AgreementId == assignedAgreementId.AgreementId
                             && agreementConsent.ConsentStatusId == ConsentStatusId.ACTIVE))))
         {
-            throw new ControllerArgumentException("consent must be given to all CompanyRole assigned agreements");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_CONSENT_MUST_GIVEN_ALL_ASSIGNED_AGREEMENTS);
         }
 
         var extraAgreement = agreementConsentsToSet.ExceptBy(companyRoleAssignedAgreements.SelectMany(x => x.Value).Select(x => x.AgreementId), x => x.AgreementId);
         if (extraAgreement.Any())
         {
-            throw new ControllerArgumentException($"Agreements which not associated with requested companyRoles: {string.Join(", ", extraAgreement.Select(x => x.AgreementId))}");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_AGREEMENTS_NOT_ASSOCIATED_COMPANY_ROLES, new ErrorParameter[] { new("agreementId", string.Join(", ", extraAgreement.Select(x => x.AgreementId))) });
         }
 
         companyRolesRepository.RemoveCompanyAssignedRoles(companyId, companyAssignedRoleIds.Except(companyRoleIdsToSet));
@@ -535,7 +534,7 @@ public class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<ICompanyRolesRepository>().GetCompanyRoleAgreementConsentStatusUntrackedAsync(applicationId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw new ForbiddenException($"user is not assigned with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return result;
     }
@@ -552,7 +551,7 @@ public class RegistrationBusinessLogic(
 
         if (GetAndValidateUpdateApplicationStatus(applicationUserData.CompanyApplicationStatusId, UpdateApplicationSteps.SubmitRegistration) != CompanyApplicationStatusId.SUBMITTED)
         {
-            throw new UnexpectedConditionException("updateStatus should allways be SUBMITTED here");
+            throw UnexpectedConditionException.Create(RegistrationErrors.REGISTRATION_UNEXPECTED_UPDATE_STATUS_SHOULD_SUBMITTED);
         }
 
         portalRepositories.GetInstance<IDocumentRepository>().AttachAndModifyDocuments(
@@ -608,47 +607,47 @@ public class RegistrationBusinessLogic(
 
         if (applicationUserData == null)
         {
-            throw new NotFoundException($"application {applicationId} does not exist");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (!applicationUserData.IsApplicationCompanyUser)
         {
-            throw new ForbiddenException($"userId {userId} is not associated with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_ID_NOT_ASSOCIATED_WITH_COMPANY_APPLICATION, new ErrorParameter[] { new("userId", userId.ToString()), new("applicationId", applicationId.ToString()) });
         }
         if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Name))
         {
-            throw new ConflictException($"Company Name must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_NAME_NOT_EMPTY);
         }
         if (applicationUserData.CompanyData.AddressId == null)
         {
-            throw new ConflictException($"Address must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_ADDRESS_NOT_EMPTY);
         }
         if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Streetname))
         {
-            throw new ConflictException($"Street Name must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_STREET_NOT_EMPTY);
         }
         if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.City))
         {
-            throw new ConflictException($"City must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_CITY_NOT_EMPTY);
         }
         if (string.IsNullOrWhiteSpace(applicationUserData.CompanyData.Country))
         {
-            throw new ConflictException($"Country must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_COUNTRY_NOT_EMPTY);
         }
         if (!applicationUserData.CompanyData.UniqueIds.Any())
         {
-            throw new ConflictException($"Company Identifiers [{string.Join(", ", applicationUserData.CompanyData.UniqueIds)}] must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_IDENTIFIERS_NOT_EMPTY, new ErrorParameter[] { new("uniqueIds", string.Join(", ", applicationUserData.CompanyData.UniqueIds)) });
         }
         if (!applicationUserData.CompanyData.CompanyRoleIds.Any())
         {
-            throw new ConflictException($"Company assigned role [{string.Join(", ", applicationUserData.CompanyData.CompanyRoleIds)}] must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_ASSIGNED_ROLE_NOT_EMPTY, new ErrorParameter[] { new("companyRoleIds", string.Join(", ", applicationUserData.CompanyData.CompanyRoleIds)) });
         }
         if (!applicationUserData.AgreementConsentStatuses.Any())
         {
-            throw new ConflictException($"Agreement and Consent must not be empty");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_AGREE_CONSENT_NOT_EMPTY);
         }
         if (!applicationUserData.DocumentDatas.Any())
         {
-            throw new ConflictException($"At least one Document type Id must be [{string.Join(", ", docTypeIds)}]");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_AT_LEAST_ONE_DOCUMENT_ID_AVAILABLE, new ErrorParameter[] { new("docTypeIds", string.Join(", ", docTypeIds)) });
         }
         return applicationUserData;
     }
@@ -667,11 +666,11 @@ public class RegistrationBusinessLogic(
         var result = await portalRepositories.GetInstance<IDocumentRepository>().GetUploadedDocumentsAsync(applicationId, documentTypeId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"application {applicationId} not found");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (!result.IsApplicationAssignedUser)
         {
-            throw new ForbiddenException($"The user is not associated with application {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ASSOCIATED_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return result.Documents;
     }
@@ -682,7 +681,7 @@ public class RegistrationBusinessLogic(
 
         if (invitationData == null)
         {
-            throw new ForbiddenException($"user is not associated with invitation");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ASSOCIATED_INVITATION);
         }
 
         if (invitationData.InvitationStatusId is InvitationStatusId.CREATED or InvitationStatusId.PENDING)
@@ -701,15 +700,15 @@ public class RegistrationBusinessLogic(
         var (isValidApplicationId, isValidCompany, data) = await portalRepositories.GetInstance<IApplicationRepository>().GetRegistrationDataUntrackedAsync(applicationId, _identityData.CompanyId, _settings.DocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidApplicationId)
         {
-            throw new NotFoundException($"application {applicationId} does not exist");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (!isValidCompany)
         {
-            throw new ForbiddenException($"The users company is not assigned with CompanyApplication {applicationId}");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         if (data == null)
         {
-            throw new UnexpectedConditionException($"registrationData should never be null for application {applicationId}");
+            throw UnexpectedConditionException.Create(RegistrationErrors.REGISTRATION_UNEXPECT_REGISTER_DATA_NOT_NULL_APPLICATION, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
         return new CompanyRegistrationData(
             data.CompanyId,
@@ -787,8 +786,7 @@ public class RegistrationBusinessLogic(
                 allowedCombination,
                 x => x.applicationStatus == applicationData.StatusId && x.status == status))
         {
-            throw new ArgumentException(
-                $"invalid status update requested {status}, current status is {applicationData.StatusId}, possible values are: {string.Join(",", allowedCombination.Where(x => x.applicationStatus == status).Select(x => x.applicationStatus))}");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS, new ErrorParameter[] { new("status", status.ToString()), new("statusId", applicationData.StatusId.ToString()), new("applicationStatus", string.Join(",", allowedCombination.Where(x => x.applicationStatus == status).Select(x => x.applicationStatus))) });
         }
 
         applicationRepository.AttachAndModifyCompanyApplication(applicationId, a =>
@@ -830,14 +828,14 @@ public class RegistrationBusinessLogic(
                     applicationStatusId == CompanyApplicationStatusId.ADD_COMPANY_DATA ||
                     applicationStatusId == CompanyApplicationStatusId.INVITE_USER ||
                     applicationStatusId == CompanyApplicationStatusId.SELECT_COMPANY_ROLE ||
-                    applicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS => throw new ForbiddenException($"Application status is not fitting to the pre-requisite"),
+                    applicationStatusId == CompanyApplicationStatusId.UPLOAD_DOCUMENTS => throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_STATUS_NOT_FITTING_PRE_REQUITISE),
 
             UpdateApplicationSteps.SubmitRegistration
                 when applicationStatusId == CompanyApplicationStatusId.VERIFY => CompanyApplicationStatusId.SUBMITTED,
 
             _ when applicationStatusId == CompanyApplicationStatusId.SUBMITTED ||
                 applicationStatusId == CompanyApplicationStatusId.CONFIRMED ||
-                applicationStatusId == CompanyApplicationStatusId.DECLINED => throw new ForbiddenException($"Application is already closed"),
+                applicationStatusId == CompanyApplicationStatusId.DECLINED => throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_APPLICATION_ALREADY_CLOSED),
 
             _ => default
         };
@@ -847,29 +845,29 @@ public class RegistrationBusinessLogic(
     {
         if (documentId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"documentId must not be empty");
+            throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_ARG_DOCUMENT_ID_NOT_EMPTY);
         }
         var documentRepository = portalRepositories.GetInstance<IDocumentRepository>();
         var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identityData.CompanyId, _settings.ApplicationStatusIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (details == default)
         {
-            throw new NotFoundException("Document does not exist.");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
         {
-            throw new ConflictException($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", _settings.DocumentTypeIds)}");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_DOCUMENT_DELETION_NOT_ALLOWED, new ErrorParameter[] { new("DocumentTypeIds", string.Join(",", _settings.DocumentTypeIds)) });
         }
         if (details.IsQueriedApplicationStatus)
         {
-            throw new ConflictException("Document deletion is not allowed. Application is already closed.");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_DOCUMENT_DELETION_NOT_ALLOWED_APP_CLOSED);
         }
         if (!details.IsSameApplicationUser)
         {
-            throw new ForbiddenException("User is not allowed to delete this document");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ALLOWED_DELETE_DOCUMENT);
         }
         if (details.DocumentStatusId != DocumentStatusId.PENDING)
         {
-            throw new ConflictException("Document deletion is not allowed. The document is locked.");
+            throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_DELETION_NOT_ALLOWED_LOCKED);
         }
 
         documentRepository.RemoveDocument(details.DocumentId);
@@ -890,7 +888,7 @@ public class RegistrationBusinessLogic(
 
         if (!uniqueIdentifierData.IsValidCountryCode)
         {
-            throw new NotFoundException($"invalid country code {alpha2Code}");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_NOT_INVALID_COUNTRY_CODE, new ErrorParameter[] { new("alpha2Code", alpha2Code) });
         }
         return uniqueIdentifierData.IdentifierIds.Select(identifierId => new UniqueIdentifierData((int)identifierId, identifierId));
     }
@@ -902,11 +900,11 @@ public class RegistrationBusinessLogic(
         var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.RegistrationDocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!documentDetails.IsDocumentTypeMatch)
         {
-            throw new NotFoundException($"document {documentId} does not exist.");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());
@@ -920,17 +918,17 @@ public class RegistrationBusinessLogic(
 
         if (!isValidApplicationId)
         {
-            throw new NotFoundException($"Application {applicationId} does not exits");
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST, new ErrorParameter[] { new("applicationId", applicationId.ToString()) });
         }
 
         if (!isValidCompany)
         {
-            throw new ForbiddenException("User is not allowed to decline this application");
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ALLOWED_TO_DECLINED_APP);
         }
 
         if (declineData == null)
         {
-            throw new UnexpectedConditionException("ApplicationDeclineData should never be null here");
+            throw UnexpectedConditionException.Create(RegistrationErrors.REGISTRATION_UNEXPECT_APP_DECLINED_DATA_NOT_NULL);
         }
 
         DeclineApplication(applicationId);
@@ -1004,7 +1002,7 @@ public class RegistrationBusinessLogic(
                         {
                             IdentityProviderTypeId.SHARED => ProcessStepTypeId.DELETE_IDP_SHARED_REALM,
                             IdentityProviderTypeId.OWN => ProcessStepTypeId.DELETE_CENTRAL_IDENTITY_PROVIDER,
-                            _ => throw new UnexpectedConditionException("IdentityProviderTypeId should allways be shared or own here")
+                            _ => throw UnexpectedConditionException.Create(RegistrationErrors.REGISTRATION_UNEXPECT_IDENTITY_PROVIDER_TYPE_ID_SHARED_OR_OWN)
                         },
                         ProcessStepStatusId.TODO,
                         x.ProcessId)));

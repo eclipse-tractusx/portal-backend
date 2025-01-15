@@ -120,7 +120,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} not found");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_COMPANY_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY.ToString());
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} has no or more than one application");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY.ToString());
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Application {applicationId} is not in state CREATED");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_APP_NOT_CREATED_STATE.ToString());
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All Agreements for the company roles must be agreed to, missing agreementIds: {notExistingAgreementId} (Parameter 'Agreements')");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_ARG_ALL_AGREEMNTS_COMPANY_SHOULD_AGREED.ToString());
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"All agreements must be agreed to. Agreements that are not active: {inactiveAgreementId} (Parameter 'Agreements')");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_ARG_NOT_ACTIVE_AGREEMENTS.ToString());
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There must be an process");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_PROCESS_MUST_EXIST.ToString());
     }
 
     [Fact]
@@ -363,7 +363,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"CompanyApplication {notExistingId} does not exist");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_COMPANY_APPLICATION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -384,7 +384,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"User is not allowed to decline application {applcationId}");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_FORBIDDEN_USER_NOT_ALLOWED_DECLINE_APPLICATION.ToString());
     }
 
     [Fact]
@@ -405,7 +405,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Only external registrations can be declined");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_EXTERNAL_REGISTRATIONS_DECLINED.ToString());
     }
 
     [Fact]
@@ -426,7 +426,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"The status of the application {applicationId} must be one of the following: CREATED,ADD_COMPANY_DATA,INVITE_USER,SELECT_COMPANY_ROLE,UPLOAD_DOCUMENTS,VERIFY");
+        ex.Message.Should().Be(NetworkErrors.NETWORK_CONFLICT_CHECK_APPLICATION_STATUS.ToString());
     }
 
     [Fact]

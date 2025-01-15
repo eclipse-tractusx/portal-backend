@@ -296,7 +296,8 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be("businessPartnerNumber");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_BPN_NOT_HAVING_SIXTEEN_LENGTH.ToString());
+        ex.Parameters.First().Name.Should().Be("businessPartnerNumber");
     }
 
     #endregion
@@ -432,7 +433,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"CompanyApplication {applicationId} not found");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND.ToString());
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
             .MustHaveHappenedOnceExactly();
     }
@@ -462,7 +463,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"The users company is not assigned with CompanyApplication {applicationId}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_COMPANY_NOT_ASSIGNED_APPLICATION_ID.ToString());
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, _identity.CompanyId, null))
             .MustHaveHappenedOnceExactly();
     }
@@ -545,7 +546,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"CompanyApplication {applicationId} for CompanyId {companyId} not found");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_FOR_COMPANY_ID_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -582,7 +583,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($" is not assigned with CompanyApplication {applicationId}");
+        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
     }
 
     [Fact]
@@ -1285,7 +1286,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("status must not be null");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_STATUS_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1318,7 +1319,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"CompanyApplication {applicationId} not found");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -1352,8 +1353,8 @@ public class RegistrationBusinessLogicTest
         Task Act() => sut.SetOwnCompanyApplicationStatusAsync(applicationId, status);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ArgumentException>(Act);
-        ex.Message.Should().Contain($"invalid status update requested {status}, current status is {existingStatus}, possible values are: {status}");
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS.ToString());
     }
 
     [Theory]
@@ -1556,7 +1557,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnsupportedMediaTypeException>(Act);
-        ex.Message.Should().Be("Only .pdf files are allowed.");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_UNSUPPORTED_MEDIA_ONLY_PDF_ALLOWED.ToString());
     }
 
     [Fact]
@@ -1571,7 +1572,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("File name is must not be null");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_FILE_NAME_NOT_NULL.ToString());
     }
 
     [Fact]
@@ -1604,7 +1605,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"The users company is not assigned with application {notExistingId}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_COMPANY_NOT_ASSIGNED_APPLICATION_ID.ToString());
     }
 
     [Fact]
@@ -1639,7 +1640,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"The users company is not assigned with application {_existingApplicationId}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_COMPANY_NOT_ASSIGNED_APPLICATION_ID.ToString());
         A.CallTo(() => _portalRepositories.GetInstance<IApplicationRepository>().IsValidApplicationForCompany(_existingApplicationId, _identity.CompanyId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1673,7 +1674,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"documentType must be either: {string.Join(",", settings.DocumentTypeIds)}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_CHECK_DOCUMENT_TYPE.ToString());
     }
 
     #endregion
@@ -1746,7 +1747,7 @@ public class RegistrationBusinessLogicTest
         Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be("email must not be empty");
+        error.Message.Should().Be(RegistrationErrors.REGISTRATION_ARGUMENT_EMAIL_MUST_NOT_EMPTY.ToString());
 
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
         A.CallTo(() => _mailingProcessCreation.CreateMailProcess(A<string>._, A<string>._, A<IReadOnlyDictionary<string, string>>._))
@@ -1777,7 +1778,7 @@ public class RegistrationBusinessLogicTest
         Task Act() => sut.InviteNewUserAsync(_existingApplicationId, userCreationInfo);
 
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"user with email {userCreationInfo.eMail} does already exist");
+        error.Message.Should().Be(RegistrationErrors.REGISTRATION_ARGUMENT_EMAIL_ALREADY_EXIST.ToString());
 
         A.CallTo(() => _userRepository.IsOwnCompanyUserWithEmailExisting(userCreationInfo.eMail, _identity.CompanyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1887,7 +1888,7 @@ public class RegistrationBusinessLogicTest
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
-        error.Message.Should().Be($"application {applicationId} not found");
+        error.Message.Should().Be(RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -1919,7 +1920,7 @@ public class RegistrationBusinessLogicTest
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
 
         // Assert
-        error.Message.Should().Be($"The user is not associated with application {applicationId}");
+        error.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ASSOCIATED_APPLICATION.ToString());
     }
 
     #endregion
@@ -1940,7 +1941,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"application {notExistingId} does not exist");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1959,7 +1960,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"The users company is not assigned with CompanyApplication {applicationId}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
     }
 
     [Fact]
@@ -1988,7 +1989,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain("invalid companyRole: ");
+        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES.ToString());
     }
 
     [Fact]
@@ -2024,7 +2025,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("consent must be given to all CompanyRole assigned agreements");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_CONSENT_MUST_GIVEN_ALL_ASSIGNED_AGREEMENTS.ToString());
     }
 
     [Fact]
@@ -2159,7 +2160,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Agreements which not associated with requested companyRoles: {agreementIds3}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_AGREEMENTS_NOT_ASSOCIATED_COMPANY_ROLES.ToString());
     }
 
     #endregion
@@ -2186,7 +2187,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"application {notExistingId} does not exist");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST.ToString());
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(notExistingId, _identity.IdentityId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
     }
@@ -2367,7 +2368,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Application status is not fitting to the pre-requisite");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_STATUS_NOT_FITTING_PRE_REQUITISE.ToString());
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
     }
@@ -2412,7 +2413,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Application is already closed");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_APPLICATION_ALREADY_CLOSED.ToString());
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
     }
@@ -2450,7 +2451,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"userId {userId} is not associated with CompanyApplication {applicationId}");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_ID_NOT_ASSOCIATED_WITH_COMPANY_APPLICATION.ToString());
         A.CallTo(() => _applicationRepository.GetOwnCompanyApplicationUserEmailDataAsync(applicationId, userId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT })))
             .MustHaveHappenedOnceExactly();
     }
@@ -2488,7 +2489,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Street Name must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_STREET_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2518,7 +2519,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Address must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_ADDRESS_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2548,7 +2549,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Company Name must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_NAME_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2578,7 +2579,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company Identifiers [{string.Join(", ", uniqueIdentifierData)}] must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_IDENTIFIERS_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2608,7 +2609,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company assigned role [{string.Join(", ", companyRoleIdData)}] must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_COMPANY_ASSIGNED_ROLE_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2635,7 +2636,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Agreement and Consent must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_AGREE_CONSENT_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2665,7 +2666,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("City must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_CITY_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2696,7 +2697,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Country must not be empty");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_COUNTRY_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -2863,7 +2864,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"invalid country code {countryCode}");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_NOT_INVALID_COUNTRY_CODE.ToString());
     }
 
     #endregion
@@ -2930,7 +2931,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"application {applicationId} does not exist");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -2949,7 +2950,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be($"The users company is not assigned with CompanyApplication {applicationId}");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
     }
 
     [Fact]
@@ -2968,7 +2969,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        result.Message.Should().Be($"registrationData should never be null for application {applicationId}");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_UNEXPECT_REGISTER_DATA_NOT_NULL_APPLICATION.ToString());
     }
 
     #endregion
@@ -3007,7 +3008,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"document {documentId} does not exist.");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -3024,7 +3025,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"document {documentId} does not exist.");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST.ToString());
     }
 
     #region GetDocumentAsync
@@ -3064,7 +3065,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"document {documentId} does not exist.");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -3081,7 +3082,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"The user is not permitted to access document {documentId}.");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_NOT_PERMITTED_DOCUMENT_ACCESS.ToString());
     }
 
     [Fact]
@@ -3098,7 +3099,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Documents not accessible as onboarding process finished {documentId}.");
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS.ToString());
     }
 
     #endregion
@@ -3154,7 +3155,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be("user is not associated with invitation");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ASSOCIATED_INVITATION.ToString());
     }
 
     #endregion
@@ -3246,7 +3247,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be($"Document deletion is not allowed. DocumentType must be either :{string.Join(",", settings.DocumentTypeIds)}");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_DOCUMENT_DELETION_NOT_ALLOWED.ToString());
     }
 
     [Fact]
@@ -3263,7 +3264,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be("Document does not exist.");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -3294,7 +3295,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be("Document deletion is not allowed. Application is already closed.");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_DOCUMENT_DELETION_NOT_ALLOWED_APP_CLOSED.ToString());
     }
 
     [Fact]
@@ -3325,7 +3326,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be("User is not allowed to delete this document");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ALLOWED_DELETE_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -3356,7 +3357,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be("Document deletion is not allowed. The document is locked.");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_CONFLICT_DELETION_NOT_ALLOWED_LOCKED.ToString());
     }
 
     [Fact]
@@ -3370,7 +3371,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        result.Message.Should().Be("documentId must not be empty");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_DOCUMENT_ID_NOT_EMPTY.ToString());
     }
 
     #endregion
@@ -3800,7 +3801,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"Application {applicationId} does not exits");
+        result.Message.Should().Be(RegistrationErrors.REGISTRATION_APPLICATION_NOT_EXIST.ToString());
     }
 
     #endregion
