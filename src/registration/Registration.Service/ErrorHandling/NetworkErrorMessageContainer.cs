@@ -26,18 +26,18 @@ public class NetworkErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
        new((int)NetworkErrors.NETWORK_COMPANY_NOT_FOUND, "Company {companyId} not found"),
-       new((int)NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY, "Company {companyId} has no or more than one application"),
-       new((int)NetworkErrors.NETWORK_CONFLICT_PROCESS_MUST_EXIST, "There must be an process"),
-       new((int)NetworkErrors.NETWORK_CONFLICT_APP_NOT_CREATED_STATE, "Application {companyApplicationId} is not in state CREATED"),
-       new((int)NetworkErrors.NETWORK_ARG_NOT_ACTIVE_AGREEMENTS, "All agreements must be agreed to. Agreements that are not active: {agreementId}"),
-       new((int)NetworkErrors.NETWORK_ARG_COMPANY_ROLES_MISSING, "CompanyRoles {companyRoleId} are missing"),
-       new((int)NetworkErrors.NETWORK_ARG_ALL_AGREEMNTS_COMPANY_SHOULD_AGREED, "All Agreements for the company roles must be agreed to, missing agreementIds: {agreementIds}"),
-       new((int)NetworkErrors.NETWORK_COMPANY_APPLICATION_NOT_EXIST, "CompanyApplication {applicationId} does not exist"),
-       new((int)NetworkErrors.NETWORK_FORBIDDEN_USER_NOT_ALLOWED_DECLINE_APPLICATION, "User is not allowed to decline application {applicationId}"),
-       new((int)NetworkErrors.NETWORK_CONFLICT_EXTERNAL_REGISTRATIONS_DECLINED, "Only external registrations can be declined"),
-       new((int)NetworkErrors.NETWORK_CONFLICT_CHECK_APPLICATION_STATUS, "The status of the application {applicationId} must be one of the following: {validStatus}"),
+        new((int)NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY, "Company {companyId} has no or more than one application"),
+        new((int)NetworkErrors.NETWORK_CONFLICT_PROCESS_MUST_EXIST, "There must be an process"),
+        new((int)NetworkErrors.NETWORK_CONFLICT_APP_NOT_CREATED_STATE, "Application {companyApplicationId} is not in state CREATED"),
+        new((int)NetworkErrors.NETWORK_ARG_NOT_ACTIVE_AGREEMENTS, "All agreements must be agreed to. Agreements that are not active: {agreementId}"),
+        new((int)NetworkErrors.NETWORK_ARG_COMPANY_ROLES_MISSING, "CompanyRoles {companyRoleId} are missing"),
+        new((int)NetworkErrors.NETWORK_ARG_ALL_AGREEMNTS_COMPANY_SHOULD_AGREED, "All Agreements for the company roles must be agreed to, missing agreementIds: {agreementIds}"),
+        new((int)NetworkErrors.NETWORK_COMPANY_APPLICATION_NOT_EXIST, "CompanyApplication {applicationId} does not exist"),
+        new((int)NetworkErrors.NETWORK_FORBIDDEN_USER_NOT_ALLOWED_DECLINE_APPLICATION, "User is not allowed to decline application {applicationId}"),
+        new((int)NetworkErrors.NETWORK_CONFLICT_EXTERNAL_REGISTRATIONS_DECLINED, "Only external registrations can be declined"),
+        new((int)NetworkErrors.NETWORK_CONFLICT_CHECK_APPLICATION_STATUS, "The status of the application {applicationId} must be one of the following: {validStatus}"),
 
-     ]);
+    ]);
 
     public Type Type { get => typeof(NetworkErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
