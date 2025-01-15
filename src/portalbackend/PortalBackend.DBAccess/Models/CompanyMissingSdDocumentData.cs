@@ -21,5 +21,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record CompanyMissingSdDocumentData(
     Guid CompanyId,
-    string Name
+    string? Bpn,
+    string Name,
+    string? ShortName,
+    DateTimeOffset? SkippedDate
 );

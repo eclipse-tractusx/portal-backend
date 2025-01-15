@@ -424,8 +424,30 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             c => c.OrderByDescending(company => company.Name),
             c => new CompanyMissingSdDocumentData(
                 c.Id,
-                c.Name)
+                c.BusinessPartnerNumber,
+                c.Name,
+                c.Shortname,
+                GetCompanyLastChangeDate(c) == null ?
+                    null :
+                    GetCompanyLastChangeDate(c)!.DateLastChanged)
         ).SingleOrDefaultAsync();
+
+    private static ProcessStep? GetCompanyLastChangeDate(Company company) => company.CompanyApplications.Where(ca =>
+            ca.ApplicationChecklistEntries.Any(a =>
+                a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.SKIPPED) &&
+            ca.ChecklistProcess!.ProcessSteps.Any(ps =>
+                ps is
+                {
+                    ProcessStepTypeId: ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
+                    ProcessStepStatusId: ProcessStepStatusId.SKIPPED
+                }))
+        .SelectMany(ca => ca.ChecklistProcess!.ProcessSteps.Where(ps =>
+            ps is
+            {
+                ProcessStepTypeId: ProcessStepTypeId.START_SELF_DESCRIPTION_LP,
+                ProcessStepStatusId: ProcessStepStatusId.SKIPPED
+            })).FirstOrDefault();
 
     public IAsyncEnumerable<Guid> GetCompanyIdsWithMissingSelfDescription() =>
         context.Companies.Where(c =>
