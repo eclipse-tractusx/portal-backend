@@ -354,4 +354,28 @@ public class ServicesController : ControllerBase
         await _serviceBusinessLogic.TriggerActivateOfferSubscription(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         return NoContent();
     }
+
+    /// <summary>
+    /// Declines a pending service subscription.
+    /// </summary>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to decline.</param>
+    /// <remarks>Example: PUT: /api/services/supscription/{subscriptiondId}/decline</remarks>
+    /// <response code="204">Service subscription was successfully declined.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="500">Internal Server Error.</response>
+    [HttpPut]
+    [Route("/subscription/{subscriptionId}/decline")]
+    [Authorize(Roles = "decline_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeclineServiceSubscriptionAsync([FromRoute] Guid subscriptionId)
+    {
+        await _serviceBusinessLogic.DeclineServiceSubscriptionAsync(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
 }

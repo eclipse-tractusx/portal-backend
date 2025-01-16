@@ -249,6 +249,31 @@ public class AppsController : ControllerBase
     }
 
     /// <summary>
+    /// Declines a pending app subscription.
+    /// </summary>
+    /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to decline.</param>
+    /// <remarks>Example: PUT: /api/apps/subscription/{subscriptiondId}/decline</remarks>
+    /// <response code="204">App subscription was successfully declined.</response>
+    /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="404">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
+    /// <response code="500">Internal Server Error.</response>
+    [HttpPut]
+    [Route("subscription/{subscriptionId}/decline")]
+    [Authorize(Roles = "decline_subscription")]
+    [Authorize(Policy = PolicyTypes.ValidIdentity)]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeclineAppSubscriptionAsync([FromRoute] Guid subscriptionId)
+    {
+        await _appsBusinessLogic.DeclineAppSubscriptionAsync(subscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Unsubscribes an app from the current user's company's subscriptions.
     /// </summary>
     /// <param name="subscriptionId" example="D3B1ECA2-6148-4008-9E6C-C1C2AEA5C645">ID of the subscription to unsubscribe from.</param>

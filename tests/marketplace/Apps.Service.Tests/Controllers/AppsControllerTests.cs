@@ -212,6 +212,21 @@ public class AppsControllerTests
     }
 
     [Fact]
+    public async Task DeclineAppSubscriptionAsync_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _logic.DeclineAppSubscriptionAsync(A<Guid>._));
+
+        //Act
+        var result = await _controller.DeclineAppSubscriptionAsync(offerSubscriptionId);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineAppSubscriptionAsync(offerSubscriptionId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
     public async Task UnsubscribeCompanyAppSubscription_ReturnsNoContent()
     {
         //Arrange

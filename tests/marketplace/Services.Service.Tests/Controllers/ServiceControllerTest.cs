@@ -93,6 +93,21 @@ public class ServiceControllerTest
     }
 
     [Fact]
+    public async Task DeclineServiceSubscriptionAsync_ReturnsExpected()
+    {
+        //Arrange
+        var offerSubscriptionId = Guid.NewGuid();
+        A.CallTo(() => _logic.DeclineServiceSubscriptionAsync(A<Guid>._));
+
+        //Act
+        var result = await _controller.DeclineServiceSubscriptionAsync(offerSubscriptionId);
+
+        //Assert
+        A.CallTo(() => _logic.DeclineServiceSubscriptionAsync(offerSubscriptionId)).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
     public async Task GetServiceDetails_ReturnsExpectedId()
     {
         //Arrange
