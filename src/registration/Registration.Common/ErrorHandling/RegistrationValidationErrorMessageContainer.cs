@@ -35,7 +35,7 @@ public class RegistrationValidationErrorMessageContainer : IErrorMessageContaine
         new((int)RegistrationValidationErrors.BPN_ALREADY_EXISTS, "The Bpn {businessPartnerNumber} already exists"),
         new((int)RegistrationValidationErrors.COUNTRY_CODE_DOES_NOT_EXIST, "Location {countryAlpha2Code} does not exist"),
         new((int)RegistrationValidationErrors.COUNTRY_CODE_NOT_VALID, "{countryAlpha2Code} is not a valid country-code"),
-        new((int)RegistrationValidationErrors.UNIQUE_IDS_INVALID_FOR_COUNTRY, "invalid uniqueIds for country {country}: '{values}'"),
+        new((int)RegistrationValidationErrors.UNIQUE_IDS_INVALID_FOR_COUNTRY, "invalid uniqueIds for country {country}: '{values}'")
    ]);
 
     public Type Type { get => typeof(RegistrationValidationErrors); }
