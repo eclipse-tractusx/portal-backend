@@ -26,8 +26,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -53,6 +55,7 @@ await WebAppHelper
         builder.Services.AddApplicationChecklistCreation(builder.Configuration.GetSection("ApplicationCreation"));
         builder.Services
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
+            .AddSingleton<IErrorMessageContainer, RegistrationValidationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, RegistrationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, NetworkErrorMessageContainer>();
 

@@ -40,7 +40,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -473,19 +475,19 @@ public class RegistrationBusinessLogicTest
     #region SetCompanyWithAddress
 
     [Theory]
-    [InlineData(null, null, null, null, new UniqueIdentifierId[] { }, new string[] { }, "Name")]
-    [InlineData("filled", null, null, null, new UniqueIdentifierId[] { }, new string[] { }, "City")]
-    [InlineData("filled", "filled", null, null, new UniqueIdentifierId[] { }, new string[] { }, "StreetName")]
-    [InlineData("filled", "filled", "filled", "", new UniqueIdentifierId[] { }, new string[] { }, "CountryAlpha2Code")]
+    [InlineData(null, null, null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.NAME_NOT_EMPTY)]
+    [InlineData("filled", null, null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.CITY_NOT_EMPTY)]
+    [InlineData("filled", "filled", null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.STREET_NOT_EMPTY)]
+    [InlineData("filled", "filled", "filled", "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.COUNTRY_CODE_MIN_LENGTH)]
     [InlineData("filled", "filled", "filled", "XX",
-        new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new string[] { "filled", "" },
-        "UniqueIds")]
+        new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new[] { "filled", "" },
+        RegistrationValidationErrors.UNIQUE_IDS_NO_EMPTY_VALUES)]
     [InlineData("filled", "filled", "filled", "XX",
-        new UniqueIdentifierId[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID },
-        new string[] { "filled", "filled" }, "UniqueIds")]
+        new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID },
+        new[] { "filled", "filled" }, RegistrationValidationErrors.UNIQUE_IDS_NO_DUPLICATE_VALUES)]
     public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city,
         string? streetName, string? countryCode, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds,
-        IEnumerable<string> values, string argumentName)
+        IEnumerable<string> values, RegistrationValidationErrors error)
     {
         //Arrange
         var identityData = A.Fake<IIdentityData>();
@@ -514,7 +516,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.ParamName.Should().Be(argumentName);
+        ex.Message.Should().Be(error.ToString());
     }
 
     [Fact]
@@ -621,7 +623,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         ex.Message.Should()
-            .Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
+            .Be(RegistrationValidationErrors.BPN_INVALID.ToString());
     }
 
     [Fact]
@@ -1208,7 +1210,7 @@ public class RegistrationBusinessLogicTest
 
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        result.Message.Should().Be($"{_alpha2code} is not a valid country-code (Parameter 'UniqueIds')");
+        result.Message.Should().Be(RegistrationValidationErrors.COUNTRY_CODE_NOT_VALID.ToString());
     }
 
     [Fact]
@@ -1252,7 +1254,7 @@ public class RegistrationBusinessLogicTest
         //Assert
         var result = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
         result.Message.Should()
-            .Be($"invalid uniqueIds for country {_alpha2code}: '{identifiers.ElementAt(1)}' (Parameter 'UniqueIds')");
+            .Be(RegistrationValidationErrors.UNIQUE_IDS_INVALID_FOR_COUNTRY.ToString());
     }
 
     #endregion

@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
@@ -317,21 +318,19 @@ public class RegistrationBusinessLogic(
             );
             return initialData.AddressId.Value;
         }
-        else
-        {
-            return companyRepository.CreateAddress(
-                modifyData.City,
-                modifyData.StreetName,
-                modifyData.CountryAlpha2Code,
-                a =>
-                {
-                    a.Zipcode = modifyData.ZipCode;
-                    a.Region = modifyData.Region;
-                    a.Streetadditional = modifyData.StreetAdditional;
-                    a.Streetnumber = modifyData.StreetNumber;
-                }
-            ).Id;
-        }
+
+        return companyRepository.CreateAddress(
+            modifyData.City,
+            modifyData.StreetName,
+            modifyData.CountryAlpha2Code,
+            a =>
+            {
+                a.Zipcode = modifyData.ZipCode;
+                a.Region = modifyData.Region;
+                a.Streetadditional = modifyData.StreetAdditional;
+                a.Streetnumber = modifyData.StreetNumber;
+            }
+        ).Id;
     }
 
     private static void ModifyCompany(Guid addressId, CompanyApplicationDetailData initialData, CompanyDetailData modifyData, ICompanyRepository companyRepository) =>

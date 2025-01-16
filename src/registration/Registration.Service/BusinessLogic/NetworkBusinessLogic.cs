@@ -26,29 +26,25 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
-public class NetworkBusinessLogic : INetworkBusinessLogic
+public class NetworkBusinessLogic(
+    IPortalRepositories portalRepositories,
+    IIdentityService identityService,
+    IApplicationChecklistCreationService checklistService)
+    : INetworkBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityData _identityData;
-    private readonly IApplicationChecklistCreationService _checklistService;
-
-    public NetworkBusinessLogic(IPortalRepositories portalRepositories, IIdentityService identityService, IApplicationChecklistCreationService checklistService)
-    {
-        _portalRepositories = portalRepositories;
-        _identityData = identityService.IdentityData;
-        _checklistService = checklistService;
-    }
+    private readonly IIdentityData _identityData = identityService.IdentityData;
 
     public async Task Submit(PartnerSubmitData submitData)
     {
         var companyId = _identityData.CompanyId;
         var userId = _identityData.IdentityId;
-        var data = await _portalRepositories.GetInstance<INetworkRepository>()
+        var data = await portalRepositories.GetInstance<INetworkRepository>()
             .GetSubmitData(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
@@ -88,27 +84,27 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             .IfAny(missing =>
                 throw ControllerArgumentException.Create(NetworkErrors.NETWORK_ARG_ALL_AGREEMNTS_COMPANY_SHOULD_AGREED, new ErrorParameter[] { new(nameof(submitData.Agreements), nameof(submitData.Agreements)), new("agreementIds", string.Join(",", missing)) }));
 
-        _portalRepositories.GetInstance<IConsentRepository>()
+        portalRepositories.GetInstance<IConsentRepository>()
             .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
 
-        var entries = await _checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
-        var processId = _portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
-        _portalRepositories.GetInstance<IProcessStepRepository>()
+        var entries = await checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
+        var processId = portalRepositories.GetInstance<IProcessStepRepository>().CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
+        portalRepositories.GetInstance<IProcessStepRepository>()
             .CreateProcessStepRange(
-                _checklistService
+                checklistService
                     .GetInitialProcessStepTypeIds(entries)
                     .Select(processStepTypeId => (processStepTypeId, ProcessStepStatusId.TODO, processId))
                     // in addition to the initial steps of new process application_checklist also create next step for process network_registration
                     .Append((ProcessStepTypeId.TRIGGER_CALLBACK_OSP_SUBMITTED, ProcessStepStatusId.TODO, data.ProcessId.Value)));
 
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
+        portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(companyApplication.CompanyApplicationId,
             ca =>
             {
                 ca.ApplicationStatusId = CompanyApplicationStatusId.SUBMITTED;
                 ca.ChecklistProcessId = processId;
             });
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     public async Task DeclineOsp(Guid applicationId, DeclineOspData declineData)
@@ -120,7 +116,7 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
             CompanyApplicationStatusId.INVITE_USER, CompanyApplicationStatusId.SELECT_COMPANY_ROLE,
             CompanyApplicationStatusId.UPLOAD_DOCUMENTS, CompanyApplicationStatusId.VERIFY
         };
-        var networkRepository = _portalRepositories.GetInstance<INetworkRepository>();
+        var networkRepository = portalRepositories.GetInstance<INetworkRepository>();
         var data = await networkRepository.GetDeclineDataForApplicationId(applicationId, CompanyApplicationTypeId.EXTERNAL, validStatus, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
@@ -143,15 +139,15 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         }
 
         var (companyData, invitationData, processData) = data.Data!.Value;
-        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE_OSP, _portalRepositories, () => $"applicationId {applicationId}");
+        var context = processData.CreateManualProcessData(ProcessStepTypeId.MANUAL_DECLINE_OSP, portalRepositories, () => $"applicationId {applicationId}");
 
-        _portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
-        _portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
+        portalRepositories.GetInstance<IApplicationRepository>().AttachAndModifyCompanyApplication(applicationId, ca => { ca.ApplicationStatusId = CompanyApplicationStatusId.CANCELLED_BY_CUSTOMER; });
+        portalRepositories.GetInstance<ICompanyRepository>().AttachAndModifyCompany(
             companyId,
             c => { c.CompanyStatusId = companyData.CompanyStatusId; },
             c => { c.CompanyStatusId = CompanyStatusId.REJECTED; });
 
-        _portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(invitationData.Select(
+        portalRepositories.GetInstance<IInvitationRepository>().AttachAndModifyInvitations(invitationData.Select(
             x =>
                 new ValueTuple<Guid, Action<Invitation>?, Action<Invitation>>(
                     x.InvitationId,
@@ -161,6 +157,6 @@ public class NetworkBusinessLogic : INetworkBusinessLogic
         context.SkipProcessStepsExcept(Enumerable.Repeat(ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, 1));
         context.FinalizeProcessStep();
 
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }

@@ -20,7 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 
 public class NetworkErrorMessageContainer : IErrorMessageContainer
 {
@@ -36,7 +36,6 @@ public class NetworkErrorMessageContainer : IErrorMessageContainer
         new((int)NetworkErrors.NETWORK_FORBIDDEN_USER_NOT_ALLOWED_DECLINE_APPLICATION, "User is not allowed to decline application {applicationId}"),
         new((int)NetworkErrors.NETWORK_CONFLICT_EXTERNAL_REGISTRATIONS_DECLINED, "Only external registrations can be declined"),
         new((int)NetworkErrors.NETWORK_CONFLICT_CHECK_APPLICATION_STATUS, "The status of the application {applicationId} must be one of the following: {validStatus}"),
-
     ]);
 
     public Type Type { get => typeof(NetworkErrors); }

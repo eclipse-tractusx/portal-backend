@@ -20,7 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
+namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 
 public class RegistrationErrorMessageContainer : IErrorMessageContainer
 {

@@ -23,20 +23,10 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
-public class StaticDataBusinessLogic : IStaticDataBusinessLogic
+public class StaticDataBusinessLogic(IPortalRepositories portalRepositories)
+    : IStaticDataBusinessLogic
 {
-    private readonly IPortalRepositories _portalRepositories;
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name="portalRepositories"></param>
-    public StaticDataBusinessLogic(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
-
     /// <inheritdoc/>
     public IAsyncEnumerable<CountryLongNameData> GetAllCountries() =>
-        _portalRepositories.GetInstance<IStaticDataRepository>().GetAllCountries();
+        portalRepositories.GetInstance<IStaticDataRepository>().GetAllCountries();
 }
