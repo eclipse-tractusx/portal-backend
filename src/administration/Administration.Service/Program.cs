@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;
 using Org.Eclipse.TractusX.Portal.Backend.Web.PublicInfos.DependencyInjection;
 
@@ -105,6 +106,7 @@ await WebAppHelper
             .AddSingleton<IErrorMessageContainer, AdministrationServiceAccountErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AdministrationSubscriptionConfigurationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ProvisioningServiceErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, RegistrationValidationErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>();
 
         builder.Services.AddProvisioningDBAccess(builder.Configuration);

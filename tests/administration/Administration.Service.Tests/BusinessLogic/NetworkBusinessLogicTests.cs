@@ -35,6 +35,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
@@ -133,8 +134,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("BPN must contain exactly 16 characters and must be prefixed with BPNL (Parameter 'BusinessPartnerNumber')");
-        ex.ParamName.Should().Be("BusinessPartnerNumber");
+        ex.Message.Should().Be(RegistrationValidationErrors.BPN_INVALID.ToString());
     }
 
     [Fact]
@@ -151,8 +151,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"The Bpn {data.BusinessPartnerNumber} already exists (Parameter 'BusinessPartnerNumber')");
-        ex.ParamName.Should().Be("BusinessPartnerNumber");
+        ex.Message.Should().Be(RegistrationValidationErrors.BPN_ALREADY_EXISTS.ToString());
     }
 
     [Fact]
@@ -267,8 +266,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Location {data.CountryAlpha2Code} does not exist (Parameter 'CountryAlpha2Code')");
-        ex.ParamName.Should().Be("CountryAlpha2Code");
+        ex.Message.Should().Be(RegistrationValidationErrors.COUNTRY_CODE_DOES_NOT_EXIST.ToString());
     }
 
     [Fact]
