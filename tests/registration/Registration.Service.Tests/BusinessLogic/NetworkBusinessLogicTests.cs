@@ -484,7 +484,7 @@ public class NetworkBusinessLogicTests
                 initial.ForEach(x => x.modify(x.Invitation));
             });
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
-            .Invokes((IEnumerable<(Guid ProcessStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? Initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> Modify)> processSteps) =>
+            .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> processSteps) =>
             {
                 var initial = processSteps.Select(x =>
                     {

@@ -88,7 +88,7 @@ public class NetworkBusinessLogic(
         portalRepositories.GetInstance<IConsentRepository>()
             .CreateConsents(requiredAgreementIds.Select(agreementId => (agreementId, companyId, userId, ConsentStatusId.ACTIVE)));
 
-        var entries = await _checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
+        var entries = await checklistService.CreateInitialChecklistAsync(companyApplication.CompanyApplicationId);
         var portalProcessStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
         var processId = portalProcessStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST).Id;
         portalProcessStepRepository
