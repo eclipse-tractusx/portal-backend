@@ -23,7 +23,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
@@ -34,11 +34,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 
 public class ProcessExecutionServiceTests
 {
-    private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IRepositories _processRepositories;
     private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _processExecutor;
-    private readonly IMockLogger<ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>> _mockLogger;
-    private readonly ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _service;
+    private readonly IMockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>> _mockLogger;
+    private readonly ProcessExecutionService<ProcessTypeId, ProcessStepTypeId> _service;
     private readonly IFixture _fixture;
     private readonly IProcessIdentityDataDetermination _processIdentityDataDetermination;
 
@@ -51,14 +51,14 @@ public class ProcessExecutionServiceTests
 
         var dateTimeProvider = A.Fake<IDateTimeProvider>();
         _processRepositories = A.Fake<IRepositories>();
-        _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
         _processExecutor = A.Fake<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>>();
         _processIdentityDataDetermination = A.Fake<IProcessIdentityDataDetermination>();
 
-        _mockLogger = A.Fake<IMockLogger<ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>>();
-        ILogger<ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>> logger = new MockLogger<ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>(_mockLogger);
+        _mockLogger = A.Fake<IMockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>>>();
+        ILogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>> logger = new MockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>>(_mockLogger);
 
-        A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>())
+        A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         var settings = _fixture.Create<ProcessExecutionServiceSettings>();
@@ -74,7 +74,7 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
         A.CallTo(() => serviceProvider.GetService(typeof(IServiceScopeFactory))).Returns(serviceScopeFactory);
 
-        _service = new ProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(serviceScopeFactory, dateTimeProvider, options, logger);
+        _service = new ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>(serviceScopeFactory, dateTimeProvider, options, logger);
     }
 
     [Fact]

@@ -21,15 +21,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 
 public static class ProcessExecutionServiceExtensions
 {
     public static IServiceCollection AddProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IServiceCollection services, IConfigurationSection section)
-        where TProcessType : class, IProcess<TProcessTypeId>
-        where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
@@ -37,8 +34,8 @@ public static class ProcessExecutionServiceExtensions
             .Bind(section)
             .EnvironmentalValidation(section);
         services
-            .AddTransient<ProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
-            .AddTransient<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>, ProcessExecutor<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>>()
+            .AddTransient<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>>()
+            .AddTransient<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>, ProcessExecutor<TProcessTypeId, TProcessStepTypeId>>()
             .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
         return services;
     }

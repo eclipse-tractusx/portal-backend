@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -423,8 +424,8 @@ public class ChecklistServiceTests
 
         ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid processStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
@@ -452,7 +453,7 @@ public class ChecklistServiceTests
         // Assert
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustHaveHappenedOnceExactly();
@@ -492,8 +493,8 @@ public class ChecklistServiceTests
 
         ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid processStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
@@ -521,7 +522,7 @@ public class ChecklistServiceTests
         // Assert
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustHaveHappenedOnceExactly();
@@ -566,8 +567,8 @@ public class ChecklistServiceTests
 
         ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid processStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
@@ -584,7 +585,7 @@ public class ChecklistServiceTests
         // Assert
         A.CallTo(() => _applicationChecklistRepository.AttachAndModifyApplicationChecklist(A<Guid>._, A<ApplicationChecklistEntryTypeId>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
@@ -624,8 +625,8 @@ public class ChecklistServiceTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid processStepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(step);
@@ -639,7 +640,7 @@ public class ChecklistServiceTests
         // Assert
         var eligibleSteps = processSteps.Where(step => processStepTypeIds.Contains(step.ProcessStepTypeId)).ToImmutableArray();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappened(eligibleSteps.Length, Times.Exactly);
 
         modifiedProcessSteps.Should().HaveCount(eligibleSteps.Length);

@@ -107,7 +107,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER, null, true))
-            .Returns(new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_PROVIDER, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_PROVIDER, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerProvider(OfferSubscriptionId);
@@ -115,7 +115,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>._,
+                A<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER })))
             .MustHaveHappenedOnceExactly();
     }
@@ -128,7 +128,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, null, true))
-            .Returns(new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CLIENT_CREATION, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerCreateClient(OfferSubscriptionId);
@@ -136,7 +136,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>._,
+                A<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_CLIENT_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
@@ -149,7 +149,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, null, true))
-            .Returns(new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_TECHNICALUSER_CREATION, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerCreateTechnicalUser(OfferSubscriptionId);
@@ -157,7 +157,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>._,
+                A<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.OFFERSUBSCRIPTION_TECHNICALUSER_CREATION })))
             .MustHaveHappenedOnceExactly();
     }
@@ -170,7 +170,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, ProcessStepStatusId.TODO, processId, DateTimeOffset.Now);
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(OfferSubscriptionId, ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, null, false))
-            .Returns(new ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
+            .Returns(new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.RETRIGGER_PROVIDER_CALLBACK, _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>(), new[] { processStep }, _portalRepositories));
 
         // Act
         await _sut.RetriggerProviderCallback(OfferSubscriptionId);
@@ -178,7 +178,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionProcessService.FinalizeProcessSteps(
-                A<ManualProcessStepData<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>._,
+                A<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>._,
                 A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { ProcessStepTypeId.TRIGGER_PROVIDER_CALLBACK })))
             .MustHaveHappenedOnceExactly();
     }

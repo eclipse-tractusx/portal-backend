@@ -17,19 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public interface IProcessDbContext<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId>
+public interface IProcessCreation<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
     where TProcessType : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessStepType, TProcessStepTypeId>
     where TProcessStepType : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcessType, TProcessTypeId>
-    where TProcessStepStatusType : class, IProcessStepStatus
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    DbSet<TProcessType> Processes { get; }
-    DbSet<TProcessStepType> ProcessSteps { get; }
-    DbSet<TProcessStepStatusType> ProcessStepStatuses { get; }
+    TProcessType CreateProcess(Guid id, TProcessTypeId processTypeId, Guid version);
+    TProcessStepType CreateProcessStep(Guid id, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now);
 }

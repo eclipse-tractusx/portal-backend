@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -46,8 +46,9 @@ public interface IRepositories
 
     void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class;
 
-    public T GetInstance<T>();
+    T GetInstance<T>();
 
-    public Task<int> SaveAsync();
+    Task<int> SaveAsync();
+
     void Clear();
 }

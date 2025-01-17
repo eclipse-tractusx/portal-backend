@@ -20,7 +20,8 @@
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
@@ -33,7 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 public class ProcessExecutorTests
 {
     private readonly IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId> _processTypeExecutor;
-    private readonly IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _sut;
     private readonly IFixture _fixture;
 
@@ -45,18 +46,18 @@ public class ProcessExecutorTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         _processTypeExecutor = A.Fake<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>>();
-        _processStepRepository = A.Fake<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        var logger = A.Fake<ILogger<ProcessExecutor<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>>();
+        var logger = A.Fake<ILogger<ProcessExecutor<ProcessTypeId, ProcessStepTypeId>>>();
 
-        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>>())
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         A.CallTo(() => _processTypeExecutor.GetProcessTypeId())
             .Returns(ProcessTypeId.APPLICATION_CHECKLIST);
 
-        _sut = new ProcessExecutor<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(
+        _sut = new ProcessExecutor<ProcessTypeId, ProcessStepTypeId>(
             new[] { _processTypeExecutor },
             portalRepositories,
             logger);
@@ -162,8 +163,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -190,7 +191,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(initialStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(initialStepTypeIds.Length + 1)
@@ -202,7 +203,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
@@ -261,8 +262,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -281,7 +282,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(processStepData.Length, Times.Exactly);
 
             modifiedProcessSteps
@@ -293,7 +294,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
@@ -326,7 +327,7 @@ public class ProcessExecutorTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustNotHaveHappened();
     }
 
@@ -373,8 +374,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -396,7 +397,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(processStepData.Length, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveSameCount(processStepData)
@@ -411,7 +412,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
@@ -489,8 +490,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -521,7 +522,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(scheduleStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(scheduleStepTypeIds.Length + 1)
@@ -533,7 +534,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
@@ -597,8 +598,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -625,7 +626,7 @@ public class ProcessExecutorTests
 
             A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
                 .MustHaveHappened(2, Times.Exactly);
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(2, Times.Exactly);
 
             modifiedProcessSteps
@@ -636,7 +637,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
             A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
                 .MustNotHaveHappened();
@@ -686,8 +687,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -709,7 +710,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(skipStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(skipStepTypeIds.Length + 1)
@@ -720,7 +721,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(skipStepTypeIds.Length, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(skipStepTypeIds.Length)
@@ -776,8 +777,8 @@ public class ProcessExecutorTests
 
         var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
-            .Invokes((Guid stepId, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? initialize, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
                 var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
@@ -797,7 +798,7 @@ public class ProcessExecutorTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappened(processStepData.Length, Times.Exactly);
 
         modifiedProcessSteps
@@ -859,7 +860,7 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._, A<Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustNotHaveHappened();
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
@@ -26,7 +27,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concre
 
 public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> :
     DbContext,
-    IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
+    IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
+    IDbContext
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {

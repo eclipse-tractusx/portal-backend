@@ -17,14 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 
-public record VerifyProcessData<TProcessTypeId, TProcessStepTypeId>(
-    Process<TProcessTypeId, TProcessStepTypeId>? Process,
-    IEnumerable<ProcessStep<TProcessTypeId, TProcessStepTypeId>>? ProcessSteps
-) : IVerifyProcessData<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
+public record ManualProcessStepData<TProcessTypeId, TProcessStepTypeId>(
+    TProcessStepTypeId? ProcessStepTypeId,
+    IProcess<TProcessTypeId> Process,
+    IEnumerable<IProcessStep<TProcessStepTypeId>> ProcessSteps,
+    IRepositories ProcessRepositories
+)
 where TProcessTypeId : struct, IConvertible
 where TProcessStepTypeId : struct, IConvertible;

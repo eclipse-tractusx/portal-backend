@@ -18,8 +18,9 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -150,7 +151,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
-        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>?, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>(
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>>(
             data.ProcessStepId,
             step =>
                 {
@@ -188,7 +189,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
-        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>?, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>(
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>>(
             data.ProcessStepId,
             step =>
                 {
@@ -224,7 +225,7 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, dbContext) = await CreateSutWithContext();
 
         // Act
-        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>?, Action<ProcessStep<ProcessTypeId, ProcessStepTypeId>>>(
+        sut.AttachAndModifyProcessSteps(stepData.Select(data => new ValueTuple<Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>>(
             data.ProcessStepId,
             step =>
                 {
@@ -365,17 +366,17 @@ public class ProcessStepRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    private async Task<(ProcessStepRepository<ProcessTypeId, ProcessStepTypeId> sut, PortalDbContext dbContext)> CreateSutWithContext()
+    private async Task<(ProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> sut, PortalDbContext dbContext)> CreateSutWithContext()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();
-        var sut = new ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>(context);
+        var sut = new ProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context));
         return (sut, context);
     }
 
-    private async Task<ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>> CreateSut()
+    private async Task<ProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>> CreateSut()
     {
         var context = await _dbTestDbFixture.GetPortalDbContext();
-        var sut = new ProcessStepRepository<ProcessTypeId, ProcessStepTypeId>(context);
+        var sut = new ProcessStepRepository<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context));
         return sut;
     }
 }

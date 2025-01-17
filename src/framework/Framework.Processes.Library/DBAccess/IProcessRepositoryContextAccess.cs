@@ -17,19 +17,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public interface IProcessDbContext<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId>
+public interface IProcessRepositoryContextAccess<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId> :
+    IProcessDbContext<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId>,
+    IProcessCreation<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
     where TProcessType : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessStepType, TProcessStepTypeId>
     where TProcessStepType : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcessType, TProcessTypeId>
     where TProcessStepStatusType : class, IProcessStepStatus
     where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
-{
-    DbSet<TProcessType> Processes { get; }
-    DbSet<TProcessStepType> ProcessSteps { get; }
-    DbSet<TProcessStepStatusType> ProcessStepStatuses { get; }
-}
+    where TProcessStepTypeId : struct, IConvertible;

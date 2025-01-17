@@ -25,7 +25,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
-
   <!-- nuget specific config-->
   <PropertyGroup>
     <PackageId>Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess</PackageId>
@@ -43,15 +42,12 @@
     <RepositoryType>git</RepositoryType>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-
     <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-
   <ItemGroup>
     <None Include="./README.md" Pack="true" PackagePath="" />
     <None Include="../../../LICENSE" Pack="true" PackagePath="" />
@@ -59,8 +55,10 @@
     <None Include="../../../DEPENDENCIES" Pack="true" PackagePath="" />
     <None Include="../../../CONTRIBUTING.md" Pack="true" PackagePath="" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Framework.ErrorHandling\Framework.ErrorHandling.csproj" />
   </ItemGroup>
 </Project>

@@ -28,8 +28,10 @@ public class ProcessStep<TProcessTypeId, TProcessStepTypeId>(
     TProcessStepTypeId processStepTypeId,
     ProcessStepStatusId processStepStatusId,
     Guid processId,
-    DateTimeOffset dateCreated)
-    : IProcessStep<TProcessStepTypeId>, IBaseEntity
+    DateTimeOffset dateCreated) :
+    IProcessStep<TProcessStepTypeId>,
+    IProcessStepNavigation<Process<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>,
+    IBaseEntity
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {

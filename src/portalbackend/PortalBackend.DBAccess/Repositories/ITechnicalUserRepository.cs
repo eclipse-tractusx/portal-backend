@@ -18,7 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -41,11 +41,11 @@ public interface ITechnicalUserRepository
     Task<TechnicalUserDetailedData?> GetOwnTechnicalUserDataUntrackedAsync(Guid technicalUserId, Guid companyId);
     Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsersUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
     Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId);
-    public Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId);
+    Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId);
     void CreateExternalTechnicalUser(Guid technicalUserId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);
     void CreateExternalTechnicalUserCreationData(Guid technicalUserId, Guid processId);
     Task<(bool IsValid, string? Bpn, string Name)> GetExternalTechnicalUserData(Guid externalTechnicalUserId);
     Task<Guid> GetExternalTechnicalUserIdForProcess(Guid processId);
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
-    public Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId)> GetProcessDataForTechnicalUserDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds);
+    Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId)> GetProcessDataForTechnicalUserDeletionCallback(Guid processId, IEnumerable<ProcessStepTypeId>? processStepTypeIds);
 }

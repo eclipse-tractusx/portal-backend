@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,36 +18,13 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
-using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
-public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId>(IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId> dbContext) : IRepositories
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public abstract class Repositories(IDbContext dbContext) : IRepositories
 {
-    private static KeyValuePair<Type, Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object>> CreateTypeEntry<T>(Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
-
-    protected static readonly IReadOnlyDictionary<Type, Func<IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(new[]
-    {
-        CreateTypeEntry<IProcessStepRepository<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>>(context => new ProcessStepRepository<TProcessTypeId, TProcessStepTypeId>(context))
-    });
-
-    public virtual RepositoryType GetInstance<RepositoryType>()
-    {
-        object? repository = default;
-
-        if (ProcessRepositoryTypes.TryGetValue(typeof(RepositoryType), out var createFunc))
-        {
-            repository = createFunc(dbContext);
-        }
-
-        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}", nameof(RepositoryType)));
-    }
+    public abstract T GetInstance<T>();
 
     /// <inheritdoc />
     public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class

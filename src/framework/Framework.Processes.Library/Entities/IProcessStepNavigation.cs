@@ -17,16 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
-
-public interface IVerifyProcessData<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
+public interface IProcessStepNavigation<TProcessType, TProcessTypeId>
     where TProcessType : class, IProcess<TProcessTypeId>
-    where TProcessStepType : class, IProcessStep<TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
 {
     TProcessType? Process { get; }
-    IEnumerable<TProcessStepType>? ProcessSteps { get; }
 }
