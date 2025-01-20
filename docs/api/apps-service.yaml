@@ -2794,6 +2794,10 @@ components:
           type: string
           description: contact number
           nullable: true
+        displayTechnicalUser:
+          type: boolean
+          description: Display Technical User
+          nullable: true
         documents:
           type: object
           properties:

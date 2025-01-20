@@ -1993,6 +1993,9 @@ components:
         contactNumber:
           type: string
           nullable: true
+        displayTechnicalUser:
+          type: boolean
+          nullable: true
         documents:
           type: object
           properties:
@@ -2656,6 +2659,10 @@ components:
         contactNumber:
           type: string
           description: contact number
+          nullable: true
+        displayTechnicalUser:
+          type: boolean
+          description: Display Technical User
           nullable: true
         documents:
           type: object

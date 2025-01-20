@@ -391,7 +391,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null, false);
 
         // Act
         async Task Act() => await _sut.UpdateServiceAsync(_notExistingServiceId, data);
@@ -406,7 +406,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null, false);
 
         // Act
         async Task Act() => await _sut.UpdateServiceAsync(_activeServiceId, data);
@@ -421,7 +421,7 @@ public class ServiceReleaseBusinessLogicTest
     {
         // Arrange
         SetupUpdateService();
-        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null);
+        var data = new ServiceUpdateRequestData("test", new List<LocalizedDescription>(), new List<ServiceTypeId>(), "123", "test@email.com", Guid.NewGuid(), null, false);
 
         // Act
         async Task Act() => await _sut.UpdateServiceAsync(_differentCompanyServiceId, data);
@@ -449,7 +449,8 @@ public class ServiceReleaseBusinessLogicTest
             "43",
             "test@email.com",
             CompanyUserId,
-            null);
+            null,
+            true);
         var settings = new ServiceSettings
         {
             SalesManagerRoles = new[]
