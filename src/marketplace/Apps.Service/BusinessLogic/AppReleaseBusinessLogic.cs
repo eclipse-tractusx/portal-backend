@@ -133,6 +133,7 @@ public class AppReleaseBusinessLogic(
             result.ProviderUri,
             result.ContactEmail,
             result.ContactNumber,
+            result.DisplayTechnicalUser,
             result.Documents,
             result.SalesManagerId,
             result.PrivacyPolicies,
@@ -278,6 +279,7 @@ public class AppReleaseBusinessLogic(
             app.SalesManagerId = appRequestModel.SalesManagerId;
             app.ContactEmail = appRequestModel.ContactEmail;
             app.ContactNumber = appRequestModel.ContactNumber;
+            app.DisplayTechnicalUser = appRequestModel.DisplayTechnicalUser;
             app.MarketingUrl = appRequestModel.ProviderUri;
         },
         app =>
@@ -286,6 +288,7 @@ public class AppReleaseBusinessLogic(
             app.SalesManagerId = appData.SalesManagerId;
             app.ContactEmail = appData.ContactEmail;
             app.ContactNumber = appData.ContactNumber;
+            app.DisplayTechnicalUser = appRequestModel.DisplayTechnicalUser;
             app.MarketingUrl = appData.MarketingUrl;
             app.DateLastChanged = DateTimeOffset.UtcNow;
         });

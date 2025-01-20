@@ -30,4 +30,5 @@ public record ServiceUpdateRequestData(
     string Price,
     string ContactEmail,
     Guid? SalesManager,
-    string? ProviderUri);
+    string? ProviderUri,
+    bool? DisplayTechnicalUser);

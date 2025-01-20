@@ -271,6 +271,7 @@ public class OfferService(
             data.ProviderUri,
             data.ContactEmail,
             data.ContactNumber,
+            data.DisplayTechnicalUser,
             data.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             data.SalesManagerId,
             data.PrivacyPolicies,

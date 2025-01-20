@@ -55,6 +55,7 @@ public record OfferProviderData(
     string? ProviderUri,
     string? ContactEmail,
     string? ContactNumber,
+    bool? DisplayTechnicalUser,
     IEnumerable<DocumentTypeData> Documents,
     Guid? SalesManagerId,
     IEnumerable<PrivacyPolicyId> PrivacyPolicies,

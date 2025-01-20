@@ -372,6 +372,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                         x.Offer.MarketingUrl,
                         x.Offer.ContactEmail,
                         x.Offer.ContactNumber,
+                        x.Offer.DisplayTechnicalUser,
                         x.Offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                         x.Offer.SalesManagerId,
                         x.Offer.OfferAssignedPrivacyPolicies.Select(x => x.PrivacyPolicyId),

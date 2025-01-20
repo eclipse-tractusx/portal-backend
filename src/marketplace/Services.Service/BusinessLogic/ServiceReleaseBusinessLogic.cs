@@ -123,6 +123,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.ProviderUri,
             result.ContactEmail,
             result.ContactNumber,
+            result.DisplayTechnicalUser,
             result.Documents,
             result.SalesManagerId,
             result.ServiceTypeIds,
@@ -202,6 +203,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
                 offer.Name = data.Title;
                 offer.SalesManagerId = data.SalesManager;
                 offer.ContactEmail = data.ContactEmail;
+                offer.DisplayTechnicalUser = data.DisplayTechnicalUser;
                 offer.MarketingUrl = data.ProviderUri;
             },
             offer =>

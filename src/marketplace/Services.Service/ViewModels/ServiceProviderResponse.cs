@@ -36,6 +36,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="ProviderUri">the provider uri</param>
 /// <param name="ContactEmail">contact email</param>
 /// <param name="ContactNumber">contact number</param>
+/// <param name="DisplayTechnicalUser">Display Technical User</param>
 /// <param name="Documents">list of linked documents</param>
 /// <param name="SalesManagerId">id of the salesmanager</param>
 /// <param name="ServiceTypeIds">ids of the service types</param>
@@ -50,6 +51,7 @@ public record ServiceProviderResponse(
     string? ProviderUri,
     string? ContactEmail,
     string? ContactNumber,
+    bool? DisplayTechnicalUser,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
     Guid? SalesManagerId,
     IEnumerable<ServiceTypeId> ServiceTypeIds,

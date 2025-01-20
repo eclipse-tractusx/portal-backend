@@ -2794,6 +2794,9 @@ components:
         providerUri:
           type: string
           nullable: true
+        displayTechnicalUser:
+          type: boolean
+          nullable: true
       additionalProperties: false
     SubscriberSubscriptionDetailData:
       type: object
