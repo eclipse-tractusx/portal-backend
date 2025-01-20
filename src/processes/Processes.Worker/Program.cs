@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Factory;
@@ -59,7 +60,7 @@ try
             services
                 .AddMailingAndTemplateManager(hostContext.Configuration)
                 .AddScoped<IRepositories, ProcessRepositories<ProcessTypeId, ProcessStepTypeId, PortalDbContext>>()
-                .AddProcessExecutionService<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(hostContext.Configuration.GetSection("Processes"))
+                .AddProcessExecutionService<ProcessTypeId, ProcessStepTypeId>(hostContext.Configuration.GetSection("Processes"))
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, ApplicationChecklistProcessTypeExecutor>()
                 .AddOfferSubscriptionProcessExecutor(hostContext.Configuration)
                 .AddTechnicalUserProfile()

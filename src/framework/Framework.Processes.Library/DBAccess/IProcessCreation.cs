@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public interface IProcessCreation<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
+public interface IProcessCreation<TProcessType, TProcessStepType, in TProcessTypeId, in TProcessStepTypeId>
     where TProcessType : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessStepType, TProcessStepTypeId>
     where TProcessStepType : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcessType, TProcessTypeId>
     where TProcessTypeId : struct, IConvertible

@@ -26,7 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library
 
 public static class ProcessExecutionServiceExtensions
 {
-    public static IServiceCollection AddProcessExecutionService<TProcessType, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddProcessExecutionService<TProcessTypeId, TProcessStepTypeId>(this IServiceCollection services, IConfigurationSection section)
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
