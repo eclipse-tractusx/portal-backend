@@ -622,7 +622,6 @@ public class AppBusinessLogicTests
         result.Provider.Should().Be(data.Provider);
         result.ContactEmail.Should().Be(data.ContactEmail);
         result.ContactNumber.Should().Be(data.ContactNumber);
-        result.DisplayTechnicalUser.Should().Be(data.DisplayTechnicalUser);
         result.UseCases.Should().ContainInOrder(data.UseCases);
         result.LongDescription.Should().Be(data.LongDescription);
         result.LicenseType.Should().Be(data.LicenseTypeId);

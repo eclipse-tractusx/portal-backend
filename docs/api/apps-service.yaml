@@ -2624,10 +2624,6 @@ components:
           type: string
           description: Phone number of the app's primary contact.
           nullable: true
-        displayTechnicalUser:
-          type: boolean
-          description: Technical User Status of app's primary contact.
-          nullable: true
         useCases:
           type: array
           items:
@@ -2938,10 +2934,6 @@ components:
         contactNumber:
           type: string
           description: ContactNumber
-          nullable: true
-        displayTechnicalUser:
-          type: boolean
-          description: DisplayTechnicalUser
           nullable: true
       additionalProperties: false
       description: Request Model for App Creation.

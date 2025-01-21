@@ -239,9 +239,7 @@ public class AppReleaseProcessControllerTest
             },
             "https://test.provider.com",
             "test@gmail.com",
-            "9456321678",
-            true
-            );
+            "9456321678");
 
         // Act
         var result = await _controller.UpdateAppRelease(appId, data);

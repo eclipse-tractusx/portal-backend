@@ -204,7 +204,6 @@ public class AppReleaseBusinessLogic(
 
             app.ContactEmail = appRequestModel.ContactEmail;
             app.ContactNumber = appRequestModel.ContactNumber;
-            app.DisplayTechnicalUser = appRequestModel.DisplayTechnicalUser;
             app.MarketingUrl = appRequestModel.ProviderUri;
             app.LicenseTypeId = LicenseTypeId.COTS;
             app.DateLastChanged = DateTimeOffset.UtcNow;

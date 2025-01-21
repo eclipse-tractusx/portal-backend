@@ -26,7 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-[AuditEntityV1(typeof(AuditOffer20241219))]
+[AuditEntityV1(typeof(AuditOffer20250121))]
 public class Offer : IAuditableV1, IBaseEntity
 {
     private Offer()
@@ -75,8 +75,6 @@ public class Offer : IAuditableV1, IBaseEntity
 
     [MaxLength(255)]
     public string? ContactNumber { get; set; }
-
-    public bool? DisplayTechnicalUser { get; set; }
 
     public OfferTypeId OfferTypeId { get; set; }
 

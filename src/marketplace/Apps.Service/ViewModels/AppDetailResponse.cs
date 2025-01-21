@@ -34,7 +34,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="Provider">Provider of the app.</param>
 /// <param name="ContactEmail">Email address of the app's primary contact.</param>
 /// <param name="ContactNumber">Phone number of the app's primary contact.</param>
-/// <param name="DisplayTechnicalUser">Technical User Status of app's primary contact.</param>
 /// <param name="UseCases">Names of the app's use cases.</param>
 /// <param name="LongDescription">Long description of the app.</param>
 /// <param name="LicenseType">License Type for app.</param>
@@ -55,7 +54,6 @@ public record AppDetailResponse(
     string Provider,
     string? ContactEmail,
     string? ContactNumber,
-    bool? DisplayTechnicalUser,
     IEnumerable<AppUseCaseData> UseCases,
     string LongDescription,
     LicenseTypeId LicenseType,

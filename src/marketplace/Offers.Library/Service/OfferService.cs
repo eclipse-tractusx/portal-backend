@@ -224,7 +224,6 @@ public class OfferService(
             service.MarketingUrl = data.ProviderUri;
             service.LicenseTypeId = LicenseTypeId.COTS;
             service.DateLastChanged = DateTimeOffset.UtcNow;
-            service.DisplayTechnicalUser = data.DisplayTechnicalUser;
         });
         var licenseId = offerRepository.CreateOfferLicenses(data.Price).Id;
         offerRepository.CreateOfferAssignedLicense(service.Id, licenseId);
