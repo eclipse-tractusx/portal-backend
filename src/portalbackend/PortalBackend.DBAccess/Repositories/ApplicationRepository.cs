@@ -410,7 +410,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                     ca.Company!.Name,
                     new LegalAddress(
                         ca.Address!.CountryAlpha2Code,
-                        ca.Address.Region,
+                        string.Format("{0}-{1}", ca.Address!.CountryAlpha2Code, ca.Address!.Region),
                         ca.Address.City,
                         ca.Address.Zipcode,
                         !string.IsNullOrEmpty(ca.Address.Streetnumber) ? string.Format("{0} {1}", ca.Address.Streetname, ca.Address.Streetnumber) : ca.Address.Streetname

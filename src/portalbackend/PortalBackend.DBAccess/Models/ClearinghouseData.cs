@@ -31,7 +31,7 @@ public record ClearinghouseData(
 
 public record LegalEntity(
     [property: JsonPropertyName("legalName")] string LegalName,
-    [property: JsonPropertyName("Address")] LegalAddress Address,
+    [property: JsonPropertyName("address")] LegalAddress Address,
     [property: JsonPropertyName("identifiers")] IEnumerable<UniqueIdData> Identifiers
 );
 

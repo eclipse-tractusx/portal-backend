@@ -80,10 +80,10 @@ public class ClearinghouseBusinessLogic(
             throw new ConflictException("BusinessPartnerNumber is null");
         }
 
-        var headers = new List<KeyValuePair<string, string>>
+        var headers = new Dictionary<string, string>
         {
-            new("Business-Partner-Number", data.Bpn)
-        }.AsEnumerable();
+            { "Business-Partner-Number", data.Bpn }
+        };
 
         var transferData = new ClearinghouseTransferData(
             data.LegalEntity,

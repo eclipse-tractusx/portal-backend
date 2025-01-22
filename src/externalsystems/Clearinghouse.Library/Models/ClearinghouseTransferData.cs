@@ -31,5 +31,5 @@ public record ClearinghouseTransferData(
 
 public record CallBack(
     [property: JsonPropertyName("url")] string Url,
-    [property: JsonPropertyName("headers")] IEnumerable<KeyValuePair<string, string>> Headers
+    [property: JsonPropertyName("headers")] IDictionary<string, string> Headers
 );

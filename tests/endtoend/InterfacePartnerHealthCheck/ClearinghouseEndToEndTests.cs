@@ -63,7 +63,7 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
                 ValidationModes.LEGAL_NAME,
                 new CallBack(
                     $"{TestResources.BasePortalBackendUrl}/api/administration/registration/clearinghouse",
-                    [new KeyValuePair<string, string>("bpn", "BPNL000SMOKE0011")]
+                    new Dictionary<string, string> { { "bpn", "BPNL000SMOKE0011" } }
                 )
             )
         );
