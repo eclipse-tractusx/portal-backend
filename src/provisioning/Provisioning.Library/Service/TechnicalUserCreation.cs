@@ -62,6 +62,7 @@ public class TechnicalUserCreation(
 
         var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
         var dimConfigRoles = _settings.DimUserRoles.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
+        var userProviderRoles = _settings.UserRolesAccessibleByProviderOnly.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
 
         var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
 
@@ -70,7 +71,15 @@ public class TechnicalUserCreation(
             {
                 var keycloakRoleData = roleData.ToImmutableList();
                 var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
-                var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, technicalUserTypeId, TechnicalUserKindId.INTERNAL, name, clientId, description, keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
+                var serviceAccountId = Guid.Empty;
+                if (!(userRoleData.IntersectBy(userProviderRoles, providerData => (providerData.ClientClientId, providerData.UserRoleText)).Any() && technicalUserTypeId == TechnicalUserTypeId.MANAGED))
+                {
+                    serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, technicalUserTypeId, TechnicalUserKindId.INTERNAL, name, clientId, description, keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
+                }
+                else
+                {
+                    serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, TechnicalUserTypeId.PROVIDER_OWNED, TechnicalUserKindId.INTERNAL, name, clientId, description, keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
+                }
                 serviceAccounts.Add(new CreatedServiceAccountData(
                     serviceAccountId,
                     enhancedName,

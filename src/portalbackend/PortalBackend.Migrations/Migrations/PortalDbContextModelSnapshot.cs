@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+﻿/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -7461,6 +7461,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 2,
                             Label = "OWN"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "PROVIDER_OWNED"
                         });
                 });
 

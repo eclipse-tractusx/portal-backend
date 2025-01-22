@@ -48,7 +48,10 @@ public class TechnicalUserCreationTests
     private readonly Guid _validUserRoleId = Guid.NewGuid();
     private readonly string _dimClient;
     private readonly string _dimRoleText;
+    private readonly string _providerRolesClient;
+    private readonly string _providerRolesText;
     private readonly Guid _dimUserRoleId = Guid.NewGuid();
+    private readonly Guid _providerOwnUserRoleId = Guid.NewGuid();
     private readonly Guid _invalidUserRoleId = Guid.NewGuid();
     private readonly Guid _processId = Guid.NewGuid();
     private readonly Guid _processStepId = Guid.NewGuid();
@@ -72,6 +75,8 @@ public class TechnicalUserCreationTests
         _validClientId = fixture.Create<string>();
         _dimClient = fixture.Create<string>();
         _dimRoleText = fixture.Create<string>();
+        _providerRolesClient = fixture.Create<string>();
+        _providerRolesText = fixture.Create<string>();
 
         _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _userRepository = A.Fake<IUserRepository>();
@@ -85,7 +90,8 @@ public class TechnicalUserCreationTests
         var settings = new ServiceAccountCreationSettings
         {
             ServiceAccountClientPrefix = "sa",
-            DimUserRoles = [new UserRoleConfig(_dimClient, [_dimRoleText])]
+            DimUserRoles = [new UserRoleConfig(_dimClient, [_dimRoleText])],
+            UserRolesAccessibleByProviderOnly = [new UserRoleConfig(_providerRolesClient, [_providerRolesText])]
         };
 
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
@@ -276,6 +282,62 @@ public class TechnicalUserCreationTests
     }
 
     [Fact]
+    public async Task CreateServiceAccountAsync_WithValidProviderRolesData_ReturnsExpected()
+    {
+        // Arrange
+        var serviceAccounts = new List<TechnicalUser>();
+        var identities = new List<Identity>();
+        var creationData = new TechnicalUserCreationInfo("providerOwntestName", "abc", IamClientAuthMethod.SECRET, [_providerOwnUserRoleId]);
+        var bpns = new[]
+        {
+            Bpn
+        };
+        Setup(serviceAccounts, identities);
+
+        // Act
+        var result = await _sut.CreateTechnicalUsersAsync(creationData, _companyId, bpns, TechnicalUserTypeId.MANAGED, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.USER_PROVISIONING, null), ServiceAccountCreationAction);
+
+        // Assert
+        result.TechnicalUsers.Should().ContainSingle()
+            .Which.Should().Match<CreatedServiceAccountData>(x =>
+                x.ClientId == "sa1" &&
+                x.Description == "abc" &&
+                x.UserRoleData.SequenceEqual(new[] { new UserRoleData(_providerOwnUserRoleId, _providerRolesClient, _providerRolesText) }) &&
+                x.Name == "providerOwntestName" &&
+                x.ServiceAccountData != null &&
+                x.ServiceAccountData.InternalClientId == "internal-sa1" &&
+                x.ServiceAccountData.IamUserId == _iamUserId &&
+                x.ServiceAccountData.AuthData.IamClientAuthMethod == IamClientAuthMethod.SECRET
+            );
+
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "providerOwntestName", "abc", "sa1", TechnicalUserTypeId.PROVIDER_OWNED, TechnicalUserKindId.INTERNAL, ServiceAccountCreationAction))
+            .MustHaveHappenedOnceExactly();
+        var expectedRolesIds = new[] { (_identityId, _providerOwnUserRoleId) };
+        A.CallTo(() => _userRolesRepository.CreateIdentityAssignedRoleRange(A<IEnumerable<(Guid, Guid)>>.That.IsSameSequenceAs(expectedRolesIds)))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRepository.CreateIdentity(A<Guid>._, UserStatusId.PENDING, A<IdentityTypeId>._, A<Action<Identity>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _technicalUserRepository.CreateExternalTechnicalUserCreationData(A<Guid>._, A<Guid>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync())
+            .MustNotHaveHappened();
+        serviceAccounts.Should().ContainSingle().Which.Should().Match<TechnicalUser>(
+            x => x.Name == "providerOwntestName" &&
+                 x.ClientClientId == "sa1" &&
+                 x.TechnicalUserKindId == TechnicalUserKindId.INTERNAL);
+        identities.Should().ContainSingle().Which.Should().Match<Identity>(
+            x => x.CompanyId == _companyId &&
+                 x.UserStatusId == UserStatusId.ACTIVE &&
+                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+    }
+
+    [Fact]
     public async Task CreateServiceAccountAsync_WithValidDataPlus_ReturnsExpected()
     {
         // Arrange
@@ -404,6 +466,8 @@ public class TechnicalUserCreationTests
             .Returns(new[] { new UserRoleData(_validUserRoleId, _validClientId, "UserRole") }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Contains(_dimUserRoleId)))
             .Returns(new[] { new UserRoleData(_dimUserRoleId, _dimClient, _dimRoleText) }.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Contains(_providerOwnUserRoleId)))
+        .Returns(new[] { new UserRoleData(_providerOwnUserRoleId, _providerRolesClient, _providerRolesText) }.ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.Contains(_invalidUserRoleId)))
             .Returns(Enumerable.Empty<UserRoleData>().ToAsyncEnumerable());
         A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId, _dimUserRoleId })))
@@ -412,6 +476,13 @@ public class TechnicalUserCreationTests
                 new(_validUserRoleId, _validClientId, "UserRole"),
                 new(_dimUserRoleId, _dimClient, _dimRoleText)
             }.ToAsyncEnumerable());
+
+        A.CallTo(() => _userRolesRepository.GetUserRoleDataUntrackedAsync(A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId, _providerOwnUserRoleId })))
+           .Returns(new UserRoleData[]
+           {
+                new(_validUserRoleId, _validClientId, "UserRole"),
+                new(_providerOwnUserRoleId, _providerRolesClient, _providerRolesText)
+           }.ToAsyncEnumerable());
 
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .ReturnsLazily((ProcessTypeId processTypeId) => new Process(_processId, processTypeId, Guid.NewGuid())).Once();
