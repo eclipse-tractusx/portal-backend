@@ -22,5 +22,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 public enum IdentityTypeId
 {
     COMPANY_USER = 1,
-    COMPANY_SERVICE_ACCOUNT = 2
+    TECHNICAL_USER = 2
 }

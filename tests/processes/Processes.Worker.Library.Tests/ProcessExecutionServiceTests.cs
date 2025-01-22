@@ -22,11 +22,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 
@@ -82,7 +83,7 @@ public class ProcessExecutionServiceTests
     {
         // Arrange
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
-            .Returns(Array.Empty<Process<ProcessTypeId, ProcessStepTypeId>>().ToAsyncEnumerable());
+            .Returns(Array.Empty<IProcess<ProcessTypeId>>().ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
@@ -97,7 +98,7 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_WithPendingItems_CallsProcessExpectedNumberOfTimes()
     {
         // Arrange
-        var processData = _fixture.CreateMany<Guid>().Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
+        var processData = _fixture.CreateMany<Guid>().Select(x => new Process(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
@@ -120,7 +121,7 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_ExecuteProcess_Returns_Unmodified()
     {
         // Arrange
-        var processData = _fixture.CreateMany<Guid>().Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
+        var processData = _fixture.CreateMany<Guid>().Select(x => new Process(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
@@ -145,7 +146,7 @@ public class ProcessExecutionServiceTests
         // Arrange
         var processId = Guid.NewGuid();
         var processVersion = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
+        var process = new Process(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
         var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
@@ -195,7 +196,7 @@ public class ProcessExecutionServiceTests
         // Arrange
         var processId = Guid.NewGuid();
         var processVersion = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
+        var process = new Process(processId, ProcessTypeId.APPLICATION_CHECKLIST, processVersion);
         var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
@@ -248,8 +249,8 @@ public class ProcessExecutionServiceTests
         var secondId = Guid.NewGuid();
         var firstVersion = Guid.NewGuid();
         var secondVersion = Guid.NewGuid();
-        var firstProcess = new Process<ProcessTypeId, ProcessStepTypeId>(firstId, ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
-        var secondProcess = new Process<ProcessTypeId, ProcessStepTypeId>(secondId, ProcessTypeId.APPLICATION_CHECKLIST, secondVersion);
+        var firstProcess = new Process(firstId, ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
+        var secondProcess = new Process(secondId, ProcessTypeId.APPLICATION_CHECKLIST, secondVersion);
 
         var processData = new[] { firstProcess, secondProcess };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
@@ -261,7 +262,7 @@ public class ProcessExecutionServiceTests
             throw new Exception("normal error");
         }
 
-        Process<ProcessTypeId, ProcessStepTypeId>? process = null;
+        Process? process = null;
 
         A.CallTo(() => _processExecutor.ExecuteProcess(firstId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid Id, ProcessTypeId _, CancellationToken _) =>
@@ -323,7 +324,7 @@ public class ProcessExecutionServiceTests
     {
         // Arrange
         var firstVersion = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
         var processData = new[] { process };
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
@@ -370,19 +371,19 @@ public class ProcessExecutionServiceTests
         // Arrange
         var firstProcessId = Guid.NewGuid();
         var firstVersion = Guid.NewGuid();
-        var firstProcess = new Process<ProcessTypeId, ProcessStepTypeId>(firstProcessId, ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
+        var firstProcess = new Process(firstProcessId, ProcessTypeId.APPLICATION_CHECKLIST, firstVersion);
         var secondProcessId = Guid.NewGuid();
         var secondVersion = Guid.NewGuid();
-        var secondProcess = new Process<ProcessTypeId, ProcessStepTypeId>(secondProcessId, ProcessTypeId.APPLICATION_CHECKLIST, secondVersion);
+        var secondProcess = new Process(secondProcessId, ProcessTypeId.APPLICATION_CHECKLIST, secondVersion);
         var thirdProcessId = Guid.NewGuid();
         var thirdVersion = Guid.NewGuid();
-        var thirdProcess = new Process<ProcessTypeId, ProcessStepTypeId>(thirdProcessId, ProcessTypeId.APPLICATION_CHECKLIST, thirdVersion);
+        var thirdProcess = new Process(thirdProcessId, ProcessTypeId.APPLICATION_CHECKLIST, thirdVersion);
         var processData = new[] { firstProcess, secondProcess, thirdProcess };
         var error = new Exception("save conflict error");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        Process<ProcessTypeId, ProcessStepTypeId>? process = null;
+        Process? process = null;
 
         A.CallTo(() => _processExecutor.ExecuteProcess(firstProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
@@ -448,7 +449,7 @@ public class ProcessExecutionServiceTests
     {
         var lockExpiryDate = _fixture.Create<DateTimeOffset>();
         // Arrange
-        var processData = _fixture.CreateMany<Guid>().Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate }).ToImmutableArray();
+        var processData = _fixture.CreateMany<Guid>().Select(x => new Process(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate }).ToImmutableArray();
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
@@ -470,7 +471,7 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_WithException_LogsError()
     {
         // Arrange
-        var processData = _fixture.CreateMany<Guid>().Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
+        var processData = _fixture.CreateMany<Guid>().Select(x => new Process(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
         var error = new Exception("Only a test");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
@@ -496,7 +497,7 @@ public class ProcessExecutionServiceTests
     public async Task ExecuteAsync_WithSystemException_Exits()
     {
         // Arrange
-        var processData = _fixture.CreateMany<Guid>().Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
+        var processData = _fixture.CreateMany<Guid>().Select(x => new Process(x, ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid())).ToImmutableArray();
         var error = new SystemException("unrecoverable failure");
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());

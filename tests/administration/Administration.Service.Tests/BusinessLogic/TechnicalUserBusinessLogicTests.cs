@@ -694,8 +694,8 @@ public class TechnicalUserBusinessLogicTests
     {
         // Arrange
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
-        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, Guid.NewGuid(), Guid.NewGuid()));
 
@@ -717,7 +717,7 @@ public class TechnicalUserBusinessLogicTests
     {
         // Arrange
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
         A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns<(ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>, Guid?, Guid?)>(default);
 
@@ -739,8 +739,8 @@ public class TechnicalUserBusinessLogicTests
     {
         // Arrange
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
-        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
         A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, null, null));
 

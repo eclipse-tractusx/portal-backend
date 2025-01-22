@@ -22,9 +22,23 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 
-public abstract class Repositories(IDbContext dbContext) : IRepositories
+public abstract class AbstractRepositories<TDbContext>(TDbContext dbContext) : IRepositories
+    where TDbContext : class, IDbContext
 {
-    public abstract T GetInstance<T>();
+    protected static KeyValuePair<Type, Func<TDbContext, object>> CreateTypeEntry<T>(Func<TDbContext, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
+    protected abstract IReadOnlyDictionary<Type, Func<TDbContext, object>> RepositoryTypes { get; }
+
+    public RepositoryType GetInstance<RepositoryType>()
+    {
+        object? repository = default;
+
+        if (RepositoryTypes.TryGetValue(typeof(RepositoryType), out var createFunc))
+        {
+            repository = createFunc(dbContext);
+        }
+
+        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}", nameof(RepositoryType)));
+    }
 
     /// <inheritdoc />
     public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class

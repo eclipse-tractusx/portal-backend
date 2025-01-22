@@ -19,12 +19,13 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record VerifyChecklistData(
     bool IsSubmitted,
-    Process<ProcessTypeId, ProcessStepTypeId>? Process,
+    Process? Process,
     IEnumerable<(ApplicationChecklistEntryTypeId TypeId, ApplicationChecklistEntryStatusId StatusId, string? Comment)>? Checklist,
-    IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? ProcessSteps);
+    IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? ProcessSteps);

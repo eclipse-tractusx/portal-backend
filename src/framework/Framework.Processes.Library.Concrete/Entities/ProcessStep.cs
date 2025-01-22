@@ -23,15 +23,16 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessStep<TProcessTypeId, TProcessStepTypeId>(
+public class ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>(
     Guid id,
     TProcessStepTypeId processStepTypeId,
     ProcessStepStatusId processStepStatusId,
     Guid processId,
     DateTimeOffset dateCreated) :
     IProcessStep<TProcessStepTypeId>,
-    IProcessStepNavigation<Process<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>,
+    IProcessStepNavigation<TProcess, ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
     IBaseEntity
+    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
@@ -50,5 +51,7 @@ public class ProcessStep<TProcessTypeId, TProcessStepTypeId>(
     public string? Message { get; set; }
 
     // Navigation properties
-    public virtual Process<TProcessTypeId, TProcessStepTypeId>? Process { get; private set; }
+    public virtual TProcess? Process { get; private set; }
+    public virtual ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>? ProcessStepType { get; private set; }
+    public virtual ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>? ProcessStepStatus { get; private set; }
 }

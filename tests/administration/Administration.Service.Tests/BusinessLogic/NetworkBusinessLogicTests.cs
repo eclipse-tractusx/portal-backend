@@ -379,7 +379,7 @@ public class NetworkBusinessLogicTests
             .Returns(new Company(newCompanyId, null!, default, default));
 
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
-            .Returns(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, default));
+            .Returns(new Process(processId, default, default));
 
         A.CallTo(() => _userProvisioningService.GetOrCreateCompanyUser(A<IUserRepository>._, A<string>._, A<UserCreationRoleDataIdpInfo>._, A<Guid>._, A<Guid>._, "BPNL00000001TEST"))
             .Throws(new UnexpectedConditionException("Test message"));
@@ -432,8 +432,8 @@ public class NetworkBusinessLogicTests
         var addresses = new List<Address>();
         var companies = new List<Company>();
         var companyAssignedRoles = new List<CompanyAssignedRole>();
-        var processes = new List<Process<ProcessTypeId, ProcessStepTypeId>>();
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         var companyApplications = new List<CompanyApplication>();
         var networkRegistrations = new List<NetworkRegistration>();
 
@@ -486,14 +486,14 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.PARTNER_REGISTRATION))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                var process = new Process<ProcessTypeId, ProcessStepTypeId>(newProcessId, processTypeId, Guid.NewGuid());
+                var process = new Process(newProcessId, processTypeId, Guid.NewGuid());
                 processes.Add(process);
                 return process;
             });
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> foo) =>
             {
-                processSteps.AddRange(foo.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                processSteps.AddRange(foo.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
             });
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
             .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
@@ -528,7 +528,7 @@ public class NetworkBusinessLogicTests
                 x.Shortname == data.ShortName &&
                 x.CompanyStatusId == CompanyStatusId.PENDING);
         processes.Should().ContainSingle()
-            .Which.Should().Match<Process<ProcessTypeId, ProcessStepTypeId>>(
+            .Which.Should().Match<Process>(
                 x => x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().HaveCount(2).And.Satisfy(
                 x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,
@@ -567,8 +567,8 @@ public class NetworkBusinessLogicTests
         var addresses = new List<Address>();
         var companies = new List<Company>();
         var companyAssignedRoles = new List<CompanyAssignedRole>();
-        var processes = new List<Process<ProcessTypeId, ProcessStepTypeId>>();
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         var companyApplications = new List<CompanyApplication>();
         var networkRegistrations = new List<NetworkRegistration>();
         var invitations = new List<Invitation>();
@@ -622,14 +622,14 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                var process = new Process<ProcessTypeId, ProcessStepTypeId>(newProcessId, processTypeId, Guid.NewGuid());
+                var process = new Process(newProcessId, processTypeId, Guid.NewGuid());
                 processes.Add(process);
                 return process;
             });
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
+                processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList());
             });
         A.CallTo(() => _applicationRepository.CreateCompanyApplication(A<Guid>._, A<CompanyApplicationStatusId>._, A<CompanyApplicationTypeId>._, A<Action<CompanyApplication>>._))
             .ReturnsLazily((Guid companyId, CompanyApplicationStatusId companyApplicationStatusId, CompanyApplicationTypeId applicationTypeId, Action<CompanyApplication>? setOptionalFields) =>
@@ -669,7 +669,7 @@ public class NetworkBusinessLogicTests
                 x.Shortname == data.ShortName &&
                 x.CompanyStatusId == CompanyStatusId.PENDING);
         processes.Should().ContainSingle()
-            .Which.Should().Match<Process<ProcessTypeId, ProcessStepTypeId>>(x =>
+            .Which.Should().Match<Process>(x =>
                 x.ProcessTypeId == ProcessTypeId.PARTNER_REGISTRATION);
         processSteps.Should().HaveCount(2).And.Satisfy(
             x => x.ProcessStepStatusId == ProcessStepStatusId.TODO && x.ProcessStepTypeId == ProcessStepTypeId.SYNCHRONIZE_USER,

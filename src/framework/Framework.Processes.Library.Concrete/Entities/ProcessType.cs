@@ -17,31 +17,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessType
+public class ProcessType<TProcess, TProcessTypeId>(TProcessTypeId id) :
+    IProcessType<TProcessTypeId>,
+    IProcessTypeNavigation<TProcess, TProcessTypeId>
+    where TProcess : class, IProcess<TProcessTypeId>
+    where TProcessTypeId : struct, IConvertible
 {
-    private ProcessType()
-    {
-        Label = null!;
-        Processes = new HashSet<Process<ProcessTypeId, ProcessStepTypeId>>();
-    }
-
-    public ProcessType(ProcessTypeId processTypeId) : this()
-    {
-        Id = processTypeId;
-        Label = processTypeId.ToString();
-    }
-
-    public ProcessTypeId Id { get; private set; }
+    public TProcessTypeId Id { get; private set; } = id;
 
     [MaxLength(255)]
-    public string Label { get; private set; }
+    public string Label { get; private set; } = id.ToString()!;
 
     // Navigation properties
-    public virtual ICollection<Process<ProcessTypeId, ProcessStepTypeId>> Processes { get; private set; }
+    public virtual ICollection<TProcess> Processes { get; private set; } = new HashSet<TProcess>();
 }

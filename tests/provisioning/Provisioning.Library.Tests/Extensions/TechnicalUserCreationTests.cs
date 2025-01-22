@@ -159,7 +159,7 @@ public class TechnicalUserCreationTests
                 x.ServiceAccountData.AuthData.IamClientAuthMethod == IamClientAuthMethod.SECRET
             );
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.TECHNICAL_USER, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "testName", "abc", "sa1", TechnicalUserTypeId.OWN, TechnicalUserKindId.INTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
@@ -204,7 +204,7 @@ public class TechnicalUserCreationTests
         identities.Should().ContainSingle().Which.Should().Match<Identity>(
             x => x.CompanyId == _companyId &&
                  x.UserStatusId == UserStatusId.ACTIVE &&
-                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+                 x.IdentityTypeId == IdentityTypeId.TECHNICAL_USER);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public class TechnicalUserCreationTests
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync(A<string>._))
             .MustNotHaveHappened();
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.PENDING, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.PENDING, IdentityTypeId.TECHNICAL_USER, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "dim-testName", "abc", null, TechnicalUserTypeId.OWN, TechnicalUserKindId.EXTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
@@ -272,7 +272,7 @@ public class TechnicalUserCreationTests
         identities.Should().ContainSingle().Which.Should().Match<Identity>(
             x => x.CompanyId == _companyId &&
                  x.UserStatusId == UserStatusId.PENDING &&
-                 x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+                 x.IdentityTypeId == IdentityTypeId.TECHNICAL_USER);
     }
 
     [Fact]
@@ -308,7 +308,7 @@ public class TechnicalUserCreationTests
                      x.Name == "dim-testName" &&
                      x.ServiceAccountData == null);
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.TECHNICAL_USER, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_identityId, "testName", "abc", "sa1", TechnicalUserTypeId.OWN, TechnicalUserKindId.INTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
@@ -332,7 +332,7 @@ public class TechnicalUserCreationTests
         A.CallTo(() => _provisioningManager.AddProtocolMapperAsync("internal-sa1"))
             .MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null))
+        A.CallTo(() => _userRepository.CreateIdentity(_companyId, UserStatusId.ACTIVE, IdentityTypeId.TECHNICAL_USER, null))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _technicalUserRepository.CreateTechnicalUser(_secondId, "dim-testName", "abc", null, TechnicalUserTypeId.OWN, TechnicalUserKindId.EXTERNAL, ServiceAccountCreationAction))
             .MustHaveHappenedOnceExactly();
@@ -349,7 +349,7 @@ public class TechnicalUserCreationTests
                 x => x.Name == "dim-testName" && x.ClientClientId == null && x.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL
             );
         identities.Should().HaveCount(2)
-            .And.AllSatisfy(x => x.Should().Match<Identity>(x => x.CompanyId == _companyId && x.IdentityTypeId == IdentityTypeId.COMPANY_SERVICE_ACCOUNT))
+            .And.AllSatisfy(x => x.Should().Match<Identity>(x => x.CompanyId == _companyId && x.IdentityTypeId == IdentityTypeId.TECHNICAL_USER))
             .And.Satisfy(
                 x => x.Id == _identityId && x.UserStatusId == UserStatusId.ACTIVE,
                 x => x.Id == _secondId && x.UserStatusId == UserStatusId.PENDING
@@ -414,9 +414,9 @@ public class TechnicalUserCreationTests
             }.ToAsyncEnumerable());
 
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
-            .ReturnsLazily((ProcessTypeId processTypeId) => new Process<ProcessTypeId, ProcessStepTypeId>(_processId, processTypeId, Guid.NewGuid())).Once();
+            .ReturnsLazily((ProcessTypeId processTypeId) => new Process(_processId, processTypeId, Guid.NewGuid())).Once();
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, A<Guid>._))
-            .ReturnsLazily((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(_processStepId, processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Once();
+            .ReturnsLazily((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(_processStepId, processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Once();
     }
 
     #endregion

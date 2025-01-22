@@ -22,14 +22,13 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 
-public interface IProcessDbContext<TProcessType, TProcessStepType, TProcessStepStatusType, TProcessTypeId, TProcessStepTypeId>
-    where TProcessType : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessStepType, TProcessStepTypeId>
-    where TProcessStepType : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcessType, TProcessTypeId>
-    where TProcessStepStatusType : class, IProcessStepStatus
+public interface IProcessDbContext<TProcess, TProcessType, TProcessStep, in TProcessTypeId, in TProcessStepTypeId>
+    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>
+    where TProcessType : class, IProcessType<TProcessTypeId>
+    where TProcessStep : class, IProcessStep<TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    DbSet<TProcessType> Processes { get; }
-    DbSet<TProcessStepType> ProcessSteps { get; }
-    DbSet<TProcessStepStatusType> ProcessStepStatuses { get; }
+    DbSet<TProcess> Processes { get; }
+    DbSet<TProcessStep> ProcessSteps { get; }
 }

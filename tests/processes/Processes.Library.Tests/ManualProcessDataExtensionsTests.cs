@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Collections.Immutable;
@@ -60,8 +61,8 @@ public class ManualProcessDataExtensionsTests
     public void CreateManualProcessData_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
-        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, x.Now)).ToImmutableArray();
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
+        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, x.Now)).ToImmutableArray();
         var stepTypeId = processSteps[2].ProcessStepTypeId;
 
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
@@ -101,7 +102,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
-            .With(x => x.Process, default(Process<ProcessTypeId, ProcessStepTypeId>?))
+            .With(x => x.Process, default(Process?))
             .Create();
 
         var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _processRepositories, _getProcessEntityName);
@@ -118,7 +119,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var expiryDate = _fixture.Create<DateTimeOffset>();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = expiryDate };
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = expiryDate };
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
             .Create();
@@ -136,11 +137,11 @@ public class ManualProcessDataExtensionsTests
     public void CreateManualProcessData_WithNullProcessSteps_Throws()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
 
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
-            .With(x => x.ProcessSteps, default(IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>?))
+            .With(x => x.ProcessSteps, default(IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>?))
             .Create();
 
         var Act = () => sut.CreateManualProcessData(_fixture.Create<ProcessStepTypeId>(), _processRepositories, _getProcessEntityName);
@@ -156,8 +157,8 @@ public class ManualProcessDataExtensionsTests
     public void CreateManualProcessData_WithInvalidProcessStepStatus_Throws()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
-        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.DONE, process.Id, x.Now)).ToImmutableArray();
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
+        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.DONE, process.Id, x.Now)).ToImmutableArray();
 
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
@@ -177,8 +178,8 @@ public class ManualProcessDataExtensionsTests
     public void CreateManualProcessData_WithInvalidProcessStepType_Throws()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
-        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, x.Now)).ToImmutableArray();
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
+        var processSteps = _fixture.CreateMany<(Guid ProcessStepId, DateTimeOffset Now)>(5).Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(x.ProcessStepId, _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, x.Now)).ToImmutableArray();
         var stepTypeId = Enum.GetValues<ProcessStepTypeId>().Except(processSteps.Select(step => step.ProcessStepTypeId)).First();
 
         var sut = _fixture.Build<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()
@@ -204,7 +205,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var expiryDate = _fixture.Create<DateTimeOffset>();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = null };
         var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
@@ -223,7 +224,7 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var expiryDate = _fixture.Create<DateTimeOffset>();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = expiryDate };
+        var process = new Process(Guid.NewGuid(), _fixture.Create<ProcessTypeId>(), Guid.NewGuid()) { LockExpiryDate = expiryDate };
         var sut = _fixture.Build<ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>>()
             .With(x => x.Process, process)
             .With(x => x.ProcessRepositories, _processRepositories)
@@ -247,28 +248,28 @@ public class ManualProcessDataExtensionsTests
     public void SkipProcessSteps_ReturnsExpected()
     {
         // Arrange
-        var process = _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Create<Process>();
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(4).ToArray();
         var before = DateTimeOffset.UtcNow.AddDays(-1);
-        var processSteps0 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps0 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps1 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps1 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps2 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps2 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps3 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps3 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
@@ -291,14 +292,14 @@ public class ManualProcessDataExtensionsTests
                 processSteps3[2],
             };
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> processStepIdInitializeModify) =>
             {
                 foreach (var (stepId, initialize, modify) in processStepIdInitializeModify)
                 {
-                    var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                    var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                     initialize?.Invoke(step);
                     modify(step);
                     modifiedProcessSteps.Add(step);
@@ -337,28 +338,28 @@ public class ManualProcessDataExtensionsTests
     public void SkipProcessStepsExcept_ReturnsExpected()
     {
         // Arrange
-        var process = _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>();
+        var process = _fixture.Create<Process>();
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(4).ToArray();
         var before = DateTimeOffset.UtcNow.AddDays(-1);
-        var processSteps0 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps0 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps1 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps1 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps2 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps2 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before)
             };
-        var processSteps3 = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps3 = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
             {
                 new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
                 new(Guid.NewGuid(), stepTypeIds[3], ProcessStepStatusId.TODO, process.Id, before),
@@ -381,14 +382,14 @@ public class ManualProcessDataExtensionsTests
                 processSteps3[2],
             };
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> processStepIdInitializeModify) =>
             {
                 foreach (var (stepId, initialize, modify) in processStepIdInitializeModify)
                 {
-                    var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                    var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                     initialize?.Invoke(step);
                     modify(step);
                     modifiedProcessSteps.Add(step);
@@ -427,11 +428,11 @@ public class ManualProcessDataExtensionsTests
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3);
         var now = DateTimeOffset.UtcNow;
 
-        var createdSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var createdSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcesssStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatusProcessIds) =>
             {
-                createdSteps.AddRange(processStepTypeStatusProcessIds.Select(data => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), data.ProcesssStepTypeId, data.ProcessStepStatusId, data.ProcessId, now)));
+                createdSteps.AddRange(processStepTypeStatusProcessIds.Select(data => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), data.ProcesssStepTypeId, data.ProcessStepStatusId, data.ProcessId, now)));
                 return createdSteps;
             });
 
@@ -463,27 +464,27 @@ public class ManualProcessDataExtensionsTests
     {
         // Arrange
         var version = Guid.NewGuid();
-        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>()
+        var process = _fixture.Build<Process>()
             .With(x => x.Version, version)
             .With(x => x.LockExpiryDate, locked ? DateTimeOffset.UtcNow : default(DateTimeOffset?))
             .Create();
         var stepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3).ToArray();
         var before = DateTimeOffset.UtcNow.AddDays(-1);
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[]
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[]
         {
             new(Guid.NewGuid(), stepTypeIds[0], ProcessStepStatusId.TODO, process.Id, before),
             new(Guid.NewGuid(), stepTypeIds[1], ProcessStepStatusId.TODO, process.Id, before),
             new(Guid.NewGuid(), stepTypeIds[2], ProcessStepStatusId.TODO, process.Id, before)
         };
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> processStepIdInitializeModify) =>
             {
                 foreach (var (stepId, initialize, modify) in processStepIdInitializeModify)
                 {
-                    var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                    var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                     initialize?.Invoke(step);
                     modify(step);
                     modifiedProcessSteps.Add(step);
@@ -503,7 +504,7 @@ public class ManualProcessDataExtensionsTests
 
         process.LockExpiryDate.Should().BeNull();
         process.Version.Should().NotBe(version);
-        modifiedProcessSteps.Should().ContainSingle().Which.Should().Match<ProcessStep<ProcessTypeId, ProcessStepTypeId>>(
+        modifiedProcessSteps.Should().ContainSingle().Which.Should().Match<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(
             x => x.Id == processSteps[1].Id && x.ProcessStepStatusId == ProcessStepStatusId.DONE && x.DateLastChanged != before
         );
     }

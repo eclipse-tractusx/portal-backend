@@ -271,7 +271,7 @@ public class NetworkBusinessLogicTests
         var agreementId1 = Guid.NewGuid();
         var processId = Guid.NewGuid();
         var submitProcessId = Guid.NewGuid();
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         var application = new CompanyApplication(applicationId, _identity.CompanyId, CompanyApplicationStatusId.CREATED, CompanyApplicationTypeId.EXTERNAL, DateTimeOffset.UtcNow);
 
         var data = new PartnerSubmitData(
@@ -295,7 +295,7 @@ public class NetworkBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
                 {
-                    processSteps.AddRange(steps.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                    processSteps.AddRange(steps.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
                 });
         var consents = new List<Consent>();
         var now = DateTimeOffset.UtcNow;
@@ -308,7 +308,7 @@ public class NetworkBusinessLogicTests
                 }
             });
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
-            .ReturnsLazily((ProcessTypeId processTypeId) => new Process<ProcessTypeId, ProcessStepTypeId>(processId, processTypeId, Guid.NewGuid()));
+            .ReturnsLazily((ProcessTypeId processTypeId) => new Process(processId, processTypeId, Guid.NewGuid()));
         A.CallTo(() => _checklistService.CreateInitialChecklistAsync(applicationId))
             .Returns(new[]
             {
@@ -445,12 +445,12 @@ public class NetworkBusinessLogicTests
         var invitation = _fixture.Build<Invitation>().With(x => x.InvitationStatusId, InvitationStatusId.PENDING).Create();
         var identityId = Guid.NewGuid();
         var currentVersion = Guid.NewGuid();
-        var process = _fixture.Build<Process<ProcessTypeId, ProcessStepTypeId>>()
+        var process = _fixture.Build<Process>()
             .With(x => x.LockExpiryDate, default(DateTimeOffset?))
             .With(x => x.Version, currentVersion).Create();
-        var currentProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
-        var removeUsersProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
-        var otherProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var currentProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.MANUAL_DECLINE_OSP, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var removeUsersProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.REMOVE_KEYCLOAK_USERS, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
+        var otherProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.SYNCHRONIZE_USER, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow);
         var existingProcessSteps = new[] { currentProcessStep, removeUsersProcessStep, otherProcessStep };
         var data = _fixture.Create<DeclineOspData>();
         A.CallTo(() => _networkRepository.GetDeclineDataForApplicationId(application.Id, CompanyApplicationTypeId.EXTERNAL, A<IEnumerable<CompanyApplicationStatusId>>._, IdentityCompanyId))

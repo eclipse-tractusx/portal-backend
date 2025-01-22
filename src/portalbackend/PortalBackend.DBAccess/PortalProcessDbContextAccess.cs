@@ -22,17 +22,18 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.E
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
 public class PortalProcessDbContextAccess(PortalDbContext dbContext) :
-    IProcessRepositoryContextAccess<Process<ProcessTypeId, ProcessStepTypeId>, ProcessStep<ProcessTypeId, ProcessStepTypeId>, ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>
+    IProcessRepositoryContextAccess<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>
 {
-    public DbSet<Process<ProcessTypeId, ProcessStepTypeId>> Processes => dbContext.Processes;
-    public DbSet<ProcessStep<ProcessTypeId, ProcessStepTypeId>> ProcessSteps => dbContext.ProcessSteps;
-    public DbSet<ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>> ProcessStepStatuses => dbContext.ProcessStepStatuses;
+    public DbSet<Process> Processes => dbContext.Processes;
+    public DbSet<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>> ProcessSteps => dbContext.ProcessSteps;
+    public DbSet<ProcessStepStatus<Process, ProcessTypeId, ProcessStepTypeId>> ProcessStepStatuses => dbContext.ProcessStepStatuses;
 
-    public Process<ProcessTypeId, ProcessStepTypeId> CreateProcess(Guid id, ProcessTypeId processTypeId, Guid version) => new(id, processTypeId, version);
-    public ProcessStep<ProcessTypeId, ProcessStepTypeId> CreateProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now) => new(id, processStepTypeId, processStepStatusId, processId, now);
+    public Process CreateProcess(Guid id, ProcessTypeId processTypeId, Guid version) => new(id, processTypeId, version);
+    public ProcessStep<Process, ProcessTypeId, ProcessStepTypeId> CreateProcessStep(Guid id, ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now) => new(id, processStepTypeId, processStepStatusId, processId, now);
 }

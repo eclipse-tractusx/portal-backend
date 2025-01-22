@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 
@@ -65,19 +66,19 @@ public class OfferSubscriptionProcessServiceTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
         var allProcessStepTypeIds = processStepTypeIds.Append(processStepTypeId).Distinct().ToImmutableArray();
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
             .Returns((true, false));
         A.CallTo(() => _offerSubscriptionsRepository.GetProcessStepData(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .ReturnsLazily((Guid id, IEnumerable<ProcessStepTypeId> processStepTypes) =>
             {
-                processSteps = processStepTypes.Select(typeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
+                processSteps = processStepTypes.Select(typeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
                 return subscriptionId == id ?
                     new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                     process,
@@ -128,7 +129,7 @@ public class OfferSubscriptionProcessServiceTests
         // Arrange
         var subscriptionId = Guid.NewGuid();
         var lockExpiryDate = DateTimeOffset.UtcNow;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
@@ -176,7 +177,7 @@ public class OfferSubscriptionProcessServiceTests
         // Arrange
         var subscriptionId = Guid.NewGuid();
         var lockExpiryDate = DateTimeOffset.UtcNow;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(Enum.GetValues<ProcessStepTypeId>().Length - 2).ToImmutableArray();
 
@@ -200,7 +201,7 @@ public class OfferSubscriptionProcessServiceTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
@@ -223,11 +224,11 @@ public class OfferSubscriptionProcessServiceTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
             .Returns((true, false));
@@ -248,11 +249,11 @@ public class OfferSubscriptionProcessServiceTests
     {
         // Arrange
         var subscriptionId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
-        var processSteps = _fixture.CreateMany<ProcessStepTypeId>(5).Where(typeId => typeId != processStepTypeId).Select(typeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
+        var processSteps = _fixture.CreateMany<ProcessStepTypeId>(5).Where(typeId => typeId != processStepTypeId).Select(typeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
 
         A.CallTo(() => _offerSubscriptionsRepository.IsActiveOfferSubscription(A<Guid>._))
             .Returns((true, false));
@@ -276,17 +277,17 @@ public class OfferSubscriptionProcessServiceTests
     public void FinalizeProcessSteps_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
         var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
             _portalRepositories
         );
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> stepsToModify) =>
@@ -294,19 +295,19 @@ public class OfferSubscriptionProcessServiceTests
                 modifiedProcessSteps = stepsToModify.Select(
                     stepToModify =>
                     {
-                        var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                        var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                         stepToModify.Initialize?.Invoke(step);
                         stepToModify.Modify(step);
                         return step;
                     });
             });
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
                 return newProcessSteps;
             });
 
@@ -323,7 +324,7 @@ public class OfferSubscriptionProcessServiceTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustHaveHappenedOnceExactly();
 
-        modifiedProcessSteps.Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<ProcessTypeId, ProcessStepTypeId>>(
+        modifiedProcessSteps.Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(
             step =>
                 step.Id == processStepId &&
                 step.ProcessStepStatusId == ProcessStepStatusId.DONE
@@ -344,17 +345,17 @@ public class OfferSubscriptionProcessServiceTests
     public void FinalizeProcessSteps_NoModifyEnty_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
         var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
             _portalRepositories
         );
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> stepsToModify) =>
@@ -362,19 +363,19 @@ public class OfferSubscriptionProcessServiceTests
                 modifiedProcessSteps = stepsToModify.Select(
                     stepToModify =>
                     {
-                        var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                        var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                         stepToModify.Initialize?.Invoke(step);
                         stepToModify.Modify(step);
                         return step;
                     });
             });
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
                 return newProcessSteps;
             });
 
@@ -392,7 +393,7 @@ public class OfferSubscriptionProcessServiceTests
             .MustHaveHappenedOnceExactly();
 
         modifiedProcessSteps
-            .Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<ProcessTypeId, ProcessStepTypeId>>(
+            .Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(
                 step =>
                     step.Id == processStepId &&
                     step.ProcessStepStatusId == ProcessStepStatusId.DONE
@@ -413,16 +414,16 @@ public class OfferSubscriptionProcessServiceTests
     public void FinalizeProcessSteps_NullProcessSteps_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
         var processStepId = Guid.NewGuid();
         var context = new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(
             processStepTypeId,
             process,
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(processStepId, processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) },
             _portalRepositories
         );
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? modifiedProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>)>>._))
             .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> stepsToModify) =>
@@ -430,7 +431,7 @@ public class OfferSubscriptionProcessServiceTests
                 modifiedProcessSteps = stepsToModify.Select(
                     stepToModify =>
                     {
-                        var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                        var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                         stepToModify.Initialize?.Invoke(step);
                         stepToModify.Modify(step);
                         return step;
@@ -448,7 +449,7 @@ public class OfferSubscriptionProcessServiceTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
 
-        modifiedProcessSteps.Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<ProcessTypeId, ProcessStepTypeId>>(
+        modifiedProcessSteps.Should().NotBeNull().And.ContainSingle().Which.Should().Match<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(
             step =>
                 step.Id == processStepId &&
                 step.ProcessStepStatusId == ProcessStepStatusId.DONE);

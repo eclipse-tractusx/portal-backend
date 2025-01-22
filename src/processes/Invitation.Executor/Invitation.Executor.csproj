@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\Provisioning.Library\Provisioning.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Processes.Worker.Library\Framework.Processes.Worker.Library.csproj" />
     <ProjectReference Include="..\Mailing.Library\Mailing.Library.csproj" />

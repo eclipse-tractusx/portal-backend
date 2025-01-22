@@ -20,7 +20,6 @@
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -37,16 +36,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// The Trigger Framework requires new Guid() to convert it to gen_random_uuid(),
 /// for the Id field we'll use a randomly set UUID to satisfy SonarCloud.
 /// </remarks>
-public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId>
+public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler) : ProcessDbContext<Process, ProcessTypeId, ProcessStepTypeId>(options)
 {
-    private readonly IAuditHandler _auditHandler;
-
-    protected PortalDbContext() =>
-        throw new InvalidOperationException("IdentityService should never be null");
-
-    public PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler)
-     : base(options) =>
-        _auditHandler = auditHandler;
+    private readonly IAuditHandler _auditHandler = auditHandler;
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
@@ -179,11 +171,6 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<OnboardingServiceProviderDetail> OnboardingServiceProviderDetails { get; set; } = default!;
-    public virtual DbSet<Process<ProcessTypeId, ProcessStepTypeId>> Processes { get; set; } = default!;
-    public virtual DbSet<ProcessStep<ProcessTypeId, ProcessStepTypeId>> ProcessSteps { get; set; } = default!;
-    public virtual DbSet<ProcessStepStatus<ProcessTypeId, ProcessStepTypeId>> ProcessStepStatuses { get; set; } = default!;
-    public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
-    public virtual DbSet<ProcessType> ProcessTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
     public virtual DbSet<ServiceDetail> ServiceDetails { get; set; } = default!;
@@ -544,7 +531,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.SdCreationProcess)
-                .WithOne()
+                .WithOne(p => p.SdCreationCompany)
                 .HasForeignKey<Company>(d => d.SdCreationProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -1123,7 +1110,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.SdCreationProcess)
-                .WithOne()
+                .WithOne(p => p.SdCreationConnector)
                 .HasForeignKey<Connector>(d => d.SdCreationProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -1253,20 +1240,6 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
                 Enum.GetValues(typeof(BpdmIdentifierId))
                     .Cast<BpdmIdentifierId>()
                     .Select(e => new BpdmIdentifier(e))
-            );
-
-        modelBuilder.Entity<ProcessType>()
-            .HasData(
-                Enum.GetValues(typeof(ProcessTypeId))
-                    .Cast<ProcessTypeId>()
-                    .Select(e => new ProcessType(e))
-            );
-
-        modelBuilder.Entity<ProcessStepType>()
-            .HasData(
-                Enum.GetValues(typeof(ProcessStepTypeId))
-                    .Cast<ProcessStepTypeId>()
-                    .Select(e => new ProcessStepType(e))
             );
 
         modelBuilder.Entity<PrivacyPolicy>()
@@ -1415,7 +1388,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(x => x.Process)
-                .WithOne()
+                .WithOne(x => x.NetworkRegistration)
                 .HasForeignKey<NetworkRegistration>(x => x.ProcessId);
 
             entity.HasOne(x => x.OnboardingServiceProvider)
@@ -1446,7 +1419,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(x => x.Process)
-                .WithOne()
+                .WithOne(x => x.CompanyInvitation)
                 .HasForeignKey<CompanyInvitation>(x => x.ProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
@@ -1474,7 +1447,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
             entity.HasKey(x => x.Id);
 
             entity.HasOne(x => x.Process)
-                .WithOne()
+                .WithOne(x => x.MailingInformation)
                 .HasForeignKey<MailingInformation>(x => x.ProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -1489,7 +1462,7 @@ public class PortalDbContext : ProcessDbContext<ProcessTypeId, ProcessStepTypeId
             entity.HasKey(x => x.Id);
 
             entity.HasOne(x => x.Process)
-                .WithOne()
+                .WithOne(x => x.ExternalTechnicalUserCreationData)
                 .HasForeignKey<ExternalTechnicalUserCreationData>(x => x.ProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 

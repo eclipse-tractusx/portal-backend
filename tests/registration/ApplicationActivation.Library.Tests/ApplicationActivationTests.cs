@@ -700,7 +700,7 @@ public class ApplicationActivationTests
     public async Task SaveApplicationActivationToDatabase_WithExternalApplication_ApprovesRequestAndCreatesNotifications()
     {
         //Arrange
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         var companyApplication = _fixture.Build<CompanyApplication>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
             .Create();
@@ -708,7 +708,7 @@ public class ApplicationActivationTests
             .With(x => x.CompanyStatusId, CompanyStatusId.PENDING)
             .Create();
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsForApprovalAsync(A<Guid>.That.Matches(x => x == IdWithTypeExternal)))
-            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, new(new Process<ProcessTypeId, ProcessStepTypeId>(ProcessId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()), [])));
+            .Returns((company.Id, company.Name, company.BusinessPartnerNumber, CompanyApplicationTypeId.EXTERNAL, new(new Process(ProcessId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()), [])));
         A.CallTo(() =>
                 _applicationRepository.AttachAndModifyCompanyApplication(A<Guid>._, A<Action<CompanyApplication>>._))
             .Invokes((Guid _, Action<CompanyApplication> setOptionalParameters) =>
@@ -725,7 +725,7 @@ public class ApplicationActivationTests
                 x.Single().ProcessStepTypeId == ProcessStepTypeId.TRIGGER_CALLBACK_OSP_APPROVED)))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> steps) =>
             {
-                processSteps.AddRange(steps.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                processSteps.AddRange(steps.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
             });
         SetupNotifications();
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(

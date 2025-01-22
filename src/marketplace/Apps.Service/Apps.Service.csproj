@@ -49,8 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\externalsystems\Dim.Library\Dim.Library.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Identity\Framework.Identity.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
     <ProjectReference Include="..\..\keycloak\Keycloak.Authentication\Keycloak.Authentication.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
     <ProjectReference Include="..\..\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />

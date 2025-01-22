@@ -65,7 +65,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(Enum.GetValues<ApplicationChecklistEntryStatusId>().Length - 1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -76,13 +76,13 @@ public class ChecklistServiceTests
         var comment = "Test Purpose";
 
         IEnumerable<(ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId, string?)>? checklistData = null;
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
 
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .ReturnsLazily((Guid appId, IEnumerable<ApplicationChecklistEntryTypeId> entryTypes, IEnumerable<ProcessStepTypeId> processStepTypes) =>
             {
                 checklistData = entryTypes.Zip(ProduceEntryStatusIds(entryStatusIds), (typeId, statusId) => (typeId, statusId, comment)).ToImmutableArray();
-                processSteps = processStepTypes.Select(typeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
+                processSteps = processStepTypes.Select(typeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), typeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)).ToImmutableArray();
                 return applicationId == appId ?
                     new VerifyChecklistData(
                     true,
@@ -141,7 +141,7 @@ public class ChecklistServiceTests
         // Arrange
         var applicationId = Guid.NewGuid();
         var lockExpiryDate = DateTimeOffset.UtcNow;
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()) { LockExpiryDate = lockExpiryDate };
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(Enum.GetValues<ApplicationChecklistEntryStatusId>().Length - 1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -190,7 +190,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(Enum.GetValues<ApplicationChecklistEntryStatusId>().Length - 1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -215,7 +215,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -223,7 +223,7 @@ public class ChecklistServiceTests
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
         var entryData = Enum.GetValues<ApplicationChecklistEntryTypeId>().Except(new[] { entryTypeId }).Select(entryTypeId => (entryTypeId, entryStatusIds.First(), "Test Purpose")).ToImmutableArray();
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyChecklistData(true, process, entryData, processSteps));
@@ -242,7 +242,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -266,7 +266,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -274,7 +274,7 @@ public class ChecklistServiceTests
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
         var entryData = new[] { (entryTypeId, Enum.GetValues<ApplicationChecklistEntryStatusId>().Except(entryStatusIds).First(), "Test Purpose") };
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyChecklistData(true, process, entryData!, processSteps));
@@ -293,7 +293,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -301,7 +301,7 @@ public class ChecklistServiceTests
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
         var entryData = new[] { (entryTypeId, entryStatusIds.First(), "Test Purpose") };
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), Enum.GetValues<ProcessStepTypeId>().Except(new[] { processStepTypeId }).First(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), Enum.GetValues<ProcessStepTypeId>().Except(new[] { processStepTypeId }).First(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyChecklistData(true, process, entryData!, processSteps));
@@ -320,7 +320,7 @@ public class ChecklistServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var entryTypeId = _fixture.Create<ApplicationChecklistEntryTypeId>();
         var entryStatusIds = _fixture.CreateMany<ApplicationChecklistEntryStatusId>(1).ToImmutableArray();
         var processStepTypeId = _fixture.Create<ProcessStepTypeId>();
@@ -328,7 +328,7 @@ public class ChecklistServiceTests
         IEnumerable<ProcessStepTypeId>? processStepTypeIds = null;
 
         var entryData = new[] { (entryTypeId, entryStatusIds.First(), "Test Purpose") };
-        var processSteps = new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
+        var processSteps = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.SKIPPED, process.Id, DateTimeOffset.UtcNow) };
 
         A.CallTo(() => _applicationChecklistRepository.GetChecklistProcessStepData(A<Guid>._, A<IEnumerable<ApplicationChecklistEntryTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new VerifyChecklistData(true, process, entryData!, processSteps));
@@ -351,14 +351,14 @@ public class ChecklistServiceTests
     {
         // Arrange
         var version = Guid.NewGuid();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, version);
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, version);
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
             _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
         var lockExpiryDate = _fixture.Create<DateTimeOffset>();
 
@@ -366,8 +366,8 @@ public class ChecklistServiceTests
         _service.RequestLock(context, lockExpiryDate);
 
         // Assert
-        A.CallTo(() => _portalRepositories.Attach(A<Process<ProcessTypeId, ProcessStepTypeId>>._, null)).MustHaveHappenedOnceExactly();
-        context.Process.Should().Match<Process<ProcessTypeId, ProcessStepTypeId>>(x => x.Version != version && x.LockExpiryDate == lockExpiryDate);
+        A.CallTo(() => _portalRepositories.Attach(A<IProcess<ProcessTypeId>>._, null)).MustHaveHappenedOnceExactly();
+        context.Process.Should().Match<Process>(x => x.Version != version && x.LockExpiryDate == lockExpiryDate);
     }
 
     [Fact]
@@ -376,14 +376,14 @@ public class ChecklistServiceTests
         // Arrange
         var version = Guid.NewGuid();
         var lockExpiryDate = _fixture.Create<DateTimeOffset>();
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, version) { LockExpiryDate = lockExpiryDate };
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, version) { LockExpiryDate = lockExpiryDate };
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
             _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         // Act
@@ -391,8 +391,8 @@ public class ChecklistServiceTests
 
         // Assert
         result.Message.Should().Be("process TryLock should never fail here");
-        A.CallTo(() => _portalRepositories.Attach(A<Process<ProcessTypeId, ProcessStepTypeId>>._, null)).MustHaveHappenedOnceExactly();
-        context.Process.Should().Match<Process<ProcessTypeId, ProcessStepTypeId>>(x => x.Version == version && x.LockExpiryDate == lockExpiryDate);
+        A.CallTo(() => _portalRepositories.Attach(A<IProcess<ProcessTypeId>>._, null)).MustHaveHappenedOnceExactly();
+        context.Process.Should().Match<Process>(x => x.Version == version && x.LockExpiryDate == lockExpiryDate);
     }
 
     #endregion
@@ -403,14 +403,14 @@ public class ChecklistServiceTests
     public void FinalizeChecklistEntryAndProcessSteps_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
             _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         ApplicationChecklistEntry? modifiedChecklistEntry = null;
@@ -422,22 +422,22 @@ public class ChecklistServiceTests
                 modify(modifiedChecklistEntry);
             });
 
-        ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                modifiedProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
                 modify(modifiedProcessStep);
             });
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
                 return newProcessSteps;
             });
 
@@ -481,32 +481,32 @@ public class ChecklistServiceTests
     public void FinalizeChecklistEntry_NoModifyEnty_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
             _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
-        ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                modifiedProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
                 modify(modifiedProcessStep);
             });
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? newProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId StepTypeId, ProcessStepStatusId StepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
+                newProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.StepTypeId, x.StepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToList();
                 return newProcessSteps;
             });
 
@@ -546,14 +546,14 @@ public class ChecklistServiceTests
     public void FinalizeChecklistEntryNullProcessSteps_ReturnsExpected()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
             Guid.NewGuid(),
             process,
             Guid.NewGuid(),
             _fixture.Create<ApplicationChecklistEntryTypeId>(),
             _fixture.Create<Dictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>>().ToImmutableDictionary(),
-            new ProcessStep<ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
+            new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>[] { new(Guid.NewGuid(), _fixture.Create<ProcessStepTypeId>(), ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow) }
         );
 
         ApplicationChecklistEntry? modifiedChecklistEntry = null;
@@ -565,12 +565,12 @@ public class ChecklistServiceTests
                 modify(modifiedChecklistEntry);
             });
 
-        ProcessStep<ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
+        ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>? modifiedProcessStep = null;
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                modifiedProcessStep = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                modifiedProcessStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(modifiedProcessStep);
                 modify(modifiedProcessStep);
             });
@@ -607,11 +607,11 @@ public class ChecklistServiceTests
     public void SkipProcessSteps()
     {
         // Arrange
-        var process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
+        var process = new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid());
         var processStepTypeIds = _fixture.CreateMany<ProcessStepTypeId>(3);
         var processSteps = _fixture.CreateMany<ProcessStepTypeId>(97)
-            .Select(stepTypeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow))
-            .Concat(processStepTypeIds.Select(stepTypeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)))
+            .Select(stepTypeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow))
+            .Concat(processStepTypeIds.Select(stepTypeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)))
             .ToImmutableArray();
 
         var context = new IApplicationChecklistService.ManualChecklistProcessStepData(
@@ -623,12 +623,12 @@ public class ChecklistServiceTests
             processSteps
         );
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid processStepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, default, default, default, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);

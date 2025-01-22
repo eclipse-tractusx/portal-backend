@@ -18,8 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
@@ -62,5 +60,5 @@ public class NetworkRegistration : IBaseEntity
 
     public virtual CompanyApplication? CompanyApplication { get; private set; }
 
-    public virtual Process<ProcessTypeId, ProcessStepTypeId>? Process { get; private set; }
+    public virtual Process? Process { get; private set; }
 }

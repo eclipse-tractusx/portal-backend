@@ -44,11 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\src\framework\Framework.Processes.Library.Concrete\Framework.Processes.Library.Concrete.csproj" />
-        <ProjectReference Include="..\..\..\src\framework\Framework.Processes.ProcessIdentity\Framework.Processes.ProcessIdentity.csproj" />
         <ProjectReference Include="..\..\..\src\maintenance\Maintenance.App\Maintenance.App.csproj" />
-        <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
-        <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 

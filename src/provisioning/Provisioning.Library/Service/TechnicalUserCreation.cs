@@ -148,7 +148,7 @@ public class TechnicalUserCreation(
         IUserRolesRepository userRolesRepository,
         Action<TechnicalUser>? setOptionalParameter)
     {
-        var identity = portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, userStatusId, IdentityTypeId.COMPANY_SERVICE_ACCOUNT, null);
+        var identity = portalRepositories.GetInstance<IUserRepository>().CreateIdentity(companyId, userStatusId, IdentityTypeId.TECHNICAL_USER, null);
         var serviceAccount = serviceAccountsRepository.CreateTechnicalUser(
             identity.Id,
             name,

@@ -17,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -27,7 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Lib
 
 public interface IApplicationChecklistService
 {
-    record ManualChecklistProcessStepData(Guid ApplicationId, Process<ProcessTypeId, ProcessStepTypeId> Process, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId StatusId, string? Comment)> Checklist, IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>> ProcessSteps);
+    record ManualChecklistProcessStepData(Guid ApplicationId, IProcess<ProcessTypeId> Process, Guid ProcessStepId, ApplicationChecklistEntryTypeId EntryTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId StatusId, string? Comment)> Checklist, IEnumerable<IProcessStep<ProcessStepTypeId>> ProcessSteps);
     record WorkerChecklistProcessStepData(Guid ApplicationId, ProcessStepTypeId ProcessStepTypeId, ImmutableDictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId> Checklist, IEnumerable<ProcessStepTypeId> ProcessStepTypeIds);
     record WorkerChecklistProcessStepExecutionResult(ProcessStepStatusId StepStatusId, Action<ApplicationChecklistEntry>? ModifyChecklistEntry, IEnumerable<ProcessStepTypeId>? ScheduleStepTypeIds, IEnumerable<ProcessStepTypeId>? SkipStepTypeIds, bool Modified, string? ProcessMessage);
 

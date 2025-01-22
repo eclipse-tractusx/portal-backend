@@ -21,30 +21,24 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 
-public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> :
-    DbContext,
-    IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
+public class ProcessDbContext<TProcess, TProcessTypeId, TProcessStepTypeId>(DbContextOptions options) :
+    DbContext(options),
+    IProcessDbContext<TProcess, ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
     IDbContext
+    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    protected ProcessDbContext()
-    {
-        throw new InvalidOperationException("IdentityService should never be null");
-    }
-
-    public ProcessDbContext(DbContextOptions options)
-        : base(options)
-    {
-    }
-
-    public virtual DbSet<Process<TProcessTypeId, TProcessStepTypeId>> Processes { get; set; } = default!;
-    public virtual DbSet<ProcessStep<TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; set; } = default!;
-    public virtual DbSet<ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>> ProcessStepStatuses { get; set; } = default!;
+    public virtual DbSet<TProcess> Processes { get; set; } = default!;
+    public virtual DbSet<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; set; } = default!;
+    public virtual DbSet<ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>> ProcessStepStatuses { get; set; } = default!;
+    public virtual DbSet<ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>> ProcessStepTypes { get; set; } = default!;
+    public virtual DbSet<ProcessType<TProcess, TProcessTypeId>> ProcessTypes { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -53,28 +47,50 @@ public class ProcessDbContext<TProcessTypeId, TProcessStepTypeId> :
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Process<TProcessTypeId, TProcessStepTypeId>>(p =>
+        modelBuilder.Entity<TProcess>(p =>
         {
+            p.HasOne(d => d.ProcessType)
+                .WithMany(p => p!.Processes)
+                .HasForeignKey(d => d.ProcessTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
             p.ToTable("processes");
         });
 
-        modelBuilder.Entity<ProcessStep<TProcessTypeId, TProcessStepTypeId>>(ps =>
+        modelBuilder.Entity<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>>(ps =>
         {
-            ps
-                .HasOne(d => d.Process)
+            ps.HasOne(d => d.Process)
                 .WithMany(p => p.ProcessSteps)
                 .HasForeignKey(d => d.ProcessId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            ps.HasOne(d => d.ProcessStepStatus)
+                .WithMany(p => p.ProcessSteps)
+                .HasForeignKey(d => d.ProcessStepStatusId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             ps.ToTable("process_steps");
         });
 
-        modelBuilder.Entity<ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>>(pss =>
+        modelBuilder.Entity<ProcessType<TProcess, TProcessTypeId>>()
+            .HasData(
+                Enum.GetValues(typeof(TProcessTypeId))
+                    .Cast<TProcessTypeId>()
+                    .Select(e => new ProcessType<TProcess, TProcessTypeId>(e))
+            );
+
+        modelBuilder.Entity<ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>>()
+            .HasData(
+                Enum.GetValues(typeof(TProcessStepTypeId))
+                    .Cast<TProcessStepTypeId>()
+                    .Select(e => new ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>(e))
+            );
+
+        modelBuilder.Entity<ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>>(pss =>
         {
             pss.HasData(
                 Enum.GetValues(typeof(ProcessStepStatusId))
                     .Cast<ProcessStepStatusId>()
-                    .Select(e => new ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>(e))
+                    .Select(e => new ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>(e))
             );
 
             pss.ToTable("process_step_statuses");

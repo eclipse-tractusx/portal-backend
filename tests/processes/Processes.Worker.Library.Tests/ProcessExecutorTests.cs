@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 
@@ -152,21 +153,21 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -260,12 +261,12 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -372,12 +373,12 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -479,21 +480,21 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>.That.Not.IsEqualTo(processStepData.StepTypeId), A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -587,21 +588,21 @@ public class ProcessExecutorTests
             .Then
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -685,12 +686,12 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, skipStepTypeIds.Select(x => x), null));
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -775,12 +776,12 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Throws(error);
 
-        var modifiedProcessSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep<ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);

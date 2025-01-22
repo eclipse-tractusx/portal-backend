@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -34,7 +35,7 @@ public class ProcessIdentityDataDetermination(
     /// <inheritdoc />
     public async Task GetIdentityData()
     {
-        (Framework.Identity.IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
+        (IdentityTypeId IdentityTypeId, Guid CompanyId) identityData;
 
         if ((identityData = await _identityRepository.GetActiveIdentityDataByIdentityId(processIdentityDataBuilder.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None)) == default)
             throw new ConflictException($"Identity {processIdentityDataBuilder.IdentityId} could not be found");

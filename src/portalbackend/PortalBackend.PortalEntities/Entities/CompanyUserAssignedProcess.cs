@@ -17,9 +17,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
 public class CompanyUserAssignedProcess
@@ -35,5 +32,5 @@ public class CompanyUserAssignedProcess
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; private set; }
-    public virtual Process<ProcessTypeId, ProcessStepTypeId>? Process { get; private set; }
+    public virtual Process? Process { get; private set; }
 }

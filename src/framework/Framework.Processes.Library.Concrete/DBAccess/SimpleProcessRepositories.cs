@@ -25,30 +25,17 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.DBAccess;
 
-public class ProcessRepositories<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(TProcessDbContext dbContext) :
-    Repositories(dbContext)
+public class SimpleProcessRepositories<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(TProcessDbContext dbContext) :
+    AbstractRepositories<TProcessDbContext>(dbContext)
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
-    where TProcessDbContext : class, IProcessDbContext<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, IDbContext
+    where TProcessDbContext : class, IProcessDbContext<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, IDbContext
 {
-    private static KeyValuePair<Type, Func<TProcessDbContext, object>> CreateTypeEntry<T>(Func<TProcessDbContext, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
-
-    protected static readonly IReadOnlyDictionary<Type, Func<TProcessDbContext, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(
+    protected override IReadOnlyDictionary<Type, Func<TProcessDbContext, object>> RepositoryTypes => ProcessRepositoryTypes;
+    private static readonly IReadOnlyDictionary<Type, Func<TProcessDbContext, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(
     [
         CreateTypeEntry<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>(context =>
-            new ProcessStepRepository<Process<TProcessTypeId, TProcessStepTypeId>, ProcessStep<TProcessTypeId, TProcessStepTypeId>, ProcessStepStatus<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>(
-                new ProcessRepositoryContextAccess<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(context)))
+            new ProcessStepRepository<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, ProcessStepType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>(
+                new SimpleProcessRepositoryContextAccess<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(context)))
     ]);
-
-    public override RepositoryType GetInstance<RepositoryType>()
-    {
-        object? repository = default;
-
-        if (ProcessRepositoryTypes.TryGetValue(typeof(RepositoryType), out var createFunc))
-        {
-            repository = createFunc(dbContext);
-        }
-
-        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}", nameof(RepositoryType)));
-    }
 }

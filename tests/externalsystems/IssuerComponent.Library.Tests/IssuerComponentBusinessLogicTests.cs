@@ -273,7 +273,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -299,7 +299,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -492,7 +492,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act
@@ -518,7 +518,7 @@ public class IssuerComponentBusinessLogicTests
                 ProcessStepTypeId.AWAIT_MEMBERSHIP_CREDENTIAL_RESPONSE,
                 A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
                 A<IEnumerable<ProcessStepTypeId>?>._))
-            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
+            .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(Guid.Empty, new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()), Guid.Empty, ApplicationChecklistEntryTypeId.MEMBERSHIP_CREDENTIAL, ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty, Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()));
         SetupForProcessIssuerComponentResponse(entry);
 
         // Act

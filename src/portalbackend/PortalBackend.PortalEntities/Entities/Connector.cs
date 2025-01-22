@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -82,7 +81,7 @@ public class Connector : IAuditableV1, IBaseEntity
     public virtual Country? Location { get; set; }
     public virtual TechnicalUser? TechnicalUser { get; set; }
     public virtual Identity? LastEditor { get; set; }
-    public virtual Process<ProcessTypeId, ProcessStepTypeId>? SdCreationProcess { get; set; }
+    public virtual Process? SdCreationProcess { get; set; }
 
     /// <summary>
     /// Mapping to the assigned document

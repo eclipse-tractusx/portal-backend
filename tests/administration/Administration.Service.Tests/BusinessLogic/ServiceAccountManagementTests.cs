@@ -127,8 +127,8 @@ public class ServiceAccountManagementTests
                     (
                         ProcessTypeId.OFFER_SUBSCRIPTION,
                         new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
-                            new Process<ProcessTypeId, ProcessStepTypeId>(id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                            processStepTypeIds?.Select(stepTypeId => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, id, _fixture.Create<DateTimeOffset>())) ?? Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()),
+                            new Process(id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
+                            processStepTypeIds?.Select(stepTypeId => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepTypeId, ProcessStepStatusId.TODO, id, _fixture.Create<DateTimeOffset>())) ?? Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()),
                         Guid.NewGuid()));
         }
 

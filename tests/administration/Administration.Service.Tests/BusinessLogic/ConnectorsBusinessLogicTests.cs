@@ -1384,18 +1384,18 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processes = new List<Process<ProcessTypeId, ProcessStepTypeId>>();
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
-                processes.Add(new Process<ProcessTypeId, ProcessStepTypeId>(processId, processTypeId, Guid.NewGuid()));
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
             })
-            .Returns(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, default));
+            .Returns(new Process(processId, default, default));
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
-                processSteps.Add(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
         A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
             .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
@@ -1422,18 +1422,18 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var processId = Guid.NewGuid();
-        var processes = new List<Process<ProcessTypeId, ProcessStepTypeId>>();
-        var processSteps = new List<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
+        var processes = new List<Process>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
-                processes.Add(new Process<ProcessTypeId, ProcessStepTypeId>(processId, processTypeId, Guid.NewGuid()));
+                processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
             })
-            .Returns(new Process<ProcessTypeId, ProcessStepTypeId>(processId, default, default));
+            .Returns(new Process(processId, default, default));
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
-                processSteps.Add(new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
         A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
             .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
@@ -1514,7 +1514,7 @@ public class ConnectorsBusinessLogicTests
     private void SetupTechnicalIdentity()
     {
         A.CallTo(() => _identity.IdentityId).Returns(ServiceAccountUserId);
-        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.TECHNICAL_USER);
     }
 
     private void SetupFakesForGetMissingSdDocConnectors(int count = 5)

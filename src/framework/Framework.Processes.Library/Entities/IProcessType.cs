@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,31 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 
-public class ProcessStepType
+public interface IProcessType<out TProcessTypeId>
+    where TProcessTypeId : struct, IConvertible
 {
-    private ProcessStepType()
-    {
-        Label = null!;
-        ProcessSteps = new HashSet<ProcessStep<ProcessTypeId, ProcessStepTypeId>>();
-    }
-
-    public ProcessStepType(ProcessStepTypeId processStepTypeId) : this()
-    {
-        Id = processStepTypeId;
-        Label = processStepTypeId.ToString();
-    }
-
-    public ProcessStepTypeId Id { get; private set; }
+    TProcessTypeId Id { get; }
 
     [MaxLength(255)]
-    public string Label { get; private set; }
-
-    // Navigation properties
-    public virtual ICollection<ProcessStep<ProcessTypeId, ProcessStepTypeId>> ProcessSteps { get; private set; }
+    string Label { get; }
 }

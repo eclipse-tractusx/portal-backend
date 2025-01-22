@@ -2242,12 +2242,12 @@ public class RegistrationBusinessLogicTest
 
         var utcNow = DateTimeOffset.UtcNow;
 
-        Process<ProcessTypeId, ProcessStepTypeId>? process = null;
+        Process? process = null;
 
         A.CallTo(() => _processStepRepository.CreateProcess(ProcessTypeId.APPLICATION_CHECKLIST))
             .ReturnsLazily((ProcessTypeId processTypeId) =>
             {
-                process = new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processTypeId, Guid.NewGuid());
+                process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
                 return process;
             });
 
@@ -2260,12 +2260,12 @@ public class RegistrationBusinessLogicTest
                 setOptionalParameters(application);
             });
 
-        IEnumerable<ProcessStep<ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? processSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                processSteps = processStepTypeStatus.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
+                processSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, utcNow)).ToImmutableArray();
                 return processSteps;
             });
         var settings = new RegistrationSettings
@@ -3597,18 +3597,18 @@ public class RegistrationBusinessLogicTest
                 }
             });
 
-        var createdProcessesBuilder = ImmutableArray.CreateBuilder<Process<ProcessTypeId, ProcessStepTypeId>>();
+        var createdProcessesBuilder = ImmutableArray.CreateBuilder<Process>();
         A.CallTo(() => _processStepRepository.CreateProcessRange(A<IEnumerable<ProcessTypeId>>._))
             .ReturnsLazily((IEnumerable<ProcessTypeId> processTypeIds) =>
             {
-                var processes = processTypeIds.Select(x => new Process<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableArray();
+                var processes = processTypeIds.Select(x => new Process(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableArray();
                 createdProcessesBuilder.AddRange(processes);
                 return processes;
             });
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepStatusTypeIds) =>
-                processStepStatusTypeIds.Select(x => new ProcessStep<ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray());
+                processStepStatusTypeIds.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableArray());
 
         var modifiedIdentitiesBuilder = ImmutableArray.CreateBuilder<(Identity Initial, Identity Modified)>();
         A.CallTo(() => _userRepository.AttachAndModifyIdentities(A<IEnumerable<(Guid IdentityId, Action<Identity>?, Action<Identity>)>>._))

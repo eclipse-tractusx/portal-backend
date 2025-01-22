@@ -41,7 +41,7 @@ public class SdFactoryBusinessLogicTests
     private const string CountryCode = "DE";
     private const string Bpn = "BPNL000000000009";
     private static readonly Guid ApplicationId = new("ac1cf001-7fbc-1f2f-817f-bce058020001");
-    private readonly Process<ProcessTypeId, ProcessStepTypeId> _process;
+    private readonly Process _process;
     private static readonly Guid CompanyId = new("b4697623-dd87-410d-abb8-6d4f4d87ab58");
 
     private static readonly IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
@@ -67,7 +67,7 @@ public class SdFactoryBusinessLogicTests
         _fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         _fixture.ConfigureFixture();
 
-        _process = _fixture.Create<Process<ProcessTypeId, ProcessStepTypeId>>();
+        _process = _fixture.Create<Process>();
 
         _documents = new HashSet<Document>();
         _applicationRepository = A.Fake<IApplicationRepository>();
@@ -548,7 +548,7 @@ public class SdFactoryBusinessLogicTests
             .Returns(new IApplicationChecklistService.ManualChecklistProcessStepData(ApplicationId, _process, Guid.NewGuid(),
                 ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP,
                 ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,
-                Enumerable.Empty<ProcessStep<ProcessTypeId, ProcessStepTypeId>>()));
+                Enumerable.Empty<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>()));
         A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(
                 A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._,
                 A<IEnumerable<ProcessStepTypeId>>._))

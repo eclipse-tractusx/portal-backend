@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -51,7 +50,7 @@ public class MailingInformation : IBaseEntity
     public byte[] InitializationVector { get; set; }
     public int EncryptionMode { get; set; }
 
-    public virtual Process<ProcessTypeId, ProcessStepTypeId>? Process { get; private set; }
+    public virtual Process? Process { get; private set; }
 
     public virtual MailingStatus? MailingStatus { get; private set; }
 }

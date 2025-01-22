@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,29 +17,11 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
-using System.ComponentModel.DataAnnotations;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class Process<TProcessTypeId, TProcessStepTypeId>(
-    Guid id,
-    TProcessTypeId processTypeId,
-    Guid version) :
-    IProcess<TProcessTypeId>,
-    IProcessNavigation<ProcessStep<TProcessTypeId, TProcessStepTypeId>, TProcessStepTypeId>,
-    IBaseEntity
+public class SimpleProcess<TProcessTypeId, TProcessStepTypeId>(Guid id, TProcessTypeId processTypeId, Guid version) :
+    AbstractProcess<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>(id, processTypeId, version)
     where TProcessTypeId : struct, IConvertible
     where TProcessStepTypeId : struct, IConvertible
 {
-    public Guid Id { get; private set; } = id;
-
-    public TProcessTypeId ProcessTypeId { get; set; } = processTypeId;
-
-    public DateTimeOffset? LockExpiryDate { get; set; }
-
-    [ConcurrencyCheck]
-    public Guid Version { get; set; } = version;
-    public virtual ICollection<ProcessStep<TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; private set; } = new HashSet<ProcessStep<TProcessTypeId, TProcessStepTypeId>>();
 }
