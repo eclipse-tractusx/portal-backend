@@ -30,7 +30,7 @@ COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandli
 COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
 COPY /src/framework/Framework.DateTimeProvider /src/framework/Framework.DateTimeProvider
 COPY /src/framework/Framework.Processes.Library /src/framework/Framework.Processes.Library
-COPY /src/framework/Framework.ProcessIdentity /src/framework/Framework.ProcessIdentity
+COPY /src/framework/Framework.Processes.ProcessIdentity /src/framework/Framework.Processes.ProcessIdentity
 COPY /src/framework/Framework.Processes.Library.Concrete /src/framework/Framework.Processes.Library.Concrete
 COPY /src/processes/Processes.ProcessIdentity /src/processes/Processes.ProcessIdentity
 WORKDIR /src/portalbackend/PortalBackend.Migrations
