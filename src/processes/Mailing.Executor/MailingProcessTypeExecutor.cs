@@ -20,45 +20,41 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Mailing.SendMail;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using System.Collections.Immutable;
 using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor;
 
-public class MailingProcessTypeExecutor : IProcessTypeExecutor
+public class MailingProcessTypeExecutor(
+    IPortalRepositories portalRepositories,
+    IMailingService mailingService,
+    IOptions<MailingProcessCreationSettings> options)
+    : IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>
 {
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IMailingService _mailingService;
-    private readonly MailingProcessCreationSettings _settings;
+    private readonly MailingProcessCreationSettings _settings = options.Value;
 
     private static readonly IEnumerable<ProcessStepTypeId> ExecutableProcessSteps = ImmutableArray.Create(ProcessStepTypeId.SEND_MAIL);
     private Guid _processId;
-
-    public MailingProcessTypeExecutor(IPortalRepositories portalRepositories, IMailingService mailingService, IOptions<MailingProcessCreationSettings> options)
-    {
-        _portalRepositories = portalRepositories;
-        _mailingService = mailingService;
-        _settings = options.Value;
-    }
 
     public ProcessTypeId GetProcessTypeId() => ProcessTypeId.MAILING;
     public bool IsExecutableStepTypeId(ProcessStepTypeId processStepTypeId) => ExecutableProcessSteps.Contains(processStepTypeId);
     public IEnumerable<ProcessStepTypeId> GetExecutableStepTypeIds() => ExecutableProcessSteps;
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) => new(false);
 
-    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
         _processId = processId;
-        return await Task.FromResult(new IProcessTypeExecutor.InitializationResult(false, null));
+        return await Task.FromResult(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
     }
 
-    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
     {
         IEnumerable<ProcessStepTypeId>? nextStepTypeIds;
         ProcessStepStatusId stepStatusId;
@@ -79,12 +75,12 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
             modified = true;
         }
 
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, null, processMessage);
     }
 
     private async Task<(IEnumerable<ProcessStepTypeId>? NextStepTypeIds, ProcessStepStatusId StepStatusId, bool Modified, string? ProcessMessage)> SendMail()
     {
-        var mailingRepository = _portalRepositories.GetInstance<IMailingInformationRepository>();
+        var mailingRepository = portalRepositories.GetInstance<IMailingInformationRepository>();
         var mailingInformation = mailingRepository.GetMailingInformationForProcess(_processId);
         await using var enumerator = mailingInformation.GetAsyncEnumerator();
 
@@ -92,7 +88,7 @@ public class MailingProcessTypeExecutor : IProcessTypeExecutor
         {
             var (id, mail, template, mailParameters, initializationVector, encryptionMode) = enumerator.Current;
 
-            await _mailingService.SendMails(
+            await mailingService.SendMails(
                 mail,
                 DecryptMailParameters(mailParameters, initializationVector, encryptionMode),
                 template).ConfigureAwait(ConfigureAwaitOptions.None);

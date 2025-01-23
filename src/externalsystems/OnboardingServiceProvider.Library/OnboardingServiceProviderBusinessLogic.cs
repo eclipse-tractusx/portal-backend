@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -28,22 +29,17 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
-public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProviderBusinessLogic
+public class OnboardingServiceProviderBusinessLogic(
+    IOnboardingServiceProviderService onboardingServiceProviderService,
+    IPortalRepositories portalRepositories,
+    IOptions<OnboardingServiceProviderSettings> options)
+    : IOnboardingServiceProviderBusinessLogic
 {
-    private readonly IOnboardingServiceProviderService _onboardingServiceProviderService;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly OnboardingServiceProviderSettings _settings;
-
-    public OnboardingServiceProviderBusinessLogic(IOnboardingServiceProviderService onboardingServiceProviderService, IPortalRepositories portalRepositories, IOptions<OnboardingServiceProviderSettings> options)
-    {
-        _onboardingServiceProviderService = onboardingServiceProviderService;
-        _portalRepositories = portalRepositories;
-        _settings = options.Value;
-    }
+    private readonly OnboardingServiceProviderSettings _settings = options.Value;
 
     public async Task<(IEnumerable<ProcessStepTypeId>? nextStepTypeIds, ProcessStepStatusId stepStatusId, bool modified, string? processMessage)> TriggerProviderCallback(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId, CancellationToken cancellationToken)
     {
-        var data = await _portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var data = await portalRepositories.GetInstance<INetworkRepository>().GetCallbackData(networkRegistrationId, processStepTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (data == default)
         {
@@ -83,7 +79,7 @@ public class OnboardingServiceProviderBusinessLogic : IOnboardingServiceProvider
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.OspDetails.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.OspDetails.EncryptionMode} is not configured");
         var secret = CryptoHelper.Decrypt(data.OspDetails.ClientSecret, data.OspDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
-        await _onboardingServiceProviderService.TriggerProviderCallback(
+        await onboardingServiceProviderService.TriggerProviderCallback(
                 new OspTriggerDetails(data.OspDetails.CallbackUrl, data.OspDetails.AuthUrl, data.OspDetails.ClientId, secret),
                 new OnboardingServiceProviderCallbackData(data.ExternalId, data.ApplicationId, data.Bpn, applicationStatusId, comment),
                 cancellationToken)

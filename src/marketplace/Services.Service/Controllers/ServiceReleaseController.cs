@@ -214,7 +214,7 @@ public class ServiceReleaseController : ControllerBase
     public async Task<CreatedAtRouteResult> CreateServiceOffering([FromBody] ServiceOfferingData data)
     {
         var id = await _serviceReleaseBusinessLogic.CreateServiceOfferingAsync(data).ConfigureAwait(ConfigureAwaitOptions.None);
-        return CreatedAtRoute(nameof(ServiceReleaseController.GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
+        return CreatedAtRoute(nameof(GetServiceDetailsForStatusAsync), new { controller = "ServiceRelease", serviceId = id }, id);
     }
 
     /// <summary>

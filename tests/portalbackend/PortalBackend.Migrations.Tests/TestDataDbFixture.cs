@@ -63,8 +63,7 @@ public class TestDataDbFixture : IAsyncLifetime
     /// </summary>
     public async Task InitializeAsync()
     {
-        await _container.StartAsync()
-            ;
+        await _container.StartAsync();
 
         var optionsBuilder = new DbContextOptionsBuilder<PortalDbContext>();
 
@@ -78,8 +77,8 @@ public class TestDataDbFixture : IAsyncLifetime
 
         var seederOptions = Options.Create(new SeederSettings
         {
-            TestDataEnvironments = new[] { "test" },
-            DataPaths = new[] { "Seeder/Data", "Seeder/Data/overwrite" }
+            TestDataEnvironments = ["test"],
+            DataPaths = ["Seeder/Data", "Seeder/Data/overwrite"]
         });
         var insertSeeder = new BatchInsertSeeder(context,
             LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<BatchInsertSeeder>(),
@@ -94,7 +93,6 @@ public class TestDataDbFixture : IAsyncLifetime
     /// <inheritdoc />
     public async Task DisposeAsync()
     {
-        await _container.DisposeAsync()
-            ;
+        await _container.DisposeAsync();
     }
 }

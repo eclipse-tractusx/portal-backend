@@ -17,38 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class Process : IBaseEntity, ILockableEntity
+public class Process(Guid id, ProcessTypeId processTypeId, Guid version) : AbstractProcess<Process, ProcessTypeId, ProcessStepTypeId>(id, processTypeId, version)
 {
-    private Process()
-    {
-        ProcessSteps = new HashSet<ProcessStep>();
-    }
-
-    public Process(Guid id, ProcessTypeId processTypeId, Guid version) : this()
-    {
-        Id = id;
-        ProcessTypeId = processTypeId;
-        Version = version;
-    }
-
-    public Guid Id { get; private set; }
-
-    public ProcessTypeId ProcessTypeId { get; set; }
-
-    public DateTimeOffset? LockExpiryDate { get; set; }
-
-    [ConcurrencyCheck]
-    public Guid Version { get; set; }
-
     // Navigation properties
-    public virtual ProcessType? ProcessType { get; set; }
     public virtual CompanyApplication? CompanyApplication { get; set; }
     public virtual OfferSubscription? OfferSubscription { get; set; }
     public virtual NetworkRegistration? NetworkRegistration { get; set; }
@@ -59,5 +35,4 @@ public class Process : IBaseEntity, ILockableEntity
     public virtual IdentityProviderAssignedProcess? IdentityProviderAssignedProcess { get; set; }
     public virtual Company? SdCreationCompany { get; set; }
     public virtual Connector? SdCreationConnector { get; set; }
-    public virtual ICollection<ProcessStep> ProcessSteps { get; private set; }
 }

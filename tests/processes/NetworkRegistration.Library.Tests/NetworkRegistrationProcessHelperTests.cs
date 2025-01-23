@@ -18,8 +18,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -32,7 +36,7 @@ public class NetworkRegistrationProcessHelperTests
     private static readonly ProcessStepTypeId StepToRetrigger = ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER;
 
     private readonly IPortalRepositories _portalRepositories;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IPortalProcessStepRepository _processStepRepository;
     private readonly INetworkRepository _networkRepository;
 
     private readonly IFixture _fixture;
@@ -44,10 +48,11 @@ public class NetworkRegistrationProcessHelperTests
         _fixture.ConfigureFixture();
 
         _portalRepositories = A.Fake<IPortalRepositories>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _networkRepository = A.Fake<INetworkRepository>();
 
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<INetworkRepository>()).Returns(_networkRepository);
 
         _sut = new NetworkRegistrationProcessHelper(_portalRepositories);
@@ -70,7 +75,7 @@ public class NetworkRegistrationProcessHelperTests
         // Arrange
         var externalId = Guid.NewGuid();
         A.CallTo(() => _networkRepository.IsValidRegistration(externalId.ToString(), A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { StepToRetrigger })))
-            .Returns((false, _fixture.Create<VerifyProcessData>()));
+            .Returns((false, _fixture.Create<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>()));
 
         // Act
         async Task Act() => await _sut.TriggerProcessStep(externalId.ToString(), ProcessStepTypeId.RETRIGGER_SYNCHRONIZE_USER);
@@ -90,10 +95,10 @@ public class NetworkRegistrationProcessHelperTests
         // Arrange
         var externalId = Guid.NewGuid();
         var processId = Guid.NewGuid();
-        var processSteps = new List<ProcessStep>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        var processStep = new ProcessStep(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
-        var data = new VerifyProcessData(
+        var processStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
+        var data = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
             new Process(processId, ProcessTypeId.PARTNER_REGISTRATION, Guid.NewGuid()),
             new[] { processStep });
         A.CallTo(() => _networkRepository.IsValidRegistration(externalId.ToString(), A<IEnumerable<ProcessStepTypeId>>.That.IsSameSequenceAs(new[] { processStepTypeId })))
@@ -101,10 +106,10 @@ public class NetworkRegistrationProcessHelperTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<ValueTuple<ProcessStepTypeId, ProcessStepStatusId, Guid>>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
                 {
-                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
+                    processSteps.AddRange(processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
                 });
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<ValueTuple<Guid, Action<ProcessStep>?, Action<ProcessStep>>>>._))
-            .Invokes((IEnumerable<(Guid ProcessStepId, Action<ProcessStep>? Initialize, Action<ProcessStep> Modify)> processStepIdsInitializeModifyData) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<ValueTuple<Guid, Action<IProcessStep<ProcessStepTypeId>>?, Action<IProcessStep<ProcessStepTypeId>>>>>._))
+            .Invokes((IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)> processStepIdsInitializeModifyData) =>
                 {
                     var modify = processStepIdsInitializeModifyData.SingleOrDefault(x => processStep.Id == x.ProcessStepId);
                     if (modify == default)
@@ -120,7 +125,7 @@ public class NetworkRegistrationProcessHelperTests
         // Assert
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         processSteps.Should().ContainSingle()
-            .Which.Should().Match<ProcessStep>(x =>
+            .Which.Should().Match<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(x =>
                 x.ProcessStepTypeId == retriggeredStep &&
                 x.ProcessStepStatusId == ProcessStepStatusId.TODO);
         processStep.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);

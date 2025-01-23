@@ -21,23 +21,25 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 
 public class ProcessExecutionServiceTests
 {
-    private readonly IProcessStepRepository _processStepRepository;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IProcessExecutor _processExecutor;
-    private readonly IMockLogger<ProcessExecutionService> _mockLogger;
-    private readonly ProcessExecutionService _service;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IRepositories _processRepositories;
+    private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _processExecutor;
+    private readonly IMockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>> _mockLogger;
+    private readonly ProcessExecutionService<ProcessTypeId, ProcessStepTypeId> _service;
     private readonly IFixture _fixture;
     private readonly IProcessIdentityDataDetermination _processIdentityDataDetermination;
 
@@ -49,23 +51,23 @@ public class ProcessExecutionServiceTests
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         var dateTimeProvider = A.Fake<IDateTimeProvider>();
-        _portalRepositories = A.Fake<IPortalRepositories>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
-        _processExecutor = A.Fake<IProcessExecutor>();
+        _processRepositories = A.Fake<IRepositories>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
+        _processExecutor = A.Fake<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>>();
         _processIdentityDataDetermination = A.Fake<IProcessIdentityDataDetermination>();
 
-        _mockLogger = A.Fake<IMockLogger<ProcessExecutionService>>();
-        ILogger<ProcessExecutionService> logger = new MockLogger<ProcessExecutionService>(_mockLogger);
+        _mockLogger = A.Fake<IMockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>>>();
+        ILogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>> logger = new MockLogger<ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>>(_mockLogger);
 
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>())
+        A.CallTo(() => _processRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         var settings = _fixture.Create<ProcessExecutionServiceSettings>();
 
         var options = Options.Create(settings);
         var serviceProvider = A.Fake<IServiceProvider>();
-        A.CallTo(() => serviceProvider.GetService(typeof(IPortalRepositories))).Returns(_portalRepositories);
-        A.CallTo(() => serviceProvider.GetService(typeof(IProcessExecutor))).Returns(_processExecutor);
+        A.CallTo(() => serviceProvider.GetService(typeof(IRepositories))).Returns(_processRepositories);
+        A.CallTo(() => serviceProvider.GetService(typeof(IProcessExecutor<ProcessTypeId, ProcessStepTypeId>))).Returns(_processExecutor);
         A.CallTo(() => serviceProvider.GetService(typeof(IProcessIdentityDataDetermination))).Returns(_processIdentityDataDetermination);
         var serviceScope = A.Fake<IServiceScope>();
         A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
@@ -73,7 +75,7 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => serviceScopeFactory.CreateScope()).Returns(serviceScope);
         A.CallTo(() => serviceProvider.GetService(typeof(IServiceScopeFactory))).Returns(serviceScopeFactory);
 
-        _service = new ProcessExecutionService(serviceScopeFactory, dateTimeProvider, options, logger);
+        _service = new ProcessExecutionService<ProcessTypeId, ProcessStepTypeId>(serviceScopeFactory, dateTimeProvider, options, logger);
     }
 
     [Fact]
@@ -81,7 +83,7 @@ public class ProcessExecutionServiceTests
     {
         // Arrange
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
-            .Returns(Array.Empty<Process>().ToAsyncEnumerable());
+            .Returns(Array.Empty<IProcess<ProcessTypeId>>().ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
@@ -101,7 +103,7 @@ public class ProcessExecutionServiceTests
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
-            .Returns(Enumerable.Repeat(IProcessExecutor.ProcessExecutionResult.SaveRequested, 2).ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat(IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested, 2).ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
@@ -109,9 +111,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappened(processData.Length, Times.Exactly);
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappened(processData.Length * 2, Times.Exactly);
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(processData.Length * 2, Times.Exactly);
     }
 
@@ -124,7 +126,7 @@ public class ProcessExecutionServiceTests
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
-            .Returns(Enumerable.Repeat(IProcessExecutor.ProcessExecutionResult.Unmodified, 2).ToAsyncEnumerable());
+            .Returns(Enumerable.Repeat(IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified, 2).ToAsyncEnumerable());
 
         // Act
         await _service.ExecuteAsync(CancellationToken.None);
@@ -132,9 +134,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappened(processData.Length, Times.Exactly);
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(processData.Length * 2, Times.Exactly);
     }
 
@@ -150,18 +152,18 @@ public class ProcessExecutionServiceTests
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(processId, A<ProcessTypeId>._, A<CancellationToken>._))
-            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+            .Returns(new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested, IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .ReturnsLazily(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, true));
                 return 1;
             });
 
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .Invokes(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, false));
@@ -173,9 +175,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().HaveCount(6)
             .And.SatisfyRespectively(
@@ -200,18 +202,18 @@ public class ProcessExecutionServiceTests
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(processId, A<ProcessTypeId>._, A<CancellationToken>._))
-            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+            .Returns(new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested, IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested, IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .ReturnsLazily(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, true));
                 return 1;
             });
 
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .Invokes(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, false));
@@ -223,9 +225,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(4, Times.Exactly);
         changeHistory.Should().HaveCount(7)
             .And.SatisfyRespectively(
@@ -254,9 +256,9 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => _processStepRepository.GetActiveProcesses(A<IEnumerable<ProcessTypeId>>._, A<IEnumerable<ProcessStepTypeId>>._, A<DateTimeOffset>._))
             .Returns(processData.ToAsyncEnumerable());
 
-        IEnumerable<IProcessExecutor.ProcessExecutionResult> ThrowingEnumerable()
+        IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> ThrowingEnumerable()
         {
-            yield return IProcessExecutor.ProcessExecutionResult.LockRequested;
+            yield return IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested;
             throw new Exception("normal error");
         }
 
@@ -273,12 +275,12 @@ public class ProcessExecutionServiceTests
             .ReturnsLazily((Guid Id, ProcessTypeId _, CancellationToken _) =>
             {
                 process = secondProcess;
-                return new[] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
         var changeHistory = new List<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .ReturnsLazily(() =>
             {
                 changeHistory.Add(process == null
@@ -287,7 +289,7 @@ public class ProcessExecutionServiceTests
                 return 1;
             });
 
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .Invokes(() =>
             {
                 changeHistory.Add(process == null
@@ -303,9 +305,9 @@ public class ProcessExecutionServiceTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _processExecutor.ExecuteProcess(secondId, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().SatisfyRespectively(
                 first => first.Should().Match<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>(x => x.Id == firstId && x.Version != firstVersion && x.LockExpiryTime != null && x.Save),
@@ -328,18 +330,18 @@ public class ProcessExecutionServiceTests
             .Returns(processData.ToAsyncEnumerable());
 
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
-            .Returns(new[] { IProcessExecutor.ProcessExecutionResult.Unmodified, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
+            .Returns(new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified, IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable());
 
         var changeHistory = new List<(Guid Version, DateTimeOffset? LockExpiryTime, bool Save)>();
 
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .ReturnsLazily(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, true));
                 return 1;
             });
 
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .Invokes(() =>
             {
                 changeHistory.Add((process.Version, process.LockExpiryDate, false));
@@ -351,9 +353,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappenedTwiceExactly();
         changeHistory.Should().HaveCount(3)
             .And.SatisfyRespectively(
@@ -387,29 +389,29 @@ public class ProcessExecutionServiceTests
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = firstProcess;
-                return new[] { IProcessExecutor.ProcessExecutionResult.LockRequested, IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested, IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
         A.CallTo(() => _processExecutor.ExecuteProcess(secondProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = secondProcess;
-                return new[] { IProcessExecutor.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested }.ToAsyncEnumerable();
             });
 
         A.CallTo(() => _processExecutor.ExecuteProcess(thirdProcessId, A<ProcessTypeId>._, A<CancellationToken>._))
             .ReturnsLazily((Guid _, ProcessTypeId _, CancellationToken _) =>
             {
                 process = thirdProcess;
-                return new[] { IProcessExecutor.ProcessExecutionResult.Unmodified }.ToAsyncEnumerable();
+                return new[] { IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified }.ToAsyncEnumerable();
             });
 
         var changeHistory = new List<(Guid Id, Guid Version, DateTimeOffset? LockExpiryTime)>();
 
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .Throws(error);
 
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .Invokes(() =>
             {
                 changeHistory.Add(
@@ -424,9 +426,9 @@ public class ProcessExecutionServiceTests
         // Assert
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustHaveHappenedTwiceExactly();
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustHaveHappened(3, Times.Exactly);
         changeHistory.Should().HaveCount(3)
             .And.SatisfyRespectively(
@@ -459,9 +461,9 @@ public class ProcessExecutionServiceTests
             .MustHaveHappened(processData.Length, Times.Exactly);
         A.CallTo(() => _processExecutor.ExecuteProcess(A<Guid>._, A<ProcessTypeId>._, A<CancellationToken>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync())
+        A.CallTo(() => _processRepositories.SaveAsync())
             .MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.Clear())
+        A.CallTo(() => _processRepositories.Clear())
             .MustNotHaveHappened();
     }
 
@@ -484,10 +486,11 @@ public class ProcessExecutionServiceTests
         // Assert
         Environment.ExitCode.Should().Be(0);
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("start processing process")))).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.Matches(e => e != null && e.Message == error.Message), A<string>.That.StartsWith("error processing process"))).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNotNull(), A<string>.That.Matches(x => x.StartsWith("error processing process")))).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("finished processing process")))).MustNotHaveHappened();
         A.CallTo(() => _mockLogger.Log(LogLevel.Error, A<Exception>._, A<string>._)).MustNotHaveHappened();
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _processRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _processRepositories.Clear()).MustHaveHappened(3, Times.Exactly);
     }
 
     [Fact]
@@ -510,7 +513,7 @@ public class ProcessExecutionServiceTests
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("start processing process")))).MustHaveHappened(3, Times.Exactly);
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNotNull(), A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _mockLogger.Log(LogLevel.Information, A<Exception>.That.IsNull(), A<string>.That.Matches(x => x.StartsWith("finished processing process")))).MustNotHaveHappened();
-        A.CallTo(() => _mockLogger.Log(LogLevel.Critical, A<Exception>.That.Matches(e => e != null && e.Message == error.Message), A<string>.That.StartsWith($"Critical error : processing process"))).MustHaveHappened(3, Times.Exactly);
-        A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
+        A.CallTo(() => _mockLogger.Log(LogLevel.Critical, A<Exception>.That.Matches(e => e.Message == error.Message), A<string>.That.StartsWith("Critical error : processing process"))).MustHaveHappened(3, Times.Exactly);
+        A.CallTo(() => _processRepositories.SaveAsync()).MustNotHaveHappened();
     }
 }

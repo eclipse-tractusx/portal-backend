@@ -34,10 +34,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\framework\Framework.Token\Framework.Token.csproj" />
     <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Library\Keycloak.Library.csproj" />
-    <ProjectReference Include="..\..\..\src\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Tests.Shared\Framework.Tests.Shared.csproj" />
     <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
-    <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
     <ProjectReference Include="..\..\..\src\web\Web.Identity\Web.Identity.csproj" />
     <ProjectReference Include="..\..\..\src\web\Web.PublicInfos\Web.PublicInfos.csproj" />
   </ItemGroup>

@@ -28,7 +28,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Processes.Library\Processes.Library.csproj" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
     </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\portalbackend\PortalBackend.DBAccess\PortalBackend.DBAccess.csproj" />
+  </ItemGroup>
 
 </Project>

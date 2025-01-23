@@ -32,7 +32,7 @@ public static class ProcessTypeExtensions
             _ => throw new ArgumentException($"ProcessType {processTypeId} is not supported")
         };
 
-    public static (ProcessTypeId ProcessType, ProcessStepTypeId NextStep) GetProcessStepForRetrigger(this ProcessStepTypeId stepToTrigger) =>
+    public static (ProcessTypeId ProcessType, ProcessStepTypeId NextStep) GetProcessStepForRetrigger(ProcessStepTypeId stepToTrigger) =>
         stepToTrigger switch
         {
             ProcessStepTypeId.RETRIGGER_INVITATION_CREATE_CENTRAL_IDP => (ProcessTypeId.INVITATION, ProcessStepTypeId.INVITATION_CREATE_CENTRAL_IDP),

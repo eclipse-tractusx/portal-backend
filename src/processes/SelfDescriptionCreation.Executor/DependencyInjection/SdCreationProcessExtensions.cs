@@ -20,7 +20,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
 
@@ -34,6 +35,6 @@ public static class SdCreationProcessExtensions
             .EnvironmentalValidation(section);
 
         return services
-            .AddTransient<IProcessTypeExecutor, SdCreationProcessTypeExecutor>();
+            .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, SdCreationProcessTypeExecutor>();
     }
 }

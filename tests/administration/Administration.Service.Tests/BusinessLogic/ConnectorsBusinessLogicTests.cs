@@ -23,13 +23,15 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
@@ -56,7 +58,7 @@ public class ConnectorsBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IOfferSubscriptionsRepository _offerSubscriptionRepository;
     private readonly IConnectorsRepository _connectorsRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IPortalProcessStepRepository _processStepRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPortalRepositories _portalRepositories;
     private readonly ISdFactoryBusinessLogic _sdFactoryBusinessLogic;
@@ -80,7 +82,7 @@ public class ConnectorsBusinessLogicTests
         _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _offerSubscriptionRepository = A.Fake<IOfferSubscriptionsRepository>();
         _identityService = A.Fake<IIdentityService>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
@@ -119,7 +121,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetAllCompanyConnectorDatas(page, size);
@@ -143,7 +145,7 @@ public class ConnectorsBusinessLogicTests
             .CreateMany(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetAllCompanyConnectorsForCompanyId(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<ConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetAllCompanyConnectorDatas(page, size);
@@ -158,6 +160,7 @@ public class ConnectorsBusinessLogicTests
         result.Content.Should().HaveCount(resultPageSize);
         result.Content.Should().Contain(x => x.Type == ConnectorTypeId.COMPANY_CONNECTOR);
     }
+
     #endregion
 
     #region Create Connector
@@ -953,7 +956,7 @@ public class ConnectorsBusinessLogicTests
         var data = _fixture.CreateMany<ManagedConnectorData>(numberOfElements).ToImmutableArray();
 
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int skip, int take) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
+            .Returns((skip, take) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(new(data.Length, data.Skip(skip).Take(take))));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(page, size);
@@ -973,7 +976,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         A.CallTo(() => _connectorsRepository.GetManagedConnectorsForCompany(A<Guid>._))
-            .Returns((int _, int _) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(null));
+            .Returns((_, _) => Task.FromResult<Pagination.Source<ManagedConnectorData>?>(null));
 
         // Act
         var result = await _logic.GetManagedConnectorForCompany(0, 10);
@@ -1382,7 +1385,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var processId = Guid.NewGuid();
         var processes = new List<Process>();
-        var processSteps = new List<ProcessStep>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
@@ -1392,7 +1395,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
-                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
         A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
             .Returns(new[] { Guid.NewGuid(), Guid.NewGuid() }.ToAsyncEnumerable());
@@ -1420,7 +1423,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var processId = Guid.NewGuid();
         var processes = new List<Process>();
-        var processSteps = new List<ProcessStep>();
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
@@ -1430,7 +1433,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
-                processSteps.Add(new ProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
+                processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
             });
         A.CallTo(() => _connectorsRepository.GetConnectorIdsWithMissingSelfDescription())
             .Returns(Enumerable.Empty<Guid>().ToAsyncEnumerable());
@@ -1489,11 +1492,10 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<ICountryRepository>()).Returns(_countryRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()).Returns(_offerSubscriptionRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
@@ -1512,7 +1514,7 @@ public class ConnectorsBusinessLogicTests
     private void SetupTechnicalIdentity()
     {
         A.CallTo(() => _identity.IdentityId).Returns(ServiceAccountUserId);
-        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_SERVICE_ACCOUNT);
+        A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.TECHNICAL_USER);
     }
 
     private void SetupFakesForGetMissingSdDocConnectors(int count = 5)

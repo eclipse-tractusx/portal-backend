@@ -38,7 +38,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\keycloak\Keycloak.Factory\Keycloak.Factory.csproj" />
     <ProjectReference Include="..\..\..\src\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>

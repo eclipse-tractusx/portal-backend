@@ -40,7 +40,6 @@
       <ProjectReference Include="..\..\processes\Mailing.Library\Mailing.Library.csproj" />
       <ProjectReference Include="..\..\provisioning\Provisioning.Library\Provisioning.Library.csproj" />
       <ProjectReference Include="..\..\processes\ApplicationChecklist.Library\ApplicationChecklist.Library.csproj" />
-      <ProjectReference Include="..\..\processes\Processes.Library\Processes.Library.csproj" />
     </ItemGroup>
 
 </Project>

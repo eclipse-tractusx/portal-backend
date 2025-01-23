@@ -19,17 +19,18 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Executor;
 
-public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
+public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>
 {
     private readonly IApplicationChecklistHandlerService _checklistHandlerService;
     private readonly IApplicationChecklistCreationService _checklistCreationService;
@@ -54,7 +55,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
     public ValueTask<bool> IsLockRequested(ProcessStepTypeId processStepTypeId) =>
         ValueTask.FromResult(_checklistHandlerService.GetProcessStepExecution(processStepTypeId).RequiresLock);
 
-    public async ValueTask<IProcessTypeExecutor.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult> InitializeProcess(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
         applicationId = Guid.Empty;
         checklist = null;
@@ -84,13 +85,13 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             if (createdEntries.Any())
             {
                 createdEntries.ForEach(entry => checklist[entry.TypeId] = entry.StatusId);
-                return new IProcessTypeExecutor.InitializationResult(true, _checklistCreationService.GetInitialProcessStepTypeIds(createdEntries));
+                return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(true, _checklistCreationService.GetInitialProcessStepTypeIds(createdEntries));
             }
         }
-        return new IProcessTypeExecutor.InitializationResult(false, null);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null);
     }
 
-    public async ValueTask<IProcessTypeExecutor.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
+    public async ValueTask<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult> ExecuteProcessStep(ProcessStepTypeId processStepTypeId, IEnumerable<ProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken)
     {
         if (applicationId == Guid.Empty || checklist == null)
         {
@@ -136,7 +137,7 @@ public class ApplicationChecklistProcessTypeExecutor : IProcessTypeExecutor
             execution.EntryTypeId,
             modifyChecklistEntry);
 
-        return new IProcessTypeExecutor.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
+        return new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(modified, stepStatusId, nextStepTypeIds, stepsToSkip, processMessage);
     }
 
     private bool ProcessChecklistEntry(

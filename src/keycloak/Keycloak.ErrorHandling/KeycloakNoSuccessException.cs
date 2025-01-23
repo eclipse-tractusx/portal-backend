@@ -25,5 +25,5 @@ public class KeycloakNoSuccessException : Exception
 {
     public KeycloakNoSuccessException() { }
     public KeycloakNoSuccessException(string message) : base(message) { }
-    public KeycloakNoSuccessException(string message, System.Exception inner) : base(message, inner) { }
+    public KeycloakNoSuccessException(string message, Exception inner) : base(message, inner) { }
 }

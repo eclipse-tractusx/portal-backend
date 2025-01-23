@@ -19,6 +19,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -26,15 +27,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
 
-public sealed class ApplicationChecklistService : IApplicationChecklistService
+public sealed class ApplicationChecklistService(IPortalRepositories portalRepositories) : IApplicationChecklistService
 {
-    private readonly IPortalRepositories _portalRepositories;
-
-    public ApplicationChecklistService(IPortalRepositories portalRepositories)
-    {
-        _portalRepositories = portalRepositories;
-    }
-
     async Task<IApplicationChecklistService.ManualChecklistProcessStepData> IApplicationChecklistService.VerifyChecklistEntryAndProcessSteps(Guid applicationId, ApplicationChecklistEntryTypeId entryTypeId, IEnumerable<ApplicationChecklistEntryStatusId> entryStatusIds, ProcessStepTypeId processStepTypeId, IEnumerable<ApplicationChecklistEntryTypeId>? entryTypeIds, IEnumerable<ProcessStepTypeId>? processStepTypeIds)
     {
         var allProcessStepTypeIds = processStepTypeIds switch
@@ -53,7 +47,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
                     : entryTypeIds.Append(entryTypeId)
         };
 
-        var checklistData = await _portalRepositories.GetInstance<IApplicationChecklistRepository>()
+        var checklistData = await portalRepositories.GetInstance<IApplicationChecklistRepository>()
             .GetChecklistProcessStepData(applicationId, allEntryTypeIds, allProcessStepTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
 
         checklistData.ValidateApplicationChecklistData(applicationId, entryTypeId, entryStatusIds, new[] { ProcessStepStatusId.TODO });
@@ -68,7 +62,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
     public void RequestLock(IApplicationChecklistService.ManualChecklistProcessStepData context, DateTimeOffset lockExpiryDate)
     {
-        _portalRepositories.Attach(context.Process);
+        portalRepositories.Attach(context.Process);
         var isLocked = context.Process.TryLock(lockExpiryDate);
         if (!isLocked)
         {
@@ -78,7 +72,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
     public void SkipProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, IEnumerable<ProcessStepTypeId> processStepTypeIds)
     {
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
         foreach (var processStepGroup in context.ProcessSteps.GroupBy(step => step.ProcessStepTypeId).IntersectBy(processStepTypeIds, step => step.Key))
         {
             var firstModified = false;
@@ -98,8 +92,8 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
     public void FinalizeChecklistEntryAndProcessSteps(IApplicationChecklistService.ManualChecklistProcessStepData context, Action<ApplicationChecklistEntry>? initializeApplicationChecklistEntry, Action<ApplicationChecklistEntry>? modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId>? nextProcessStepTypeIds)
     {
-        var applicationChecklistRepository = _portalRepositories.GetInstance<IApplicationChecklistRepository>();
-        var processStepRepository = _portalRepositories.GetInstance<IProcessStepRepository>();
+        var applicationChecklistRepository = portalRepositories.GetInstance<IApplicationChecklistRepository>();
+        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
 
         if (modifyApplicationChecklistEntry != null)
         {
@@ -119,7 +113,7 @@ public sealed class ApplicationChecklistService : IApplicationChecklistService
 
         if (!context.Process.ReleaseLock())
         {
-            _portalRepositories.Attach(context.Process);
+            portalRepositories.Attach(context.Process);
             context.Process.UpdateVersion();
         }
     }

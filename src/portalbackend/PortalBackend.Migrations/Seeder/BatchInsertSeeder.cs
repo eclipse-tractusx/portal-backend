@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,10 +19,12 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Base;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Seeder;
 
@@ -138,7 +139,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTableForBaseEntity<AppInstance>("app_instances", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<AppSubscriptionDetail>("app_subscription_details", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<UseCase>("use_cases", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-        await SeedTableForBaseEntity<ProcessStep>("process_steps", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTableForBaseEntity<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>("process_steps", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<Process>("processes", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<AppInstanceSetup>("app_instance_setups", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTableForBaseEntity<TechnicalUserProfile>("technical_user_profiles", cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

@@ -45,8 +45,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\maintenance\Maintenance.App\Maintenance.App.csproj" />
-        <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.Migrations\PortalBackend.Migrations.csproj" />
-        <ProjectReference Include="..\..\..\src\portalbackend\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
         <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>
 

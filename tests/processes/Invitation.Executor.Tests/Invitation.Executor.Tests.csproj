@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\processes\Processes.Worker\Processes.Worker.csproj" />
+    <ProjectReference Include="..\..\..\src\processes\Invitation.Executor\Invitation.Executor.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

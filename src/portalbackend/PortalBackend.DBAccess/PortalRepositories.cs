@@ -17,22 +17,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.EntityFrameworkCore;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 
-public class PortalRepositories : IPortalRepositories
+public class PortalRepositories(PortalDbContext portalDbContext) :
+    AbstractRepositories<PortalDbContext>(portalDbContext),
+    IPortalRepositories
 {
-    private readonly PortalDbContext _dbContext;
-
-    private static KeyValuePair<Type, Func<PortalDbContext, object>> CreateTypeEntry<T>(Func<PortalDbContext, object> createFunc) => KeyValuePair.Create(typeof(T), createFunc);
-
-    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, object>> RepositoryTypes = ImmutableDictionary.CreateRange(new[]
-    {
+    protected override IReadOnlyDictionary<Type, Func<PortalDbContext, object>> RepositoryTypes => PortalRepositoryTypes;
+    private static readonly IReadOnlyDictionary<Type, Func<PortalDbContext, object>> PortalRepositoryTypes = ImmutableDictionary.CreateRange(
+    [
         CreateTypeEntry<IAgreementRepository>(context => new AgreementRepository(context)),
         CreateTypeEntry<IApplicationRepository>(context => new ApplicationRepository(context)),
         CreateTypeEntry<IApplicationChecklistRepository>(context => new ApplicationChecklistRepository(context)),
@@ -56,74 +58,14 @@ public class PortalRepositories : IPortalRepositories
         CreateTypeEntry<INetworkRepository>(context => new NetworkRepository(context)),
         CreateTypeEntry<IOfferRepository>(context => new OfferRepository(context)),
         CreateTypeEntry<IOfferSubscriptionsRepository>(context => new OfferSubscriptionsRepository(context)),
-        CreateTypeEntry<IProcessStepRepository>(context => new ProcessStepRepository(context)),
+        CreateTypeEntry<IPortalProcessStepRepository>(context => new ProcessStepRepository<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context))),
+        CreateTypeEntry<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>(context => new ProcessStepRepository<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context))),
         CreateTypeEntry<ITechnicalUserRepository>(context => new TechnicalUserRepository(context)),
         CreateTypeEntry<IStaticDataRepository>(context => new StaticDataRepository(context)),
         CreateTypeEntry<ITechnicalUserProfileRepository>(context => new TechnicalUserProfileRepository(context)),
         CreateTypeEntry<IUserBusinessPartnerRepository>(context => new UserBusinessPartnerRepository(context)),
         CreateTypeEntry<IUserRepository>(context => new UserRepository(context)),
         CreateTypeEntry<IUserRolesRepository>(context => new UserRolesRepository(context)),
-        CreateTypeEntry<ICompanyCertificateRepository>(context => new CompanyCertificateRepository(context)),
-    });
-
-    public PortalRepositories(PortalDbContext portalDbContext)
-    {
-        _dbContext = portalDbContext;
-    }
-
-    public RepositoryType GetInstance<RepositoryType>()
-    {
-        object? repository = default;
-
-        if (RepositoryTypes.TryGetValue(typeof(RepositoryType), out var createFunc))
-        {
-            repository = createFunc(_dbContext);
-        }
-        return (RepositoryType)(repository ?? throw new ArgumentException($"unexpected type {typeof(RepositoryType).Name}", nameof(RepositoryType)));
-    }
-
-    /// <inheritdoc />
-    public TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null) where TEntity : class
-    {
-        var attachedEntity = _dbContext.Attach(entity).Entity;
-        setOptionalParameters?.Invoke(attachedEntity);
-
-        return attachedEntity;
-    }
-
-    public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
-    {
-        foreach (var attachedEntity in entities.Select(entity => _dbContext.Attach(entity).Entity))
-        {
-            setOptionalParameters.Invoke(attachedEntity);
-        }
-    }
-
-    public IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-    {
-        foreach (var entity in entities)
-        {
-            yield return _dbContext.Attach(entity).Entity;
-        }
-    }
-
-    /// <inheritdoc />
-    public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
-        => _dbContext.Remove(entity).Entity;
-
-    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-        => _dbContext.RemoveRange(entities);
-
-    public Task<int> SaveAsync()
-    {
-        try
-        {
-            return _dbContext.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException e)
-        {
-            throw new ConflictException("while processing a concurrent update was saved to the database (reason could also be data to be deleted is no longer existing)", e);
-        }
-    }
-    public void Clear() => _dbContext.ChangeTracker.Clear();
+        CreateTypeEntry<ICompanyCertificateRepository>(context => new CompanyCertificateRepository(context))
+    ]);
 }

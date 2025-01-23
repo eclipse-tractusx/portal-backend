@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -28,7 +29,7 @@ public interface INetworkRepository
     NetworkRegistration CreateNetworkRegistration(string externalId, Guid companyId, Guid processId, Guid ospId, Guid applicationId);
     Task<bool> CheckExternalIdExists(string externalId, Guid onboardingServiceProviderId);
     Task<Guid> GetNetworkRegistrationDataForProcessIdAsync(Guid processId);
-    Task<(bool RegistrationIdExists, VerifyProcessData processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
+    Task<(bool RegistrationIdExists, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData)> IsValidRegistration(string externalId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
     Task<(bool Exists, IEnumerable<(Guid CompanyApplicationId, CompanyApplicationStatusId CompanyApplicationStatusId, string? CallbackUrl)> CompanyApplications, IEnumerable<(CompanyRoleId CompanyRoleId, IEnumerable<Guid> AgreementIds)> CompanyRoleAgreementIds, Guid? ProcessId)> GetSubmitData(Guid companyId);
     Task<(OspDetails? OspDetails, string ExternalId, string? Bpn, Guid ApplicationId, IEnumerable<string> Comments)> GetCallbackData(Guid networkRegistrationId, ProcessStepTypeId processStepTypeId);
     Task<string?> GetOspCompanyName(Guid networkRegistrationId);
@@ -40,6 +41,6 @@ public interface INetworkRepository
         (
         (CompanyStatusId CompanyStatusId, IEnumerable<(Guid IdentityId, UserStatusId UserStatus)> Identities) CompanyData,
         IEnumerable<(Guid InvitationId, InvitationStatusId StatusId)> InvitationData,
-        VerifyProcessData ProcessData
+        VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData
         )? Data)> GetDeclineDataForApplicationId(Guid applicationId, CompanyApplicationTypeId validTypeId, IEnumerable<CompanyApplicationStatusId> validStatusIds, Guid companyId);
 }

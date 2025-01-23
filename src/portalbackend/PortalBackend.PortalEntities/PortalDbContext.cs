@@ -18,6 +18,8 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -34,20 +36,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 /// The Trigger Framework requires new Guid() to convert it to gen_random_uuid(),
 /// for the Id field we'll use a randomly set UUID to satisfy SonarCloud.
 /// </remarks>
-public class PortalDbContext : DbContext
+public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler) : ProcessDbContext<Process, ProcessTypeId, ProcessStepTypeId>(options)
 {
-    private readonly IAuditHandler _auditHandler;
-
-    protected PortalDbContext()
-    {
-        throw new InvalidOperationException("IdentityService should never be null");
-    }
-
-    public PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHandler auditHandler)
-        : base(options)
-    {
-        _auditHandler = auditHandler;
-    }
+    private readonly IAuditHandler _auditHandler = auditHandler;
 
     public virtual DbSet<Address> Addresses { get; set; } = default!;
     public virtual DbSet<Agreement> Agreements { get; set; } = default!;
@@ -180,11 +171,6 @@ public class PortalDbContext : DbContext
     public virtual DbSet<OfferSubscriptionStatus> OfferSubscriptionStatuses { get; set; } = default!;
     public virtual DbSet<OfferSubscriptionProcessData> OfferSubscriptionsProcessDatas { get; set; } = default!;
     public virtual DbSet<OnboardingServiceProviderDetail> OnboardingServiceProviderDetails { get; set; } = default!;
-    public virtual DbSet<Process> Processes { get; set; } = default!;
-    public virtual DbSet<ProcessStep> ProcessSteps { get; set; } = default!;
-    public virtual DbSet<ProcessStepStatus> ProcessStepStatuses { get; set; } = default!;
-    public virtual DbSet<ProcessStepType> ProcessStepTypes { get; set; } = default!;
-    public virtual DbSet<ProcessType> ProcessTypes { get; set; } = default!;
     public virtual DbSet<ProviderCompanyDetail> ProviderCompanyDetails { get; set; } = default!;
     public virtual DbSet<PrivacyPolicy> PrivacyPolicies { get; set; } = default!;
     public virtual DbSet<ServiceDetail> ServiceDetails { get; set; } = default!;
@@ -218,6 +204,8 @@ public class PortalDbContext : DbContext
     {
         modelBuilder.HasAnnotation("Relational:Collation", "en_US.utf8");
         modelBuilder.HasDefaultSchema("portal");
+
+        base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Agreement>(entity =>
         {
@@ -1252,39 +1240,6 @@ public class PortalDbContext : DbContext
                 Enum.GetValues(typeof(BpdmIdentifierId))
                     .Cast<BpdmIdentifierId>()
                     .Select(e => new BpdmIdentifier(e))
-            );
-
-        modelBuilder.Entity<Process>()
-            .HasOne(d => d.ProcessType)
-            .WithMany(p => p!.Processes)
-            .HasForeignKey(d => d.ProcessTypeId)
-            .OnDelete(DeleteBehavior.ClientSetNull);
-
-        modelBuilder.Entity<ProcessStep>()
-            .HasOne(d => d.Process)
-            .WithMany(p => p!.ProcessSteps)
-            .HasForeignKey(d => d.ProcessId)
-            .OnDelete(DeleteBehavior.ClientSetNull);
-
-        modelBuilder.Entity<ProcessType>()
-            .HasData(
-                Enum.GetValues(typeof(ProcessTypeId))
-                    .Cast<ProcessTypeId>()
-                    .Select(e => new ProcessType(e))
-            );
-
-        modelBuilder.Entity<ProcessStepStatus>()
-            .HasData(
-                Enum.GetValues(typeof(ProcessStepStatusId))
-                    .Cast<ProcessStepStatusId>()
-                    .Select(e => new ProcessStepStatus(e))
-            );
-
-        modelBuilder.Entity<ProcessStepType>()
-            .HasData(
-                Enum.GetValues(typeof(ProcessStepTypeId))
-                    .Cast<ProcessStepTypeId>()
-                    .Select(e => new ProcessStepType(e))
             );
 
         modelBuilder.Entity<PrivacyPolicy>()

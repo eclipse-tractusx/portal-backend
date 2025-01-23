@@ -23,14 +23,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Identities;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
@@ -58,7 +61,7 @@ public class TechnicalUserBusinessLogicTests
     private readonly ICompanyRepository _companyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserRolesRepository _userRolesRepository;
-    private readonly IProcessStepRepository _processStepRepository;
+    private readonly IPortalProcessStepRepository _processStepRepository;
     private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly IProvisioningManager _provisioningManager;
@@ -82,9 +85,10 @@ public class TechnicalUserBusinessLogicTests
         _userRolesRepository = A.Fake<IUserRolesRepository>();
         _technicalUserRepository = A.Fake<ITechnicalUserRepository>();
         _connectorsRepository = A.Fake<IConnectorsRepository>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
+        _provisioningManager = A.Fake<IProvisioningManager>();
         _portalRepositories = A.Fake<IPortalRepositories>();
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
@@ -691,8 +695,8 @@ public class TechnicalUserBusinessLogicTests
         // Arrange
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
-        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, Guid.NewGuid(), Guid.NewGuid()));
 
         var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, _technicalUserCreation, _identityService, _serviceAccountManagement);
@@ -701,7 +705,7 @@ public class TechnicalUserBusinessLogicTests
         await sut.HandleServiceAccountCreationCallback(process.Id, _fixture.Create<AuthenticationDetail>());
 
         // Assert
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
@@ -714,8 +718,8 @@ public class TechnicalUserBusinessLogicTests
         // Arrange
         var stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), processTypeId, Guid.NewGuid());
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns<(ProcessTypeId, VerifyProcessData, Guid?, Guid?)>(default);
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Returns<(ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>, Guid?, Guid?)>(default);
 
         var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, _technicalUserCreation, _identityService, _serviceAccountManagement);
 
@@ -725,7 +729,7 @@ public class TechnicalUserBusinessLogicTests
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"externalId {process.Id} does not exist");
     }
@@ -736,8 +740,8 @@ public class TechnicalUserBusinessLogicTests
         // Arrange
         const ProcessStepTypeId stepToTrigger = ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE;
         var process = new Process(Guid.NewGuid(), ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid());
-        var context = new VerifyProcessData(process, [new ProcessStep(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
+        var context = new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, [new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), stepToTrigger, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow)]);
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(A<Guid>._, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((ProcessTypeId.OFFER_SUBSCRIPTION, context, null, null));
 
         var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, _technicalUserCreation, _identityService, _serviceAccountManagement);
@@ -748,7 +752,7 @@ public class TechnicalUserBusinessLogicTests
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
 
         // Assert
-        A.CallTo(() => _processStepRepository.GetProcessDataForServiceAccountCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
+        A.CallTo(() => _technicalUserRepository.GetProcessDataForTechnicalUserCallback(process.Id, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count() == 1 && x.Single() == stepToTrigger)))
             .MustHaveHappenedOnceExactly();
         ex.Message.Should().Be($"ServiceAccountId must be set for process {process.Id}");
     }
@@ -871,7 +875,8 @@ public class TechnicalUserBusinessLogicTests
 
         A.CallTo(() => _portalRepositories.GetInstance<IConnectorsRepository>()).Returns(_connectorsRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IUserRepository>()).Returns(_userRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
     }
 
     #endregion

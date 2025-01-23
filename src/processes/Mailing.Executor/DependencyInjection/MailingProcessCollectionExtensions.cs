@@ -18,7 +18,8 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Executor.DependencyInjection;
 
@@ -26,5 +27,5 @@ public static class MailingProcessCollectionExtensions
 {
     public static IServiceCollection AddMailingProcessExecutor(this IServiceCollection services) =>
         services
-            .AddTransient<IProcessTypeExecutor, MailingProcessTypeExecutor>();
+            .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, MailingProcessTypeExecutor>();
 }

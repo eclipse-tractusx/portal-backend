@@ -19,9 +19,13 @@
 
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
@@ -30,9 +34,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.Worker.Library.Tests;
 
 public class ProcessExecutorTests
 {
-    private readonly IProcessTypeExecutor _processTypeExecutor;
-    private readonly IProcessStepRepository _processStepRepository;
-    private readonly IProcessExecutor _sut;
+    private readonly IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId> _processTypeExecutor;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
+    private readonly IProcessExecutor<ProcessTypeId, ProcessStepTypeId> _sut;
     private readonly IFixture _fixture;
 
     public ProcessExecutorTests()
@@ -42,19 +46,19 @@ public class ProcessExecutorTests
             .ForEach(b => _fixture.Behaviors.Remove(b));
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _processTypeExecutor = A.Fake<IProcessTypeExecutor>();
-        _processStepRepository = A.Fake<IProcessStepRepository>();
+        _processTypeExecutor = A.Fake<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>>();
+        _processStepRepository = A.Fake<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>();
 
         var portalRepositories = A.Fake<IPortalRepositories>();
-        var logger = A.Fake<ILogger<ProcessExecutor>>();
+        var logger = A.Fake<ILogger<ProcessExecutor<ProcessTypeId, ProcessStepTypeId>>>();
 
-        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository>())
+        A.CallTo(() => portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>())
             .Returns(_processStepRepository);
 
         A.CallTo(() => _processTypeExecutor.GetProcessTypeId())
             .Returns(ProcessTypeId.APPLICATION_CHECKLIST);
 
-        _sut = new ProcessExecutor(
+        _sut = new ProcessExecutor<ProcessTypeId, ProcessStepTypeId>(
             new[] { _processTypeExecutor },
             portalRepositories,
             logger);
@@ -91,42 +95,42 @@ public class ProcessExecutorTests
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
-    public async Task ExecuteProcess_WithInitialSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_WithInitialSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -144,26 +148,26 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, initialStepTypeIds));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, initialStepTypeIds));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -188,7 +192,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(initialStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(initialStepTypeIds.Length + 1)
@@ -200,43 +204,43 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
-    public async Task ExecuteProcess_NoScheduleOrSkippedSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_NoScheduleOrSkippedSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -252,17 +256,17 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -279,7 +283,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(processStepData.Length, Times.Exactly);
 
             modifiedProcessSteps
@@ -291,7 +295,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
@@ -310,13 +314,13 @@ public class ProcessExecutorTests
             .Returns(false);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         // Act
         var result = await _sut.ExecuteProcess(processId, ProcessTypeId.APPLICATION_CHECKLIST, CancellationToken.None).ToListAsync();
 
         // Assert
-        result.Should().HaveCount(1).And.Contain(IProcessExecutor.ProcessExecutionResult.Unmodified);
+        result.Should().HaveCount(1).And.Contain(IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified);
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .MustNotHaveHappened();
@@ -324,30 +328,30 @@ public class ProcessExecutorTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustNotHaveHappened();
     }
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
-    public async Task ExecuteProcess_NoScheduleOrSkippedSteps_SingleStepTypeWithDuplicates_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_NoScheduleOrSkippedSteps_SingleStepTypeWithDuplicates_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -364,17 +368,17 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -394,7 +398,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(processStepData.Length, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveSameCount(processStepData)
@@ -409,49 +413,49 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
-    public async Task ExecuteProcess_WithScheduledSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_WithScheduledSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -468,29 +472,29 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(processStepData.StepTypeId, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>.That.Not.IsEqualTo(processStepData.StepTypeId), A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -519,7 +523,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(scheduleStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(scheduleStepTypeIds.Length + 1)
@@ -531,34 +535,34 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
         }
     }
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified
     })]
-    public async Task ExecuteProcess_WithDuplicateScheduledSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_WithDuplicateScheduledSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -576,29 +580,29 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(stepTypeId, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null))
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, scheduleStepTypeIds, null, null))
             .Once()
             .Then
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, null, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, null, null));
 
-        IEnumerable<ProcessStep>? createdProcessSteps = null;
+        IEnumerable<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>? createdProcessSteps = null;
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .ReturnsLazily((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus) =>
             {
-                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+                createdProcessSteps = processStepTypeStatus.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
                 return createdProcessSteps;
             });
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -623,7 +627,7 @@ public class ProcessExecutorTests
 
             A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
                 .MustHaveHappened(2, Times.Exactly);
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(2, Times.Exactly);
 
             modifiedProcessSteps
@@ -634,7 +638,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustNotHaveHappened();
             A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
                 .MustNotHaveHappened();
@@ -643,24 +647,24 @@ public class ProcessExecutorTests
 
     [Theory]
     [InlineData(ProcessStepStatusId.DONE, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.DONE, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(ProcessStepStatusId.TODO, false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
-    public async Task ExecuteProcess_WithSkippedSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_WithSkippedSteps_ReturnsExpected(ProcessStepStatusId stepStatusId, bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -677,17 +681,17 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
-            .Returns(new IProcessTypeExecutor.StepExecutionResult(false, stepStatusId, null, skipStepTypeIds, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.StepExecutionResult(false, stepStatusId, null, skipStepTypeIds.Select(x => x), null));
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -707,7 +711,7 @@ public class ProcessExecutorTests
 
         if (stepStatusId == ProcessStepStatusId.DONE)
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(skipStepTypeIds.Length + 1, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(skipStepTypeIds.Length + 1)
@@ -718,7 +722,7 @@ public class ProcessExecutorTests
         }
         else
         {
-            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+            A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
                 .MustHaveHappened(skipStepTypeIds.Length, Times.Exactly);
             modifiedProcessSteps
                 .Should().HaveCount(skipStepTypeIds.Length)
@@ -730,27 +734,27 @@ public class ProcessExecutorTests
 
     [Theory]
     [InlineData(true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
     [InlineData(false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested,
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.SaveRequested
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.SaveRequested
     })]
-    public async Task ExecuteProcess_ProcessThrowsTestException_ReturnsExpected(bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_ProcessThrowsTestException_ReturnsExpected(bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -767,17 +771,17 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Throws(error);
 
-        var modifiedProcessSteps = new List<ProcessStep>();
+        var modifiedProcessSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
-            .Invokes((Guid stepId, Action<ProcessStep>? initialize, Action<ProcessStep> modify) =>
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
+            .Invokes((Guid stepId, Action<IProcessStep<ProcessStepTypeId>>? initialize, Action<IProcessStep<ProcessStepTypeId>> modify) =>
             {
-                var step = new ProcessStep(stepId, default, default, Guid.Empty, default);
+                var step = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(stepId, default, default, Guid.Empty, default);
                 initialize?.Invoke(step);
                 modify(step);
                 modifiedProcessSteps.Add(step);
@@ -795,7 +799,7 @@ public class ProcessExecutorTests
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .MustNotHaveHappened();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustHaveHappened(processStepData.Length, Times.Exactly);
 
         modifiedProcessSteps
@@ -808,13 +812,13 @@ public class ProcessExecutorTests
 
     [Theory]
     [InlineData(true, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
-        IProcessExecutor.ProcessExecutionResult.LockRequested,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.LockRequested,
     })]
     [InlineData(false, new[] {
-        IProcessExecutor.ProcessExecutionResult.Unmodified,
+        IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult.Unmodified,
     })]
-    public async Task ExecuteProcess_ProcessThrowsSystemException_Throws(bool isLockRequested, IEnumerable<IProcessExecutor.ProcessExecutionResult> executionResults)
+    public async Task ExecuteProcess_ProcessThrowsSystemException_Throws(bool isLockRequested, IEnumerable<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult> executionResults)
     {
         // Arrange
         var processId = Guid.NewGuid();
@@ -831,12 +835,12 @@ public class ProcessExecutorTests
             .Returns(isLockRequested);
 
         A.CallTo(() => _processTypeExecutor.InitializeProcess(processId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new IProcessTypeExecutor.InitializationResult(false, null));
+            .Returns(new IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>.InitializationResult(false, null));
 
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .Throws(error);
 
-        var stepResults = new List<IProcessExecutor.ProcessExecutionResult>();
+        var stepResults = new List<IProcessExecutor<ProcessTypeId, ProcessStepTypeId>.ProcessExecutionResult>();
 
         var Act = async () =>
         {
@@ -857,7 +861,7 @@ public class ProcessExecutorTests
         A.CallTo(() => _processTypeExecutor.ExecuteProcessStep(A<ProcessStepTypeId>._, A<IEnumerable<ProcessStepTypeId>>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<ProcessStep>>._, A<Action<ProcessStep>>._))
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessStep(A<Guid>._, A<Action<IProcessStep<ProcessStepTypeId>>>._, A<Action<IProcessStep<ProcessStepTypeId>>>._))
             .MustNotHaveHappened();
 
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
