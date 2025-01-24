@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.BusinessLogic;
@@ -50,7 +51,7 @@ public class CompanyDataBusinessLogicTests
     private readonly IConsentRepository _consentRepository;
     private readonly ICompanyRepository _companyRepository;
     private readonly ICompanyRolesRepository _companyRolesRepository;
-    private readonly IPortalProcessStepRepository _processStepRepository;
+    private readonly IPortalProcessStepRepository _portalProcessStepRepository;
     private readonly IDocumentRepository _documentRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly ICompanyCertificateRepository _companyCertificateRepository;
@@ -70,7 +71,7 @@ public class CompanyDataBusinessLogicTests
         _documentRepository = A.Fake<IDocumentRepository>();
         _languageRepository = A.Fake<ILanguageRepository>();
         _companyCertificateRepository = A.Fake<ICompanyCertificateRepository>();
-        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
+        _portalProcessStepRepository = A.Fake<IPortalProcessStepRepository>();
         var issuerComponentBusinessLogic = A.Fake<IIssuerComponentBusinessLogic>();
 
         _now = _fixture.Create<DateTimeOffset>();
@@ -86,7 +87,8 @@ public class CompanyDataBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ILanguageRepository>()).Returns(_languageRepository);
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyCertificateRepository>()).Returns(_companyCertificateRepository);
-        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_processStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IPortalProcessStepRepository>()).Returns(_portalProcessStepRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_portalProcessStepRepository);
 
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
@@ -1189,13 +1191,13 @@ public class CompanyDataBusinessLogicTests
         var processId = Guid.NewGuid();
         var processes = new List<Process>();
         var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+        A.CallTo(() => _portalProcessStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
                 processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
             })
             .Returns(new Process(processId, default, default));
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+        A.CallTo(() => _portalProcessStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
                 processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
@@ -1227,13 +1229,13 @@ public class CompanyDataBusinessLogicTests
         var processId = Guid.NewGuid();
         var processes = new List<Process>();
         var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
-        A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._))
+        A.CallTo(() => _portalProcessStepRepository.CreateProcess(A<ProcessTypeId>._))
             .Invokes((ProcessTypeId processTypeId) =>
             {
                 processes.Add(new Process(processId, processTypeId, Guid.NewGuid()));
             })
             .Returns(new Process(processId, default, default));
-        A.CallTo(() => _processStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
+        A.CallTo(() => _portalProcessStepRepository.CreateProcessStep(A<ProcessStepTypeId>._, A<ProcessStepStatusId>._, processId))
             .Invokes((ProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid _) =>
             {
                 processSteps.Add(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow));
@@ -1322,9 +1324,9 @@ public class CompanyDataBusinessLogicTests
         // Arrange
         var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
         var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+        A.CallTo(() => _portalProcessStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((true, new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
-        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
+        A.CallTo(() => _portalProcessStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._))
             .Invokes((IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> ps) =>
             {
                 processSteps.AddRange(ps.Select(x => new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)));
@@ -1344,7 +1346,7 @@ public class CompanyDataBusinessLogicTests
     {
         // Arrange
         var process = new Process(Guid.NewGuid(), ProcessTypeId.SELF_DESCRIPTION_CREATION, Guid.NewGuid());
-        A.CallTo(() => _processStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
+        A.CallTo(() => _portalProcessStepRepository.IsValidProcess(process.Id, ProcessTypeId.SELF_DESCRIPTION_CREATION, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns((false, new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(process, Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, process.Id, DateTimeOffset.UtcNow), 1))));
         Task Act() => _sut.RetriggerSelfDescriptionResponseCreation(process.Id);
 
