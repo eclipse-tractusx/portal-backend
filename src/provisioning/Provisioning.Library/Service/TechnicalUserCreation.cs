@@ -64,7 +64,7 @@ public class TechnicalUserCreation(
         var dimConfigRoles = _settings.DimUserRoles.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
         var userProviderRoles = _settings.UserRolesAccessibleByProviderOnly.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
 
-        var userTypeId = !(userRoleData.IntersectBy(userProviderRoles, providerData => (providerData.ClientClientId, providerData.UserRoleText)).Any() && technicalUserTypeId == TechnicalUserTypeId.MANAGED) ? technicalUserTypeId : TechnicalUserTypeId.PROVIDER_OWNED;
+        var userTypeId = technicalUserTypeId == TechnicalUserTypeId.MANAGED && userRoleData.IntersectBy(userProviderRoles, providerData => (providerData.ClientClientId, providerData.UserRoleText)).Any() ? TechnicalUserTypeId.PROVIDER_OWNED : technicalUserTypeId;
 
         var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
 
