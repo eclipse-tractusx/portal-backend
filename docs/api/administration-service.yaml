@@ -7770,6 +7770,7 @@ components:
       enum:
         - MANAGED
         - OWN
+        - PROVIDER_OWNED
       type: string
     UniqueIdentifierId:
       enum:
