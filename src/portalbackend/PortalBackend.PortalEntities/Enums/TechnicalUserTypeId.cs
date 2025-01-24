@@ -22,5 +22,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums
 public enum TechnicalUserTypeId
 {
     MANAGED = 1,
-    OWN = 2
+    OWN = 2,
+    PROVIDER_OWNED = 3
 }
