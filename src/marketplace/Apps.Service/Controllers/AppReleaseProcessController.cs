@@ -108,14 +108,15 @@ public class AppReleaseProcessController : ControllerBase
     /// <summary>
     /// Return Agreement Data for offer_type_id App
     /// </summary>
+    /// <param name="languageShortName"></param>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/agreementData</remarks>
     /// <response code="200">Returns the Cpllection of agreement data</response>
     [HttpGet]
     [Route("agreementData")]
     [Authorize(Roles = "edit_apps")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync() =>
-        _appReleaseBusinessLogic.GetOfferAgreementDataAsync();
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync([FromQuery] string languageShortName = Constants.DefaultLanguage) =>
+        _appReleaseBusinessLogic.GetOfferAgreementDataAsync(languageShortName);
 
     /// <summary>
     /// Gets the agreement consent status for the given app id
@@ -161,6 +162,7 @@ public class AppReleaseProcessController : ControllerBase
     /// Return app detail with status
     /// </summary>
     /// <param name="appId"></param>
+    /// <param name="languageShortName"></param>
     /// <remarks>Example: GET: /api/apps/appreleaseprocess/{appId}/appStatus</remarks>
     /// <response code="200">Return the Offer and status data</response>
     /// <response code="404">App does not exist.</response>
@@ -172,8 +174,8 @@ public class AppReleaseProcessController : ControllerBase
     [ProducesResponseType(typeof(AppProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId) =>
-        _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId);
+    public Task<AppProviderResponse> GetAppDetailsForStatusAsync([FromRoute] Guid appId, [FromQuery] string languageShortName = Constants.DefaultLanguage) =>
+        _appReleaseBusinessLogic.GetAppDetailsForStatusAsync(appId, languageShortName);
 
     /// <summary>
     /// Removes a role from persistence layer by appId and roleId.

@@ -34,8 +34,9 @@ public interface IServiceReleaseBusinessLogic
     /// <summary>
     /// Return Agreements for App_Contract Category
     /// </summary>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync();
+    IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync(string languageShortName);
 
     /// <summary>
     /// Retrieve Service Details by Id
@@ -61,8 +62,9 @@ public interface IServiceReleaseBusinessLogic
     /// Return Offer with Consent Status
     /// </summary>
     /// <param name="serviceId"></param>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId);
+    Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string languageShortName);
 
     /// <summary>
     /// Inserts or updates the consent to the specific service

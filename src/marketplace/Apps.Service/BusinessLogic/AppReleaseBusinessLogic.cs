@@ -90,8 +90,8 @@ public class AppReleaseBusinessLogic(
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync() =>
-        offerService.GetOfferTypeAgreements(OfferTypeId.APP);
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync(string languageShortName) =>
+        offerService.GetOfferTypeAgreements(OfferTypeId.APP, languageShortName);
 
     /// <inheritdoc/>
     public async Task<OfferAgreementConsent> GetOfferAgreementConsentById(Guid appId)
@@ -111,9 +111,9 @@ public class AppReleaseBusinessLogic(
     }
 
     /// <inheritdoc/>
-    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId)
+    public async Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string languageShortName)
     {
-        var result = await offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, languageShortName).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.UseCase == null)
         {
             throw new UnexpectedConditionException("usecase should never be null here");

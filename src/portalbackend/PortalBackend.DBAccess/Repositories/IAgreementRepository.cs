@@ -56,8 +56,9 @@ public interface IAgreementRepository
     /// Return all agreements for agreement category app_contract
     /// </summary>
     /// <param name="categoryId"></param>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetAgreementDataForOfferType(OfferTypeId offerTypeId, string languageShortName);
 
     /// <summary>
     /// Return matching Agreement and Consent for agreement category app_contract and offer id

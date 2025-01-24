@@ -107,6 +107,7 @@ public class BatchInsertSeeder : ICustomSeeder
         await SeedTable<AppInstanceAssignedTechnicalUser>("app_instance_assigned_technical_users", x => new { x.AppInstanceId, x.TechnicalUserId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<TechnicalUserProfileAssignedUserRole>("technical_user_profile_assigned_user_roles", x => new { x.TechnicalUserProfileId, x.UserRoleId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<UseCaseDescription>("use_case_descriptions", x => new { x.UseCaseId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        await SeedTable<AgreementDescription>("agreement_descriptions", x => new { x.AgreementId, x.LanguageShortName }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         await SeedTable<CompanyUserAssignedIdentityProvider>("company_user_assigned_identity_providers", e => new { e.CompanyUserId, e.IdentityProviderId }, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);

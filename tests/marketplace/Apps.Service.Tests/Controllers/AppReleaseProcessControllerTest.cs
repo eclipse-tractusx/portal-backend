@@ -96,7 +96,7 @@ public class AppReleaseProcessControllerTest
     {
         //Arrange
         var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetOfferAgreementDataAsync())
+        A.CallTo(() => _logic.GetOfferAgreementDataAsync(Constants.DefaultLanguage))
             .Returns(data);
 
         //Act
@@ -149,7 +149,7 @@ public class AppReleaseProcessControllerTest
         //Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<AppProviderResponse>();
-        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(A<Guid>._, Constants.DefaultLanguage))
             .Returns(data);
 
         //Act
@@ -157,7 +157,7 @@ public class AppReleaseProcessControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(appId))
+        A.CallTo(() => _logic.GetAppDetailsForStatusAsync(appId, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
     }
 

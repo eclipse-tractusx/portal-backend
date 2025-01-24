@@ -98,6 +98,13 @@ paths:
         - ServiceRelease
       summary: 'Return Agreement Data for offer_type_id Service (Authorization required - Roles: add_service_offering)'
       description: 'Example: GET: /api/services/servicerelease/agreementData'
+      parameters:
+        - name: languageShortName
+          in: query
+          description: ''
+          schema:
+            type: string
+            default: en
       responses:
         '200':
           description: Returns the Cpllection of agreement data
@@ -221,6 +228,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: languageShortName
+          in: query
+          description: ''
+          schema:
+            type: string
+            default: en
       responses:
         '200':
           description: Return the Offer and status data

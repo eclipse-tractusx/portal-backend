@@ -55,14 +55,15 @@ public class ServiceReleaseController : ControllerBase
     /// <summary>
     /// Return Agreement Data for offer_type_id Service
     /// </summary>
+    /// <param name="languageShortName"></param>
     /// <remarks>Example: GET: /api/services/servicerelease/agreementData</remarks>
     /// <response code="200">Returns the Cpllection of agreement data</response>
     [HttpGet]
     [Route("agreementData")]
     [Authorize(Roles = "add_service_offering")]
     [ProducesResponseType(typeof(IAsyncEnumerable<AgreementDocumentData>), StatusCodes.Status200OK)]
-    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync() =>
-        _serviceReleaseBusinessLogic.GetServiceAgreementDataAsync();
+    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync([FromQuery] string languageShortName = Constants.DefaultLanguage) =>
+        _serviceReleaseBusinessLogic.GetServiceAgreementDataAsync(languageShortName);
 
     /// <summary>
     /// Retrieves service details for an offer referenced by id.
@@ -118,6 +119,7 @@ public class ServiceReleaseController : ControllerBase
     /// Return app detail with status
     /// </summary>
     /// <param name="serviceId"></param>
+    /// <param name="languageShortName"></param>
     /// <remarks>Example: GET: /api/services/servicerelease/{serviceId}/serviceStatus</remarks>
     /// <response code="200">Return the Offer and status data</response>
     /// <response code="404">App does not exist.</response>
@@ -129,8 +131,8 @@ public class ServiceReleaseController : ControllerBase
     [ProducesResponseType(typeof(ServiceProviderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
-    public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId) =>
-        _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId);
+    public Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync([FromRoute] Guid serviceId, [FromQuery] string languageShortName = Constants.DefaultLanguage) =>
+        _serviceReleaseBusinessLogic.GetServiceDetailsForStatusAsync(serviceId, languageShortName);
 
     /// <summary>
     /// Update or Insert Consent
