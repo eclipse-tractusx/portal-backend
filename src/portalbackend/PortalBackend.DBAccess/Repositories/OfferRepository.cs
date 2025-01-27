@@ -337,7 +337,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId) =>
+    public Task<(OfferProviderData? OfferProviderData, bool IsProviderCompanyUser)> GetProviderOfferDataWithConsentStatusAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, string languageShortName) =>
         dbContext.Offers
             .AsNoTracking()
             .AsSplitQuery()
@@ -362,7 +362,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                             .Select(aaot => aaot.Agreement)
                             .Select(agreement => new AgreementAssignedOfferData(
                                 agreement!.Id,
-                                agreement.Name,
+                                agreement.AgreementDescriptions.SingleOrDefault(x => x.LanguageShortName == languageShortName)!.Description,
                                 agreement.Consents.SingleOrDefault(consent => consent.ConsentAssignedOffers.Any(cao => cao.OfferId == x.Offer.Id))!.ConsentStatusId)),
                         x.Offer.SupportedLanguages.Select(l => l.ShortName),
                         x.Offer.OfferLicenses

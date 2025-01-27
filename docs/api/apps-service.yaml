@@ -679,6 +679,13 @@ paths:
         - AppReleaseProcess
       summary: 'Return Agreement Data for offer_type_id App (Authorization required - Roles: edit_apps)'
       description: 'Example: GET: /api/apps/appreleaseprocess/agreementData'
+      parameters:
+        - name: languageShortName
+          in: query
+          description: ''
+          schema:
+            type: string
+            default: en
       responses:
         '200':
           description: Returns the Cpllection of agreement data
@@ -794,6 +801,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: languageShortName
+          in: query
+          description: ''
+          schema:
+            type: string
+            default: en
       responses:
         '200':
           description: Return the Offer and status data

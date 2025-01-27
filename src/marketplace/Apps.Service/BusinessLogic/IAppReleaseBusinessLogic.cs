@@ -52,8 +52,9 @@ public interface IAppReleaseBusinessLogic
     /// <summary>
     /// Return Agreements for App_Contract Category
     /// </summary>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync();
+    IAsyncEnumerable<AgreementDocumentData> GetOfferAgreementDataAsync(string languageShortName);
 
     /// <summary>
     /// Return Offer Agreement Consent
@@ -74,8 +75,9 @@ public interface IAppReleaseBusinessLogic
     /// Return Offer with Consent Status
     /// </summary>
     /// <param name="appId"></param>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId);
+    Task<AppProviderResponse> GetAppDetailsForStatusAsync(Guid appId, string languageShortName);
 
     /// <summary>
     /// Delete User Role by appId and roleId

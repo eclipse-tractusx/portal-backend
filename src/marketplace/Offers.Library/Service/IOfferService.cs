@@ -71,8 +71,9 @@ public interface IOfferService
     /// Return Agreements for App_Contract Category
     /// </summary>
     /// <param name="offerTypeId">OfferTypeId the agreement is associated with</param>
+    /// <param name="languageShortName">language to get agreement value</param>
     /// <returns></returns>
-    IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId);
+    IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId, string languageShortName);
 
     /// <summary>
     /// Return Offer Agreement Consent
@@ -105,8 +106,9 @@ public interface IOfferService
     /// <param name="offerId"></param>
     /// <param name="offerTypeId"></param>
     /// <param name="documentTypeId"></param>
+    /// <param name="languageShortName"></param>
     /// <returns></returns>
-    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId);
+    Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, string languageShortName);
 
     /// <summary>
     /// Checks whether the sales manager has the a sales manager role assigned and is in the same company as the user

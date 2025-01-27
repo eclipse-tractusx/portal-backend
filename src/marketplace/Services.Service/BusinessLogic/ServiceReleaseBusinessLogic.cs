@@ -67,8 +67,8 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
         _settings = settings.Value;
     }
 
-    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync() =>
-        _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE);
+    public IAsyncEnumerable<AgreementDocumentData> GetServiceAgreementDataAsync(string languageShortName) =>
+        _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE, languageShortName);
 
     /// <inheritdoc />
     public async Task<ServiceData> GetServiceDetailsByIdAsync(Guid serviceId)
@@ -105,9 +105,9 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
     public Task<OfferAgreementConsent> GetServiceAgreementConsentAsync(Guid serviceId) =>
         _offerService.GetProviderOfferAgreementConsentById(serviceId, OfferTypeId.SERVICE);
 
-    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId)
+    public async Task<ServiceProviderResponse> GetServiceDetailsForStatusAsync(Guid serviceId, string languageShortName)
     {
-        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE).ConfigureAwait(ConfigureAwaitOptions.None);
+        var result = await _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, languageShortName).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.ServiceTypeIds == null)
         {
             throw UnexpectedConditionException.Create(ServicesServiceReleaseErrors.SERVICES_SERVICE_TYPE_IDS_NEVER_NULL);

@@ -1,0 +1,122 @@
+[
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1010",
+    "description": "Terms & Conditions - Active Participant",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1010",
+    "description": "Allgemeine Geschäftsbedingungen - Aktiver Teilnehmer",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1011",
+    "description": "Terms & Conditions - App Provider",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1011",
+    "description": "Allgemeine Geschäftsbedingungen - App Provider",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1013",
+    "description": "Security Regulations - Active Participant",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1013",
+    "description": "Sicherheitsbestimmungen - Aktiver Teilnehmer",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1014",
+    "description": "Terms & Conditions - Service Marketplace",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1014",
+    "description": "Allgemeine Geschäftsbedingungen - Service Marktplatz",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1015",
+    "description": "Data Sovereignty Guidelines",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1015",
+    "description": "Richtlinien zur Datensouveränität",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1016",
+    "description": "Marketplace Terms & Conditions",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1016",
+    "description": "Allgemeine Geschäftsbedingungen - Marktplatz",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1017",
+    "description": "Terms & Conditions - Service Provider",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1017",
+    "description": "Allgemeine Geschäftsbedingungen - Service Provider",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1018",
+    "description": "Data Sharing Approval - allow CX to submit company data (company name, requester) to process the subscription.",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1018",
+    "description": "Datenfreigabe-Bestätigung - Erlauben Sie CX, Unternehmensdaten (Name des Unternehmens, Antragsteller) zur Abwicklung des Abonnements weiterzuleiten.",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1090",
+    "description": "I confirm that my company has successfully received a Catena-X onboarding certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate. For more information visit the association homepage (Link).",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1090",
+    "description": "Ich bestätige, dass mein Unternehmen ein Catena-X Onboarding-Zertifikat von einer offiziellen Konformitätsbewertungsstelle (CAB) erhalten hat. Ich bestätige, das Zertifikat hochzuladen. Für weitere Informationen besuchen Sie bitte die Vereins-Homepage.",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1091",
+    "description": "I confirm that the application I want to offer has successfully received a Catena-X certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate.",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "aa0a0000-7fbc-1f2f-817f-bce0502c1091",
+    "description": "Ich bestätige, dass die App, die ich anbieten möchte, erfolgreich ein Catena-X-Zertifikat erhalten hat, das von einer offiziellen Konformitätsbewertungsstelle ausgestellt wurde. Ich bestätige, das Zertifikat hochzuladen.",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "311aac58-932b-4622-be8b-34337e48d70d",
+    "description": "Terms & Conditions - Onboarding Service Provider",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "311aac58-932b-4622-be8b-34337e48d70d",
+    "description": "Allgemeine Geschäftsbedingungen - Onboarding Service Provider",
+    "language_short_name": "de"
+  },
+  {
+    "agreement_id": "311aac58-932b-4622-be8b-34337e48d70C",
+    "description": "I confirm that the service I want to offer has successfully received a Catena-X certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate.",
+    "language_short_name": "en"
+  },
+  {
+    "agreement_id": "311aac58-932b-4622-be8b-34337e48d70C",
+    "description": "Ich bestätige, dass der Service, den ich anbieten möchte, erfolgreich ein Catena-X-Zertifikat erhalten hat, das von einer offiziellen Konformitätsbewertungsstelle ausgestellt wurde. Ich bestätige, das Zertifikat hochzuladen.",
+    "language_short_name": "de"
+  }
+]

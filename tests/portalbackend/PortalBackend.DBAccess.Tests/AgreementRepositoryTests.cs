@@ -118,6 +118,87 @@ public class AgreementRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Should().HaveCount(7);
     }
 
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetAgreementDataForOffer_EN_ReturnsExpectedAppCount(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var results = await sut.GetAgreementDataForOfferType(offerTypeId, "en").ToListAsync();
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        if (offerTypeId == OfferTypeId.APP)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1091") && x.AgreementName == "I confirm that the application I want to offer has successfully received a Catena-X certificate issued by an official Conformity Assessment Body (CAB). I acknowledge to upload the certificate.",
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1015") && x.AgreementName == "Data Sovereignty Guidelines",
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1016") && x.AgreementName == "Marketplace Terms & Conditions");
+        }
+        else if (offerTypeId == OfferTypeId.SERVICE)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1014") && x.AgreementName == "Terms & Conditions - Service Marketplace");
+        }
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetAgreementDataForOffer_DE_ReturnsExpectedAppCount(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var results = await sut.GetAgreementDataForOfferType(offerTypeId, "de").ToListAsync();
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        if (offerTypeId == OfferTypeId.APP)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1091") && x.AgreementName == "Ich bestätige, dass die App, die ich anbieten möchte, erfolgreich ein Catena-X-Zertifikat erhalten hat, das von einer offiziellen Konformitätsbewertungsstelle ausgestellt wurde. Ich bestätige, das Zertifikat hochzuladen.",
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1015") && x.AgreementName == "Richtlinien zur Datensouveränität",
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1016") && x.AgreementName == "Allgemeine Geschäftsbedingungen - Marktplatz");
+        }
+        else if (offerTypeId == OfferTypeId.SERVICE)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1014") && x.AgreementName == "Allgemeine Geschäftsbedingungen - Service Marktplatz");
+        }
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task GetAgreementDataForOffer_RandomLanguage_ReturnsExpectedAppCount(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var results = await sut.GetAgreementDataForOfferType(offerTypeId, "xx").ToListAsync();
+
+        // Assert
+        results.Should().NotBeNullOrEmpty();
+        if (offerTypeId == OfferTypeId.APP)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1091") && x.AgreementName == null,
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1015") && x.AgreementName == null,
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1016") && x.AgreementName == null);
+        }
+        else if (offerTypeId == OfferTypeId.SERVICE)
+        {
+            results.Should().Satisfy(
+                x => x.AgreementId == new Guid("aa0a0000-7fbc-1f2f-817f-bce0502c1014") && x.AgreementName == null);
+        }
+    }
+
     #endregion
 
     #region Get OfferAgreementData for IamUser

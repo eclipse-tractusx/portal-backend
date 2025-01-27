@@ -194,6 +194,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
     public virtual DbSet<AgreementStatus> AgreementStatuses { get; set; } = default!;
     public virtual DbSet<AgreementView> AgreementView { get; set; } = default!;
     public virtual DbSet<CompanyWalletData> CompanyWalletDatas { get; set; } = default!;
+    public virtual DbSet<AgreementDescription> AgreementDescriptions { get; set; } = default!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -1469,6 +1470,21 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
             entity.HasOne(x => x.TechnicalUser)
                 .WithOne(x => x.ExternalTechnicalUserCreationData)
                 .HasForeignKey<ExternalTechnicalUserCreationData>(x => x.TechnicalUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<AgreementDescription>(entity =>
+        {
+            entity.HasKey(e => new { e.AgreementId, e.LanguageShortName });
+
+            entity.HasOne(d => d.Agreement)
+                .WithMany(p => p.AgreementDescriptions)
+                .HasForeignKey(d => d.AgreementId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Language)
+                .WithMany(p => p.AgreementDescriptions)
+                .HasForeignKey(d => d.LanguageShortName)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
     }

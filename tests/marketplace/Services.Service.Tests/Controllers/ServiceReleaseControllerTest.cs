@@ -60,14 +60,14 @@ public class ServiceReleaseControllerTest
     {
         //Arrange
         var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _logic.GetServiceAgreementDataAsync())
+        A.CallTo(() => _logic.GetServiceAgreementDataAsync(Constants.DefaultLanguage))
             .Returns(data);
 
         //Act
         var result = await _controller.GetServiceAgreementDataAsync().ToListAsync();
 
         // Assert 
-        A.CallTo(() => _logic.GetServiceAgreementDataAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _logic.GetServiceAgreementDataAsync(Constants.DefaultLanguage)).MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
 
@@ -129,7 +129,7 @@ public class ServiceReleaseControllerTest
         //Arrange
         var serviceId = Guid.NewGuid();
         var data = _fixture.Create<ServiceProviderResponse>();
-        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._))
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(A<Guid>._, Constants.DefaultLanguage))
             .Returns(data);
 
         //Act
@@ -137,7 +137,7 @@ public class ServiceReleaseControllerTest
 
         // Assert 
         result.Should().Be(data);
-        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId))
+        A.CallTo(() => _logic.GetServiceDetailsForStatusAsync(serviceId, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
     }
 

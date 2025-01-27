@@ -136,6 +136,23 @@ public class AppReleaseBusinessLogicTest
     }
 
     [Fact]
+    public async Task GetAppAgreementData_ReturnsExpectedResult()
+    {
+        //Arrange
+        var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
+        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.APP, Constants.DefaultLanguage))
+            .Returns(data);
+
+        //Act
+        var result = await _sut.GetOfferAgreementDataAsync(Constants.DefaultLanguage).ToListAsync();
+
+        // Assert 
+        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.APP, Constants.DefaultLanguage))
+            .MustHaveHappenedOnceExactly();
+        result.Should().HaveCount(5);
+    }
+
+    [Fact]
     public async Task CreateServiceOffering_WithValidDataAndEmptyDescriptions_ReturnsCorrectDetails()
     {
         // Arrange
@@ -675,14 +692,14 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var appId = Guid.NewGuid();
         var data = _fixture.Create<OfferProviderResponse>();
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, Constants.DefaultLanguage))
             .Returns(data);
 
         // Act
-        var result = await _sut.GetAppDetailsForStatusAsync(appId);
+        var result = await _sut.GetAppDetailsForStatusAsync(appId, Constants.DefaultLanguage);
 
         // Assert
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
 
         result.Title.Should().Be(data.Title);
@@ -712,16 +729,16 @@ public class AppReleaseBusinessLogicTest
                         .With(x => x.UseCase, default(IEnumerable<AppUseCaseData>?))
                         .Create();
 
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(A<Guid>._, A<OfferTypeId>._, A<DocumentTypeId>._, Constants.DefaultLanguage))
             .Returns(data);
 
-        var Act = () => _sut.GetAppDetailsForStatusAsync(appId);
+        var Act = () => _sut.GetAppDetailsForStatusAsync(appId, Constants.DefaultLanguage);
 
         // Act
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
 
         // Assert
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
 
         result.Message.Should().Be("usecase should never be null here");

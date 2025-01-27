@@ -34,6 +34,7 @@ public class Agreement : IBaseEntity
         AgreementAssignedCompanyRoles = new HashSet<AgreementAssignedCompanyRole>();
         AgreementAssignedOffers = new HashSet<AgreementAssignedOffer>();
         AgreementAssignedOfferTypes = new HashSet<AgreementAssignedOfferType>();
+        AgreementDescriptions = new HashSet<AgreementDescription>();
     }
 
     public Agreement(Guid id, AgreementCategoryId agreementCategoryId, string name, DateTimeOffset dateCreated, AgreementStatusId agreementStatusId, bool mandatory) : this()
@@ -78,4 +79,5 @@ public class Agreement : IBaseEntity
     public virtual ICollection<AgreementAssignedOffer> AgreementAssignedOffers { get; private set; }
     public virtual ICollection<AgreementAssignedOfferType> AgreementAssignedOfferTypes { get; private set; }
     public virtual Document? Document { get; set; }
+    public virtual ICollection<AgreementDescription> AgreementDescriptions { get; private set; }
 }

@@ -114,14 +114,14 @@ public class ServiceReleaseBusinessLogicTest
     {
         //Arrange
         var data = _fixture.CreateMany<AgreementDocumentData>(5).ToAsyncEnumerable();
-        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE, Constants.DefaultLanguage))
             .Returns(data);
 
         //Act
-        var result = await _sut.GetServiceAgreementDataAsync().ToListAsync();
+        var result = await _sut.GetServiceAgreementDataAsync(Constants.DefaultLanguage).ToListAsync();
 
         // Assert 
-        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE))
+        A.CallTo(() => _offerService.GetOfferTypeAgreements(OfferTypeId.SERVICE, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
         result.Should().HaveCount(5);
     }
@@ -259,10 +259,10 @@ public class ServiceReleaseBusinessLogicTest
             .With(x => x.ServiceTypeIds, new[] { ServiceTypeId.DATASPACE_SERVICE, ServiceTypeId.CONSULTANCY_SERVICE })
             .Create();
 
-        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE))
+        A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(serviceId, OfferTypeId.SERVICE, DocumentTypeId.SERVICE_LEADIMAGE, Constants.DefaultLanguage))
             .Returns(data);
 
-        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId);
+        var result = await _sut.GetServiceDetailsForStatusAsync(serviceId, Constants.DefaultLanguage);
 
         result.Should().NotBeNull();
         result.Title.Should().Be("test title");

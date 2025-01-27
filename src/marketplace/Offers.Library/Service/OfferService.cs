@@ -130,8 +130,8 @@ public class OfferService(
         return consentDetails;
     }
 
-    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId) =>
-        portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId);
+    public IAsyncEnumerable<AgreementDocumentData> GetOfferTypeAgreements(OfferTypeId offerTypeId, string languageShortName) =>
+        portalRepositories.GetInstance<IAgreementRepository>().GetAgreementDataForOfferType(offerTypeId, languageShortName);
 
     public async Task<OfferAgreementConsent> GetProviderOfferAgreementConsentById(Guid offerId, OfferTypeId offerTypeId)
     {
@@ -238,10 +238,10 @@ public class OfferService(
     }
 
     /// <inheritdoc />
-    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId)
+    public async Task<OfferProviderResponse> GetProviderOfferDetailsForStatusAsync(Guid offerId, OfferTypeId offerTypeId, DocumentTypeId documentTypeId, string languageShortName)
     {
         var companyId = _identityData.CompanyId;
-        var offerDetail = await portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId, documentTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var offerDetail = await portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId, documentTypeId, languageShortName).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetail == default)
         {
             throw new NotFoundException($"Offer {offerId} does not exist");
