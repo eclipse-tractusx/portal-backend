@@ -23,19 +23,15 @@ using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
-public class TokenService : ITokenService
+public class TokenService(IHttpClientFactory httpClientFactory) : ITokenService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    public Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken) =>
+        GetAuthorizedClient(typeof(T).Name, settings, cancellationToken);
 
-    public TokenService(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-    }
-
-    public async Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken)
+    public async Task<HttpClient> GetAuthorizedClient(string clientName, KeyVaultAuthSettings settings, CancellationToken cancellationToken)
     {
         var tokenParameters = new GetTokenSettings(
-            $"{typeof(T).Name}Auth",
+            $"{clientName}Auth",
             settings.Username,
             settings.Password,
             settings.ClientId,
@@ -46,7 +42,7 @@ public class TokenService : ITokenService
 
         var token = await GetTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
+        var httpClient = httpClientFactory.CreateClient(clientName);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return httpClient;
     }
@@ -63,7 +59,7 @@ public class TokenService : ITokenService
             {"scope", settings.Scope}
         };
         using var content = new FormUrlEncodedContent(formParameters);
-        using var httpClient = _httpClientFactory.CreateClient(settings.HttpClientName);
+        using var httpClient = httpClientFactory.CreateClient(settings.HttpClientName);
         using var response = await httpClient.PostAsync(settings.TokenUrl, content, cancellationToken)
             .CatchingIntoServiceExceptionFor("token-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);
 
@@ -72,10 +68,13 @@ public class TokenService : ITokenService
         return responseObject?.AccessToken;
     }
 
-    public async Task<HttpClient> GetBasicAuthorizedClient<T>(BasicAuthSettings settings, CancellationToken cancellationToken)
+    public Task<HttpClient> GetBasicAuthorizedClient<T>(BasicAuthSettings settings, CancellationToken cancellationToken) =>
+        GetBasicAuthorizedClient(typeof(T).Name, settings, cancellationToken);
+
+    public async Task<HttpClient> GetBasicAuthorizedClient(string clientName, BasicAuthSettings settings, CancellationToken cancellationToken)
     {
         var tokenParameters = new GetBasicTokenSettings(
-            $"{typeof(T).Name}Auth",
+            $"{clientName}Auth",
             settings.ClientId,
             settings.ClientSecret,
             settings.TokenAddress,
@@ -83,7 +82,7 @@ public class TokenService : ITokenService
 
         var token = await GetBasicTokenAsync(tokenParameters, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var httpClient = _httpClientFactory.CreateClient(typeof(T).Name);
+        var httpClient = httpClientFactory.CreateClient(clientName);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return httpClient;
     }
@@ -95,7 +94,7 @@ public class TokenService : ITokenService
             { "grant_type", settings.GrantType }
         };
         var content = new FormUrlEncodedContent(formParameters);
-        var authClient = _httpClientFactory.CreateClient(settings.HttpClientName);
+        var authClient = httpClientFactory.CreateClient(settings.HttpClientName);
         var authenticationString = $"{settings.ClientId}:{settings.ClientSecret}";
         var base64String = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(authenticationString));
 

@@ -23,7 +23,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -181,11 +180,7 @@ public class BpdmService : IBpdmService
     /// <inheritdoc />
     public async Task<bool> SetCxMembership(string businessPartnerNumber, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<BpdmService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        // Same User (which we have for BPDM service) can be used to call Business Partner Pool
-        // But BaseAddress of Business Partner Pool is different as its deployed on another server.
-        httpClient.BaseAddress = new Uri(_settings.BusinessPartnerPoolBaseAddress);
+        using var httpClient = await _tokenService.GetAuthorizedClient($"{typeof(BpdmService).Name}Pool", _settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var requestData = new BpdmCxMembership(
             new BpdmCxMembershipDto[]{
@@ -194,7 +189,7 @@ public class BpdmService : IBpdmService
         );
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
-            (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
+            (false, await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
 
         await httpClient.PutAsJsonAsync("v6/cx-memberships", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-cx-membership", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);

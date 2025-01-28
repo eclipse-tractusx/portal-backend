@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2024 BMW Group AG
  * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,9 +23,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpClientExtensions
 {
-    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress) where T : class
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress) where T : class =>
+        services.AddCustomHttpClientWithAuthentication<T>(typeof(T).Name, baseAddress);
+
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string clientName, string? baseAddress) where T : class
     {
-        services.AddHttpClient(typeof(T).Name, c =>
+        services.AddHttpClient(clientName, c =>
         {
             if (baseAddress != null)
             {
@@ -34,7 +36,7 @@ public static class HttpClientExtensions
             }
         }).AddHttpMessageHandler<LoggingHandler<T>>();
 
-        services.AddHttpClient($"{typeof(T).Name}Auth").AddHttpMessageHandler<LoggingHandler<T>>();
+        services.AddHttpClient($"{clientName}Auth").AddHttpMessageHandler<LoggingHandler<T>>();
         return services;
     }
 }
