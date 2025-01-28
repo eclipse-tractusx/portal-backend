@@ -5529,11 +5529,6 @@ paths:
       responses:
         '200':
           description: The business partner numbers have been added successfully.
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
         '400':
           description: Business Partner Numbers must not exceed 20 characters.
           content:
@@ -5575,11 +5570,6 @@ paths:
       responses:
         '200':
           description: The business partner number have been added successfully.
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
         '400':
           description: Business Partner Numbers must not exceed 20 characters.
           content:
@@ -5630,11 +5620,6 @@ paths:
       responses:
         '200':
           description: Empty response on success.
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
         '403':
           description: ForbiddenException if both users does not belongs to same company
           content:
@@ -5931,6 +5916,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CompanyAppUserDetailsResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  '/api/administration/user/{processId}/retrigger-user-bpn-process':
+    post:
+      tags:
+        - User
+      summary: 'Retriggers the last failed step (Authorization required - Roles: modify_user_account)'
+      parameters:
+        - name: processId
+          in: path
+          description: Id of the process that should be triggered
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 251e4596-5ff0-4176-b544-840b04ebeb93
+        - name: processStepTypeId
+          in: query
+          description: Id of the process step type which should be retriggered
+          schema:
+            $ref: '#/components/schemas/ProcessStepTypeId'
+          example: ProcessStepTypeId.DELETE_BPN_FROM_CENTRAL_USER
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No Process found for the processId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal Server Error
         '401':
@@ -7596,6 +7620,14 @@ components:
         - SELF_DESCRIPTION_COMPANY_CREATION
         - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
         - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
+        - DELETE_BPN_FROM_CENTRAL_USER
+        - DELETE_BPN_FROM_IDENTITY
+        - RETRIGGER_DELETE_BPN_FROM_CENTRAL_USER
+        - CHECK_LEGAL_ENTITY_DATA
+        - ADD_BPN_TO_IDENTITY
+        - CLEANUP_USER_BPN
+        - RETRIGGER_CHECK_LEGAL_ENTITY_DATA
+        - RETRIGGER_ADD_BPN_TO_IDENTITY
       type: string
     ProviderDetailData:
       type: object

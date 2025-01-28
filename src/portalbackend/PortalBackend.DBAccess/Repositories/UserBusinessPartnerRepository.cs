@@ -33,10 +33,26 @@ public class UserBusinessPartnerRepository(PortalDbContext dbContext)
                 businessPartnerNumber
             )).Entity;
 
-    public void CreateCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserIdBpns) =>
-        dbContext.CompanyUserAssignedBusinessPartners.AddRange(companyUserIdBpns.Select(x => new CompanyUserAssignedBusinessPartner(
-                x.CompanyUserId,
-                x.BusinessPartnerNumber)));
+    public void CreateCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber, Action<CompanyUserAssignedBusinessPartner> SetOptional)> companyUserIdBpns) =>
+        dbContext.CompanyUserAssignedBusinessPartners.AddRange(companyUserIdBpns.Select(x =>
+        {
+            var ub = new CompanyUserAssignedBusinessPartner(x.CompanyUserId, x.BusinessPartnerNumber);
+            x.SetOptional(ub);
+            return ub;
+        }));
+
+    public void AttachAndModifyCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber, Action<CompanyUserAssignedBusinessPartner> modify)
+    {
+        var companyUserAssignedBusinessPartner = new CompanyUserAssignedBusinessPartner(companyUserId, businessPartnerNumber);
+        dbContext.CompanyUserAssignedBusinessPartners.Attach(companyUserAssignedBusinessPartner);
+        modify(companyUserAssignedBusinessPartner);
+    }
+
+    public Task<(Guid UserId, string? Bpn)> GetForProcessIdAsync(Guid processId) =>
+        dbContext.CompanyUserAssignedBusinessPartners
+            .Where(x => x.ProcessId == processId)
+            .Select(x => new ValueTuple<Guid, string?>(x.CompanyUserId, x.BusinessPartnerNumber))
+            .SingleOrDefaultAsync();
 
     public CompanyUserAssignedBusinessPartner DeleteCompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber) =>
         dbContext.Remove(

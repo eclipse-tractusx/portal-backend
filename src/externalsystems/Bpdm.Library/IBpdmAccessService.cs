@@ -22,7 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Models;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library;
 
-public interface IBpnAccess
+public interface IBpdmAccessService
 {
-    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, string token, CancellationToken cancellationToken);
+    Task<BpdmLegalEntityDto> FetchLegalEntityByBpn(string businessPartnerNumber, CancellationToken cancellationToken);
 }

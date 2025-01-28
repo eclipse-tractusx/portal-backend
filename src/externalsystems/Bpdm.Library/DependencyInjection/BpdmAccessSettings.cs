@@ -17,17 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
+namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.DependencyInjection;
 
-public static class UserProvisioningExtensisons
+public class BpdmAccessSettings : KeyVaultAuthSettings
 {
-    public static IEnumerable<ProcessStepTypeId>? GetUserProvisioningRetriggerStep(this ProcessStepTypeId processStepTypeId) =>
-        processStepTypeId switch
-        {
-            ProcessStepTypeId.DELETE_CENTRAL_USER => [ProcessStepTypeId.RETRIGGER_DELETE_CENTRAL_USER],
-            _ => throw new UnexpectedConditionException($"ProcessStepTypeId {processStepTypeId} is not supported for Process UserProvisioning")
-        };
+    [Required(AllowEmptyStrings = false)]
+    public string BaseAddress { get; set; } = null!;
 }

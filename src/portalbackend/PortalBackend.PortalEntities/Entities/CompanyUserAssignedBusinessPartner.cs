@@ -22,19 +22,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 
-public class CompanyUserAssignedBusinessPartner
+public class CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
 {
-    public CompanyUserAssignedBusinessPartner(Guid companyUserId, string businessPartnerNumber)
-    {
-        CompanyUserId = companyUserId;
-        BusinessPartnerNumber = businessPartnerNumber;
-    }
-
-    public Guid CompanyUserId { get; set; }
+    public Guid CompanyUserId { get; set; } = companyUserId;
 
     [MaxLength(20)]
-    public string BusinessPartnerNumber { get; set; }
+    public string BusinessPartnerNumber { get; set; } = businessPartnerNumber;
+
+    public Guid? ProcessId { get; set; }
 
     // Navigation properties
     public virtual CompanyUser? CompanyUser { get; set; }
+    public virtual Process? Process { get; set; }
 }

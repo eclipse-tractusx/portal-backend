@@ -41,7 +41,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.NetworkRegistration.Executor
 using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Executor.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.Executor.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor.Bpn;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.UserProvisioning.Executor.Provisioning;
 using Serilog;
 
 LoggingExtensions.EnsureInitialized();
@@ -72,6 +73,7 @@ try
                 .AddDimUserProcessExecutor(hostContext.Configuration.GetSection("ApplicationChecklist"))
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, IdentityProviderProvisioningProcessTypeExecutor>()
                 .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, UserProvisioningProcessTypeExecutor>()
+                .AddTransient<IProcessTypeExecutor<ProcessTypeId, ProcessStepTypeId>, UserBpnProcessTypeExecutor>()
                 .AddSelfDescriptionCreationProcessExecutor(hostContext.Configuration);
 
             if (hostContext.HostingEnvironment.IsDevelopment())
