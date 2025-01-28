@@ -119,7 +119,7 @@ public class ClearinghouseBusinessLogic(
 
                 // There is not "Message" param available in the response in case of VALID so, thats why saving ClearinghouseResponseStatus param into the Comments in case of VALID only.
                 item.Comment = isInvalid
-                                ? data.ValidationUnits.FirstOrDefault(s => s.Status != ClearinghouseResponseStatus.VALID)!.Message
+                                ? data.ValidationUnits.FirstOrDefault(s => s.Status != ClearinghouseResponseStatus.VALID)!.Reason!.DetailMessage
                                 : validData!.Status.ToString();
             },
             isInvalid

@@ -30,5 +30,10 @@ public record ClearinghouseResponseData(
 public record ValidationUnits(
     [property: JsonPropertyName("result")] ClearinghouseResponseStatus Status,
     [property: JsonPropertyName("type")] string Type,
-    [property: JsonPropertyName("message")] string? Message
+    [property: JsonPropertyName("reason")] Reason? Reason
+);
+
+public record Reason(
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("detailMessage")] string DetailMessage
 );
