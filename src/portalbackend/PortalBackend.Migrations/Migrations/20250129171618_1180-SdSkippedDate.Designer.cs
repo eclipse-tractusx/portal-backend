@@ -29,7 +29,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20250123120050_1180-SdSkippedDate")]
+    [Migration("20250129171618_1180-SdSkippedDate")]
     partial class _1180SdSkippedDate
     {
         /// <inheritdoc />
@@ -362,6 +362,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 43,
                             Label = "RETRIGGER_SET_MEMBERSHIP"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Label = "SET_CX_MEMBERSHIP_IN_BPDM"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Label = "RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM"
                         },
                         new
                         {
@@ -3520,6 +3530,32 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                             Id = 4,
                             Label = "SERVICE_CONTRACT"
                         });
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementDescription", b =>
+                {
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<string>("LanguageShortName")
+                        .HasMaxLength(2)
+                        .HasColumnType("character(2)")
+                        .HasColumnName("language_short_name");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("description");
+
+                    b.HasKey("AgreementId", "LanguageShortName")
+                        .HasName("pk_agreement_descriptions");
+
+                    b.HasIndex("LanguageShortName")
+                        .HasDatabaseName("ix_agreement_descriptions_language_short_name");
+
+                    b.ToTable("agreement_descriptions", "portal");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementStatus", b =>
@@ -7553,6 +7589,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 2,
                             Label = "OWN"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "PROVIDER_OWNED"
                         });
                 });
 
@@ -8098,6 +8139,25 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                     b.Navigation("Agreement");
 
                     b.Navigation("OfferType");
+                });
+
+            modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AgreementDescription", b =>
+                {
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Agreement", "Agreement")
+                        .WithMany("AgreementDescriptions")
+                        .HasForeignKey("AgreementId")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_descriptions_agreements_agreement_id");
+
+                    b.HasOne("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", "Language")
+                        .WithMany("AgreementDescriptions")
+                        .HasForeignKey("LanguageShortName")
+                        .IsRequired()
+                        .HasConstraintName("fk_agreement_descriptions_languages_language_short_name");
+
+                    b.Navigation("Agreement");
+
+                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.AppAssignedUseCase", b =>
@@ -9702,6 +9762,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
                     b.Navigation("AgreementAssignedOffers");
 
+                    b.Navigation("AgreementDescriptions");
+
                     b.Navigation("Consents");
                 });
 
@@ -9977,6 +10039,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
 
             modelBuilder.Entity("Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities.Language", b =>
                 {
+                    b.Navigation("AgreementDescriptions");
+
                     b.Navigation("AppDescriptions");
 
                     b.Navigation("CompanyCertificateTypeDescriptions");
