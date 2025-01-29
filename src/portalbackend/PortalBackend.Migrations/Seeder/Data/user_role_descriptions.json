@@ -142,7 +142,7 @@
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
     "language_short_name": "de",
-    "description": "Technischer User zum Hinzufügen von Angeboten, Aktivieren von Abonnementanfragen und Erstellen von verwalteten Connector Registrierungen für Dritte."
+    "description": "Technischer User zum Hinzufügen von Angeboten, Aktivieren von Abonnentanfragen und Erstellen von verwalteten Connector Registrierungen für Dritte."
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51168",
@@ -162,12 +162,12 @@
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Consumer"
+    "description": "BPDM Sharing Input Consumer (Technischer Benutzer wird nicht für den Abonnenten sichtbar sein)"
   },
   {
     "user_role_id": "a6b6a5b6-d7fe-42af-94ce-35c16b3ae128",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Consumer"
+    "description": "BPDM Sharing Input Consumer (Technical user will not be visible for offer subscriber)"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa8d2de52262",
@@ -202,12 +202,12 @@
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "de",
-    "description": "BPDM Sharing Output Consumer"
+    "description": "BPDM Sharing Output Consumer (Technischer Benutzer wird nicht für den Abonnenten sichtbar sein)"
   },
   {
     "user_role_id": "9956fa8d-e454-49ca-a3b1-45e2c106fe59",
     "language_short_name": "en",
-    "description": "BPDM Sharing Output Consumer"
+    "description": "BPDM Sharing Output Consumer (Technical user will not be visible for offer subscriber)"
   },
   {
     "user_role_id": "ec3a3115-b59c-4319-a8eb-3228014cd6e6",
@@ -222,22 +222,22 @@
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "de",
-    "description": "BPDM Sharing Input Manager"
+    "description": "BPDM Sharing Input Manager (Technischer Benutzer wird nicht für den Abonnenten sichtbar sein)"
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228984cd6e5",
     "language_short_name": "en",
-    "description": "BPDM Sharing Input Manager"
+    "description": "BPDM Sharing Input Manager (Technical user will not be visible for offer subscriber)"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "de",
-    "description": "BPDM Pool Consumer"
+    "description": "BPDM Pool Consumer (Technischer Benutzer wird nicht für den Abonnenten sichtbar sein)"
   },
   {
     "user_role_id": "607818be-4978-41f4-bf63-fa6d2de51262",
     "language_short_name": "en",
-    "description": "BPDM Pool Consumer"
+    "description": "BPDM Pool Consumer (Technical user will not be visible for offer subscriber)"
   },
   {
     "user_role_id": "ec3a3005-b59c-4319-a8eb-3228884cd7e5",
