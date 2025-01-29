@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -22,5 +21,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 
 public interface ITokenService
 {
+    Task<HttpClient> GetAuthorizedClient(string clientName, KeyVaultAuthSettings settings, CancellationToken cancellationToken);
+
     Task<HttpClient> GetAuthorizedClient<T>(KeyVaultAuthSettings settings, CancellationToken cancellationToken);
 }

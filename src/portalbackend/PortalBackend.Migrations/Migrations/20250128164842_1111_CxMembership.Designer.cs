@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20250124140245_937_agreement-description")]
-    partial class _937_agreementdescription
+    [Migration("20250128164842_1111_CxMembership")]
+    partial class _1111_CxMembership
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -362,6 +362,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 43,
                             Label = "RETRIGGER_SET_MEMBERSHIP"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Label = "SET_CX_MEMBERSHIP_IN_BPDM"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Label = "RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM"
                         },
                         new
                         {
@@ -7490,6 +7500,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 2,
                             Label = "OWN"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Label = "PROVIDER_OWNED"
                         });
                 });
 

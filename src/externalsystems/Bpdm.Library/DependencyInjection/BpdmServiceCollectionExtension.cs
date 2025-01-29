@@ -38,8 +38,10 @@ public static class BpdmServiceCollectionExtension
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<BpdmServiceSettings>>();
         var baseAddress = settings.Value.BaseAddress;
+        var poolBaseAddress = settings.Value.BusinessPartnerPoolBaseAddress;
         services
             .AddCustomHttpClientWithAuthentication<BpdmService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/")
+            .AddCustomHttpClientWithAuthentication<BpdmService>($"{typeof(BpdmService).Name}Pool", poolBaseAddress.EndsWith('/') ? poolBaseAddress : $"{poolBaseAddress}/")
             .AddTransient<IBpdmService, BpdmService>()
             .AddTransient<IBpdmBusinessLogic, BpdmBusinessLogic>();
 

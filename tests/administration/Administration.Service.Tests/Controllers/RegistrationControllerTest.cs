@@ -359,4 +359,18 @@ public class RegistrationControllerTest
         A.CallTo(() => _logic.RetriggerDeleteCentralUser(processId)).MustHaveHappenedOnceExactly();
         result.Should().BeOfType<NoContentResult>();
     }
+
+    [Fact]
+    public async Task RetriggerSetCxMembership_ReturnsExpectedResult()
+    {
+        // Arrange
+        var applicationId = _fixture.Create<Guid>();
+
+        // Act
+        var result = await _controller.RetriggerSetCxMembership(applicationId);
+
+        // Assert
+        A.CallTo(() => _logic.TriggerChecklistAsync(applicationId, ApplicationChecklistEntryTypeId.APPLICATION_ACTIVATION, ProcessStepTypeId.RETRIGGER_SET_CX_MEMBERSHIP_IN_BPDM)).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<NoContentResult>();
+    }
 }

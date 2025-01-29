@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
 using System.Net;
+using System.Net.Http.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Bpdm.Library.Tests;
 
@@ -47,7 +48,8 @@ public class BpdmServiceTests
             Password = "passWord",
             Scope = "test",
             Username = "user@name",
-            BaseAddress = "https://base.address.com",
+            BaseAddress = "https://foo.com",
+            BusinessPartnerPoolBaseAddress = "https://bar.com",
             ClientId = "CatenaX",
             ClientSecret = "pass@Secret",
             GrantType = "cred",
@@ -659,6 +661,75 @@ public class BpdmServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
         ex.Message.Should().Be("call to external system bpdm-sharing-state failed with statuscode 400");
+    }
+
+    #endregion
+
+    #region SetCxMembership
+
+    [Fact]
+    public async Task SetCxMembership_WithValidData_DoesNotThrowException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient(A<string>._, A<BpdmServiceSettings>._, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        var result = await sut.SetCxMembership(bpn, CancellationToken.None);
+
+        httpMessageHandlerMock.RequestMessage
+            .Should().NotBeNull()
+            .And.Match<HttpRequestMessage>(x =>
+                x.Method == HttpMethod.Put &&
+                x.RequestUri != null &&
+                x.RequestUri.AbsoluteUri == "https://business.partner.pool.base.address.com/v6/cx-memberships"
+        );
+        httpMessageHandlerMock.RequestMessage!.Content
+            .Should().NotBeNull()
+            .And.BeOfType<JsonContent>()
+            .Which.Value
+            .Should().NotBeNull()
+            .And.BeOfType<BpdmCxMembership>()
+            .Which.Memberships.Should().ContainSingle()
+            .Which.Should().Match<BpdmCxMembershipDto>(x =>
+                x.Bpn == bpn &&
+                x.IsCatenaXMember
+        );
+        // Assert
+        result.Should().BeTrue();
+        A.CallTo(() => _tokenService.GetAuthorizedClient("BpdmServicePool", _options.Value, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task SetCxMembership_WithInvalidData_ThrowsServiceException()
+    {
+        // Arrange
+        const string bpn = "123";
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+        };
+        A.CallTo(() => _tokenService.GetAuthorizedClient(A<string>._, A<BpdmServiceSettings>._, A<CancellationToken>._))
+            .Returns(httpClient);
+        var sut = new BpdmService(_tokenService, _options);
+
+        // Act
+        async Task Act() => await sut.SetCxMembership(bpn, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ServiceException>(Act);
+        ex.Message.Should().Contain("bpdm-put-cx-membership");
+        A.CallTo(() => _tokenService.GetAuthorizedClient("BpdmServicePool", _options.Value, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
     }
 
     #endregion
