@@ -78,6 +78,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
     public virtual DbSet<AuditConnector20231115> AuditConnector20231115 { get; set; } = default!;
     public virtual DbSet<AuditConnector20240814> AuditConnector20240814 { get; set; } = default!;
     public virtual DbSet<AuditConnector20241008> AuditConnector20241008 { get; set; } = default!;
+    public virtual DbSet<AuditConnector20250113> AuditConnector20250113 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20230526> AuditIdentity20230526 { get; set; } = default!;
     public virtual DbSet<AuditIdentity20231115> AuditIdentity20231115 { get; set; } = default!;
     public virtual DbSet<AuditUserRole20221017> AuditUserRole20221017 { get; set; } = default!;
@@ -1115,7 +1116,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
                 .HasForeignKey<Connector>(d => d.SdCreationProcessId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Connector, AuditConnector20241008>();
+            entity.HasAuditV1Triggers<Connector, AuditConnector20250113>();
         });
 
         modelBuilder.Entity<ConnectorStatus>()

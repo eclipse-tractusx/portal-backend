@@ -6837,13 +6837,19 @@ components:
         connectorId:
           type: string
           format: uuid
+        type:
+          $ref: '#/components/schemas/ConnectorTypeId'
         name:
           type: string
         companyId:
           type: string
           format: uuid
-        companyName:
+        hostCompanyName:
           type: string
+        skippedDate:
+          type: string
+          format: date-time
+          nullable: true
       additionalProperties: false
     ConnectorMissingSdDocumentDataResponse:
       type: object

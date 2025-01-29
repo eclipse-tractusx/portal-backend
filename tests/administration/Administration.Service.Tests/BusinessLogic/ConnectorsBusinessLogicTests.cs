@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
@@ -67,6 +68,7 @@ public class ConnectorsBusinessLogicTests
     private readonly ITechnicalUserRepository _technicalUserRepository;
     private readonly IIdentityService _identityService;
     private readonly IServiceAccountManagement _serviceAccountManagement;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     public ConnectorsBusinessLogicTests()
     {
@@ -84,6 +86,7 @@ public class ConnectorsBusinessLogicTests
         _identityService = A.Fake<IIdentityService>();
         _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
+        _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
         var options = A.Fake<IOptions<ConnectorsSettings>>();
@@ -105,7 +108,7 @@ public class ConnectorsBusinessLogicTests
 
         SetupIdentity();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
     }
 
     #region GetAllCompanyConnectorDatas
@@ -171,6 +174,8 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var now = DateTimeOffset.UtcNow;
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -181,7 +186,7 @@ public class ConnectorsBusinessLogicTests
                 "application/pkix-cert"
             },
             ClearinghouseConnectDisabled = clearingHouseDisabled
-        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
 
@@ -191,6 +196,10 @@ public class ConnectorsBusinessLogicTests
         // Assert
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
+        _connectors.Should().ContainSingle().And.Satisfy(x =>
+            x.HostId == _identity.CompanyId &&
+            x.ProviderId == _identity.CompanyId &&
+            x.SdSkippedDate == (clearingHouseDisabled ? now : null));
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
@@ -265,7 +274,7 @@ public class ConnectorsBusinessLogicTests
                 "application/pkix-cert"
             },
             ClearinghouseConnectDisabled = true
-        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
@@ -347,6 +356,8 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithValidInput_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var now = DateTimeOffset.UtcNow;
+        A.CallTo(() => _dateTimeProvider.OffsetNow).Returns(now);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -357,7 +368,7 @@ public class ConnectorsBusinessLogicTests
                 "application/pkix-cert"
             },
             ClearinghouseConnectDisabled = clearingHouseDisabled
-        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
         SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged();
@@ -368,7 +379,8 @@ public class ConnectorsBusinessLogicTests
         result.Should().NotBeEmpty();
         _connectors.Should().ContainSingle().And.Satisfy(x =>
             x.HostId == HostCompanyId &&
-            x.ProviderId == _identity.CompanyId);
+            x.ProviderId == _identity.CompanyId &&
+            x.SdSkippedDate == (clearingHouseDisabled ? now : null));
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
@@ -379,6 +391,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -389,9 +402,7 @@ public class ConnectorsBusinessLogicTests
                 "application/pkix-cert"
             },
             ClearinghouseConnectDisabled = clearingHouseDisabled
-        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
-
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         SetupTechnicalIdentity();
 
@@ -762,7 +773,7 @@ public class ConnectorsBusinessLogicTests
         var options = A.Fake<IOptions<ConnectorsSettings>>();
         var settings = new ConnectorsSettings { ClearinghouseConnectDisabled = true };
         A.CallTo(() => options.Value).Returns(settings);
-        var sut = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        var sut = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
         var connectorOfferSubscriptions = new[] {
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
