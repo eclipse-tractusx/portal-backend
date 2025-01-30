@@ -6444,8 +6444,18 @@ components:
         companyId:
           type: string
           format: uuid
+        bpn:
+          type: string
+          nullable: true
         name:
           type: string
+        shortName:
+          type: string
+          nullable: true
+        skippedDate:
+          type: string
+          format: date-time
+          nullable: true
       additionalProperties: false
     CompanyMissingSdDocumentDataResponse:
       type: object

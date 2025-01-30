@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -424,7 +425,20 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             c => c.OrderByDescending(company => company.Name),
             c => new CompanyMissingSdDocumentData(
                 c.Id,
-                c.Name)
+                c.BusinessPartnerNumber,
+                c.Name,
+                c.Shortname,
+                c.CompanyApplications
+                    .Where(ca =>
+                        ca.ApplicationChecklistEntries.Any(a =>
+                            a.ApplicationChecklistEntryTypeId == ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP &&
+                            a.ApplicationChecklistEntryStatusId != ApplicationChecklistEntryStatusId.SKIPPED))
+                    .SelectMany(ca =>
+                        ca.ChecklistProcess!.ProcessSteps.Where(ps =>
+                            ps.ProcessStepTypeId == ProcessStepTypeId.START_SELF_DESCRIPTION_LP &&
+                            ps.ProcessStepStatusId == ProcessStepStatusId.SKIPPED))
+                    .OrderByDescending(ps => ps.DateLastChanged)
+                    .FirstOrDefault()!.DateLastChanged)
         ).SingleOrDefaultAsync();
 
     public IAsyncEnumerable<Guid> GetCompanyIdsWithMissingSelfDescription() =>
