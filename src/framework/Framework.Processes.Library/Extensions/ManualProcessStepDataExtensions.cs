@@ -133,14 +133,14 @@ public static class ManualProcessStepDataExtensions
         }
     }
 
-    public static void FailProcessStep<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, string message)
+    public static void FailProcessStep<TProcessTypeId, TProcessStepTypeId>(this ManualProcessStepData<TProcessTypeId, TProcessStepTypeId> context, string? message)
         where TProcessTypeId : struct, IConvertible
         where TProcessStepTypeId : struct, IConvertible
     {
         if (context.ProcessStepTypeId.HasValue)
         {
             context.ProcessRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().AttachAndModifyProcessSteps(
-                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId.Equals(context.ProcessStepTypeId!.Value)), ProcessStepStatusId.FAILED, message));
+                ModifyStepStatusRange(context.ProcessSteps.Where(step => step.ProcessStepTypeId.Equals(context.ProcessStepTypeId.Value)), ProcessStepStatusId.FAILED, message));
         }
 
         context.ProcessRepositories.Attach(context.Process);

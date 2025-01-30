@@ -163,10 +163,10 @@ public class SdFactoryBusinessLogic(
             });
         }
 
-        var processData = await connectorsRepository.GetProcessDataForConnectorId(data.ExternalId);
-        if (processData == null)
+        var processData = await connectorsRepository.GetProcessDataForConnectorId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (processData != null)
         {
-            HandleSdCreationProcess(processData!, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
         }
     }
 
@@ -179,8 +179,8 @@ public class SdFactoryBusinessLogic(
         }
         else
         {
-            context.ScheduleProcessSteps(new[] { retriggerProcessStepTypeId });
-            context.FailProcessStep(data.Message!);
+            context.ScheduleProcessSteps([retriggerProcessStepTypeId]);
+            context.FailProcessStep(data.Message);
         }
     }
 
@@ -193,10 +193,10 @@ public class SdFactoryBusinessLogic(
             companyRepository.AttachAndModifyCompany(data.ExternalId, null, c => { c.SelfDescriptionDocumentId = documentId; });
         }
 
-        var processData = await companyRepository.GetProcessDataForCompanyIdId(data.ExternalId);
-        if (processData == null)
+        var processData = await companyRepository.GetProcessDataForCompanyIdId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (processData != null)
         {
-            HandleSdCreationProcess(processData!, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
         }
     }
 

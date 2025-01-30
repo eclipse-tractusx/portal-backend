@@ -477,7 +477,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
 
     public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId) =>
         context.Companies
-            .Where(c => c.Id == companyId && c.SdCreationProcessId != null && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
+            .Where(c => c.Id == companyId && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
             .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                 c.SdCreationProcess,
                 c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))

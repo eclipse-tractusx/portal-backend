@@ -246,7 +246,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
 
     public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForConnectorId(Guid connectorId) =>
         dbContext.Connectors
-            .Where(c => c.Id == connectorId && c.SdCreationProcessId != null && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
+            .Where(c => c.Id == connectorId && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
             .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                 c.SdCreationProcess,
                 c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
