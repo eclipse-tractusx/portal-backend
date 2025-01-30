@@ -178,7 +178,7 @@ public class TechnicalUserRepository(PortalDbContext portalDbContext) : ITechnic
                         x.ExternalTechnicalUser.EncryptionMode)))
             .SingleOrDefaultAsync();
 
-    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsersUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds) =>
+    public Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsers(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,

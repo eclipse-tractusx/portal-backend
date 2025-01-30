@@ -39,7 +39,7 @@ public interface ITechnicalUserRepository
     Task<TechnicalUserWithRoleDataClientId?> GetTechnicalUserWithRoleDataClientIdAsync(Guid technicalUserId, Guid userCompanyId);
     Task<OwnTechnicalUserData?> GetOwnTechnicalUserWithIamUserRolesAsync(Guid technicalUserId, Guid companyId, IEnumerable<ProcessStepTypeId> processStepsToFilter);
     Task<TechnicalUserDetailedData?> GetOwnTechnicalUserDataUntrackedAsync(Guid technicalUserId, Guid companyId);
-    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsersUntracked(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
+    Func<int, int, Task<Pagination.Source<CompanyServiceAccountData>?>> GetOwnTechnicalUsers(Guid userCompanyId, string? clientId, bool? isOwner, IEnumerable<UserStatusId> userStatusIds);
     Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId);
     Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId);
     void CreateExternalTechnicalUser(Guid technicalUserId, string authenticationServiceUrl, byte[] secret, byte[] initializationVector, int encryptionMode);

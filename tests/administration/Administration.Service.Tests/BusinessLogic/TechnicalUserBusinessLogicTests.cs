@@ -505,7 +505,7 @@ public class TechnicalUserBusinessLogicTests
                 return kind;
             })
             .CreateMany(15);
-        A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUsersUntracked(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
+        A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUsers(A<Guid>._, A<string?>._, A<bool?>._, A<IEnumerable<UserStatusId>>._))
             .Returns((int skip, int take) => Task.FromResult<Pagination.Source<CompanyServiceAccountData>?>(new(data.Count(), data.Skip(skip).Take(take))));
 
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
@@ -525,7 +525,7 @@ public class TechnicalUserBusinessLogicTests
             .Where(x => x.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL)
             .Should()
             .HaveCount(2);
-        A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUsersUntracked(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
+        A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUsers(ValidCompanyId, null, null, A<IEnumerable<UserStatusId>>.That.IsSameSequenceAs(expectedStatusIds)))
             .MustHaveHappenedOnceExactly();
     }
 

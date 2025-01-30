@@ -324,7 +324,7 @@ public class TechnicalUserBusinessLogic(
             page,
             size,
             15,
-            portalRepositories.GetInstance<ITechnicalUserRepository>().GetOwnTechnicalUsersUntracked(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
+            portalRepositories.GetInstance<ITechnicalUserRepository>().GetOwnTechnicalUsers(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
     }
 
     public async IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
