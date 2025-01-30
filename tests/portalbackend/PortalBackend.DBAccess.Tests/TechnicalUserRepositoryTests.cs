@@ -329,6 +329,23 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_Provider_Owned_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnTechnicalUsersUntracked(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(1);
+        result.Data.Should().HaveCount(1)
+            .And.Satisfy(x => x.TechnicalUserTypeId == TechnicalUserTypeId.PROVIDER_OWNED
+                && x.IsOwner && x.IsProvider);
+    }
+
+    [Fact]
     public async Task GetOwnCompanyServiceAccountsUntracked_WithClientIdAndProvider_ReturnsExpectedResult()
     {
         // Arrange

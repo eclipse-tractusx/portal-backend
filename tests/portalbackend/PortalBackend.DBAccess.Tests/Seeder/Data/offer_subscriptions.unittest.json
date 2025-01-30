@@ -136,5 +136,15 @@
     "last_editor_id": null,
     "display_name": null,
     "description": null
+  },
+  {
+    "company_id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",
+    "offer_id": "19e05734-9b1f-1234-b961-8ffa1d7b6989",
+    "offer_subscription_status_id": 1,
+    "requester_id": "ac1cf001-7fbc-1f2f-817f-bce0575a0011",
+    "id": "0b2ca541-206d-48ad-bc02-fb61fbcb5565",
+    "last_editor_id": null,
+    "display_name": null,
+    "description": null
   }
 ]

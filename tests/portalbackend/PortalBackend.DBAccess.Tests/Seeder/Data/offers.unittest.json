@@ -254,5 +254,21 @@
     "offer_type_id": 1,
     "last_editor_id": null,
     "license_type_id":1
+  },
+  {
+    "id": "19e05734-9b1f-1234-b961-8ffa1d7b6989",
+    "name": "Test App Tech provider",
+    "date_created": "2024-10-01 00:00:00.000000 +00:00",
+    "date_released": "2024-10-01 00:00:00.000005 +00:00",
+    "marketing_url": null,
+    "contact_email": null,
+    "contact_number": null,
+    "provider_company_id": "729e0af2-6723-4a7f-85a1-833d84b39bdf",
+    "offer_status_id": 3,
+    "date_last_changed": "2024-10-01 00:00:00.000000 +00:00",
+    "sales_manager_id": "ac1cf001-7fbc-1f2f-817f-bce058020005",
+    "offer_type_id": 1,
+    "last_editor_id": null,
+    "license_type_id":1
   }
 ]
