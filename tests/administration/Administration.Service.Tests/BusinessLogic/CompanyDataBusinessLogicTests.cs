@@ -1354,7 +1354,11 @@ public class CompanyDataBusinessLogicTests
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
 
         // Assert
-        result.Message.Should().Be($"process {process.Id} does not exist");
+        result.Message.Should().Be("COMPANY_DATA_NOT_PROCESSID_NOT_EXIST");
+        result.Parameters.Should().ContainSingle().Which.Should().Match<ErrorParameter>(x =>
+            x.Name == "processId" &&
+            x.Value == process.Id.ToString()
+        );
     }
 
     #endregion
