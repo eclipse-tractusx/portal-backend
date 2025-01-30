@@ -194,5 +194,14 @@
     "user_entity_id": null,
     "identity_type_id": 2,
     "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
+  },  
+  {
+    "id": "4ce1b774-3d00-4e07-9a53-ae1f64193395",
+    "date_created": "2024-08-08 18:01:33.439000 +00:00",
+    "company_id": "41fd2ab8-7123-4546-9bef-a388d91b2999",
+    "user_status_id": 1,
+    "user_entity_id": null,
+    "identity_type_id": 2,
+    "last_editor_id":"8b42e6de-7b59-4217-a63c-198e83d93777"
   }
 ]

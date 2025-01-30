@@ -108,7 +108,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         var offers = await sut.GetAllActiveAppsAsync(null!, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
-        offers.Should().HaveCount(8).And.Satisfy(
+        offers.Should().HaveCount(9).And.Satisfy(
             x => x.Name == "Test App",
             x => x.Name == "Test App 3",
             x => x.Name == "Trace-X",
@@ -116,7 +116,8 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.Name == "Top App",
             x => x.Name == "Test App 1",
             x => x.Name == "Test App 2",
-            x => x.Name == "Test App Tech User"
+            x => x.Name == "Test App Tech User",
+        x => x.Name == "Test App Tech provider"
         );
     }
 

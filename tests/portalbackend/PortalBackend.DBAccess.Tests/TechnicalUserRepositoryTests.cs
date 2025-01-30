@@ -250,7 +250,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var newvalidCompanyId = new Guid("41fd2ab8-71cd-4546-9bef-a388d91b2542");
         var (sut, _) = await CreateSut();
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(newvalidCompanyId, null, null, [UserStatusId.ACTIVE])(page, size);
+        var result = await sut.GetOwnTechnicalUsers(newvalidCompanyId, null, null, [UserStatusId.ACTIVE])(page, size);
 
         // Assert
         result.Should().NotBeNull()
@@ -273,7 +273,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl5-custodian-2", true, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(_validCompanyId, "sa-cl5-custodian-2", true, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result!.Count.Should().Be(1);
@@ -288,7 +288,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, null, true, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnTechnicalUsers(_validCompanyId, null, true, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -318,7 +318,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut().ConfigureAwait(false);
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+        var result = await sut.GetOwnTechnicalUsers(_validCompanyId, null, false, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
 
         // Assert
         result.Should().NotBeNull();
@@ -329,13 +329,44 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithProviderCompany_ReturnsProviderOwned()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnTechnicalUsers(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Count.Should().Be(2);
+        result.Data.Should().HaveCount(2)
+            .And.Satisfy(
+                x => x.TechnicalUserTypeId == TechnicalUserTypeId.PROVIDER_OWNED && x.IsOwner && x.IsProvider,
+                x => x.TechnicalUserTypeId == TechnicalUserTypeId.MANAGED && x.IsOwner && !x.IsProvider);
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountsUntracked_WithSubscribingCompany_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut().ConfigureAwait(false);
+
+        // Act
+        var result = await sut.GetOwnTechnicalUsers(new Guid("41fd2ab8-7123-4546-9bef-a388d91b2999"), null, null, [UserStatusId.ACTIVE])(0, 10).ConfigureAwait(false);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetOwnCompanyServiceAccountsUntracked_WithClientIdAndProvider_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(new("41fd2ab8-71cd-4546-9bef-a388d91b2543"), "sa-x-2", false, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -351,7 +382,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl5-custodian-2", null, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(_validCompanyId, "sa-cl5-custodian-2", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -367,7 +398,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(_validCompanyId, "sa-cl", null, [UserStatusId.ACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(_validCompanyId, "sa-cl", null, [UserStatusId.ACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -382,7 +413,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.INACTIVE])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(new Guid("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.INACTIVE])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -402,7 +433,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(new("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(new("729e0af2-6723-4a7f-85a1-833d84b39bdf"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
 
         // Assert
         result.Should().NotBeNull();
@@ -416,7 +447,7 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.GetOwnTechnicalUsersUntracked(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
+        var result = await sut.GetOwnTechnicalUsers(new Guid("deadbeef-dead-beef-dead-beefdeadbeef"), null, null, [UserStatusId.ACTIVE, UserStatusId.INACTIVE, UserStatusId.PENDING, UserStatusId.DELETED])(0, 10);
 
         // Assert
         result.Should().BeNull();

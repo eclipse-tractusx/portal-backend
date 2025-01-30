@@ -86,5 +86,14 @@
     "technical_user_kind_id": 1,
     "offer_subscription_id": null,
     "client_client_id": "sa-x-4"
+  },
+  {
+    "id": "4ce1b774-3d00-4e07-9a53-ae1f64193395",
+    "name": "sa-provider-0",
+    "description": "Provider own service account",
+    "technical_user_type_id": 3,
+    "technical_user_kind_id": 1,
+    "offer_subscription_id": "0b2ca541-206d-48ad-bc02-fb61fbcb5565",
+    "client_client_id": "sa-x-5"
   }
 ]
