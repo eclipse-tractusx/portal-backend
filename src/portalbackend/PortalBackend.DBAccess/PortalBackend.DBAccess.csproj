@@ -28,7 +28,6 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\framework\Framework.Models\Framework.Models.csproj" />
-    <ProjectReference Include="..\..\framework\Framework.Processes.Library\Framework.Processes.Library.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\PortalBackend.PortalEntities\PortalBackend.PortalEntities.csproj" />
   </ItemGroup>
