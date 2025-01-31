@@ -385,4 +385,24 @@ public class CompanyDataController(ICompanyDataBusinessLogic logic) : Controller
         await logic.RetriggerSelfDescriptionCreation(processId).ConfigureAwait(false);
         return NoContent();
     }
+
+    /// <summary>
+    /// Retriggers the process to create the missing self description documents
+    /// </summary>
+    /// <returns>NoContent</returns>
+    /// Example: POST: /api/administration/companyData/trigger-self-description-response/{processId}
+    /// <response code="204">Empty response on success.</response>
+    /// <response code="404">No Process found for the processId</response>
+    [HttpPost]
+    [Authorize(Roles = "approve_new_partner")]
+    [Authorize(Policy = PolicyTypes.CompanyUser)]
+    [Route("retrigger-self-description-response")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<NoContentResult> RetriggerSelfDescriptionResponseProcess([FromRoute] Guid processId)
+    {
+        await logic.RetriggerSelfDescriptionResponseCreation(processId).ConfigureAwait(false);
+        return NoContent();
+    }
 }

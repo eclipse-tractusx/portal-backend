@@ -662,6 +662,37 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+  /api/administration/companydata/retrigger-self-description-response:
+    post:
+      tags:
+        - CompanyData
+      summary: 'Retriggers the process to create the missing self description documents (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: processId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No Process found for the processId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   /api/administration/Connectors:
     get:
       tags:
@@ -1152,6 +1183,37 @@ paths:
       tags:
         - Connectors
       summary: 'Retriggers the process to create the missing self description documents (Authorization required - Roles: approve_new_partner)'
+      parameters:
+        - name: processId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No Process found for the processId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
+  /api/administration/Connectors/retrigger-self-description-response:
+    post:
+      tags:
+        - Connectors
+      summary: 'Retriggers the process to create the missing self description response documents (Authorization required - Roles: approve_new_partner)'
       parameters:
         - name: processId
           in: path
@@ -7646,6 +7708,10 @@ components:
         - SELF_DESCRIPTION_COMPANY_CREATION
         - RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION
         - RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION
+        - AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE
+        - AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
+        - RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE
+        - RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
       type: string
     ProviderDetailData:
       type: object

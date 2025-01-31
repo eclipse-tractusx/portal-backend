@@ -491,17 +491,20 @@ public class ConnectorsBusinessLogic(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task RetriggerSelfDescriptionCreation(Guid processId)
+    public Task RetriggerSelfDescriptionCreation(Guid processId) => RetriggerSelfDescriptionConnectorCreation(processId, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION);
+
+    public Task RetriggerSelfDescriptionResponseCreation(Guid processId) => RetriggerSelfDescriptionConnectorCreation(processId, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
+
+    private async Task RetriggerSelfDescriptionConnectorCreation(Guid processId, ProcessStepTypeId stepToTrigger)
     {
         const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_CONNECTOR_CREATION;
-        const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_CONNECTOR_CREATION;
-        var (validProcessId, processData) = await portalRepositories.GetInstance<IPortalProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IPortalProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");
         }
 
-        var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");
+        var context = processData.CreateManualProcessData(stepToTrigger, portalRepositories, () => $"processId {processId}");
 
         context.ScheduleProcessSteps(Enumerable.Repeat(NextStep, 1));
         context.FinalizeProcessStep();

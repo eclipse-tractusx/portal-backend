@@ -458,17 +458,21 @@ public class CompanyDataBusinessLogic(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task RetriggerSelfDescriptionCreation(Guid processId)
+    public Task RetriggerSelfDescriptionCreation(Guid processId) => RetriggerSelfDescriptionCompanyCreation(processId, ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION);
+
+    public Task RetriggerSelfDescriptionResponseCreation(Guid processId) => RetriggerSelfDescriptionCompanyCreation(processId, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
+
+    private async Task RetriggerSelfDescriptionCompanyCreation(Guid processId, ProcessStepTypeId stepToTrigger)
     {
         const ProcessStepTypeId NextStep = ProcessStepTypeId.SELF_DESCRIPTION_COMPANY_CREATION;
-        const ProcessStepTypeId StepToTrigger = ProcessStepTypeId.RETRIGGER_SELF_DESCRIPTION_COMPANY_CREATION;
-        var (validProcessId, processData) = await portalRepositories.GetInstance<IPortalProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(StepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        var (validProcessId, processData) = await portalRepositories.GetInstance<IPortalProcessStepRepository>().IsValidProcess(processId, ProcessTypeId.SELF_DESCRIPTION_CREATION, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw NotFoundException.Create(AdministrationCompanyDataErrors.COMPANY_DATA_NOT_PROCESSID_NOT_EXIST, new ErrorParameter[] { new(nameof(processId), processId.ToString()) });
         }
 
-        var context = processData.CreateManualProcessData(StepToTrigger, portalRepositories, () => $"processId {processId}");
+        var context = processData.CreateManualProcessData(stepToTrigger, portalRepositories, () => $"processId {processId}");
 
         context.ScheduleProcessSteps(Enumerable.Repeat(NextStep, 1));
         context.FinalizeProcessStep();
