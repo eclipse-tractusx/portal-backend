@@ -47,6 +47,10 @@ public class ServiceAccountSettings
     [Required]
     [DistinctValues("x => x.ClientId")]
     public IEnumerable<UserRoleConfig> DimUserRoles { get; set; } = null!;
+
+    [Required]
+    [DistinctValues("x => x.ClientId")]
+    public IEnumerable<UserRoleConfig> UserRolesAccessibleByProviderOnly { get; set; } = null!;
 }
 
 public static class ServiceAccountSettingsExtensions

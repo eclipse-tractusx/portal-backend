@@ -29,5 +29,6 @@ public record UserRoleWithDescription(
     [property: JsonPropertyName("roleId")] Guid UserRoleId,
     [property: JsonPropertyName("roleName")] string UserRoleText,
     [property: JsonPropertyName("roleDescription")] string? RoleDescription,
-    [property: JsonPropertyName("roleType")] UserRoleType RoleType
+    [property: JsonPropertyName("roleType")] UserRoleType RoleType,
+    [property: JsonPropertyName("onlyAccessibleByProvider")] bool ProviderOnly
 );

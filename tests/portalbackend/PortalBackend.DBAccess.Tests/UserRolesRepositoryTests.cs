@@ -106,13 +106,15 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1), Constants.DefaultLanguage).ToListAsync();
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1), Constants.DefaultLanguage, Enumerable.Repeat(new Guid("34c42896-a003-4653-af8f-ba06ca595752"), 1)).ToListAsync();
 
         // Assert
         data.Should().HaveCount(19);
         data.Should().OnlyHaveUniqueItems();
         data.Where(x => !x.External).Should().HaveCount(18);
         data.Where(x => x.External).Should().ContainSingle();
+        data.Where(x => !x.ProviderOnly).Should().HaveCount(18);
+        data.Where(x => x.ProviderOnly).Should().ContainSingle();
     }
 
     #endregion

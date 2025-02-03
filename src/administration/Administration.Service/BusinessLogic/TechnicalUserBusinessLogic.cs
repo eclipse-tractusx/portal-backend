@@ -330,16 +330,20 @@ public class TechnicalUserBusinessLogic(
     public async IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
     {
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
-        var userRoles = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.DimUserRoles)
+        var dimUserRoles = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.DimUserRoles)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var userRolesForProviderOnly = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.UserRolesAccessibleByProviderOnly)
             .ToListAsync()
             .ConfigureAwait(false);
         await foreach (var userRole in userRolesRepository.GetServiceAccountRolesAsync(
                            _identityData.CompanyId,
                            _settings.ClientId,
-                           userRoles,
-                           languageShortName ?? Constants.DefaultLanguage))
+                           dimUserRoles,
+                           languageShortName ?? Constants.DefaultLanguage,
+                           userRolesForProviderOnly))
         {
-            yield return new UserRoleWithDescription(userRole.UserRoleId, userRole.UserRoleText, userRole.RoleDescription, userRole.External ? UserRoleType.External : UserRoleType.Internal);
+            yield return new UserRoleWithDescription(userRole.UserRoleId, userRole.UserRoleText, userRole.RoleDescription, userRole.External ? UserRoleType.External : UserRoleType.Internal, userRole.ProviderOnly);
         }
     }
 

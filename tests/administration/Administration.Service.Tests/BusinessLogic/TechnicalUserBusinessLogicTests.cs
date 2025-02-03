@@ -662,7 +662,7 @@ public class TechnicalUserBusinessLogicTests
         // Arrange
         var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15);
 
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<IEnumerable<Guid>>._, A<string>._))
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<IEnumerable<Guid>>._, A<string>._, A<IEnumerable<Guid>>._))
             .Returns(data.ToAsyncEnumerable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
@@ -673,14 +673,14 @@ public class TechnicalUserBusinessLogicTests
         var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
 
         // Assert
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<IEnumerable<Guid>>._, A<string>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<IEnumerable<Guid>>._, A<string>._, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
 
         result.Should().NotBeNull();
         result.Should().HaveCount(15);
         // Sonar fix -> Return value of pure method is not used
         result.Should().AllSatisfy(ur =>
         {
-            var transferData = new UserRoleWithDescriptionTransferData(ur.UserRoleId, ur.UserRoleText, ur.RoleDescription, ur.RoleType == UserRoleType.External);
+            var transferData = new UserRoleWithDescriptionTransferData(ur.UserRoleId, ur.UserRoleText, ur.RoleDescription, ur.RoleType == UserRoleType.External, ur.ProviderOnly);
             data.Contains(transferData).Should().BeTrue();
         });
     }

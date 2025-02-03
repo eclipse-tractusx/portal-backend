@@ -1268,7 +1268,7 @@ public class AppReleaseBusinessLogicTest
             .UpdateTechnicalUserProfiles(appId, data);
 
         A.CallTo(() => _offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP,
-                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile))
+                A<IEnumerable<TechnicalUserProfileData>>.That.Matches(x => x.Count() == 5), clientProfile, A<IEnumerable<UserRoleConfig>>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -1281,7 +1281,7 @@ public class AppReleaseBusinessLogicTest
     {
         // Arrange
         var appId = Guid.NewGuid();
-        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(appId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._))
+        A.CallTo(() => _offerService.GetTechnicalUserProfilesForOffer(appId, OfferTypeId.APP, A<IEnumerable<UserRoleConfig>>._, A<IEnumerable<UserRoleConfig>>._))
             .Returns(_fixture.CreateMany<TechnicalUserProfileInformation>(5));
         var sut = new AppReleaseBusinessLogic(null!, Options.Create(new AppsSettings()), _offerService, _offerDocumentService, null!, _identityService);
 

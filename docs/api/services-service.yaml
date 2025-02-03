@@ -2950,6 +2950,8 @@ components:
           type: string
         type:
           $ref: '#/components/schemas/UserRoleType'
+        accessiblyByProviderOnly:
+          type: boolean
       additionalProperties: false
     UserRoleType:
       enum:

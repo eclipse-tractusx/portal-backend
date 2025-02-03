@@ -202,9 +202,10 @@ public interface IOfferService
     /// </summary>
     /// <param name="offerId">Id of the offer</param>
     /// <param name="offerTypeId">Id of the offer type</param>
-    /// <param name="externalUserRoles">The ExternalUserRoles</param>
+    /// <param name="externalUserRolesConfig">The ExternalUserRoles</param>
+    /// <param name="userRolesAccessibleByProviderOnly">The user roles that make a technical user accessible only be the provider</param>
     /// <returns>IEnumerable with the technical user profile information</returns>
-    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRoles);
+    Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRolesConfig, IEnumerable<UserRoleConfig> userRolesAccessibleByProviderOnly);
 
     /// <summary>
     /// Creates or updates the technical user profiles
@@ -213,7 +214,8 @@ public interface IOfferService
     /// <param name="offerTypeId">The OfferTypeId of the offer</param>
     /// <param name="data">The technical user profiles</param>
     /// <param name="technicalUserProfileClient">Client to get the technicalUserProfiles</param>
-    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string technicalUserProfileClient);
+    /// <param name="userRolesAccessibleByProviderOnly">User roles which will make the technical user visible for only the provider</param>
+    Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string technicalUserProfileClient, IEnumerable<UserRoleConfig> userRolesAccessibleByProviderOnly);
 
     /// <summary>
     /// Gets the information for the subscription for the subscriber
