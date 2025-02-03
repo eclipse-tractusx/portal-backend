@@ -26,10 +26,14 @@ on:
     branches: [main]
     paths:
       - 'src/**'
+      # workflow file
+      - '.github/workflows/pre-checks.yml'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'src/**'
+      # workflow file
+      - '.github/workflows/pre-checks.yml'
   workflow_dispatch:
 
 jobs:
@@ -81,7 +85,27 @@ jobs:
       - name: Check Format
         run: dotnet format src --verify-no-changes --no-restore
       - name: Test
-        run: dotnet test src --filter FullyQualifiedName\!~Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests --no-build --no-restore --configuration Release --verbosity normal
+        run: dotnet test src --filter FullyQualifiedName\!~Org.Eclipse.TractusX.Portal.Backend.EndToEnd.Tests --no-build --no-restore --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --logger trx --results-directory coverage
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: 'coverage/*/coverage.cobertura.xml'
+          badge: true
+          format: 'markdown'
+          output: both
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: code-coverage-results.md
+      - name: Upload full coverage report
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: code-coverage-results.md
+      - name: Write to Job Summary
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
   checkFramework:
     name: Check nuget packages
