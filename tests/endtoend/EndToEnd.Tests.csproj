@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MimeKit" Version="4.9.0" />
+    <PackageReference Include="MimeKit" Version="4.10.0" />
     <PackageReference Include="ReportPortal.XUnit" Version="2.6.0" />
     <PackageReference Include="RestAssured.Net" Version="4.6.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.1" />
