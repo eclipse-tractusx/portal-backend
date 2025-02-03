@@ -36,11 +36,11 @@ public record LegalEntity(
 );
 
 public record LegalAddress(
-    [property: JsonPropertyName("country")] string? CountryAlpha2Code,
-    [property: JsonPropertyName("region")] string? Region,
+    [property: JsonPropertyName("country")] string CountryAlpha2Code,
+    [property: JsonPropertyName("region")] string Region,
     [property: JsonPropertyName("locality")] string? City,
     [property: JsonPropertyName("postalCode")] string? ZipCode,
-    [property: JsonPropertyName("addressLine")] string AddressLine
+    [property: JsonPropertyName("addressLine")] string? AddressLine
 );
 
 public record UniqueIdData([property: JsonPropertyName("type")] string Type, [property: JsonPropertyName("value")] string Value);

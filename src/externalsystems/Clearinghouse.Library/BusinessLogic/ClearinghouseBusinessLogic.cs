@@ -80,6 +80,11 @@ public class ClearinghouseBusinessLogic(
             throw new ConflictException("BusinessPartnerNumber is null");
         }
 
+        if (data.LegalEntity.Address is null)
+        {
+            throw new ConflictException($"Address does not exist.");
+        }
+
         var headers = new Dictionary<string, string>
         {
             { "Business-Partner-Number", data.Bpn }
@@ -119,7 +124,7 @@ public class ClearinghouseBusinessLogic(
 
                 // There is not "Message" param available in the response in case of VALID so, thats why saving ClearinghouseResponseStatus param into the Comments in case of VALID only.
                 item.Comment = isInvalid
-                                ? data.ValidationUnits.FirstOrDefault(s => s.Status != ClearinghouseResponseStatus.VALID)!.Reason!.DetailMessage
+                                ? string.Join(",", data.ValidationUnits.Where(s => s.Status != ClearinghouseResponseStatus.VALID).Select(x => x.Reason!.DetailMessage))
                                 : validData!.Status.ToString();
             },
             isInvalid

@@ -413,7 +413,7 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                         string.Format("{0}-{1}", ca.Address!.CountryAlpha2Code, ca.Address!.Region),
                         ca.Address.City,
                         ca.Address.Zipcode,
-                        !string.IsNullOrEmpty(ca.Address.Streetnumber) ? string.Format("{0} {1}", ca.Address.Streetname, ca.Address.Streetnumber) : ca.Address.Streetname
+                        string.IsNullOrEmpty(ca.Address.Streetnumber) ? ca.Address.Streetname : string.Format("{0} {1}", ca.Address.Streetname, ca.Address.Streetnumber)
                     ),
                     ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifierId.GetUniqueIdentifierValue(), ci.Value))
                 )
