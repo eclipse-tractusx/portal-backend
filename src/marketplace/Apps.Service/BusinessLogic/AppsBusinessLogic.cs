@@ -115,7 +115,6 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             result.Provider,
             result.ContactEmail,
             result.ContactNumber,
-            result.DisplayTechnicalUser,
             result.UseCases,
             result.LongDescription ?? Constants.ErrorString,
             result.LicenseTypeId,

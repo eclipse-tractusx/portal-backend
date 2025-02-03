@@ -39,8 +39,7 @@ public record ServiceOfferingData(
     Guid? SalesManager,
     IEnumerable<LocalizedDescription> Descriptions,
     IEnumerable<ServiceTypeId> ServiceTypeIds,
-    string? ProviderUri,
-    bool? DisplayTechnicalUser);
+    string? ProviderUri);
 
 /// <summary>
 /// Description of a service

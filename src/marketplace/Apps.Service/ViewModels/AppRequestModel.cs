@@ -36,7 +36,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="ProviderUri">ProviderUri</param>
 /// <param name="ContactEmail">ContactEmail</param>
 /// <param name="ContactNumber">ContactNumber</param>
-/// <param name="DisplayTechnicalUser">DisplayTechnicalUser</param>
 public record AppRequestModel(
     string? Title,
     Guid? SalesManagerId,
@@ -47,6 +46,5 @@ public record AppRequestModel(
     [ValidateEnumValues] IEnumerable<PrivacyPolicyId> PrivacyPolicies,
     string? ProviderUri,
     string? ContactEmail,
-    string? ContactNumber,
-    bool? DisplayTechnicalUser
+    string? ContactNumber
 );

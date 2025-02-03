@@ -2416,10 +2416,6 @@ components:
           type: string
           description: Contact Number of the service.
           nullable: true
-        displayTechnicalUser:
-          type: boolean
-          description: Technical User status of the service.
-          nullable: true
         licenseType:
           $ref: '#/components/schemas/LicenseTypeId'
         offerStatus:
@@ -2455,10 +2451,6 @@ components:
         contactEmail:
           type: string
           description: Contact email address.
-          nullable: true
-        displayTechnicalUser:
-          type: boolean
-          description: Display Technical User.
           nullable: true
         description:
           type: string
@@ -2581,9 +2573,6 @@ components:
             $ref: '#/components/schemas/ServiceTypeId'
         providerUri:
           type: string
-          nullable: true
-        displayTechnicalUser:
-          type: boolean
           nullable: true
       additionalProperties: false
     ServiceOverviewData:

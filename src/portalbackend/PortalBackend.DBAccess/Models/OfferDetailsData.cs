@@ -53,7 +53,6 @@ public record OfferDetailsData(
     string Provider,
     string? ContactEmail,
     string? ContactNumber,
-    bool? DisplayTechnicalUser,
     IEnumerable<AppUseCaseData> UseCases,
     string? LongDescription,
     string? Price,

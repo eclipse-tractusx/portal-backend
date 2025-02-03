@@ -26,70 +26,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// View model of an application's Service detailed data.
 /// </summary>
 public record ServiceDetailsData(
-
-    /// <summary>
-    /// ID of the offer.
-    /// </summary>
     Guid Id,
-
-    /// <summary>
-    /// Title or name of the offer.
-    /// </summary>
     string? Title,
-
-    /// <summary>
-    /// Service Type Id of the offer
-    /// </summary>
     IEnumerable<ServiceTypeId> ServiceTypeIds,
-
-    /// <summary>
-    /// Provider of the offer.
-    /// </summary>
     string Provider,
-
-    /// <summary>
-    /// Descriptions of the offer.
-    /// </summary>
     IEnumerable<LocalizedDescription> Descriptions,
-
-    /// <summary>
-    /// document assigned to offer
-    /// </summary>
     IEnumerable<DocumentTypeData> Documents,
-
-    /// <summary>
-    /// Uri to provider's marketing presence.
-    /// </summary>
     string? ProviderUri,
-
-    /// <summary>
-    /// Email address of the app's primary contact.
-    /// </summary>
     string? ContactEmail,
-
-    /// <summary>
-    /// Phone number of the app's primary contact.
-    /// </summary>
     string? ContactNumber,
-
-    /// <summary>
-    /// Technical User status.
-    /// </summary>
-    bool? DisplayTechnicalUser,
-
-    /// <summary>
-    /// Offer Status Id
-    /// </summary>
     OfferStatusId OfferStatusId,
-
-    /// <summary>
-    /// License Type Id
-    /// </summary>
     LicenseTypeId LicenseTypeId,
-
-    ///<summary>
-    /// Technical User Profile
-    ///</summary>
     IEnumerable<TechnicalUserRoleData> TechnicalUserProfile
 );
 

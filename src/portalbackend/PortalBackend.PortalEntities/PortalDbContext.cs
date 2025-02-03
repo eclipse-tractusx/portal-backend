@@ -62,6 +62,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
     public virtual DbSet<AuditOffer20231115> AuditOffer20231115 { get; set; } = default!;
     public virtual DbSet<AuditOffer20240911> AuditOffer20240911 { get; set; } = default!;
     public virtual DbSet<AuditOffer20241219> AuditOffer20241219 { get; set; } = default!;
+    public virtual DbSet<AuditOffer20250121> AuditOffer20250121 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20221005> AuditOfferSubscription20221005 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20230317> AuditOfferSubscription20230317 { get; set; } = default!;
     public virtual DbSet<AuditOfferSubscription20231013> AuditOfferSubscription20231013 { get; set; } = default!;
@@ -417,7 +418,7 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
                 .HasForeignKey(d => d.OfferId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasAuditV1Triggers<Offer, AuditOffer20241219>();
+            entity.HasAuditV1Triggers<Offer, AuditOffer20250121>();
         });
 
         modelBuilder.Entity<AppSubscriptionDetail>(entity =>
