@@ -37,6 +37,7 @@ public record ClearinghouseAddressData(
     string? Streetnumber,
     string Streetname
 );
+
 public record CompanyUniqueIdentifier(
     UniqueIdentifierId UniqueIdentifierId,
     string Value

@@ -305,16 +305,16 @@ public class ClearinghouseBusinessLogicTests
 
     private void SetupForHandleStartClearingHouse()
     {
-        var legalEntity = _fixture.Build<LegalEntity>()
+        var addressData = _fixture.Build<ClearinghouseAddressData>()
             .Create();
         var clearinghouseDataWithoutBpn = _fixture.Build<ClearinghouseData>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .With(x => x.LegalEntity, legalEntity)
+            .With(x => x.Address, addressData)
             .With(x => x.Bpn, default(string?))
             .Create();
         var clearinghouseData = _fixture.Build<ClearinghouseData>()
             .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
-            .With(x => x.LegalEntity, legalEntity)
+            .With(x => x.Address, addressData)
             .With(x => x.Bpn, ValidBpn)
             .Create();
         var chDataWithApplicationCreated = _fixture.Build<ClearinghouseData>()
