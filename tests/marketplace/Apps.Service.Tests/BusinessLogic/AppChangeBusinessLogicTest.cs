@@ -22,6 +22,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -309,7 +310,7 @@ public class AppChangeBusinessLogicTest
 
         //Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"Roles are ambiguous: {roleId},{roleId}");
+        error.Message.Should().Be(AppExtensionErrors.APP_ARG_ROLES_ARE_AMBIGUOUS.ToString());
     }
 
     [Fact]
@@ -333,7 +334,7 @@ public class AppChangeBusinessLogicTest
 
         //Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of app {appId}");
+        ex.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
     }
 
     [Fact]
@@ -357,7 +358,7 @@ public class AppChangeBusinessLogicTest
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} providing company is not yet set.");
+        ex.Message.Should().Be(AppChangeErrors.APP_CONFLICT_PROVIDER_COMPANY_NOT_SET.ToString());
     }
 
     #endregion
@@ -396,7 +397,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"App {appId} does not exist.");
+        ex.Message.Should().Be(AppChangeErrors.APP_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -414,7 +415,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is in InCorrect Status");
+        ex.Message.Should().Be(AppChangeErrors.APP_CONFLICT_STATUS_INCORRECT.ToString());
     }
 
     [Fact]
@@ -432,7 +433,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
+        ex.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
     }
 
     [Fact]
@@ -448,7 +449,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        result.Message.Should().Be("offerDescriptionDatas should never be null here");
+        result.Message.Should().Be(AppChangeErrors.APP_UNEXPECT_OFFER_SUBSCRIPTION_DATA_SHOULD_NOT_NULL.ToString());
 
     }
 
@@ -503,7 +504,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        result.Message.Should().Be("offerDescriptionDatas should never be null here");
+        result.Message.Should().Be(AppChangeErrors.APP_UNEXPECT_OFFER_SUBSCRIPTION_DATA_SHOULD_NOT_NULL.ToString());
 
     }
 
@@ -525,7 +526,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
+        result.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
 
     }
 
@@ -547,7 +548,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be($"App {appId} is in InCorrect Status");
+        result.Message.Should().Be(AppChangeErrors.APP_CONFLICT_STATUS_INCORRECT.ToString());
 
     }
 
@@ -569,7 +570,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"App {appId} does not exist.");
+        result.Message.Should().Be(AppChangeErrors.APP_NOT_EXIST.ToString());
 
     }
 
@@ -660,7 +661,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be("offerStatus is in incorrect State");
+        result.Message.Should().Be(AppChangeErrors.APP_CONFLICT_OFFER_STATUS_INCORRECT_STATE.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
@@ -679,7 +680,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be($"Company {CompanyId} is not the provider company of App {appId}");
+        result.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
@@ -698,7 +699,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"App {appId} does not exist.");
+        result.Message.Should().Be(AppChangeErrors.APP_NOT_EXIST.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppLeadImageDocumentsByIdAsync(appId, CompanyId, OfferTypeId.APP)).MustHaveHappenedOnceExactly();
     }
 
@@ -940,7 +941,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer {appId} or subscription {subscriptionId} do not exists");
+        ex.Message.Should().Be(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS.ToString());
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -966,7 +967,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Subscription url of single instance apps can't be changed");
+        ex.Message.Should().Be(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_URL_NOT_CHANGED.ToString());
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -992,7 +993,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the app's providing company");
+        ex.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY.ToString());
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -1018,7 +1019,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Subscription {subscriptionId} must be in status ACTIVE");
+        ex.Message.Should().Be(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE.ToString());
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -1042,7 +1043,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"There is no subscription detail data configured for subscription {subscriptionId}");
+        ex.Message.Should().Be(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED.ToString());
         A.CallTo(() => _provisioningManager.UpdateClient(clientClientId, A<string>._, A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationRepository.CreateNotification(A<Guid>._, A<NotificationTypeId>._, A<bool>._, A<Action<Notification>>._)).MustNotHaveHappened();
         A.CallTo(() => _notificationService.CreateNotifications(A<IEnumerable<UserRoleConfig>>._, A<Guid?>._, A<IEnumerable<(string? content, NotificationTypeId notificationTypeId)>>._, A<Guid>._, A<bool?>._)).MustNotHaveHappened();
@@ -1146,7 +1147,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"Document {documentId} for App {appId} does not exist.");
+        result.Message.Should().Be(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1166,7 +1167,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be("offerStatus is in incorrect State");
+        result.Message.Should().Be(AppChangeErrors.APP_CONFLICT_OFFER_STATUS_INCORRECT_STATE.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1186,7 +1187,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be($"document {documentId} does not have a valid documentType");
+        result.Message.Should().Be(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1206,7 +1207,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of App {appId}");
+        result.Message.Should().Be(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
         A.CallTo(() => _offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identity.CompanyId, OfferTypeId.APP, documentId))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
@@ -1249,7 +1250,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"App {appId} does not exist");
+        result.Message.Should().Be(AppChangeErrors.APP_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetActiveOfferRolesAsync(appId, OfferTypeId.APP, null, "en"))
             .MustHaveHappenedOnceExactly();
     }
@@ -1268,7 +1269,7 @@ public class AppChangeBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().Be($"App {appId} is not Active");
+        result.Message.Should().Be(AppChangeErrors.APP_CONFLICT_APP_NOT_ACTIVE.ToString());
         A.CallTo(() => _userRolesRepository.GetActiveOfferRolesAsync(appId, OfferTypeId.APP, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }

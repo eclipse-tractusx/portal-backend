@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
@@ -103,7 +104,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
             .GetOfferDetailsByIdAsync(appId, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw new NotFoundException($"appId {appId} does not exist");
+            throw NotFoundException.Create(AppErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         return new AppDetailResponse(

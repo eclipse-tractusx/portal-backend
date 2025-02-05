@@ -22,6 +22,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
@@ -303,7 +304,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"Roles are ambiguous: {roleId},{roleId}");
+        error.Message.Should().Be(AppExtensionErrors.APP_ARG_ROLES_ARE_AMBIGUOUS.ToString());
     }
 
     #region AddAppAsync
@@ -321,7 +322,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.ParamName.Should().Be("SupportedLanguageCodes");
+        error.Parameters.First().Name.Should().Be("SupportedLanguageCodes");
     }
 
     [Fact]
@@ -337,7 +338,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.ParamName.Should().Be("UseCaseIds");
+        error.Parameters.First().Name.Should().Be("UseCaseIds");
     }
 
     [Fact]
@@ -483,7 +484,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<NotFoundException>(Act);
-        error.Message.Should().Be($"App {_notExistingAppId} does not exists");
+        error.Message.Should().Be(AppReleaseErrors.APP_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -498,7 +499,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ConflictException>(Act);
-        error.Message.Should().Be("Apps in State ACTIVE can't be updated");
+        error.Message.Should().Be(AppReleaseErrors.APP_CONFLICT_APP_STATE_CANNOT_UPDATED.ToString());
     }
 
     [Fact]
@@ -513,7 +514,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        error.Message.Should().Be($"Company {_identity.CompanyId} is not the app provider.");
+        error.Message.Should().Be(AppReleaseErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER.ToString());
     }
 
     [Fact]
@@ -539,7 +540,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.ParamName.Should().Be("SupportedLanguageCodes");
+        error.Parameters.First().Name.Should().Be("SupportedLanguageCodes");
     }
 
     [Fact]
@@ -660,7 +661,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("AppId must not be empty");
+        ex.Message.Should().Be(AppReleaseErrors.APP_ARG_APP_ID_NOT_EMPTY.ToString());
     }
 
     [Fact]
@@ -735,7 +736,7 @@ public class AppReleaseBusinessLogicTest
         A.CallTo(() => _offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, Constants.DefaultLanguage))
             .MustHaveHappenedOnceExactly();
 
-        result.Message.Should().Be("usecase should never be null here");
+        result.Message.Should().Be(AppReleaseErrors.APP_UNEXPECTED_USECASE_NOT_NULL.ToString());
     }
 
     #endregion
@@ -894,7 +895,7 @@ public class AppReleaseBusinessLogicTest
         // Assert 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company of app {appId}");
+        ex.Message.Should().Be(AppReleaseErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP.ToString());
     }
 
     [Fact]
@@ -913,7 +914,7 @@ public class AppReleaseBusinessLogicTest
         // Assert 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is not in Created State");
+        ex.Message.Should().Be(AppReleaseErrors.APP_CONFLICT_APP_NOT_CREATED_STATE.ToString());
     }
 
     #endregion
@@ -970,7 +971,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be("Multi instance app must not have a instance url set (Parameter 'InstanceUrl')");
+        ex.Message.Should().Be(AppReleaseErrors.APP_ARG_MULTI_INSTANCE_APP_URL_SET.ToString());
     }
 
     [Fact]
@@ -987,7 +988,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"App {appId} does not exist");
+        ex.Message.Should().Be(AppReleaseErrors.APP_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1004,7 +1005,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company");
+        ex.Message.Should().Be(AppReleaseErrors.APP_FORBIDDEN_COMP_ID_NOT_PROVIDER_COMPANY.ToString());
     }
 
     [Fact]
@@ -1021,7 +1022,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {appId} is not in Status {OfferStatusId.CREATED}");
+        ex.Message.Should().Be(AppReleaseErrors.APP_CONFLICT_NOT_IN_CREATED_STATE.ToString());
     }
 
     [Fact]
@@ -1040,7 +1041,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("The must be at exactly one AppInstance");
+        ex.Message.Should().Be(AppReleaseErrors.APP_CONFLICT_ONLY_ONE_APP_INSTANCE_ALLOWED.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -1246,7 +1247,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"App {appId} not found or Incorrect Status");
+        ex.Message.Should().Be(AppReleaseErrors.APP_NOT_FOUND_OR_INCORRECT_STATUS.ToString());
     }
 
     #endregion
@@ -1308,7 +1309,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<NotFoundException>(Act);
-        result.Message.Should().Be($"App {appId} does not exist");
+        result.Message.Should().Be(AppReleaseErrors.APP_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, null, "en"))
             .MustHaveHappenedOnceExactly();
     }
@@ -1327,7 +1328,7 @@ public class AppReleaseBusinessLogicTest
 
         // Assert
         var result = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        result.Message.Should().Be($"Company {_identity.CompanyId} is not the provider company");
+        result.Message.Should().Be(AppReleaseErrors.APP_FORBIDDEN_COMP_ID_NOT_PROVIDER_COMPANY.ToString());
         A.CallTo(() => _userRolesRepository.GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identity.CompanyId, "de", "en"))
             .MustHaveHappenedOnceExactly();
     }
