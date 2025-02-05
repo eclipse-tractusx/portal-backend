@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
@@ -40,14 +41,14 @@ public static class AppExtensions
     {
         if (appId == Guid.Empty)
         {
-            throw new ControllerArgumentException("AppId must not be empty");
+            throw ControllerArgumentException.Create(AppExtensionErrors.APP_ARG_APP_ID_NOT_EMPTY);
         }
         var descriptions = appUserRolesDescription.SelectMany(x => x.Descriptions).Where(item => !string.IsNullOrWhiteSpace(item.LanguageCode)).Distinct();
         if (!descriptions.Any())
         {
-            throw new ControllerArgumentException("Language Code must not be empty");
+            throw ControllerArgumentException.Create(AppExtensionErrors.APP_ARG_LANG_CODE_NOT_EMPTY);
         }
-        appUserRolesDescription.DuplicatesBy(x => x.Role).IfAny(duplicateRoles => throw new ControllerArgumentException($"Roles are ambiguous: {string.Join(",", duplicateRoles.Select(x => x.Role))}"));
+        appUserRolesDescription.DuplicatesBy(x => x.Role).IfAny(duplicateRoles => throw ControllerArgumentException.Create(AppExtensionErrors.APP_ARG_ROLES_ARE_AMBIGUOUS, new ErrorParameter[] { new("duplicateRoles", string.Join(",", duplicateRoles.Select(x => x.Role))) }));
     }
 
     /// <summary>

@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
@@ -99,17 +100,17 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await _portalRepositories.GetInstance<IOfferRepository>().GetInsertActiveAppUserRoleDataAsync(appId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"app {appId} does not exist");
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (result.ProviderCompanyId == null)
         {
-            throw new ConflictException($"App {appId} providing company is not yet set.");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_PROVIDER_COMPANY_NOT_SET, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (result.ProviderCompanyId.Value != _identityData.CompanyId)
         {
-            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of app {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
         var roleData = await AppExtensions.CreateUserRolesWithDescriptions(_portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles);
 
@@ -168,22 +169,22 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerRepository.GetActiveOfferDescriptionDataByIdAsync(appId, OfferTypeId.APP, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"App {appId} does not exist.");
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!result.IsStatusActive)
         {
-            throw new ConflictException($"App {appId} is in InCorrect Status");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_STATUS_INCORRECT, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!result.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not the provider company of App {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
 
         if (result.OfferDescriptionDatas == null)
         {
-            throw new UnexpectedConditionException("offerDescriptionDatas should never be null here");
+            throw UnexpectedConditionException.Create(AppChangeErrors.APP_UNEXPECT_OFFER_SUBSCRIPTION_DATA_SHOULD_NOT_NULL);
         }
 
         return result.OfferDescriptionDatas;
@@ -201,15 +202,15 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (result == default)
         {
-            throw new NotFoundException($"App {appId} does not exist.");
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
         if (!result.IsStatusActive)
         {
-            throw new ConflictException("offerStatus is in incorrect State");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_OFFER_STATUS_INCORRECT_STATE);
         }
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of App {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
 
         var documentRepository = _portalRepositories.GetInstance<IDocumentRepository>();
@@ -247,28 +248,28 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw new NotFoundException($"Offer {offerId} or subscription {subscriptionId} do not exists");
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
         }
 
         var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
         if (isSingleInstance)
         {
-            throw new ConflictException("Subscription url of single instance apps can't be changed");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_URL_NOT_CHANGED);
         }
 
         if (!isUserOfCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not the app's providing company");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
         {
-            throw new ConflictException($"Subscription {subscriptionId} must be in status {OfferSubscriptionStatusId.ACTIVE}");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()), new("OfferSubscriptionStatusId", OfferSubscriptionStatusId.ACTIVE.ToString()) });
         }
 
         if (detailData == null)
         {
-            throw new ConflictException($"There is no subscription detail data configured for subscription {subscriptionId}");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
         }
 
         if (url == detailData.SubscriptionUrl)
@@ -344,19 +345,19 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"Document {documentId} for App {appId} does not exist.");
+            throw NotFoundException.Create(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!result.IsStatusActive)
         {
-            throw new ConflictException("offerStatus is in incorrect State");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_OFFER_STATUS_INCORRECT_STATE);
         }
         if (!result.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company of App {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
         if (!_settings.DeleteActiveAppDocumentTypeIds.Contains(result.DocumentTypeId))
         {
-            throw new ConflictException($"document {documentId} does not have a valid documentType");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         offerRepository.RemoveOfferAssignedDocument(appId, documentId);
         documentRepository.AttachAndModifyDocument(
@@ -378,11 +379,11 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var (isValid, isActive, roleDetails) = await _portalRepositories.GetInstance<IUserRolesRepository>().GetActiveOfferRolesAsync(appId, OfferTypeId.APP, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValid)
         {
-            throw new NotFoundException($"App {appId} does not exist");
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
         if (!isActive)
         {
-            throw new ConflictException($"App {appId} is not Active");
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_APP_NOT_ACTIVE, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
         return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
     }

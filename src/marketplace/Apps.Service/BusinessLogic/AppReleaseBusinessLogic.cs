@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -68,12 +69,12 @@ public class AppReleaseBusinessLogic(
         var result = await portalRepositories.GetInstance<IOfferRepository>().IsProviderCompanyUserAsync(appId, companyId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"app {appId} does not exist");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!result.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
 
         var roleData = await AppExtensions.CreateUserRolesWithDescriptions(portalRepositories.GetInstance<IUserRolesRepository>(), appId, userRoles).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -104,7 +105,7 @@ public class AppReleaseBusinessLogic(
     {
         if (appId == Guid.Empty)
         {
-            throw new ControllerArgumentException($"AppId must not be empty");
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_APP_ID_NOT_EMPTY);
         }
 
         return offerService.CreateOrUpdateProviderOfferAgreementConsent(appId, offerAgreementConsents, OfferTypeId.APP);
@@ -116,7 +117,7 @@ public class AppReleaseBusinessLogic(
         var result = await offerService.GetProviderOfferDetailsForStatusAsync(appId, OfferTypeId.APP, DocumentTypeId.APP_LEADIMAGE, languageShortName).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result.UseCase == null)
         {
-            throw new UnexpectedConditionException("usecase should never be null here");
+            throw UnexpectedConditionException.Create(AppReleaseErrors.APP_UNEXPECTED_USECASE_NOT_NULL);
         }
 
         return new AppProviderResponse(
@@ -146,17 +147,17 @@ public class AppReleaseBusinessLogic(
         var appUserRole = await portalRepositories.GetInstance<IOfferRepository>().GetAppUserRoleUntrackedAsync(appId, companyId, OfferStatusId.CREATED, roleId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!appUserRole.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
 
         if (!appUserRole.OfferStatus)
         {
-            throw new ControllerArgumentException($"AppId must be in Created State");
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_APP_ID_IN_CREATED_STATE);
         }
 
         if (!appUserRole.IsRoleIdExist)
         {
-            throw new NotFoundException($"role {roleId} does not exist");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_ROLE_EXIST, new ErrorParameter[] { new("roleId", roleId.ToString()) });
         }
 
         portalRepositories.GetInstance<IUserRolesRepository>().DeleteUserRole(roleId);
@@ -173,13 +174,13 @@ public class AppReleaseBusinessLogic(
         var emptyLanguageCodes = appRequestModel.SupportedLanguageCodes.Where(string.IsNullOrWhiteSpace);
         if (emptyLanguageCodes.Any())
         {
-            throw new ControllerArgumentException("Language Codes must not be null or empty", nameof(appRequestModel.SupportedLanguageCodes));
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_LANG_CODE_NOT_EMPTY, new ErrorParameter[] { new(nameof(appRequestModel.SupportedLanguageCodes), nameof(appRequestModel.SupportedLanguageCodes)) });
         }
 
         var emptyUseCaseIds = appRequestModel.UseCaseIds.Where(item => item == Guid.Empty);
         if (emptyUseCaseIds.Any())
         {
-            throw new ControllerArgumentException("Use Case Ids must not be null or empty", nameof(appRequestModel.UseCaseIds));
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_USECASE_ID_NOT_EMPTY, new ErrorParameter[] { new(nameof(appRequestModel.UseCaseIds), nameof(appRequestModel.UseCaseIds)) });
         }
 
         return CreateAppAsync(appRequestModel);
@@ -226,7 +227,7 @@ public class AppReleaseBusinessLogic(
         }
         catch (Exception exception) when (exception.InnerException?.Message.Contains("violates foreign key constraint") ?? false)
         {
-            throw new ControllerArgumentException($"invalid language code or UseCaseId specified");
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_INVALID_LANG_CODE_OR_USECASE_ID);
         }
     }
 
@@ -242,17 +243,17 @@ public class AppReleaseBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (appData is null)
         {
-            throw new NotFoundException($"App {appId} does not exists");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (appData.OfferState != OfferStatusId.CREATED)
         {
-            throw new ConflictException($"Apps in State {appData.OfferState} can't be updated");
+            throw ConflictException.Create(AppReleaseErrors.APP_CONFLICT_APP_STATE_CANNOT_UPDATED, new ErrorParameter[] { new("offerState", appData.OfferState.ToString()) });
         }
 
         if (!appData.IsUserOfProvider)
         {
-            throw new ForbiddenException($"Company {companyId} is not the app provider.");
+            throw ForbiddenException.Create(AppReleaseErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (appRequestModel.SalesManagerId.HasValue)
@@ -264,8 +265,7 @@ public class AppReleaseBusinessLogic(
         var existingLanguageCodes = await portalRepositories.GetInstance<ILanguageRepository>().GetLanguageCodesUntrackedAsync(newSupportedLanguages).ToListAsync().ConfigureAwait(false);
         if (newSupportedLanguages.Except(existingLanguageCodes).Any())
         {
-            throw new ControllerArgumentException($"The language(s) {string.Join(",", newSupportedLanguages.Except(existingLanguageCodes))} do not exist in the database.",
-                nameof(appRequestModel.SupportedLanguageCodes));
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_LANG_NOT_EXIST_IN_DB, new ErrorParameter[] { new(nameof(appRequestModel.SupportedLanguageCodes), nameof(appRequestModel.SupportedLanguageCodes)), new("existingLanguageCodes", string.Join(",", newSupportedLanguages.Except(existingLanguageCodes))) });
         }
 
         var appRepository = portalRepositories.GetInstance<IOfferRepository>();
@@ -344,7 +344,7 @@ public class AppReleaseBusinessLogic(
 
         if (result == default)
         {
-            throw new NotFoundException($"App {appId} not found or Incorrect Status");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_FOUND_OR_INCORRECT_STATUS, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         return new InReviewAppDetails(
@@ -380,27 +380,27 @@ public class AppReleaseBusinessLogic(
         var (isValidApp, isOfferType, isOfferStatus, isProviderCompanyUser, appData) = await portalRepositories.GetInstance<IOfferRepository>().GetAppDeleteDataAsync(appId, OfferTypeId.APP, companyId, OfferStatusId.CREATED).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValidApp)
         {
-            throw new NotFoundException($"App {appId} does not exist");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!isProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not the provider company of app {appId}");
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COM_NOT_PROVIDER_COM_APP, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("appId", appId.ToString()) });
         }
 
         if (!isOfferStatus)
         {
-            throw new ConflictException($"App {appId} is not in Created State");
+            throw ConflictException.Create(AppReleaseErrors.APP_CONFLICT_APP_NOT_CREATED_STATE, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!isOfferType)
         {
-            throw new ConflictException($"offer {appId} is not offerType APP");
+            throw ConflictException.Create(AppReleaseErrors.APP_CONFLICT_OFFER_APP_ID_NOT_OFFERTYPE_APP, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (appData == null)
         {
-            throw new UnexpectedConditionException("appData should never be null here");
+            throw UnexpectedConditionException.Create(AppReleaseErrors.APP_UNEXPECTED_APP_DATA_NOT_NULL);
         }
 
         portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedLicenses(appData.OfferLicenseIds.Select(licenseId => (appId, licenseId)));
@@ -424,8 +424,7 @@ public class AppReleaseBusinessLogic(
         }
         else if (!string.IsNullOrWhiteSpace(data.InstanceUrl))
         {
-            throw new ControllerArgumentException("Multi instance app must not have a instance url set",
-                nameof(data.InstanceUrl));
+            throw ControllerArgumentException.Create(AppReleaseErrors.APP_ARG_MULTI_INSTANCE_APP_URL_SET, new ErrorParameter[] { new("instanceUrl", nameof(data.InstanceUrl)) });
         }
 
         return SetInstanceTypeInternal(appId, data);
@@ -438,13 +437,13 @@ public class AppReleaseBusinessLogic(
             .GetOfferWithSetupDataById(appId, companyId, OfferTypeId.APP)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
-            throw new NotFoundException($"App {appId} does not exist");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
 
         if (!result.IsUserOfProvidingCompany)
-            throw new ForbiddenException($"Company {companyId} is not the provider company");
+            throw ForbiddenException.Create(AppReleaseErrors.APP_FORBIDDEN_COMP_ID_NOT_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
 
         if (result.OfferStatus is not OfferStatusId.CREATED)
-            throw new ConflictException($"App {appId} is not in Status {OfferStatusId.CREATED}");
+            throw ConflictException.Create(AppReleaseErrors.APP_CONFLICT_NOT_IN_CREATED_STATE, new ErrorParameter[] { new("appId", appId.ToString()), new("offerStatusId", OfferStatusId.CREATED.ToString()) });
 
         await (result.SetupTransferData == null
             ? HandleAppInstanceCreation(appId, data)
@@ -519,7 +518,7 @@ public class AppReleaseBusinessLogic(
     {
         if (appInstanceData.Count() != 1)
         {
-            throw new ConflictException("The must be at exactly one AppInstance");
+            throw ConflictException.Create(AppReleaseErrors.APP_CONFLICT_ONLY_ONE_APP_INSTANCE_ALLOWED);
         }
 
         return appInstanceData.Single();
@@ -539,14 +538,14 @@ public class AppReleaseBusinessLogic(
         var (isValid, isProvider, roleDetails) = await portalRepositories.GetInstance<IUserRolesRepository>().GetOfferProviderRolesAsync(appId, OfferTypeId.APP, _identityData.CompanyId, languageShortName, Constants.DefaultLanguage).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!isValid)
         {
-            throw new NotFoundException($"App {appId} does not exist");
+            throw NotFoundException.Create(AppReleaseErrors.APP_NOT_EXIST, new ErrorParameter[] { new("appId", appId.ToString()) });
         }
 
         if (!isProvider)
         {
-            throw new ForbiddenException($"Company {_identityData.CompanyId} is not the provider company");
+            throw ForbiddenException.Create(AppReleaseErrors.APP_FORBIDDEN_COMP_ID_NOT_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()) });
         }
 
-        return roleDetails ?? throw new UnexpectedConditionException("roleDetails should never be null here");
+        return roleDetails ?? throw UnexpectedConditionException.Create(AppReleaseErrors.APP_UNEXPECT_ROLE_DETAILS_NOT_NULL);
     }
 }
