@@ -19,11 +19,13 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
@@ -53,7 +55,6 @@ public class RegistrationControllerTest
         _logic = A.Fake<IRegistrationBusinessLogic>();
         _controller = new RegistrationController(_logic);
         _controller.AddControllerContextWithClaimAndBearer(AccessToken, identity);
-        _controller.HttpContext.Request.Headers.Append("Business-Partner-Number", Bpn);
     }
 
     [Fact]
@@ -124,6 +125,7 @@ public class RegistrationControllerTest
         //Arrange
         var data = _fixture.Create<ClearinghouseResponseData>();
         var cancellationToken = CancellationToken.None;
+        _controller.HttpContext.Request.Headers.Append("Business-Partner-Number", new(Bpn));
 
         //Act
         var result = await _controller.ProcessClearinghouseResponse(data, cancellationToken);
@@ -131,6 +133,37 @@ public class RegistrationControllerTest
         //Assert
         A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(data, Bpn, cancellationToken)).MustHaveHappenedOnceExactly();
         Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseResponse_NoBusinessPartnerNumberHeader_Throws()
+    {
+        //Arrange
+        var data = _fixture.Create<ClearinghouseResponseData>();
+        var cancellationToken = CancellationToken.None;
+
+        //Act
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(() => _controller.ProcessClearinghouseResponse(data, cancellationToken));
+
+        //Assert
+        error.Message.Should().Be("Request does not contain Business-Partner-Number header (Parameter 'Business-Partner-Number')");
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(A<ClearinghouseResponseData>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task ProcessClearinghouseResponse_EmptyBusinessPartnerNumberHeader_Throws()
+    {
+        //Arrange
+        var data = _fixture.Create<ClearinghouseResponseData>();
+        var cancellationToken = CancellationToken.None;
+        _controller.HttpContext.Request.Headers.Append("Business-Partner-Number", new(" "));
+
+        //Act
+        var error = await Assert.ThrowsAsync<ControllerArgumentException>(() => _controller.ProcessClearinghouseResponse(data, cancellationToken));
+
+        //Assert
+        error.Message.Should().Be("Business-Partner-Number in header must not be empty (Parameter 'Business-Partner-Number')");
+        A.CallTo(() => _logic.ProcessClearinghouseResponseAsync(A<ClearinghouseResponseData>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]

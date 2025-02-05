@@ -19,15 +19,16 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 
@@ -80,18 +81,25 @@ public class ClearinghouseBusinessLogic(
             throw new ConflictException("BusinessPartnerNumber is null");
         }
 
-        if (data.LegalEntity.Address is null)
+        if (data.Address is null)
         {
             throw new ConflictException($"Address does not exist.");
         }
 
-        var headers = new Dictionary<string, string>
-        {
-            { "Business-Partner-Number", data.Bpn }
-        };
+        var headers = ImmutableDictionary.CreateRange<string, string>([new("Business-Partner-Number", data.Bpn)]);
 
         var transferData = new ClearinghouseTransferData(
-            data.LegalEntity,
+            new LegalEntity(
+                data.Name,
+                new LegalAddress(
+                    data.Address.CountryAlpha2Code,
+                    string.Format("{0}-{1}", data.Address.CountryAlpha2Code, data.Address.Region),
+                    data.Address.City,
+                    data.Address.Zipcode,
+                    string.IsNullOrEmpty(data.Address.Streetnumber)
+                        ? data.Address.Streetname
+                        : string.Format("{0} {1}", data.Address.Streetname, data.Address.Streetnumber)),
+                data.Identifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifierId.GetUniqueIdentifierValue(), ci.Value))),
             validationMode,
             new CallBack(_settings.CallbackUrl, headers)
         );

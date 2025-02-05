@@ -405,18 +405,19 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .Select(ca => new { ca.ApplicationStatusId, ca.Company, ca.Company!.Address, ca.Company.CompanyIdentifiers })
             .Select(ca => new ClearinghouseData(
                 ca.ApplicationStatusId,
-                ca.Company!.BusinessPartnerNumber!,
-                new LegalEntity(
-                    ca.Company!.Name,
-                    new LegalAddress(
-                        ca.Address!.CountryAlpha2Code,
-                        string.Format("{0}-{1}", ca.Address!.CountryAlpha2Code, ca.Address!.Region),
+                ca.Company!.BusinessPartnerNumber,
+                ca.Company.Name,
+                ca.Address == null
+                    ? null
+                    : new ClearinghouseAddressData(
+                        ca.Address.CountryAlpha2Code,
+                        ca.Address.Region,
                         ca.Address.City,
                         ca.Address.Zipcode,
-                        string.IsNullOrEmpty(ca.Address.Streetnumber) ? ca.Address.Streetname : string.Format("{0} {1}", ca.Address.Streetname, ca.Address.Streetnumber)
+                        ca.Address.Streetnumber,
+                        ca.Address.Streetname
                     ),
-                    ca.CompanyIdentifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifierId.GetUniqueIdentifierValue(), ci.Value))
-                )
+                ca.CompanyIdentifiers.Select(ci => new CompanyUniqueIdentifier(ci.UniqueIdentifierId, ci.Value))
             ))
             .SingleOrDefaultAsync();
 

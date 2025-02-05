@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -19,28 +18,26 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record ClearinghouseData(
     CompanyApplicationStatusId ApplicationStatusId,
-    string Bpn,
-    LegalEntity LegalEntity
+    string? Bpn,
+    string Name,
+    ClearinghouseAddressData? Address,
+    IEnumerable<CompanyUniqueIdentifier> Identifiers
 );
 
-public record LegalEntity(
-    [property: JsonPropertyName("legalName")] string LegalName,
-    [property: JsonPropertyName("address")] LegalAddress Address,
-    [property: JsonPropertyName("identifiers")] IEnumerable<UniqueIdData> Identifiers
+public record ClearinghouseAddressData(
+    string CountryAlpha2Code,
+    string? Region,
+    string City,
+    string? Zipcode,
+    string? Streetnumber,
+    string Streetname
 );
-
-public record LegalAddress(
-    [property: JsonPropertyName("country")] string CountryAlpha2Code,
-    [property: JsonPropertyName("region")] string Region,
-    [property: JsonPropertyName("locality")] string? City,
-    [property: JsonPropertyName("postalCode")] string? ZipCode,
-    [property: JsonPropertyName("addressLine")] string? AddressLine
+public record CompanyUniqueIdentifier(
+    UniqueIdentifierId UniqueIdentifierId,
+    string Value
 );
-
-public record UniqueIdData([property: JsonPropertyName("type")] string Type, [property: JsonPropertyName("value")] string Value);
