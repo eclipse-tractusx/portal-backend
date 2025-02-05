@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <AssemblyName>Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger</AssemblyName>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>true</IsPackable>
@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SwashBuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="SwashBuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
