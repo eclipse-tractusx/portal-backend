@@ -115,7 +115,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region GetUserRolesByClientId
+    #region GetUserRoleDataUntrackedAsync
 
     [Fact]
     public async Task GetUserRoleDataUntrackedAsync_WithValidData_ReturnsExpected()
@@ -156,6 +156,27 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         data.Should().BeEmpty();
     }
 
+    #endregion
+
+    #region GetUserRoleIdsUntrackedAsync
+
+    [Fact]
+    public async Task GetUserRoleIdsUntrackedAsync()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetUserRoleIdsUntrackedAsync(userRoleConfig).ToListAsync();
+
+        // Assert
+        data.Should().ContainSingle().Which.Should().Be(new Guid("7410693c-c893-409e-852f-9ee886ce94a6"));
+    }
     #endregion
 
     #region GetActiveOfferRoles

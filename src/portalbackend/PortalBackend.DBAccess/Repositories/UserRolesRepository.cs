@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -113,21 +114,20 @@ public class UserRolesRepository : IUserRolesRepository
         }
     }
 
-    public async IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles)
-    {
-        foreach (var clientRole in clientRoles)
-        {
-            await foreach (var userRoleId in _dbContext.UserRoles
-                .AsNoTracking()
-                .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
-                .Select(userRole => userRole.Id)
-                .AsAsyncEnumerable()
-                .ConfigureAwait(false))
+    public IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles) =>
+        _dbContext.UserRoles
+            .SelectMany(ur => ur.Offer!.AppInstances.Select(ai => new
             {
-                yield return userRoleId;
-            }
-        }
-    }
+                ai.IamClient!.ClientClientId,
+                ur.UserRoleText,
+                UserRoleId = ur.Id
+            }))
+            .JoinTuples(
+                clientRoles.SelectMany(cr => cr.UserRoleNames.Select(urn => (cr.ClientId, urn))),
+                x => x.ClientClientId,
+                x => x.UserRoleText)
+            .Select(x => x.UserRoleId)
+            .AsAsyncEnumerable();
 
     public IAsyncEnumerable<(string UserRoleText, Guid RoleId, bool IsAssigned)> GetAssignedAndMatchingAppRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId) =>
         _dbContext.UserRoles
