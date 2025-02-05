@@ -1825,7 +1825,7 @@ public class OfferServiceTests
         // Arrange
         var offerId = _fixture.Create<Guid>();
         var data = _fixture.CreateMany<TechnicalUserProfileInformationTransferData>(5);
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns((true, data));
 
         // Act
@@ -1833,7 +1833,7 @@ public class OfferServiceTests
 
         // Assert
         result.Should().HaveCount(5);
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -1843,7 +1843,7 @@ public class OfferServiceTests
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns<(bool, IEnumerable<TechnicalUserProfileInformationTransferData>)>(default);
 
         // Act
@@ -1852,7 +1852,7 @@ public class OfferServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be(OfferServiceErrors.OFFER_NOTFOUND.ToString());
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
     }
 
     [Theory]
@@ -1862,7 +1862,7 @@ public class OfferServiceTests
     {
         // Arrange
         var offerId = _fixture.Create<Guid>();
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._))
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(A<Guid>._, A<Guid>._, A<OfferTypeId>._))
             .Returns((false, Enumerable.Empty<TechnicalUserProfileInformationTransferData>()));
 
         // Act
@@ -1871,7 +1871,7 @@ public class OfferServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
         ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_PROVIDER.ToString());
-        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.GetTechnicalUserProfileInformation(offerId, _companyId, offerTypeId)).MustHaveHappenedOnceExactly();
     }
 
     #endregion

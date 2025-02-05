@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -69,7 +68,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
     }
 
     /// <inheritdoc />
-    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformationTransferData> Information)> GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> externalUserRoles) =>
+    public Task<(bool IsUserOfProvidingCompany, IEnumerable<TechnicalUserProfileInformationTransferData> Information)> GetTechnicalUserProfileInformation(Guid offerId, Guid usersCompanyId, OfferTypeId offerTypeId) =>
         _context.Offers
             .Where(x => x.Id == offerId && x.OfferTypeId == offerTypeId)
             .Select(x => new ValueTuple<bool, IEnumerable<TechnicalUserProfileInformationTransferData>>(
@@ -79,7 +78,6 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
                     tup.TechnicalUserProfileAssignedUserRoles
                         .Select(ur => new UserRoleInformationTransferData(
                             ur.UserRole!.Id,
-                            ur.UserRole.UserRoleText,
-                            externalUserRoles.Contains(ur.UserRoleId)))))))
+                            ur.UserRole.UserRoleText))))))
             .SingleOrDefaultAsync();
 }

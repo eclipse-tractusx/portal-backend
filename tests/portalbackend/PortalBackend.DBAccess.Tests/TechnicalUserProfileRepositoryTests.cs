@@ -251,14 +251,12 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1));
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
         result.IsUserOfProvidingCompany.Should().BeTrue();
-        result.Information.Should().HaveCount(2).And.Satisfy(
-            x => x.UserRoles.Count(x => !x.External) == 2,
-            x => x.UserRoles.Count(x => !x.External) == 1);
+        result.Information.Should().HaveCount(2);
     }
 
     [Fact]
@@ -268,7 +266,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1));
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE);
 
         // Assert
         result.Should().NotBeNull();
@@ -282,7 +280,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1));
+        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE);
 
         // Assert
         result.Should().Be(default);
@@ -295,7 +293,7 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1));
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP);
 
         // Assert
         result.Should().Be(default);

@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
@@ -327,24 +328,23 @@ public class TechnicalUserBusinessLogic(
             portalRepositories.GetInstance<ITechnicalUserRepository>().GetOwnTechnicalUsers(_identityData.CompanyId, clientId, isOwner, filterUserStatusIds));
     }
 
-    public async IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
+    public IAsyncEnumerable<UserRoleWithDescription> GetServiceAccountRolesAsync(string? languageShortName)
     {
-        var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
-        var dimUserRoles = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.DimUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        var userRolesForProviderOnly = await userRolesRepository.GetUserRoleIdsUntrackedAsync(_settings.UserRolesAccessibleByProviderOnly)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        await foreach (var userRole in userRolesRepository.GetServiceAccountRolesAsync(
-                           _identityData.CompanyId,
-                           _settings.ClientId,
-                           dimUserRoles,
-                           languageShortName ?? Constants.DefaultLanguage,
-                           userRolesForProviderOnly))
-        {
-            yield return new UserRoleWithDescription(userRole.UserRoleId, userRole.UserRoleText, userRole.RoleDescription, userRole.External ? UserRoleType.External : UserRoleType.Internal, userRole.ProviderOnly);
-        }
+        var externalRoleNames = _settings.DimUserRoles.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
+        var providerOnlyRoleNames = _settings.UserRolesAccessibleByProviderOnly.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
+
+        return portalRepositories.GetInstance<IUserRolesRepository>()
+            .GetServiceAccountRolesAsync(
+                _identityData.CompanyId,
+                _settings.ClientId,
+                languageShortName ?? Constants.DefaultLanguage)
+            .Select(x => new UserRoleWithDescription(
+                x.UserRoleId,
+                x.UserRoleText,
+                x.RoleDescription,
+                externalRoleNames.Contains(x.UserRoleText) ? UserRoleType.External : UserRoleType.Internal,
+                providerOnlyRoleNames.Contains(x.UserRoleText)
+            ));
     }
 
     public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)

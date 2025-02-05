@@ -39,6 +39,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.BusinessLogic;
 
@@ -660,29 +661,37 @@ public class TechnicalUserBusinessLogicTests
     public async Task GetServiceAccountRolesAsync_GetsExpectedData()
     {
         // Arrange
-        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15);
 
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<IEnumerable<Guid>>._, A<string>._, A<IEnumerable<Guid>>._))
+        var data = _fixture.CreateMany<UserRoleWithDescriptionTransferData>(15).ToImmutableArray();
+
+        var externalRole = data[0].UserRoleText;
+        var providerOnlyRole = data[1].UserRoleText;
+
+        var options = Options.Create(new ServiceAccountSettings
+        {
+            ClientId = ClientId,
+            DimUserRoles = [new(ClientId, [externalRole]), new("OtherClientId", [data[2].UserRoleText])],
+            UserRolesAccessibleByProviderOnly = [new(ClientId, [providerOnlyRole]), new("OtherClientId", [data[3].UserRoleText])]
+        });
+
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(A<Guid>._, A<string>._, A<string>._))
             .Returns(data.ToAsyncEnumerable());
 
         A.CallTo(() => _portalRepositories.GetInstance<IUserRolesRepository>()).Returns(_userRolesRepository);
 
-        var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
+        var sut = new TechnicalUserBusinessLogic(null!, _portalRepositories, options, null!, _identityService, null!);
 
         // Act
         var result = await sut.GetServiceAccountRolesAsync(null).ToListAsync();
 
         // Assert
-        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, A<IEnumerable<Guid>>._, A<string>._, A<IEnumerable<Guid>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.GetServiceAccountRolesAsync(_identity.CompanyId, ClientId, Constants.DefaultLanguage)).MustHaveHappenedOnceExactly();
 
-        result.Should().NotBeNull();
-        result.Should().HaveCount(15);
-        // Sonar fix -> Return value of pure method is not used
-        result.Should().AllSatisfy(ur =>
-        {
-            var transferData = new UserRoleWithDescriptionTransferData(ur.UserRoleId, ur.UserRoleText, ur.RoleDescription, ur.RoleType == UserRoleType.External, ur.ProviderOnly);
-            data.Contains(transferData).Should().BeTrue();
-        });
+        result.Should()
+            .HaveCount(15)
+            .And.AllSatisfy(x => data.Should().Contain(new UserRoleWithDescriptionTransferData(x.UserRoleId, x.UserRoleText, x.RoleDescription)))
+            .And.AllSatisfy(x => x.RoleType.Should().Be(x.UserRoleText == externalRole ? UserRoleType.External : UserRoleType.Internal))
+            .And.AllSatisfy(x => x.ProviderOnly.Should().Be(x.UserRoleText == providerOnlyRole));
     }
 
     #endregion

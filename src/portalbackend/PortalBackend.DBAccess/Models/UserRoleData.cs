@@ -35,16 +35,8 @@ public record UserRoleData(
 public record UserRoleWithDescriptionTransferData(
     Guid UserRoleId,
     string UserRoleText,
-    string? RoleDescription,
-    bool External,
-    bool ProviderOnly
+    string? RoleDescription
 );
-
-public record UserRoleInformation(
-    [property: JsonPropertyName("roleId")] Guid UserRoleId,
-    [property: JsonPropertyName("roleName")] string UserRoleText,
-    [property: JsonPropertyName("type")] UserRoleType RoleType,
-    [property: JsonPropertyName("accessiblyByProviderOnly")] bool AccessiblyByProviderOnly);
 
 public enum UserRoleType
 {

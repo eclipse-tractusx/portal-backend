@@ -98,7 +98,8 @@ public class TechnicalUserCreation(
 
         if (userRoleData
             .ExceptBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
-            .ExceptBy(userProviderRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
+            .ExceptBy(userProviderRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+            .IfAny(
                 async roleData =>
                 {
                     var keycloakRoleData = roleData.ToImmutableList();
@@ -123,43 +124,46 @@ public class TechnicalUserCreation(
         }
 
         Guid? processId = null;
-        var hasExternalServiceAccount = userRoleData.IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
-            roleData =>
-            {
-                var dimRoleData = roleData.ToImmutableList();
-                var dimSaName = $"dim-{name}";
-                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING,
-                    technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData,
-                    technicalUserRepository, userRolesRepository, setOptionalParameter);
-                var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
-                if (processData?.ProcessTypeId is not null)
-                {
-                    if (processData.ProcessId is null)
+        var hasExternalServiceAccount =
+            userRoleData
+                .IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+                .IfAny(
+                    roleData =>
                     {
-                        var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
-                        processStepRepository.CreateProcessStep(
-                            processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(),
-                            ProcessStepStatusId.TODO, process.Id);
-                        processId = process.Id;
-                    }
-                    else
-                    {
-                        processId = processData.ProcessId.Value;
-                    }
+                        var dimRoleData = roleData.ToImmutableList();
+                        var dimSaName = $"dim-{name}";
+                        var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING,
+                            technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData,
+                            technicalUserRepository, userRolesRepository, setOptionalParameter);
+                        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+                        if (processData?.ProcessTypeId is not null)
+                        {
+                            if (processData.ProcessId is null)
+                            {
+                                var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
+                                processStepRepository.CreateProcessStep(
+                                    processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(),
+                                    ProcessStepStatusId.TODO, process.Id);
+                                processId = process.Id;
+                            }
+                            else
+                            {
+                                processId = processData.ProcessId.Value;
+                            }
 
-                    portalRepositories.GetInstance<ITechnicalUserRepository>()
-                        .CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
-                }
+                            portalRepositories.GetInstance<ITechnicalUserRepository>()
+                                .CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
+                        }
 
-                serviceAccounts.Add(new CreatedServiceAccountData(
-                    dimServiceAccountId,
-                    dimSaName,
-                    description,
-                    UserStatusId.PENDING,
-                    null,
-                    null,
-                    dimRoleData));
-            });
+                        serviceAccounts.Add(new CreatedServiceAccountData(
+                            dimServiceAccountId,
+                            dimSaName,
+                            description,
+                            UserStatusId.PENDING,
+                            null,
+                            null,
+                            dimRoleData));
+                    });
 
         return (hasExternalServiceAccount, processId, serviceAccounts.ToImmutable());
     }
