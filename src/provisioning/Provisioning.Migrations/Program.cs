@@ -20,9 +20,11 @@
 // See https://aka.ms/new-console-template for more information
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
@@ -39,7 +41,9 @@ try
             services.AddDbContext<ProvisioningDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("ProvisioningDb"),
             x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)
-                    .MigrationsHistoryTable("__efmigrations_history_provisioning", "public")))
+                    .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"))
+                    .ReplaceService<IHistoryRepository, CustomNpgsqlHistoryRepository>()
+                )
                 .AddDatabaseInitializer<ProvisioningDbContext>(hostContext.Configuration.GetSection("Seeding"));
         })
         .AddLogging()

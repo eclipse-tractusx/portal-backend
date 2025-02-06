@@ -20,7 +20,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using System.Reflection;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.ProvisioningEntities;
@@ -37,7 +39,8 @@ public class ProvisioningDbContextFactory : IDesignTimeDbContextFactory<Provisio
         optionsBuilder.UseNpgsql(
             config.GetConnectionString("ProvisioningDb"),
             x => x.MigrationsAssembly(typeof(ProvisioningDbContextFactory).Assembly.GetName().Name)
-                  .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"));
+                  .MigrationsHistoryTable("__efmigrations_history_provisioning", "public"))
+            .ReplaceService<IHistoryRepository, CustomNpgsqlHistoryRepository>();
 
         return new ProvisioningDbContext(optionsBuilder.Options);
     }
