@@ -32,14 +32,12 @@ public class CustomNpgsqlHistoryRepository(HistoryRepositoryDependencies depende
 {
     protected override string ExistsSql => $"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = '{this.TableSchema}' AND table_name = '{this.TableName}');";
 
-    public override bool Exists()
-    {
-        return this.Dependencies.DatabaseCreator.Exists() &&
-               this.InterpretExistsResult(
-                   this.Dependencies.RawSqlCommandBuilder
-                       .Build(this.ExistsSql)
-                       .ExecuteScalar(new RelationalCommandParameterObject(this.Dependencies.Connection, null, null, this.Dependencies.CurrentContext.Context, this.Dependencies.CommandLogger, CommandSource.Migrations)));
-    }
+    public override bool Exists() =>
+        this.Dependencies.DatabaseCreator.Exists() &&
+        this.InterpretExistsResult(
+            this.Dependencies.RawSqlCommandBuilder
+                .Build(this.ExistsSql)
+                .ExecuteScalar(new RelationalCommandParameterObject(this.Dependencies.Connection, null, null, this.Dependencies.CurrentContext.Context, this.Dependencies.CommandLogger, CommandSource.Migrations)));
 
     public override async Task<bool> ExistsAsync(CancellationToken cancellationToken = new())
     {
@@ -48,7 +46,10 @@ public class CustomNpgsqlHistoryRepository(HistoryRepositoryDependencies depende
             return false;
         }
 
-        var existsCommand = await this.Dependencies.RawSqlCommandBuilder.Build(this.ExistsSql).ExecuteScalarAsync(new RelationalCommandParameterObject(this.Dependencies.Connection, null, null, this.Dependencies.CurrentContext.Context, this.Dependencies.CommandLogger, CommandSource.Migrations), cancellationToken).ConfigureAwait(false);
+        var existsCommand = await this.Dependencies.RawSqlCommandBuilder
+            .Build(this.ExistsSql)
+            .ExecuteScalarAsync(new RelationalCommandParameterObject(this.Dependencies.Connection, null, null, this.Dependencies.CurrentContext.Context, this.Dependencies.CommandLogger, CommandSource.Migrations), cancellationToken)
+            .ConfigureAwait(false);
         return this.InterpretExistsResult(existsCommand);
     }
 
@@ -80,11 +81,14 @@ public class CustomNpgsqlHistoryRepository(HistoryRepositoryDependencies depende
 
         try
         {
-            return await Dependencies.MigrationCommandExecutor.ExecuteNonQueryAsync(
-                       GetCreateIfNotExistsCommands(), Dependencies.Connection, new MigrationExecutionState(),
-                       commitTransaction: true,
-                       cancellationToken: cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)
-                   != 0;
+            return await Dependencies.MigrationCommandExecutor
+                .ExecuteNonQueryAsync(
+                    GetCreateIfNotExistsCommands(),
+                    Dependencies.Connection,
+                    new MigrationExecutionState(),
+                    commitTransaction: true,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(ConfigureAwaitOptions.None) != 0;
         }
         catch (PostgresException e) when (e.SqlState is PostgresErrorCodes.UniqueViolation
                                               or PostgresErrorCodes.DuplicateTable
@@ -94,11 +98,14 @@ public class CustomNpgsqlHistoryRepository(HistoryRepositoryDependencies depende
         }
     }
 
-    private IReadOnlyList<MigrationCommand> GetCreateIfNotExistsCommands()
-        => Dependencies.MigrationsSqlGenerator.Generate([new SqlOperation
-        {
-            Sql = GetCreateIfNotExistsScript(),
-            SuppressTransaction = true
-        }]);
+    private IReadOnlyList<MigrationCommand> GetCreateIfNotExistsCommands() =>
+        Dependencies.MigrationsSqlGenerator.Generate(
+            [
+                new SqlOperation
+                {
+                    Sql = GetCreateIfNotExistsScript(),
+                    SuppressTransaction = true
+                }
+            ]);
 }
 #pragma warning enable EF1001
