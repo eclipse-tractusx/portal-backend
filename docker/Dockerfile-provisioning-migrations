@@ -21,6 +21,7 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS publis
 ARG TARGETARCH
 COPY LICENSE NOTICE.md DEPENDENCIES /
 COPY /src/provisioning /src/provisioning
+COPY /src/framework/Framework.DBAccess /src/framework/Framework.DBAccess
 COPY /src/framework/Framework.ErrorHandling /src/framework/Framework.ErrorHandling
 COPY /src/framework/Framework.Seeding /src/framework/Framework.Seeding
 COPY /src/framework/Framework.Models /src/framework/Framework.Models
