@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,26 +19,18 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
-public record ClearinghouseData(
-    CompanyApplicationStatusId ApplicationStatusId,
-    string? Bpn,
-    string Name,
-    ClearinghouseAddressData? Address,
-    IEnumerable<CompanyUniqueIdentifier> Identifiers
-);
-
-public record ClearinghouseAddressData(
-    string CountryAlpha2Code,
-    string? Region,
-    string City,
-    string? Zipcode,
-    string? Streetnumber,
-    string Streetname
-);
-
-public record CompanyUniqueIdentifier(
-    UniqueIdentifierId UniqueIdentifierId,
-    string Value
-);
+public static class UniqueIdentifiersExtension
+{
+    public static string GetUniqueIdentifierValue(this UniqueIdentifierId uniqueIdentifierId) =>
+        uniqueIdentifierId switch
+        {
+            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => "schema:taxID",
+            UniqueIdentifierId.VAT_ID => "schema:vatID",
+            UniqueIdentifierId.LEI_CODE => "schema:leiCode",
+            UniqueIdentifierId.VIES => "EUID",
+            UniqueIdentifierId.EORI => "gx:eori",
+            _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Unique Identifier not found for Clearing House Conversion")
+        };
+}

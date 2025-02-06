@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using FluentAssertions;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using RestAssured.Response.Logging;
@@ -54,16 +55,17 @@ public class ClearinghouseEndToEndTests : EndToEndTestBase
 
         var body = DataHandleHelper.SerializeData(
             new ClearinghouseTransferData(
-                new ParticipantDetails(
-                    "SmokeTest CH", "Stuttgart", "Test Street", "BPNL000SMOKE0011", "Bavaria", "01108",
-                    "Germany", "DE"
+                new LegalEntity(
+                    "SmokeTest CH",
+                    new LegalAddress("DE", "Bavaria", "Stuttgart", "01108", "Abc Street"),
+                    [new("local", "HB8272819")]
                 ),
-                new IdentityDetails(
-                    "did:sov:RPgthNMDkVdzYQhXzahh3P", // hardcode due to initial requirements in CPLP-2803
-                    new List<UniqueIdData> { new("local", "HB8272819") }
-                ),
-                $"{TestResources.BasePortalBackendUrl}/api/administration/registration/clearinghouse",
-                false)
+                ValidationModes.LEGAL_NAME,
+                new CallBack(
+                    $"{TestResources.BasePortalBackendUrl}/api/administration/registration/clearinghouse",
+                    new Dictionary<string, string> { { "bpn", "BPNL000SMOKE0011" } }
+                )
+            )
         );
 
         var data = Given()

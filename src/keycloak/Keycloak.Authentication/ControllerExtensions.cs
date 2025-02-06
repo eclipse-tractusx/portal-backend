@@ -27,8 +27,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 /// </summary>
 public static class ControllerExtensions
 {
+    private static readonly string BusinessPartnerNumberHeader = "Business-Partner-Number";
+
     public static T WithBearerToken<T>(this ControllerBase controller, Func<string, T> tokenConsumingFunction) =>
         tokenConsumingFunction(controller.GetBearerToken());
+
+    public static T WithBpn<T>(this ControllerBase controller, Func<string, T> bpnConsumingFunction) =>
+        bpnConsumingFunction(controller.GetBpn());
 
     private static string GetBearerToken(this ControllerBase controller)
     {
@@ -46,5 +51,21 @@ public static class ControllerExtensions
         }
 
         return bearer;
+    }
+
+    private static string GetBpn(this ControllerBase controller)
+    {
+        if (!controller.Request.Headers.TryGetValue(BusinessPartnerNumberHeader, out var values))
+        {
+            throw new ControllerArgumentException("Request does not contain Business-Partner-Number header", BusinessPartnerNumberHeader);
+        }
+
+        var bpn = values.FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(bpn))
+        {
+            throw new ControllerArgumentException("Business-Partner-Number in header must not be empty", BusinessPartnerNumberHeader);
+        }
+
+        return bpn;
     }
 }

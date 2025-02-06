@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 Microsoft and BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,17 +17,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 
 public record ClearinghouseTransferData(
-    [property: JsonPropertyName("participantDetails")] ParticipantDetails ParticipantDetails,
-    [property: JsonPropertyName("identityDetails")] IdentityDetails IdentityDetails,
-    [property: JsonPropertyName("callbackUrl")] string CallbackUrl,
-    [property: JsonPropertyName("exceptProfile")] bool ExceptProfile);
+    [property: JsonPropertyName("legalEntity")] LegalEntity LegalEntity,
+    [property: JsonPropertyName("validationMode")] string ValidationMode,
+    [property: JsonPropertyName("callback")] CallBack Callback
+);
 
-public record IdentityDetails(
-    [property: JsonPropertyName("did")] string Did,
-    [property: JsonPropertyName("uniqueIds")] IEnumerable<UniqueIdData> UniqueIds);
+public record LegalEntity(
+    [property: JsonPropertyName("legalName")] string LegalName,
+    [property: JsonPropertyName("address")] LegalAddress Address,
+    [property: JsonPropertyName("identifiers")] IEnumerable<UniqueIdData> Identifiers
+);
+
+public record LegalAddress(
+    [property: JsonPropertyName("country")] string CountryAlpha2Code,
+    [property: JsonPropertyName("region")] string Region,
+    [property: JsonPropertyName("locality")] string City,
+    [property: JsonPropertyName("postalCode")] string? ZipCode,
+    [property: JsonPropertyName("addressLine")] string AddressLine
+);
+
+public record UniqueIdData(
+    [property: JsonPropertyName("type")] string Type,
+    [property: JsonPropertyName("value")] string Value
+);
+
+public record CallBack(
+    [property: JsonPropertyName("url")] string Url,
+    [property: JsonPropertyName("headers")] IReadOnlyDictionary<string, string> Headers
+);

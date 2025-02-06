@@ -53,8 +53,9 @@ public interface IRegistrationBusinessLogic
     /// Processes the clearinghouse response
     /// </summary>
     /// <param name="data">the response data</param>
+    /// <param name="bpn">BusinessPartnerNumber of the responded data</param>
     /// <param name="cancellationToken">cancellation token</param>
-    Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, CancellationToken cancellationToken);
+    Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, string bpn, CancellationToken cancellationToken);
 
     /// <summary>
     /// Processes the dim response
