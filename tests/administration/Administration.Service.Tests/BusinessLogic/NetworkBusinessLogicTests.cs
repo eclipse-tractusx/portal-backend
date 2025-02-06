@@ -47,6 +47,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class NetworkBusinessLogicTests
 {
     private const string Bpn = "BPNL00000001TEST";
+    private const string VatId = "DE123456789";
     private static readonly string ExistingExternalId = Guid.NewGuid().ToString();
     private static readonly Guid CompanyId = new("95c4339e-e087-4cd2-a5b8-44d385e64630");
     private static readonly Guid UserRoleId = Guid.NewGuid();
@@ -140,12 +141,32 @@ public class NetworkBusinessLogicTests
     }
 
     [Fact]
+    public async Task HandlePartnerRegistration_WithInvalidUniqueId_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var data = _fixture.Build<PartnerRegistrationData>()
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "123"), new CompanyUniqueIdData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "12")])
+            .Create();
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be("Invalid value of uniqueIds: 'VAT_ID, COMMERCIAL_REG_NUMBER' (Parameter 'UniqueIds')");
+        ex.ParamName.Should().Be("UniqueIds");
+    }
+
+    [Fact]
     public async Task HandlePartnerRegistration_WithoutExistingBusinessPartnerNumber_ThrowsControllerArgumentException()
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.BusinessPartnerNumber, "BPNL00000001FAIL")
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -164,6 +185,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.CompanyRoles, Enumerable.Empty<CompanyRoleId>())
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -185,6 +207,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", email) })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -204,6 +227,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", firstName, "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -223,6 +247,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", lastname, "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -242,6 +267,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.ExternalId, ExistingExternalId)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -261,6 +287,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.CountryAlpha2Code, "XX")
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -280,6 +307,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
         A.CallTo(() => _identity.CompanyId).Returns(NoIdpCompanyId);
 
@@ -300,6 +328,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
         A.CallTo(() => _identity.CompanyId).Returns(MultiIdpCompanyId);
 
@@ -322,6 +351,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(notExistingIdpId, "123", "test", "test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
         // Act
@@ -341,6 +371,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
             .With(x => x.UserDetails, new[] { new UserDetailData(IdpId, "123", "test", "test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
         A.CallTo(() => _userProvisioningService.GetRoleDatas(A<IEnumerable<UserRoleConfig>>._))
             .Throws(new ControllerArgumentException($"invalid roles: clientId: 'cl1', roles: [Company Admin]"));
