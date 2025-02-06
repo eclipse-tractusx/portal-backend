@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
@@ -249,9 +250,19 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
     {
         // Arrange
         var sut = await CreateSut();
+        var externalRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var providerOnlyRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
 
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE, externalRoleConfig, providerOnlyRoleConfig);
 
         // Assert
         result.Should().NotBeNull();
@@ -265,8 +276,19 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var sut = await CreateSut();
 
+        var externalRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var providerOnlyRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, Guid.NewGuid(), OfferTypeId.SERVICE, externalRoleConfig, providerOnlyRoleConfig);
 
         // Assert
         result.Should().NotBeNull();
@@ -279,8 +301,19 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var sut = await CreateSut();
 
+        var externalRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var providerOnlyRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE);
+        var result = await sut.GetTechnicalUserProfileInformation(Guid.NewGuid(), _validCompanyId, OfferTypeId.SERVICE, externalRoleConfig, providerOnlyRoleConfig);
 
         // Assert
         result.Should().Be(default);
@@ -292,8 +325,19 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var sut = await CreateSut();
 
+        var externalRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var providerOnlyRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+
         // Act
-        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP);
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.APP, externalRoleConfig, providerOnlyRoleConfig);
 
         // Assert
         result.Should().Be(default);

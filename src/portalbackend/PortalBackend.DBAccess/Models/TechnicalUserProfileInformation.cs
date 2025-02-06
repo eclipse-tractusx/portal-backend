@@ -26,5 +26,7 @@ public record TechnicalUserProfileInformationTransferData(
 
 public record UserRoleInformationTransferData(
     Guid UserRoleId,
-    string UserRoleText
+    string UserRoleText,
+    bool IsExternal,
+    bool IsProviderOnly
 );
