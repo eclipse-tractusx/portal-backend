@@ -106,18 +106,16 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var sut = await CreateSut();
 
         // Act
-        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Enumerable.Repeat(new Guid("607818be-4978-41f4-bf63-fa8d2de51157"), 1), Constants.DefaultLanguage).ToListAsync();
+        var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
         data.Should().HaveCount(19);
         data.Should().OnlyHaveUniqueItems();
-        data.Where(x => !x.External).Should().HaveCount(18);
-        data.Where(x => x.External).Should().ContainSingle();
     }
 
     #endregion
 
-    #region GetUserRolesByClientId
+    #region GetUserRoleDataUntrackedAsync
 
     [Fact]
     public async Task GetUserRoleDataUntrackedAsync_WithValidData_ReturnsExpected()
@@ -158,6 +156,27 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         data.Should().BeEmpty();
     }
 
+    #endregion
+
+    #region GetUserRoleIdsUntrackedAsync
+
+    [Fact]
+    public async Task GetUserRoleIdsUntrackedAsync()
+    {
+        // Arrange
+        var userRoleConfig = new[]{
+            new UserRoleConfig("Cl1-CX-Registration", new []
+            {
+                "Company Admin"
+            })};
+        var sut = await CreateSut();
+
+        // Act
+        var data = await sut.GetUserRoleIdsUntrackedAsync(userRoleConfig).ToListAsync();
+
+        // Assert
+        data.Should().ContainSingle().Which.Should().Be(new Guid("7410693c-c893-409e-852f-9ee886ce94a6"));
+    }
     #endregion
 
     #region GetActiveOfferRoles

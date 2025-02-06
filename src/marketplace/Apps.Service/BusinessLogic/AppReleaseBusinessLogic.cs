@@ -526,11 +526,11 @@ public class AppReleaseBusinessLogic(
 
     /// <inheritdoc />
     public Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId) =>
-        offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.APP, _settings.DimUserRoles);
+        offerService.GetTechnicalUserProfilesForOffer(offerId, OfferTypeId.APP, _settings.DimUserRoles, _settings.UserRolesAccessibleByProviderOnly);
 
     /// <inheritdoc />
     public Task UpdateTechnicalUserProfiles(Guid appId, IEnumerable<TechnicalUserProfileData> data) =>
-        offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, _settings.TechnicalUserProfileClient);
+        offerService.UpdateTechnicalUserProfiles(appId, OfferTypeId.APP, data, _settings.TechnicalUserProfileClient, _settings.UserRolesAccessibleByProviderOnly);
 
     /// <inheritdoc />
     public async Task<IEnumerable<ActiveAppRoleDetails>> GetAppProviderRolesAsync(Guid appId, string? languageShortName)

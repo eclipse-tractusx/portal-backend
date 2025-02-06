@@ -8083,6 +8083,8 @@ components:
           nullable: true
         roleType:
           $ref: '#/components/schemas/UserRoleType'
+        onlyAccessibleByProvider:
+          type: boolean
       additionalProperties: false
       description: Basic model for user role data needed to display user roles with description.
     UserRoleWithId:

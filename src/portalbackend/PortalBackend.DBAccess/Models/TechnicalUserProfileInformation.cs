@@ -17,14 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using System.Text.Json.Serialization;
-
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
-
-public record TechnicalUserProfileInformation(
-    [property: JsonPropertyName("technicalUserProfileId")] Guid TechnicalUserProfileId,
-    [property: JsonPropertyName("userRoles")] IEnumerable<UserRoleInformation> UserRoles
-);
 
 public record TechnicalUserProfileInformationTransferData(
     Guid TechnicalUserProfileId,
@@ -34,4 +27,6 @@ public record TechnicalUserProfileInformationTransferData(
 public record UserRoleInformationTransferData(
     Guid UserRoleId,
     string UserRoleText,
-    bool External);
+    bool IsExternal,
+    bool IsProviderOnly
+);

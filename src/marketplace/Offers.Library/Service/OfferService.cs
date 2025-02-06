@@ -24,6 +24,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -699,22 +700,19 @@ public class OfferService(
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRoles)
+    public async Task<IEnumerable<TechnicalUserProfileInformation>> GetTechnicalUserProfilesForOffer(Guid offerId, OfferTypeId offerTypeId, IEnumerable<UserRoleConfig> externalUserRolesConfig, IEnumerable<UserRoleConfig> userRolesAccessibleByProviderOnly)
     {
         var companyId = _identityData.CompanyId;
-        var userRoles = await portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleIdsUntrackedAsync(externalUserRoles)
-            .ToListAsync()
-            .ConfigureAwait(false);
         var result = await portalRepositories.GetInstance<ITechnicalUserProfileRepository>()
-            .GetTechnicalUserProfileInformation(offerId, companyId, offerTypeId, userRoles).ConfigureAwait(ConfigureAwaitOptions.None);
+            .GetTechnicalUserProfileInformation(offerId, companyId, offerTypeId, externalUserRolesConfig, userRolesAccessibleByProviderOnly).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"Offer {offerId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_NOTFOUND, [new("offerId", offerId.ToString())]);
         }
 
         if (!result.IsUserOfProvidingCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not the providing company");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new("companyId", companyId.ToString())]);
         }
 
         return result.Information
@@ -724,44 +722,52 @@ public class OfferService(
                     .Select(ur => new UserRoleInformation(
                         ur.UserRoleId,
                         ur.UserRoleText,
-                        ur.External ? UserRoleType.External : UserRoleType.Internal))
-            ));
+                        ur.IsExternal ? UserRoleType.External : UserRoleType.Internal,
+                        ur.IsProviderOnly))));
     }
 
     /// <inheritdoc />
-    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string technicalUserProfileClient)
+    public async Task UpdateTechnicalUserProfiles(Guid offerId, OfferTypeId offerTypeId, IEnumerable<TechnicalUserProfileData> data, string technicalUserProfileClient, IEnumerable<UserRoleConfig> userRolesAccessibleByProviderOnly)
     {
         var companyId = _identityData.CompanyId;
         if (data.Any(x => x.TechnicalUserProfileId == null && !x.UserRoleIds.Any()))
         {
-            throw new ControllerArgumentException("Technical User Profiles and Role IDs both should not be empty.");
+            throw ControllerArgumentException.Create(OfferServiceErrors.NOT_EMPTY_ROLES_AND_PROFILES);
         }
+
         var technicalUserProfileRepository = portalRepositories.GetInstance<ITechnicalUserProfileRepository>();
         var offerProfileData = await technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        if (offerProfileData == null)
+        {
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_NOTFOUND, [new("offerId", offerId.ToString())]);
+        }
+
+        if (!offerProfileData.IsProvidingCompanyUser)
+        {
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new("companyId", companyId.ToString())]);
+        }
+
+        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCY_SERVICE) ?? false)
+        {
+            throw ConflictException.Create(OfferServiceErrors.TECHNICAL_USERS_FOR_CONSULTANCY);
+        }
+
         var roles = await portalRepositories.GetInstance<IUserRolesRepository>()
             .GetRolesForClient(technicalUserProfileClient)
             .ToListAsync()
             .ConfigureAwait(false);
 
-        if (offerProfileData == null)
-        {
-            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exist");
-        }
+        data.SelectMany(ur => ur.UserRoleIds).Except(roles).IfAny(notExistingRoles =>
+            throw ConflictException.Create(OfferServiceErrors.ROLES_DOES_NOT_EXIST, [new("roleIds", string.Join(",", notExistingRoles))]));
 
-        if (!offerProfileData.IsProvidingCompanyUser)
-        {
-            throw new ForbiddenException($"Company {companyId} is not the providing company");
-        }
+        var providerOnlyUserRoles = await portalRepositories.GetInstance<IUserRolesRepository>().GetUserRoleIdsUntrackedAsync(userRolesAccessibleByProviderOnly)
+            .ToListAsync()
+            .ConfigureAwait(false);
 
-        if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCY_SERVICE) ?? false)
+        if (providerOnlyUserRoles.Except(data.SelectMany(ur => ur.UserRoleIds)).Any())
         {
-            throw new ConflictException("Technical User Profiles can't be set for CONSULTANCY_SERVICE");
-        }
-
-        var notExistingRoles = data.SelectMany(ur => ur.UserRoleIds).Except(roles);
-        if (notExistingRoles.Any())
-        {
-            throw new ConflictException($"Roles {string.Join(",", notExistingRoles)} do not exist");
+            throw ConflictException.Create(OfferServiceErrors.ROLES_MISSMATCH);
         }
 
         technicalUserProfileRepository.CreateDeleteTechnicalUserProfileAssignedRoles(
@@ -876,8 +882,10 @@ public class OfferService(
                             item.OfferSubscriptionId,
                             item.DocumentId == Guid.Empty ? null : item.DocumentId)));
         }
+
         return await Pagination.CreateResponseAsync(page, size, 15, GetCompanySubscribedOfferSubscriptionStatusesData).ConfigureAwait(ConfigureAwaitOptions.None);
     }
+
     /// <inheritdoc/>
     public async Task UnsubscribeOwnCompanySubscriptionAsync(Guid subscriptionId)
     {

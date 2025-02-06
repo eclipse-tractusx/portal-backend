@@ -47,7 +47,8 @@ public class TechnicalUserCreation(
     private readonly ServiceAccountCreationSettings _settings = options.Value;
 
     /// <inheritdoc />
-    async Task<(bool HasExternalTechnicalUser, Guid? ProcessId, IEnumerable<CreatedServiceAccountData> TechnicalUsers)> ITechnicalUserCreation.CreateTechnicalUsersAsync(TechnicalUserCreationInfo creationData,
+    async Task<(bool HasExternalTechnicalUser, Guid? ProcessId, IEnumerable<CreatedServiceAccountData> TechnicalUsers)>
+        ITechnicalUserCreation.CreateTechnicalUsersAsync(TechnicalUserCreationInfo creationData,
             Guid companyId,
             IEnumerable<string> bpns,
             TechnicalUserTypeId technicalUserTypeId,
@@ -60,67 +61,109 @@ public class TechnicalUserCreation(
         var technicalUserRepository = portalRepositories.GetInstance<ITechnicalUserRepository>();
         var userRolesRepository = portalRepositories.GetInstance<IUserRolesRepository>();
 
-        var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds).ConfigureAwait(ConfigureAwaitOptions.None);
-        var dimConfigRoles = _settings.DimUserRoles.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
-        var userProviderRoles = _settings.UserRolesAccessibleByProviderOnly.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
-
-        var userTypeId = technicalUserTypeId == TechnicalUserTypeId.MANAGED && userRoleData.IntersectBy(userProviderRoles, providerData => (providerData.ClientClientId, providerData.UserRoleText)).Any() ? TechnicalUserTypeId.PROVIDER_OWNED : technicalUserTypeId;
+        var userRoleData = await GetAndValidateUserRoleData(userRolesRepository, userRoleIds)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        var dimConfigRoles =
+            _settings.DimUserRoles.SelectMany(x => x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
+        var userProviderRoles = _settings.UserRolesAccessibleByProviderOnly.SelectMany(x =>
+            x.UserRoleNames.Select(userRoleName => (x.ClientId, userRoleName)));
 
         var serviceAccounts = ImmutableList.CreateBuilder<CreatedServiceAccountData>();
+        if (technicalUserTypeId == TechnicalUserTypeId.MANAGED &&
+            userRoleData.IntersectBy(userProviderRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+                .IfAny(
+                    async roleData =>
+                    {
+                        var keycloakRoleData = roleData.ToImmutableList();
+                        var (clientId, enhancedName, serviceAccountData) =
+                            await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name,
+                                description,
+                                iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
+                        var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE,
+                            TechnicalUserTypeId.PROVIDER_OWNED, TechnicalUserKindId.INTERNAL, name, clientId,
+                            description,
+                            keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
+                        serviceAccounts.Add(new CreatedServiceAccountData(
+                            serviceAccountId,
+                            enhancedName,
+                            description,
+                            UserStatusId.ACTIVE,
+                            clientId,
+                            serviceAccountData,
+                            keycloakRoleData));
+                    }, out var kcRolesTask))
+        {
+            await kcRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
+        }
 
-        if (userRoleData.ExceptBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
-            async roleData =>
-            {
-                var keycloakRoleData = roleData.ToImmutableList();
-                var (clientId, enhancedName, serviceAccountData) = await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description, iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
-                var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE, userTypeId, TechnicalUserKindId.INTERNAL, name, clientId, description, keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
-                serviceAccounts.Add(new CreatedServiceAccountData(
-                    serviceAccountId,
-                    enhancedName,
-                    description,
-                    UserStatusId.ACTIVE,
-                    clientId,
-                    serviceAccountData,
-                    keycloakRoleData));
-            },
-            out var keycloakRolesTask))
+        if (userRoleData
+            .ExceptBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+            .ExceptBy(userProviderRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+            .IfAny(
+                async roleData =>
+                {
+                    var keycloakRoleData = roleData.ToImmutableList();
+                    var (clientId, enhancedName, serviceAccountData) =
+                        await CreateKeycloakServiceAccount(bpns, enhanceTechnicalUserName, enabled, name, description,
+                            iamClientAuthMethod, keycloakRoleData).ConfigureAwait(ConfigureAwaitOptions.None);
+                    var serviceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.ACTIVE,
+                        technicalUserTypeId, TechnicalUserKindId.INTERNAL, name, clientId, description,
+                        keycloakRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
+                    serviceAccounts.Add(new CreatedServiceAccountData(
+                        serviceAccountId,
+                        enhancedName,
+                        description,
+                        UserStatusId.ACTIVE,
+                        clientId,
+                        serviceAccountData,
+                        keycloakRoleData));
+                },
+                out var keycloakRolesTask))
         {
             await keycloakRolesTask.ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
         Guid? processId = null;
-        var hasExternalServiceAccount = userRoleData.IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText)).IfAny(
-            roleData =>
-            {
-                var dimRoleData = roleData.ToImmutableList();
-                var dimSaName = $"dim-{name}";
-                var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING, technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData, technicalUserRepository, userRolesRepository, setOptionalParameter);
-                var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
-                if (processData?.ProcessTypeId is not null)
-                {
-                    if (processData.ProcessId is null)
+        var hasExternalServiceAccount =
+            userRoleData
+                .IntersectBy(dimConfigRoles, roleData => (roleData.ClientClientId, roleData.UserRoleText))
+                .IfAny(
+                    roleData =>
                     {
-                        var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
-                        processStepRepository.CreateProcessStep(processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(), ProcessStepStatusId.TODO, process.Id);
-                        processId = process.Id;
-                    }
-                    else
-                    {
-                        processId = processData.ProcessId.Value;
-                    }
+                        var dimRoleData = roleData.ToImmutableList();
+                        var dimSaName = $"dim-{name}";
+                        var dimServiceAccountId = CreateDatabaseServiceAccount(companyId, UserStatusId.PENDING,
+                            technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData,
+                            technicalUserRepository, userRolesRepository, setOptionalParameter);
+                        var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
+                        if (processData?.ProcessTypeId is not null)
+                        {
+                            if (processData.ProcessId is null)
+                            {
+                                var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
+                                processStepRepository.CreateProcessStep(
+                                    processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(),
+                                    ProcessStepStatusId.TODO, process.Id);
+                                processId = process.Id;
+                            }
+                            else
+                            {
+                                processId = processData.ProcessId.Value;
+                            }
 
-                    portalRepositories.GetInstance<ITechnicalUserRepository>().CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
-                }
+                            portalRepositories.GetInstance<ITechnicalUserRepository>()
+                                .CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
+                        }
 
-                serviceAccounts.Add(new CreatedServiceAccountData(
-                    dimServiceAccountId,
-                    dimSaName,
-                    description,
-                    UserStatusId.PENDING,
-                    null,
-                    null,
-                    dimRoleData));
-            });
+                        serviceAccounts.Add(new CreatedServiceAccountData(
+                            dimServiceAccountId,
+                            dimSaName,
+                            description,
+                            UserStatusId.PENDING,
+                            null,
+                            null,
+                            dimRoleData));
+                    });
 
         return (hasExternalServiceAccount, processId, serviceAccounts.ToImmutable());
     }

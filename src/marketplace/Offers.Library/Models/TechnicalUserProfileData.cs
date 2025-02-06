@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,9 +17,23 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 public record TechnicalUserProfileData(
     Guid? TechnicalUserProfileId,
     IEnumerable<Guid> UserRoleIds
 );
+
+public record TechnicalUserProfileInformation(
+    [property: JsonPropertyName("technicalUserProfileId")] Guid TechnicalUserProfileId,
+    [property: JsonPropertyName("userRoles")] IEnumerable<UserRoleInformation> UserRoles
+);
+
+public record UserRoleInformation(
+    [property: JsonPropertyName("roleId")] Guid UserRoleId,
+    [property: JsonPropertyName("roleName")] string UserRoleText,
+    [property: JsonPropertyName("type")] UserRoleType RoleType,
+    [property: JsonPropertyName("accessiblyByProviderOnly")] bool AccessiblyByProviderOnly);

@@ -48,7 +48,7 @@ public interface IUserRolesRepository
     IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid offerId, Guid companyId, string languageShortName);
     IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId);
 
-    IAsyncEnumerable<UserRoleWithDescriptionTransferData> GetServiceAccountRolesAsync(Guid companyId, string clientId, IEnumerable<Guid> externalRoleIds, string languageShortName);
+    IAsyncEnumerable<UserRoleWithDescriptionTransferData> GetServiceAccountRolesAsync(Guid companyId, string clientId, string languageShortName);
 
     /// <summary>
     /// Gets all user role ids for the given offerId
