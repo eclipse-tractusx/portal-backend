@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
@@ -132,7 +133,7 @@ public class ClearinghouseBusinessLogic(
 
                 // There is not "Message" param available in the response in case of VALID so, thats why saving ClearinghouseResponseStatus param into the Comments in case of VALID only.
                 item.Comment = isInvalid
-                                ? string.Join(", ", data.ValidationUnits.Where(s => s.Status != ClearinghouseResponseStatus.VALID).Select(x => x.Reason!.DetailMessage))
+                                ? string.Join(", ", data.ValidationUnits.Where(s => s.Status != ClearinghouseResponseStatus.VALID).Select(x => x.Reason?.DetailMessage))
                                 : validData!.Status.ToString();
             },
             isInvalid
