@@ -251,14 +251,14 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Arrange
         var sut = await CreateSut();
         var externalRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("Cl2-CX-Portal", new []
             {
-                "Company Admin"
+                "test"
             })};
         var providerOnlyRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("https://catenax-int-dismantler-s66pftcc.authentication.eu10.hana.ondemand.com", new []
             {
-                "Company Admin"
+                "EarthCommerce.Advanced.BuyerRC_QAS2"
             })};
 
         // Act
@@ -267,7 +267,44 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         // Assert
         result.Should().NotBeNull();
         result.IsUserOfProvidingCompany.Should().BeTrue();
-        result.Information.Should().HaveCount(2);
+        result.Information.Should().HaveCount(2).And.Satisfy(
+            x => x.UserRoles.Count() == 2 &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e")).All(ur => ur.IsExternal && !ur.IsProviderOnly) &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f")).All(ur => !ur.IsExternal && ur.IsProviderOnly),
+            x => x.UserRoles.Count() == 1 &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e")).All(ur => ur.IsExternal && !ur.IsProviderOnly)
+        );
+    }
+
+    [Fact]
+    public async Task GetTechnicalUserProfileInformation_NoMatchingRoleConfig_ReturnsExpectedResult()
+    {
+        // Arrange
+        var sut = await CreateSut();
+        var externalRoleConfig = new[]{
+            new UserRoleConfig("Foo", new []
+            {
+                "deadbeef"
+            })};
+        var providerOnlyRoleConfig = new[]{
+            new UserRoleConfig("Bar", new []
+            {
+                "deadbeef"
+            })};
+
+        // Act
+        var result = await sut.GetTechnicalUserProfileInformation(_validServiceId, _validCompanyId, OfferTypeId.SERVICE, externalRoleConfig, providerOnlyRoleConfig);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsUserOfProvidingCompany.Should().BeTrue();
+        result.Information.Should().HaveCount(2).And.Satisfy(
+            x => x.UserRoles.Count() == 2 &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e")).All(ur => !ur.IsExternal && !ur.IsProviderOnly) &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873f")).All(ur => !ur.IsExternal && !ur.IsProviderOnly),
+            x => x.UserRoles.Count() == 1 &&
+                x.UserRoles.Where(ur => ur.UserRoleId == new Guid("aabcdfeb-6669-4c74-89f0-19cda090873e")).All(ur => !ur.IsExternal && !ur.IsProviderOnly)
+        );
     }
 
     [Fact]
@@ -277,14 +314,14 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         var externalRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Identity Wallet Management"
             })};
         var providerOnlyRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Registration External"
             })};
 
         // Act
@@ -302,14 +339,14 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         var externalRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Identity Wallet Management"
             })};
         var providerOnlyRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Registration External"
             })};
 
         // Act
@@ -326,14 +363,14 @@ public class TechnicalUserProfileRepositoryTests : IAssemblyFixture<TestDbFixtur
         var sut = await CreateSut();
 
         var externalRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Identity Wallet Management"
             })};
         var providerOnlyRoleConfig = new[]{
-            new UserRoleConfig("Cl1-CX-Registration", new []
+            new UserRoleConfig("technical_roles_management", new []
             {
-                "Company Admin"
+                "Registration External"
             })};
 
         // Act
