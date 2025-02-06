@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record ConnectorUpdateInformation(
     ConnectorStatusId Status,
     ConnectorTypeId Type,
-    bool IsHostCompany,
+    bool IsProviderCompany,
     string ConnectorUrl,
     string? Bpn,
     Guid? SelfDescriptionDocumentId,

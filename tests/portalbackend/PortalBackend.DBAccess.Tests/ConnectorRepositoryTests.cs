@@ -36,6 +36,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
 {
     private readonly TestDbFixture _dbTestDbFixture;
     private readonly Guid _userCompanyId = new("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87");
+    private readonly Guid _providerCompanyId = new("41fd2ab8-71cd-4546-9bef-a388d91b2542");
     private readonly IEnumerable<ProcessStepTypeId> _processStepsToFilter = [
         ProcessStepTypeId.CREATE_DIM_TECHNICAL_USER,
         ProcessStepTypeId.RETRIGGER_CREATE_DIM_TECHNICAL_USER,
@@ -419,6 +420,34 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetConnectorUpdateInformation_ReturnIsProviderTrue()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetConnectorUpdateInformation(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), _providerCompanyId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsProviderCompany.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetConnectorUpdateInformation_ReturnIsProviderFalse()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetConnectorUpdateInformation(new Guid("7e86a0b8-6903-496b-96d1-0ef508206839"), _userCompanyId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.IsProviderCompany.Should().BeFalse();
+    }
+
     #endregion
 
     #region GetConnectorEndPointDataAsync
@@ -452,6 +481,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             }
         }
     }
+
     [Fact]
     public async Task GetConnectorEndPointDataAsync_CheckHostBPN_ReturnsExpectedResult()
     {
@@ -468,7 +498,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.ConnectorEndpoint == "www.connector7.de",
             x => x.ConnectorEndpoint == "www.connector43.de");
         result.Where(x => x.BusinessPartnerNumber == "BPNL00000003CRHK").Should().HaveCount(1).And.Satisfy(
-       x => x.ConnectorEndpoint == "www.connector6.de");
+            x => x.ConnectorEndpoint == "www.connector6.de");
     }
 
     #endregion
