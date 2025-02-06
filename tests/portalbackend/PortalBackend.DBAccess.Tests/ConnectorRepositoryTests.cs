@@ -432,7 +432,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.IsProviderCompany.Should().BeTrue();
-
     }
 
     [Fact]
@@ -447,7 +446,6 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.IsProviderCompany.Should().BeFalse();
-
     }
 
     #endregion
@@ -483,6 +481,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             }
         }
     }
+
     [Fact]
     public async Task GetConnectorEndPointDataAsync_CheckHostBPN_ReturnsExpectedResult()
     {
@@ -499,7 +498,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
             x => x.ConnectorEndpoint == "www.connector7.de",
             x => x.ConnectorEndpoint == "www.connector43.de");
         result.Where(x => x.BusinessPartnerNumber == "BPNL00000003CRHK").Should().HaveCount(1).And.Satisfy(
-       x => x.ConnectorEndpoint == "www.connector6.de");
+            x => x.ConnectorEndpoint == "www.connector6.de");
     }
 
     #endregion
