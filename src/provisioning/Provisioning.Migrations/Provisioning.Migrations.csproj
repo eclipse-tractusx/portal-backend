@@ -49,6 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\Framework.DBAccess\Framework.DBAccess.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Logging\Framework.Logging.csproj" />
     <ProjectReference Include="..\..\framework\Framework.Seeding\Framework.Seeding.csproj" />
     <ProjectReference Include="..\Provisioning.ProvisioningEntities\Provisioning.ProvisioningEntities.csproj" />
