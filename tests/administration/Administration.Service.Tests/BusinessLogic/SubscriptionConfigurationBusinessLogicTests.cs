@@ -236,10 +236,8 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Arrange
         SetupProviderCompanyDetails();
         var providerCompanyId = Guid.NewGuid();
-        var process1Id = Guid.NewGuid();
-        var process2Id = Guid.NewGuid();
-        var processStep1Id = Guid.NewGuid();
-        var processStep2Id = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((providerCompanyId, null!, null));
@@ -247,11 +245,8 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns(new List<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>
             {
                 new(
-                    new Process(process1Id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStep1Id, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, process1Id, DateTimeOffset.UtcNow), 1)),
-                new(
-                    new Process(process2Id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStep2Id, ProcessStepTypeId.AWAIT_START_AUTOSETUP, ProcessStepStatusId.TODO, process2Id, DateTimeOffset.UtcNow), 1))
+                    new Process(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
+                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow), 1))
             }.ToAsyncEnumerable());
 
         // Act
@@ -270,10 +265,8 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         // Arrange
         SetupProviderCompanyDetails();
-        var process1Id = Guid.NewGuid();
-        var process2Id = Guid.NewGuid();
-        var processStep1Id = Guid.NewGuid();
-        var processStep2Id = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((ExistingCompanyId, "https://example.org", "https://example.org/callback"));
@@ -281,11 +274,8 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns(new List<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>
             {
                 new(
-                    new Process(process1Id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStep1Id, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, process1Id, DateTimeOffset.UtcNow), 1)),
-                new(
-                    new Process(process2Id, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStep2Id, ProcessStepTypeId.AWAIT_START_AUTOSETUP, ProcessStepStatusId.TODO, process2Id, DateTimeOffset.UtcNow), 1))
+                    new Process(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
+                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow), 1)),
             }.ToAsyncEnumerable());
 
         // Act
@@ -296,7 +286,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepId == processStep1Id))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepId == processStepId))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.AWAIT_START_AUTOSETUP))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();

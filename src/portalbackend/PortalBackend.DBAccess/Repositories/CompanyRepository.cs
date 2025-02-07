@@ -487,8 +487,13 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         context.Companies
             .Where(c => c.Id == companyId)
             .SelectMany(c => c.ProvidedOffers.SelectMany(po =>
-                po.OfferSubscriptions.Select(os =>
-                    new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
+                po.OfferSubscriptions.Where(x =>
+                    x.Process != null &&
+                    x.Process!.ProcessSteps.Any(ps =>
+                        ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                        ps.ProcessStepTypeId == ProcessStepTypeId.RETRIGGER_PROVIDER
+                ))
+                .Select(os => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                         os.Process,
                         os.Process!.ProcessSteps.Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)))))
             .ToAsyncEnumerable();

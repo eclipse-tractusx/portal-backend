@@ -128,13 +128,8 @@ public class SubscriptionConfigurationBusinessLogic(
             .ToListAsync()
             .ConfigureAwait(false);
 
-        foreach (var context in processData
-                     .Where(x => x.Process != null && x.ProcessSteps?.Any(ps => ps is
-                     {
-                         ProcessStepStatusId: ProcessStepStatusId.TODO,
-                         ProcessStepTypeId: ProcessStepTypeId.RETRIGGER_PROVIDER
-                     }) == true)
-                     .Select(data => data.CreateManualProcessData(ProcessStepTypeId.RETRIGGER_PROVIDER, portalRepositories, () => $"processId {data.Process!.Id}")))
+        foreach (var context in processData.Select(data =>
+                     data.CreateManualProcessData(ProcessStepTypeId.RETRIGGER_PROVIDER, portalRepositories, () => $"processId {data.Process!.Id}")))
         {
             context.FinalizeProcessStep();
             context.ScheduleProcessSteps(Enumerable.Repeat(ProcessStepTypeId.AWAIT_START_AUTOSETUP, 1));
