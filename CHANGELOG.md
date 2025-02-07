@@ -4,14 +4,14 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
-## 2.4.0-rc.1
+## 2.4.0-RC1
 
 ### Feature
 
 * **Clearinghouse**
   * integrated the tagus v2 api [#1220](https://github.com/eclipse-tractusx/portal-backend/pull/1220)
 * **Onboarding**
-  * added set membershipt call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
+  * added set membership call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
 * **Administration Service**
   * added sd skipped date to connectors [#1234](https://github.com/eclipse-tractusx/portal-backend/pull/1234)
   * adjusted filter for `GET: /api/administration/serviceaccount/owncompany/serviceaccounts` [#1255](https://github.com/eclipse-tractusx/portal-backend/pull/1255)
