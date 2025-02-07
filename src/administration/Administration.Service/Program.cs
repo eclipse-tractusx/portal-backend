@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.IssuerComponent.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Config;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyInjection;
@@ -88,6 +89,7 @@ await WebAppHelper
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
 
         builder.Services
+            .AddOfferProviderService(builder.Configuration)
             .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
             .AddTransient<IServiceAccountManagement, ServiceAccountManagement>()
             .AddPartnerRegistration(builder.Configuration)
