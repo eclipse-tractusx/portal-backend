@@ -4,6 +4,52 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.4.0-RC1
+
+### Feature
+
+* **Clearinghouse**
+  * integrated the tagus v2 api [#1220](https://github.com/eclipse-tractusx/portal-backend/pull/1220)
+* **Onboarding**
+  * added set membership call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
+* **Administration Service**
+  * added sd skipped date to connectors [#1234](https://github.com/eclipse-tractusx/portal-backend/pull/1234)
+  * adjusted filter for `GET: /api/administration/serviceaccount/owncompany/serviceaccounts` [#1255](https://github.com/eclipse-tractusx/portal-backend/pull/1255)
+  * added skipped date to `GET: /api/administration/companyData/missing-sd-document` [#1236](https://github.com/eclipse-tractusx/portal-backend/pull/1236)
+* **Registration Service**
+  * adjusted error handling to new structure [#1237](https://github.com/eclipse-tractusx/portal-backend/pull/1237)
+* **Apps Service**
+  * adjusted error handling to new structure [#1260](https://github.com/eclipse-tractusx/portal-backend/pull/1260)
+* **Offers**
+  * enabled decline of subscriptions for offer provider [#1171](https://github.com/eclipse-tractusx/portal-backend/pull/1171)
+  * added translatable agreements & consents [#1246](https://github.com/eclipse-tractusx/portal-backend/pull/1246)
+* **TechnicalUser**
+  * added provider_owned technical user [#1249](https://github.com/eclipse-tractusx/portal-backend/pull/1249)
+  * enhanced technical user profile information with provider only flag [#1256](https://github.com/eclipse-tractusx/portal-backend/pull/1256)
+* **SDCreation**
+  * added process steps to await the sd creation response [#1189](https://github.com/eclipse-tractusx/portal-backend/pull/1189)
+
+### Bugfixes
+
+* **Connectors**
+  * fixed deletion of connectors without SD document [#1221](https://github.com/eclipse-tractusx/portal-backend/issues/1221)
+  * fixed update of connectors [#1086](https://github.com/eclipse-tractusx/portal-backend/issues/1086)
+* **Onboarding Service Provider**
+  * added regex validation for uniqueIds [#1163](https://github.com/eclipse-tractusx/portal-backend/issues/1163)
+* **Offers**
+  * adjusted roles for /subscriber endpoints [#1110](https://github.com/eclipse-tractusx/portal-backend/pull/1110)
+* **UserUpload**
+  * fixed incorrect success and error count [#1226](https://github.com/eclipse-tractusx/portal-backend/pull/1226)
+
+### Technical Support
+
+* **.NET9**
+  * upgraded runtime version to .NET9 [#1161](https://github.com/eclipse-tractusx/portal-backend/pull/1161)
+* **ProcessWorker**
+  * added process worker as nuget package [#998](https://github.com/eclipse-tractusx/portal-backend/pull/998)
+* **Dependencies**
+  * updated app dependencies [#1235](https://github.com/eclipse-tractusx/portal-backend/pull/1235), [#1241](https://github.com/eclipse-tractusx/portal-backend/pull/1241), [#1242](https://github.com/eclipse-tractusx/portal-backend/pull/1242), [#1243](https://github.com/eclipse-tractusx/portal-backend/pull/1243), [#1251](https://github.com/eclipse-tractusx/portal-backend/pull/1251), [#1258](https://github.com/eclipse-tractusx/portal-backend/pull/1258)
+
 ## 2.4.0-alpha.2
 
 ### Feature
