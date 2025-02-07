@@ -241,12 +241,10 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((providerCompanyId, null!, null));
-        A.CallTo(() => _companyRepository.GetOfferSubscriptionProcessesForCompanyId(providerCompanyId))
-            .Returns(new List<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionRetriggerProcessesForCompanyId(providerCompanyId))
+            .Returns(new (Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>)[]
             {
-                new(
-                    new Process(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow), 1))
+                (new(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow))
             }.ToAsyncEnumerable());
 
         // Act
@@ -270,12 +268,10 @@ public class SubscriptionConfigurationBusinessLogicTests
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
             .Returns((ExistingCompanyId, "https://example.org", "https://example.org/callback"));
-        A.CallTo(() => _companyRepository.GetOfferSubscriptionProcessesForCompanyId(ExistingCompanyId))
-            .Returns(new List<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>>
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionRetriggerProcessesForCompanyId(ExistingCompanyId))
+            .Returns(new (Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>)[]
             {
-                new(
-                    new Process(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()),
-                    Enumerable.Repeat(new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow), 1)),
+                (new(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow))
             }.ToAsyncEnumerable());
 
         // Act

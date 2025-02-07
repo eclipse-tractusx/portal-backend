@@ -184,6 +184,5 @@ public interface ICompanyRepository
     Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId);
     Task<bool> IsExistingCompany(Guid companyId);
     Task<(bool Exists, Guid CompanyId, IEnumerable<Guid> SubmittedCompanyApplicationId)> GetCompanyIdByBpn(string bpn);
-    Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId);
-    IAsyncEnumerable<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>> GetOfferSubscriptionProcessesForCompanyId(Guid companyId);
+    Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetSelfDescriptionProcessDataForCompanyId(Guid companyId);
 }

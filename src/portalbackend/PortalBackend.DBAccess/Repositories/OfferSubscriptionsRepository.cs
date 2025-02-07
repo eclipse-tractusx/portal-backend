@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -534,4 +535,15 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 x.Offer!.Name,
                 x.ProcessId))
             .SingleOrDefaultAsync();
+
+    public IAsyncEnumerable<(Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>)> GetOfferSubscriptionRetriggerProcessesForCompanyId(Guid companyId) =>
+        dbContext.ProcessSteps
+            .AsNoTracking()
+            .Where(ps =>
+                ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
+                ps.ProcessStepTypeId == ProcessStepTypeId.RETRIGGER_PROVIDER &&
+                ps.Process!.OfferSubscription!.Offer!.ProviderCompanyId == companyId)
+            .OrderBy(ps => ps.ProcessId)
+            .Select(ps => new ValueTuple<Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>(ps.Process!, ps))
+            .ToAsyncEnumerable();
 }

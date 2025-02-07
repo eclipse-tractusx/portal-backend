@@ -18,11 +18,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -111,7 +112,7 @@ public class SubscriptionConfigurationBusinessLogic(
 
         if (providerDetailData.CallbackUrl is not null && data.CallbackUrl is null)
         {
-            await HandleOfferSetupProcesses(companyId, companyRepository).ConfigureAwait(ConfigureAwaitOptions.None);
+            await HandleOfferSetupProcesses(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
             hasChanges = true;
         }
 
@@ -121,10 +122,12 @@ public class SubscriptionConfigurationBusinessLogic(
         }
     }
 
-    private async Task HandleOfferSetupProcesses(Guid companyId, ICompanyRepository companyRepository)
+    private async Task HandleOfferSetupProcesses(Guid companyId)
     {
-        var processData = await companyRepository
-            .GetOfferSubscriptionProcessesForCompanyId(companyId)
+        var processData = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOfferSubscriptionRetriggerProcessesForCompanyId(companyId)
+            .PreSortedGroupBy(x => x.Process, x => x.ProcessStep, (left, right) => left.Id == right.Id)
+            .Select(group => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(group.Key, group))
             .ToListAsync()
             .ConfigureAwait(false);
 

@@ -193,7 +193,7 @@ public class SdFactoryBusinessLogic(
             companyRepository.AttachAndModifyCompany(data.ExternalId, null, c => { c.SelfDescriptionDocumentId = documentId; });
         }
 
-        var processData = await companyRepository.GetProcessDataForCompanyIdId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var processData = await companyRepository.GetSelfDescriptionProcessDataForCompanyId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (processData != null)
         {
             HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);

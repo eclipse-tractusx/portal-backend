@@ -475,26 +475,11 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
             .SingleOrDefaultAsync();
 
-    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId) =>
+    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetSelfDescriptionProcessDataForCompanyId(Guid companyId) =>
         context.Companies
             .Where(c => c.Id == companyId && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
             .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
                 c.SdCreationProcess,
                 c.SdCreationProcess!.ProcessSteps.Where(step => step.ProcessStepStatusId == ProcessStepStatusId.TODO)))
             .SingleOrDefaultAsync();
-
-    public IAsyncEnumerable<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>> GetOfferSubscriptionProcessesForCompanyId(Guid companyId) =>
-        context.Companies
-            .Where(c => c.Id == companyId)
-            .SelectMany(c => c.ProvidedOffers.SelectMany(po =>
-                po.OfferSubscriptions.Where(x =>
-                    x.Process != null &&
-                    x.Process!.ProcessSteps.Any(ps =>
-                        ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
-                        ps.ProcessStepTypeId == ProcessStepTypeId.RETRIGGER_PROVIDER
-                ))
-                .Select(os => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(
-                        os.Process,
-                        os.Process!.ProcessSteps.Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)))))
-            .ToAsyncEnumerable();
 }
