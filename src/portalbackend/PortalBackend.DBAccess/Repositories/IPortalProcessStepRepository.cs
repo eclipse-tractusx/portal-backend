@@ -17,10 +17,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
 public interface IPortalProcessStepRepository :
     IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>;
+
+public class PortalProcessStepRepository(IProcessRepositoryContextAccess<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId> dbContext)
+    : ProcessStepRepository<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(dbContext), IPortalProcessStepRepository;
