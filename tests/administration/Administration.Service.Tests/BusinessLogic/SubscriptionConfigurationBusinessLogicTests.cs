@@ -22,6 +22,8 @@ using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -41,6 +43,7 @@ public class SubscriptionConfigurationBusinessLogicTests
     private readonly IIdentityData _identity;
 
     private readonly ICompanyRepository _companyRepository;
+    private readonly IProcessStepRepository<ProcessTypeId, ProcessStepTypeId> _processStepRepository;
     private readonly ICollection<ProviderCompanyDetail> _serviceProviderDetails;
 
     private static readonly Guid OfferSubscriptionId = Guid.NewGuid();
@@ -49,7 +52,6 @@ public class SubscriptionConfigurationBusinessLogicTests
     private readonly IPortalRepositories _portalRepositories;
     private readonly IFixture _fixture;
     private readonly ISubscriptionConfigurationBusinessLogic _sut;
-    private readonly IIdentityService _identityService;
 
     public SubscriptionConfigurationBusinessLogicTests()
     {
@@ -58,23 +60,25 @@ public class SubscriptionConfigurationBusinessLogicTests
 
         _offerSubscriptionsRepository = A.Fake<IOfferSubscriptionsRepository>();
         _companyRepository = A.Fake<ICompanyRepository>();
+        _processStepRepository = A.Fake<IPortalProcessStepRepository>();
         _portalRepositories = A.Fake<IPortalRepositories>();
         _offerSubscriptionProcessService = A.Fake<IOfferSubscriptionProcessService>();
 
         _serviceProviderDetails = new HashSet<ProviderCompanyDetail>();
 
         _identity = A.Fake<IIdentityData>();
-        _identityService = A.Fake<IIdentityService>();
+        var identityService = A.Fake<IIdentityService>();
         A.CallTo(() => _identity.IdentityId).Returns(Guid.NewGuid());
         A.CallTo(() => _identity.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => _identity.CompanyId).Returns(ExistingCompanyId);
-        A.CallTo(() => _identityService.IdentityData).Returns(_identity);
+        A.CallTo(() => identityService.IdentityData).Returns(_identity);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(_companyRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_processStepRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferSubscriptionsRepository>())
             .Returns(_offerSubscriptionsRepository);
 
-        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories, _identityService);
+        _sut = new SubscriptionConfigurationBusinessLogic(_offerSubscriptionProcessService, _portalRepositories, identityService);
     }
 
     #region GetProcessStepsForSubscription
@@ -192,9 +196,9 @@ public class SubscriptionConfigurationBusinessLogicTests
     {
         // Arrange
         SetupProviderCompanyDetails();
-        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://www.test.com");
+        var providerDetailData = new ProviderDetailData("https://www.service-url.com", "https://example.org/callback");
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((Guid.Empty, null!));
+            .Returns((Guid.Empty, null!, null));
 
         // Act
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -213,7 +217,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         SetupProviderCompanyDetails();
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((Guid.Empty, null!));
+            .Returns((Guid.Empty, null!, null));
 
         // Act
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -232,9 +236,16 @@ public class SubscriptionConfigurationBusinessLogicTests
         // Arrange
         SetupProviderCompanyDetails();
         var providerCompanyId = Guid.NewGuid();
+        var processId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
         var providerDetailData = new ProviderDetailData(null, null);
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((providerCompanyId, null!));
+            .Returns((providerCompanyId, null!, null));
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionRetriggerProcessesForCompanyId(providerCompanyId))
+            .Returns(new (Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>)[]
+            {
+                (new(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow))
+            }.ToAsyncEnumerable());
 
         // Act
         await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
@@ -243,6 +254,37 @@ public class SubscriptionConfigurationBusinessLogicTests
         A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(providerCompanyId)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        _serviceProviderDetails.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SetProviderCompanyDetailsAsync_WithCallbackUrlChanged_HandlesProcessSteps()
+    {
+        // Arrange
+        SetupProviderCompanyDetails();
+        var processId = Guid.NewGuid();
+        var processStepId = Guid.NewGuid();
+        var providerDetailData = new ProviderDetailData(null, null);
+        A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
+            .Returns((ExistingCompanyId, "https://example.org", "https://example.org/callback"));
+        A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionRetriggerProcessesForCompanyId(ExistingCompanyId))
+            .Returns(new (Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>)[]
+            {
+                (new(processId, ProcessTypeId.OFFER_SUBSCRIPTION, Guid.NewGuid()), new(processStepId, ProcessStepTypeId.RETRIGGER_PROVIDER, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow))
+            }.ToAsyncEnumerable());
+
+        // Act
+        await _sut.SetProviderCompanyDetailsAsync(providerDetailData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.RemoveProviderCompanyDetails(ExistingCompanyId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateProviderCompanyDetail(A<Guid>._, A<string>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._)).MustNotHaveHappened();
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.AttachAndModifyProcessSteps(A<IEnumerable<(Guid ProcessStepId, Action<IProcessStep<ProcessStepTypeId>>? Initialize, Action<IProcessStep<ProcessStepTypeId>> Modify)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepId == processStepId))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)>>.That.Matches(x => x.Count() == 1 && x.Single().ProcessStepTypeId == ProcessStepTypeId.AWAIT_START_AUTOSETUP))).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         _serviceProviderDetails.Should().BeEmpty();
     }
@@ -261,7 +303,7 @@ public class SubscriptionConfigurationBusinessLogicTests
         ProviderCompanyDetail? modifyDetail = null;
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(ExistingCompanyId))
-            .Returns((detailsId, existingUrl));
+            .Returns((detailsId, existingUrl, null));
 
         A.CallTo(() => _companyRepository.AttachAndModifyProviderCompanyDetails(A<Guid>._, A<Action<ProviderCompanyDetail>>._, A<Action<ProviderCompanyDetail>>._))
             .Invokes((Guid id, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modifiy) =>
@@ -432,9 +474,9 @@ public class SubscriptionConfigurationBusinessLogicTests
             .Returns<(ProviderDetailReturnData, bool)>(default);
 
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Matches(x => x == ExistingCompanyId)))
-            .Returns((Guid.NewGuid(), _fixture.Create<string>()));
+            .Returns((Guid.NewGuid(), _fixture.Create<string>(), "https://example.org/callback"));
         A.CallTo(() => _companyRepository.GetProviderCompanyDetailsExistsForUser(A<Guid>.That.Not.Matches(x => x == ExistingCompanyId)))
-            .Returns((Guid.Empty, null!));
+            .Returns((Guid.Empty, null!, null));
     }
 
     #endregion
