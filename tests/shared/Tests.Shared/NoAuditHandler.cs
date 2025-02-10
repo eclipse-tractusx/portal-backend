@@ -19,7 +19,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Handler;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Tests.Shared;
 

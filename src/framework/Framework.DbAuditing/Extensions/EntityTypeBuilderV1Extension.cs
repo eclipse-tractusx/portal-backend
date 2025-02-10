@@ -21,14 +21,15 @@
 using Laraue.EfCoreTriggers.Common.Extensions;
 using Laraue.EfCoreTriggers.Common.TriggerBuilders.TableRefs;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Extensions;
 
 public static class EntityTypeBuilderV1Extension
 {

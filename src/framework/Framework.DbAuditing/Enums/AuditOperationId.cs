@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,16 +17,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
 
 /// <summary>
-/// Attribute to mark the last editor id in the base class
+/// Possible operations for the audit table
 /// </summary>
-/// <remarks>
-/// The implementation of this Attribute must not be changed.
-/// When changes are needed create a V2 of it.
-/// </remarks>
-[AttributeUsage(AttributeTargets.Property)]
-public class LastEditorV1Attribute : Attribute
+public enum AuditOperationId
 {
+    /// <summary>
+    /// The entity has been inserted
+    /// </summary>
+    INSERT = 1,
+
+    /// <summary>
+    /// The entity has been updated
+    /// </summary>
+    UPDATE = 2,
+
+    /// <summary>
+    /// The entity has been deleted
+    /// </summary>
+    DELETE = 3,
 }

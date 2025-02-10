@@ -20,6 +20,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
@@ -30,7 +31,7 @@ public static class PortalRepositoriesStartupServiceExtensions
     public static IServiceCollection AddPortalRepositories(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IPortalRepositories, PortalRepositories>()
-            .AddDbAuditing()
+            .AddDbAuditing<AuditHandlerV1>()
             .AddDbContext<PortalDbContext>(o => o
                     .UseNpgsql(configuration.GetConnectionString("PortalDB")))
             .AddHealthChecks()

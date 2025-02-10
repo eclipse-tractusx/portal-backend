@@ -19,15 +19,15 @@
 // See https://aka.ms/new-console-template for more information
 
 using Laraue.EfCoreTriggers.PostgreSql.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Seeding.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.Processes.ProcessIdentity.DependencyInjection;
@@ -43,7 +43,7 @@ try
         {
             services
                 .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddDbAuditing()
+                .AddDbAuditing<AuditHandlerV1>()
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"),
                         x => x.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name)

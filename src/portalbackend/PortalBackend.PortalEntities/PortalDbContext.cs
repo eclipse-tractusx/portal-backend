@@ -18,10 +18,13 @@
  ********************************************************************************/
 
 using Microsoft.EntityFrameworkCore;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Handler;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Context;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Views;

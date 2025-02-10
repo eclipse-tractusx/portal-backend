@@ -27,7 +27,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.Mailing.Library.DependencyIn
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Registration.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Web.Initialization;

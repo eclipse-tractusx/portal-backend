@@ -19,6 +19,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;

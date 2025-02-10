@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,7 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
 
 /// <summary>
 /// Attribute to mark the last editor id in the base class
@@ -28,6 +27,4 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Audit
 /// When changes are needed create a V2 of it.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
-public class LastChangedV1Attribute : Attribute
-{
-}
+public class LastEditorV1Attribute : Attribute;

@@ -18,7 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;

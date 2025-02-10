@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,16 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.Extensions.DependencyInjection;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Handler;
 
-public static class AuditingDependencyInjection
+public interface IAuditHandler
 {
-    public static IServiceCollection AddDbAuditing(this IServiceCollection services)
-    {
-        return services.AddTransient<IAuditHandler, AuditHandlerV1>()
-            .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
-    }
+    void HandleAuditForChangedEntries(IEnumerable<EntityEntry> changedEntries, DbContext context);
 }

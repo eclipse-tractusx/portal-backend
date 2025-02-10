@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
@@ -54,7 +55,7 @@ try
                 .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
                 .AddTransient<IProcessIdentityDataDetermination, ProcessIdentityDataDetermination>()
                 .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"))
-                .AddDbAuditing()
+                .AddDbAuditing<AuditHandlerV1>()
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddDbContext<PortalDbContext>(o =>
                     o.UseNpgsql(hostContext.Configuration.GetConnectionString("PortalDb"))

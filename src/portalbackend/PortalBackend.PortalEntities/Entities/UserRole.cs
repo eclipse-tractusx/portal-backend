@@ -18,8 +18,9 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;

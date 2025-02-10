@@ -22,7 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;

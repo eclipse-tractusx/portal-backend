@@ -19,7 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 

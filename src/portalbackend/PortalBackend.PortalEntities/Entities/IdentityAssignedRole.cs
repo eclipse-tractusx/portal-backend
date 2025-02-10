@@ -17,8 +17,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.AuditEntities;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 

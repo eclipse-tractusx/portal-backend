@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,15 +17,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+using System.Reflection;
 
-/// <summary>
-/// Marker interface to define that a entity is auditable
-/// </summary>
-/// <remarks>
-/// The implementation of this Attribute must not be changed.
-/// When changes are needed create a V2 of it.
-/// </remarks>
-public interface IAuditableV1
-{
-}
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Models;
+
+public record AuditPropertyInformation
+(
+    Type AuditEntityType,
+    IEnumerable<PropertyInfo> SourceProperties,
+    IEnumerable<PropertyInfo> AuditProperties,
+    IEnumerable<PropertyInfo> TargetProperties
+);

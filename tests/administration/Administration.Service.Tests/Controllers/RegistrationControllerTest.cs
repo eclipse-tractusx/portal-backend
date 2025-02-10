@@ -19,7 +19,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Controllers;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;

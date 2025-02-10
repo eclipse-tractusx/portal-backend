@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
  * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -20,15 +19,17 @@
 
 using Microsoft.EntityFrameworkCore;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Attributes;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
 using System.Reflection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Auditing;
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Extensions;
 
-public static partial class AuditExtensions
+public static class AuditExtensions
 {
     public static AuditOperationId ToAuditOperation(this EntityState state) =>
         state switch

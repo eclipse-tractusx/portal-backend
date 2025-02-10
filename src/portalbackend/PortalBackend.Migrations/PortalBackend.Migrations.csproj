@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
   </ItemGroup>
 

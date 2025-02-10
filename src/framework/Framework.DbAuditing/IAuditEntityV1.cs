@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,25 +17,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing.Enums;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.DbAuditing;
 
 /// <summary>
-/// Possible operations for the audit table
+/// Marker interface to define that the entity is an audit entity
 /// </summary>
-public enum AuditOperationId
+/// <remarks>
+/// The implementation of this Attribute must not be changed.
+/// When changes are needed create a V2 of it.
+/// </remarks>
+public interface IAuditEntityV1
 {
     /// <summary>
-    /// The entity has been inserted
+    /// Id of the audited entity
     /// </summary>
-    INSERT = 1,
+    Guid AuditV1Id { get; set; }
 
     /// <summary>
-    /// The entity has been updated
+    /// Date Time of the last change of the entity
     /// </summary>
-    UPDATE = 2,
+    DateTimeOffset AuditV1DateLastChanged { get; set; }
 
     /// <summary>
-    /// The entity has been deleted
+    /// Reference to the Editor that changed the entity
     /// </summary>
-    DELETE = 3,
+    Guid? AuditV1LastEditorId { get; set; }
+
+    /// <summary>
+    /// Id of the audit operation
+    /// </summary>
+    AuditOperationId AuditV1OperationId { get; set; }
 }

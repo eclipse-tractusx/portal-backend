@@ -20,8 +20,6 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.BusinessLogic;
-using Org.Eclipse.TractusX.Portal.Backend.Custodian.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
