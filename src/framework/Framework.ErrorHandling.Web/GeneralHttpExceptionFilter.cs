@@ -35,7 +35,6 @@ public class GeneralHttpExceptionFilter(
     : IExceptionFilter
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-    private readonly ILogger _logger = logger;
 
     private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = ImmutableDictionary.CreateRange(new[]
     {
@@ -82,7 +81,7 @@ public class GeneralHttpExceptionFilter(
         var message = GetErrorMessage(error);
         LogErrorInformation(errorId, error);
         var (statusCode, messageFunc, logLevel) = GetErrorInformation(error);
-        _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
+        logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
         context.Result = new ContentResult
         {
             Content = JsonSerializer.Serialize(
