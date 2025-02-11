@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -36,6 +37,7 @@ await WebAppHelper
             .AddPortalRepositories(builder.Configuration);
 
         builder.Services
+            .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddTransient<INotificationBusinessLogic, NotificationBusinessLogic>()
             .ConfigureNotificationSettings(builder.Configuration.GetSection("Notifications"));
     }).ConfigureAwait(ConfigureAwaitOptions.None);
