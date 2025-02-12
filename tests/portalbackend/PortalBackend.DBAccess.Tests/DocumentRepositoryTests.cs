@@ -76,6 +76,60 @@ public class DocumentRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
+    #region GetDocumentByIdAsync
+
+    [Fact]
+    public async Task GetDocumentById_ReturnsExpected()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+        var documentId = new Guid("9685f744-9d90-4102-a949-fcd0bb86f954");
+        var documentTypeId = DocumentTypeId.CX_FRAME_CONTRACT;
+
+        // Act
+        var result = await sut.GetDocumentByIdAsync(documentId, [documentTypeId]);
+
+        // Assert
+        result.Should().NotBeNull().And.Match<Document>(x =>
+            x.Id == documentId &&
+            x.DocumentTypeId == documentTypeId &&
+            x.MediaTypeId == MediaTypeId.PNG &&
+            x.DocumentName == "Default_App_Image.png"
+        );
+    }
+
+    [Fact]
+    public async Task GetDocumentById_WithInvalidId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+        var documentId = Guid.NewGuid();
+        var documentTypeId = DocumentTypeId.CX_FRAME_CONTRACT;
+
+        // Act
+        var result = await sut.GetDocumentByIdAsync(documentId, [documentTypeId]);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDocumentById_WithOtherDocumentTypeId_ReturnsNull()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+        var documentId = new Guid("9685f744-9d90-4102-a949-fcd0bb86f954");
+        var documentTypeId = DocumentTypeId.PRESENTATION;
+
+        // Act
+        var result = await sut.GetDocumentByIdAsync(documentId, [documentTypeId]);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    #endregion
+
     #region GetUploadedDocuments
 
     [Theory]

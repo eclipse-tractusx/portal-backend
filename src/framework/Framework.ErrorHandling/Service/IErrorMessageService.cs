@@ -21,8 +21,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 
 public interface IErrorMessageService
 {
-    public string GetMessage(Type type, int code);
-    public IEnumerable<ErrorMessageType> GetAllMessageTexts();
-    public record ErrorMessageType(string ErrorType, IEnumerable<ErrorMessageCode> ErrorMessages);
-    public record ErrorMessageCode(string ErrorCode, string Message);
+    string GetMessage(Type type, int code);
+    IEnumerable<ErrorMessageType> GetAllMessageTexts();
+    record ErrorMessageType(string ErrorType, IEnumerable<ErrorMessageCode> ErrorMessages);
+    record ErrorMessageCode(string ErrorCode, string Message);
 }

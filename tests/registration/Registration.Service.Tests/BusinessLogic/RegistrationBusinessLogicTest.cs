@@ -3060,7 +3060,7 @@ public class RegistrationBusinessLogicTest
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((documentId, true, true, false));
-        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT, content.Length));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
@@ -3071,6 +3071,7 @@ public class RegistrationBusinessLogicTest
         result.Should().NotBeNull();
         result.FileName.Should().Be("test.pdf");
         result.MediaType.Should().Be("application/pdf");
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

@@ -21,5 +21,5 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Keycloak.Seeding.BusinessLogic;
 
 public interface IRealmUpdater
 {
-    public Task UpdateRealm(string keycloakInstanceName, CancellationToken cancellationToken);
+    Task UpdateRealm(string keycloakInstanceName, CancellationToken cancellationToken);
 }
