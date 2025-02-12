@@ -118,9 +118,9 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
         dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default, default));
 
     /// <inheritdoc />
-    public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
+    public Task<Document?> GetDocumentByIdAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         dbContext.Documents
-        .Where(x => x.Id == documentId && x.DocumentTypeId == DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT)
+        .Where(x => x.Id == documentId && documentTypeIds.Contains(x.DocumentTypeId))
         .SingleOrDefaultAsync();
 
     /// <inheritdoc />

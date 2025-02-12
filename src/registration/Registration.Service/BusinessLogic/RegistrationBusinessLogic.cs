@@ -181,7 +181,7 @@ public class RegistrationBusinessLogic(
             throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
-        var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var document = await documentRepository.GetDocumentByIdAsync(documentId, [DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT]).ConfigureAwait(ConfigureAwaitOptions.None);
         if (document is null)
         {
             throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
