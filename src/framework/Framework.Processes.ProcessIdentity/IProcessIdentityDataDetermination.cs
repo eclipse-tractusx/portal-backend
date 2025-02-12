@@ -24,5 +24,5 @@ public interface IProcessIdentityDataDetermination
     /// <summary>
     /// Initialize IdentityData
     /// </summary>
-    public Task GetIdentityData();
+    Task GetIdentityData();
 }

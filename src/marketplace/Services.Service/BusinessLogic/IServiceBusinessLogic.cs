@@ -48,7 +48,7 @@ public interface IServiceBusinessLogic
     /// Declines a pending service subscription of a service, provided by the current user's company.
     /// </summary>
     /// <param name="subscriptionId">ID of the pending service to be declined.</param>
-    public Task DeclineServiceSubscriptionAsync(Guid subscriptionId);
+    Task DeclineServiceSubscriptionAsync(Guid subscriptionId);
 
     /// <summary>
     /// Gets the service detail data for the given service
@@ -154,12 +154,12 @@ public interface IServiceBusinessLogic
     /// Unsubscribes an Service for the current users company.
     /// </summary>
     /// <param name="subscriptionId">ID of the subscription to unsubscribe from.</param>
-    public Task UnsubscribeOwnCompanyServiceSubscriptionAsync(Guid subscriptionId);
+    Task UnsubscribeOwnCompanyServiceSubscriptionAsync(Guid subscriptionId);
 
     /// <summary>
     /// Activates a pending service subscription for an service provided by the current user's company.
     /// </summary>
     /// <param name="subscriptionId">ID of the pending service to be activated.</param>
-    public Task TriggerActivateOfferSubscription(Guid subscriptionId);
+    Task TriggerActivateOfferSubscription(Guid subscriptionId);
 
 }
