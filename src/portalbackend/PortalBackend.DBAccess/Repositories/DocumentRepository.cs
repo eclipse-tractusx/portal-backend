@@ -120,8 +120,8 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
         dbContext.Documents
-        .Where(x => x.Id == documentId && documentTypeIds.Contains(x.DocumentTypeId))
-        .SingleOrDefaultAsync();
+            .Where(x => x.Id == documentId && documentTypeIds.Contains(x.DocumentTypeId))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
