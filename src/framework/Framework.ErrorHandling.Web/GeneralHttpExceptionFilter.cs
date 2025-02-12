@@ -17,7 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Serilog.Context;
@@ -28,12 +29,12 @@ using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
-public class GeneralHttpErrorHandler
+public class GeneralHttpExceptionFilter(
+    ILogger<GeneralHttpExceptionFilter> logger,
+    IErrorMessageService errorMessageService)
+    : IExceptionFilter
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-    private readonly RequestDelegate _next;
-    private readonly IErrorMessageService? _errorMessageService;
-    private readonly ILogger _logger;
 
     private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = ImmutableDictionary.CreateRange(new[]
     {
@@ -57,7 +58,7 @@ public class GeneralHttpErrorHandler
                 (httpStatusCode,
                 messageFunc == null
                     ? null
-                    : (Exception e) => messageFunc.Invoke(e as T ?? throw new UnexpectedConditionException($"Exception type {e.GetType()} should always be of type {typeof(T)} here")),
+                    : e => messageFunc.Invoke(e as T ?? throw new UnexpectedConditionException($"Exception type {e.GetType()} should always be of type {typeof(T)} here")),
                 logLevel));
 
     private static readonly IReadOnlyDictionary<Type, (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> ErrorTypes = ImmutableDictionary.CreateRange(new[]
@@ -67,36 +68,26 @@ public class GeneralHttpErrorHandler
         CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
         CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
         CreateErrorEntry<ForbiddenException>(HttpStatusCode.Forbidden),
-        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, new[] { serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int) serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message })),
+        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, new[] { serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message })),
         CreateErrorEntry<UnsupportedMediaTypeException>(HttpStatusCode.UnsupportedMediaType),
         CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, new[] { $"Invalid service configuration: {configurationException.Message}" }))
     });
 
-    public GeneralHttpErrorHandler(RequestDelegate next, ILogger<GeneralHttpErrorHandler> logger, IErrorMessageService? errorMessageService = null) //TODO make errorMessageService mandatory as soon all dependant services are adjusted accordingly
+    public void OnException(ExceptionContext context)
     {
-        _next = next;
-        _logger = logger;
-        _errorMessageService = errorMessageService;
-    }
-
-    public async Task Invoke(HttpContext context)
-    {
-        try
+        var errorId = Guid.NewGuid().ToString();
+        var error = context.Exception;
+        var details = GetErrorDetails(error);
+        var message = GetErrorMessage(error);
+        LogErrorInformation(errorId, error);
+        var (statusCode, messageFunc, logLevel) = GetErrorInformation(error);
+        logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
+        context.Result = new ContentResult
         {
-            await _next(context).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
-        catch (Exception error)
-        {
-            var errorId = Guid.NewGuid().ToString();
-            var details = GetErrorDetails(error);
-            var message = GetErrorMessage(error);
-            LogErrorInformation(errorId, error);
-            var (statusCode, messageFunc, logLevel) = GetErrorInformation(error);
-            _logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options)).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+            Content = JsonSerializer.Serialize(
+                CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options),
+            StatusCode = (int)statusCode
+        };
     }
 
     private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error) =>
@@ -131,13 +122,13 @@ public class GeneralHttpErrorHandler
     }
 
     private string GetErrorMessage(Exception exception) =>
-        _errorMessageService is not null && exception is DetailException detail && detail.HasDetails
-            ? detail.GetErrorMessage(_errorMessageService)
+        exception is DetailException { HasDetails: true } detail
+            ? detail.GetErrorMessage(errorMessageService)
             : exception.Message;
 
     private IEnumerable<ErrorDetails> GetErrorDetails(Exception exception) =>
-        _errorMessageService is not null && exception is DetailException detail && detail.HasDetails
-            ? detail.GetErrorDetails(_errorMessageService)
+        exception is DetailException { HasDetails: true } detail
+            ? detail.GetErrorDetails(errorMessageService)
             : Enumerable.Empty<ErrorDetails>();
 
     private static void LogErrorInformation(string errorId, Exception exception)

@@ -765,9 +765,7 @@ public class OfferService(
             .ToListAsync()
             .ConfigureAwait(false);
 
-        if (!data.All(entry =>
-                entry.UserRoleIds.All(id => providerOnlyUserRoles.Contains(id)) ||
-                entry.UserRoleIds.All(id => !providerOnlyUserRoles.Contains(id))))
+        if (data.Any(entry => !entry.UserRoleIds.AllOrNone(roleId => providerOnlyUserRoles.Contains(roleId))))
         {
             throw ConflictException.Create(OfferServiceErrors.ROLES_MISSMATCH);
         }
