@@ -119,7 +119,9 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
 
     /// <inheritdoc />
     public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
-        dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+        dbContext.Documents
+        .Where(x => x.Id == documentId && x.DocumentTypeId == DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT)
+        .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>
