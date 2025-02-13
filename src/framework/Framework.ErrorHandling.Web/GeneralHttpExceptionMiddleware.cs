@@ -25,7 +25,7 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
 public class GeneralHttpExceptionMiddleware(ILogger<GeneralHttpExceptionMiddleware> logger, IErrorMessageService errorMessageService) :
-    BaseHttpExceptionHandler(logger, errorMessageService), IMiddleware
+    BaseHttpExceptionHandler(errorMessageService), IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
