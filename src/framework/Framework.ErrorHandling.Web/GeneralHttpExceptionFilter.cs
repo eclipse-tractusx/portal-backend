@@ -21,58 +21,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
-using Serilog.Context;
-using System.Collections.Immutable;
-using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
 public class GeneralHttpExceptionFilter(
     ILogger<GeneralHttpExceptionFilter> logger,
     IErrorMessageService errorMessageService)
-    : IExceptionFilter
+    : BaseHttpExceptionHandler(errorMessageService), IExceptionFilter
 {
-    private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
-
-    private static readonly IReadOnlyDictionary<HttpStatusCode, MetaData> Metadata = ImmutableDictionary.CreateRange(new[]
-    {
-        KeyValuePair.Create(HttpStatusCode.BadRequest, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.1", "One or more validation errors occurred.")),
-        KeyValuePair.Create(HttpStatusCode.Conflict, new MetaData("https://tools.ietf.org/html/rfc7231#section-6.5.8", "The resorce is in conflict with the current request.")),
-        KeyValuePair.Create(HttpStatusCode.NotFound, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.4", "Cannot find representation of target resource.")),
-        KeyValuePair.Create(HttpStatusCode.Forbidden, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3", "Access to requested resource is not permitted.")),
-        KeyValuePair.Create(HttpStatusCode.UnsupportedMediaType, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.13", "The server cannot process this type of content")),
-        KeyValuePair.Create(HttpStatusCode.BadGateway, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.3", "Error accessing external resource.")),
-        KeyValuePair.Create(HttpStatusCode.ServiceUnavailable, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.4", "Service is currently unavailable.")),
-        KeyValuePair.Create(HttpStatusCode.InternalServerError, new MetaData("https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1", "The server encountered an unexpected condition.")),
-    });
-
-    private static KeyValuePair<Type, (HttpStatusCode HttpStatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> CreateErrorEntry<T>(
-            HttpStatusCode httpStatusCode,
-            Func<T, (string?, IEnumerable<string>)>? messageFunc = null,
-            LogLevel logLevel = LogLevel.Information
-        ) where T : class =>
-            KeyValuePair.Create<Type, (HttpStatusCode, Func<Exception, (string?, IEnumerable<string>)>?, LogLevel)>(
-                typeof(T),
-                (httpStatusCode,
-                messageFunc == null
-                    ? null
-                    : e => messageFunc.Invoke(e as T ?? throw new UnexpectedConditionException($"Exception type {e.GetType()} should always be of type {typeof(T)} here")),
-                logLevel));
-
-    private static readonly IReadOnlyDictionary<Type, (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> ErrorTypes = ImmutableDictionary.CreateRange(new[]
-    {
-        CreateErrorEntry<ArgumentException>(HttpStatusCode.BadRequest, argumentException => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1))),
-        CreateErrorEntry<ControllerArgumentException>(HttpStatusCode.BadRequest, caException => (caException.ParamName, Enumerable.Repeat(caException.Message, 1))),
-        CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
-        CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
-        CreateErrorEntry<ForbiddenException>(HttpStatusCode.Forbidden),
-        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, new[] { serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message })),
-        CreateErrorEntry<UnsupportedMediaTypeException>(HttpStatusCode.UnsupportedMediaType),
-        CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, new[] { $"Invalid service configuration: {configurationException.Message}" }))
-    });
-
     public void OnException(ExceptionContext context)
     {
         var errorId = Guid.NewGuid().ToString();
@@ -84,58 +41,8 @@ public class GeneralHttpExceptionFilter(
         logger.Log(logLevel, error, "GeneralErrorHandler caught {Error} with errorId: {ErrorId} resulting in response status code {StatusCode}, message '{Message}'", error.GetType().Name, errorId, (int)statusCode, message);
         context.Result = new ContentResult
         {
-            Content = JsonSerializer.Serialize(
-                CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options),
+            Content = JsonSerializer.Serialize(CreateErrorResponse(statusCode, error, errorId, message, details, messageFunc), Options),
             StatusCode = (int)statusCode
         };
     }
-
-    private static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error) =>
-        ErrorTypes.TryGetValue(error.GetType(), out var mapping)
-            ? mapping
-            : (HttpStatusCode.InternalServerError, null, LogLevel.Error);
-
-    private ErrorResponse CreateErrorResponse(HttpStatusCode statusCode, Exception error, string errorId, string message, IEnumerable<ErrorDetails>? details, Func<Exception, (string?, IEnumerable<string>)>? getSourceAndMessages)
-    {
-        var meta = Metadata.GetValueOrDefault(statusCode, Metadata[HttpStatusCode.InternalServerError]);
-        var (source, messages) = getSourceAndMessages?.Invoke(error) ?? (error.Source, Enumerable.Repeat(message, 1));
-
-        var messageMap = new Dictionary<string, IEnumerable<string>> { { source ?? "unknown", messages } };
-        while (error.InnerException != null)
-        {
-            error = error.InnerException;
-            source = error.Source ?? "inner";
-
-            messageMap[source] = messageMap.TryGetValue(source, out messages)
-                ? messages.Append(GetErrorMessage(error))
-                : Enumerable.Repeat(GetErrorMessage(error), 1);
-        }
-
-        return new ErrorResponse(
-            meta.Url,
-            meta.Description,
-            (int)statusCode,
-            messageMap,
-            errorId,
-            details
-        );
-    }
-
-    private string GetErrorMessage(Exception exception) =>
-        exception is DetailException { HasDetails: true } detail
-            ? detail.GetErrorMessage(errorMessageService)
-            : exception.Message;
-
-    private IEnumerable<ErrorDetails> GetErrorDetails(Exception exception) =>
-        exception is DetailException { HasDetails: true } detail
-            ? detail.GetErrorDetails(errorMessageService)
-            : Enumerable.Empty<ErrorDetails>();
-
-    private static void LogErrorInformation(string errorId, Exception exception)
-    {
-        LogContext.PushProperty("ErrorId", errorId);
-        LogContext.PushProperty("StackTrace", exception.StackTrace);
-    }
-
-    private sealed record MetaData(string Url, string Description);
 }
