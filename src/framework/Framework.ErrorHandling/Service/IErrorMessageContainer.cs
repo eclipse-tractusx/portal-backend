@@ -21,6 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 
 public interface IErrorMessageContainer
 {
-    public Type Type { get; }
-    public IReadOnlyDictionary<int, string> MessageContainer { get; }
+    Type Type { get; }
+    IReadOnlyDictionary<int, string> MessageContainer { get; }
 }

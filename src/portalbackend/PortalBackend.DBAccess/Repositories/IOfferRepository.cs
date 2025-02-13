@@ -35,7 +35,7 @@ public interface IOfferRepository
     /// <param name="offerId">ID of the app.</param>
     /// <param name="offerTypeId">Id of the offer type.</param>
     /// <returns>Tuple of provider company details.</returns>
-    public Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
+    Task<OfferProviderDetailsData?> GetOfferProviderDetailsAsync(Guid offerId, OfferTypeId offerTypeId);
 
     /// <summary>
     /// Adds an app to the database
@@ -490,5 +490,5 @@ public interface IOfferRepository
     /// <param name="offerTypeId"></param>
     /// <param name="documentId"></param>
     /// <returns></returns>
-    public Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentTypeId DocumentTypeId, DocumentStatusId DocumentStatusId)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, Guid documentId);
+    Task<(bool IsStatusActive, bool IsUserOfProvider, DocumentTypeId DocumentTypeId, DocumentStatusId DocumentStatusId)> GetOfferAssignedAppDocumentsByIdAsync(Guid offerId, Guid userCompanyId, OfferTypeId offerTypeId, Guid documentId);
 }

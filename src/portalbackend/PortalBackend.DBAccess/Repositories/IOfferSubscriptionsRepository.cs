@@ -73,7 +73,7 @@ public interface IOfferSubscriptionsRepository
     /// <returns>Returns the offer details.</returns>
     Task<OfferSubscriptionTransferData?> GetOfferDetailsAndCheckProviderCompany(Guid offerSubscriptionId, Guid providerCompanyId, OfferTypeId offerTypeId);
 
-    public Task<bool> CheckPendingOrActiveSubscriptionExists(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
+    Task<bool> CheckPendingOrActiveSubscriptionExists(Guid offerId, Guid companyId, OfferTypeId offerTypeId);
 
     OfferSubscription AttachAndModifyOfferSubscription(Guid offerSubscriptionId, Action<OfferSubscription> setOptionalParameters);
 
