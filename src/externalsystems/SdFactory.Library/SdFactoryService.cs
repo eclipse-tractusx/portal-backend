@@ -54,19 +54,19 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
     }
 
     /// <inheritdoc />
-    public async Task RegisterSelfDescriptionAsync(Guid externalId, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task RegisterSelfDescriptionAsync(Guid externalId, string legalName, IEnumerable<(UniqueIdentifierId Id, string Value)> uniqueIdentifiers, string countryCode, string region, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
+        var countrySubdivisionCode = string.Format("{0}-{1}", countryCode, region);
         var requestModel = new SdFactoryRequestModel(
             externalId.ToString(),
+            legalName,
             uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),
-            countryCode,
-            countryCode,
+            countrySubdivisionCode,
+            countrySubdivisionCode,
             SdFactoryRequestModelSdType.LegalParticipant,
-            businessPartnerNumber,
-            businessPartnerNumber,
-            _settings.SdFactoryIssuerBpn);
+            businessPartnerNumber);
 
         await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-selfdescription-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);

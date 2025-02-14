@@ -28,13 +28,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 /// </summary>
 public record SdFactoryRequestModel(
     [property: JsonPropertyName("externalId")] string ExternalId,
+    [property: JsonPropertyName("name")] string LegalName,
     [property: JsonPropertyName("registrationNumber")] IEnumerable<RegistrationNumber> RegistrationNumber,
-    [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
-    [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
+    [property: JsonPropertyName("headquarterAddress.countrySubdivisionCode")] string HeadquarterCountrySubdivisionCode,
+    [property: JsonPropertyName("legalAddress.countrySubdivisionCode")] string LegalCountrySubdivisionCode,
     [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
-    [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("holder")] string Holder,
-    [property: JsonPropertyName("issuer")] string Issuer);
+    [property: JsonPropertyName("holder")] string Holder);
 
 public record RegistrationNumber(
     [property: JsonPropertyName("type")] string Type,
