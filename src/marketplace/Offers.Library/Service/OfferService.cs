@@ -55,7 +55,7 @@ public class OfferService(
         if (!await portalRepositories.GetInstance<IAgreementRepository>()
                 .CheckAgreementExistsForSubscriptionAsync(agreementId, subscriptionId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ControllerArgumentException($"Invalid Agreement {agreementId} for subscription {subscriptionId}", nameof(agreementId));
+            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_AGREEMENT, new ErrorParameter[] { new("agreementId", agreementId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
         }
 
         var consent = portalRepositories.GetInstance<IConsentRepository>().CreateConsent(agreementId, companyId, companyUserId, consentStatusId);
@@ -75,7 +75,7 @@ public class OfferService(
                 .CheckAgreementsExistsForSubscriptionAsync(offerAgreementConsentData.Select(x => x.AgreementId), subscriptionId, offerTypeId)
                 .ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ControllerArgumentException($"Invalid Agreements for subscription {subscriptionId}", nameof(offerAgreementConsentData));
+            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_AGREEMENTS, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         var consentAssignedOfferSubscriptionRepository = portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>();
@@ -105,11 +105,11 @@ public class OfferService(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new ControllerArgumentException("Company or CompanyUser not assigned correctly.", nameof(_identityData.IdentityId));
+            throw ControllerArgumentException.Create(OfferServiceErrors.COMPANY_OR_USER_NOT_ASSIGNED, nameof(_identityData.IdentityId));
         }
         if (!result.IsValidOfferSubscription)
         {
-            throw new NotFoundException($"Invalid OfferSubscription {subscriptionId} for OfferType {offerTypeId}");
+            throw NotFoundException.Create(OfferServiceErrors.INVALID_OFFERSUBSCRIPTION, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
         return (result.CompanyId, subscriptionId, _identityData.IdentityId);
     }
@@ -125,7 +125,7 @@ public class OfferService(
             .GetConsentDetailData(consentId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (consentDetails is null)
         {
-            throw new NotFoundException($"Consent {consentId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.CONSENT_NOT_EXIST, new ErrorParameter[] { new(nameof(consentId), consentId.ToString()) });
         }
 
         return consentDetails;
@@ -140,11 +140,11 @@ public class OfferService(
         var result = await portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsentById(offerId, companyId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_OR_OFFERTYPE_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not assigned with Offer {offerId}");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         return result.OfferAgreementConsent;
     }
@@ -158,7 +158,7 @@ public class OfferService(
                 requiredAgreements.Select(x => x.AgreementId),
                 consent => consent.AgreementId)
             .IfAny(invalidConsents =>
-                throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsent)));
+            throw ControllerArgumentException.Create(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER, new ErrorParameter[] { new ErrorParameter("offerAgreementConsent", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new ErrorParameter("offerId", offerId.ToString()) }, nameof(offerAgreementConsent)));
 
         // ignore consents refering to inactive agreements
         var activeAgreements = offerAgreementConsent.Agreements
@@ -189,11 +189,11 @@ public class OfferService(
         var result = await portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, companyId, statusId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"offer {offerId}, offertype {offerTypeId}, offerStatus {statusId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_STATUS_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not assigned with Offer {offerId}");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         return result.OfferAgreementConsentUpdate;
     }
@@ -203,14 +203,14 @@ public class OfferService(
     {
         if (!data.ServiceTypeIds.Any())
         {
-            throw new ControllerArgumentException("ServiceTypeIds must be specified", nameof(data.ServiceTypeIds));
+            throw ControllerArgumentException.Create(OfferServiceErrors.SERVICETYPEIDS_NOT_SPECIFIED, nameof(data.ServiceTypeIds));
         }
         if (data.Title.Length < 3)
         {
-            throw new ControllerArgumentException("Title should be at least three character long", nameof(data.Title));
+            throw ControllerArgumentException.Create(OfferServiceErrors.TITLE_TOO_SHORT, nameof(data.Title));
         }
         if (data.SalesManager.HasValue && _identityData.IdentityId != data.SalesManager.Value)
-            throw new ControllerArgumentException("SalesManager does not exist", nameof(data.SalesManager));
+            throw ControllerArgumentException.Create(OfferServiceErrors.SALESMANAGER_NOT_EXIST, nameof(data.SalesManager));
 
         await CheckLanguageCodesExist(data.Descriptions.Select(x => x.LanguageCode)).ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -244,15 +244,15 @@ public class OfferService(
         var offerDetail = await portalRepositories.GetInstance<IOfferRepository>().GetProviderOfferDataWithConsentStatusAsync(offerId, companyId, offerTypeId, documentTypeId, languageShortName).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetail == default)
         {
-            throw new NotFoundException($"Offer {offerId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
         if (!offerDetail.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not associated with provider-company of offer {offerId}");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSOCIATED_WITH_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (offerDetail.OfferProviderData == null)
         {
-            throw new UnexpectedConditionException("offerProviderData should never be null here");
+            throw UnexpectedConditionException.Create(OfferServiceErrors.OFFERPROVIDERDATA_NULL);
         }
 
         var data = offerDetail.OfferProviderData;
@@ -290,18 +290,17 @@ public class OfferService(
 
         if (responseData == default)
         {
-            throw new ControllerArgumentException($"invalid salesManagerId {salesManagerId}", nameof(salesManagerId));
+            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_SALESMANAGERID, new ErrorParameter[] { new("salesManagerId", salesManagerId.ToString()) });
         }
 
         if (!responseData.IsSameCompany)
         {
-            throw new ForbiddenException($"SalesManger is not a member of the company {companyId}");
+            throw ForbiddenException.Create(OfferServiceErrors.SALESMANAGER_NOT_MEMBER_OF_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
         }
 
         if (userRoleIds.Except(responseData.RoleIds).Any())
         {
-            throw new ControllerArgumentException(
-                $"User {salesManagerId} does not have sales Manager Role", nameof(salesManagerId));
+            throw ControllerArgumentException.Create(OfferServiceErrors.USER_NOT_SALESMANAGER, new ErrorParameter[] { new("salesManagerId", salesManagerId.ToString()) });
         }
     }
 
@@ -338,15 +337,15 @@ public class OfferService(
         var missingDocumentTypes = submitAppDocumentTypeIds.Except(offerDetails.DocumentDatas.Select(data => data.DocumentTypeId));
         if (missingDocumentTypes.Any())
         {
-            throw new ConflictException($"{string.Join(", ", submitAppDocumentTypeIds)} are mandatory document types, ({string.Join(", ", missingDocumentTypes)} are missing)");
+            throw ConflictException.Create(OfferServiceErrors.MANDATORY_DOCUMENT_TYPES_MISSING, new ErrorParameter[] { new("submitAppDocumentTypeIds", string.Join(", ", submitAppDocumentTypeIds)), new("missingDocumentTypes", string.Join(", ", missingDocumentTypes)) });
         }
         if (!offerDetails.HasUserRoles)
         {
-            throw new ConflictException("The app has no roles assigned");
+            throw ConflictException.Create(OfferServiceErrors.APP_NO_ROLES_ASSIGNED);
         }
         if (!offerDetails.HasPrivacyPolicies)
         {
-            throw new ConflictException("PrivacyPolicies is missing for the app");
+            throw ConflictException.Create(OfferServiceErrors.PRIVACYPOLICIES_MISSING);
         }
 
         await SubmitAppServiceAsync(offerId, notificationTypeIds, catenaAdminRoles, offerDetails).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -365,7 +364,7 @@ public class OfferService(
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"{offerTypeId} {offerId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         return offerDetails;
     }
@@ -427,7 +426,7 @@ public class OfferService(
             nullProperties.Add($"{nameof(Offer)}.{nameof(offerDetails.IsDescriptionShortNotSet)}");
         }
 
-        throw new ConflictException($"Missing  : {string.Join(", ", nullProperties)}");
+        throw ConflictException.Create(OfferServiceErrors.MISSING_PROPERTIES, new ErrorParameter[] { new ErrorParameter("nullProperties", string.Join(", ", nullProperties)) });
     }
 
     /// <inheritdoc/>
@@ -437,22 +436,22 @@ public class OfferService(
         var offerDetails = await offerRepository.GetOfferStatusDataByIdAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == default)
         {
-            throw new NotFoundException($"Offer {offerId} not found. Either Not Existing or incorrect offer type");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_INCORRECT_STATUS, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         if (!offerDetails.IsStatusInReview)
         {
-            throw new ConflictException($"Offer {offerId} is in InCorrect Status");
+            throw ConflictException.Create(OfferServiceErrors.OFFER_IS_INCORRECT_STATUS, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         if (offerDetails.OfferName is null)
         {
-            throw new ConflictException($"Offer {offerId} Name is not yet set.");
+            throw ConflictException.Create(OfferServiceErrors.OFFERID_NAME_NOT_SET, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         if (offerDetails.ProviderCompanyId == null)
         {
-            throw new ConflictException($"Offer {offerId} providing company is not yet set.");
+            throw ConflictException.Create(OfferServiceErrors.OFFERID_PROVIDING_COMPANY_NOT_SET, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         offerRepository.AttachAndModifyOffer(offerId, offer =>
@@ -478,9 +477,8 @@ public class OfferService(
                 AppName = offerDetails.OfferName,
                 TechnicalUserIds = technicalUserIds
             },
-            _ => throw new UnexpectedConditionException($"offerTypeId {offerTypeId} is not implemented yet")
+            _ => throw UnexpectedConditionException.Create(OfferServiceErrors.OFFER_TYPE_NOT_IMPLEMENTED, new ErrorParameter[] { new("offerTypeId", OfferTypeId.APP.ToString()) }),
         };
-
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
         await notificationService.CreateNotifications(approveOfferRoles, _identityData.IdentityId, content, offerDetails.ProviderCompanyId.Value).AwaitAll().ConfigureAwait(false);
@@ -511,22 +509,22 @@ public class OfferService(
 
         if (declineData == default)
         {
-            throw new NotFoundException($"{offerType} {offerId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", OfferTypeId.APP.ToString()), new("offerId", offerId.ToString()) });
         }
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
-            throw new ConflictException($"{offerType} must be in status {OfferStatusId.IN_REVIEW}");
+            throw ConflictException.Create(OfferServiceErrors.OFFER_STATUS_IN_REVIEW, new ErrorParameter[] { new("offerType", offerType.ToString()), new("IN_REVIEW", OfferStatusId.IN_REVIEW.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(declineData.OfferName))
         {
-            throw new ConflictException($"{offerType} name is not set");
+            throw ConflictException.Create(OfferServiceErrors.OFFER_NAME_NOT_SET, new ErrorParameter[] { new("offerType", offerType.ToString()) });
         }
 
         if (declineData.CompanyId == null)
         {
-            throw new ConflictException($"{offerType} providing company is not set");
+            throw ConflictException.Create(OfferServiceErrors.OFFER_PROVIDING_COMPANY_NOT_SET, new ErrorParameter[] { new("offerType", offerType.ToString()) });
         }
 
         offerRepository.AttachAndModifyOffer(offerId, offer =>
@@ -586,9 +584,7 @@ public class OfferService(
             var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
             if (notFoundLanguageCodes.Any())
             {
-                throw new ControllerArgumentException(
-                    $"Language code(s) {string.Join(",", notFoundLanguageCodes)} do(es) not exist",
-                    nameof(languageCodes));
+                throw ControllerArgumentException.Create(OfferServiceErrors.LANGUAGE_CODES_NOT_EXIST, new ErrorParameter[] { new ErrorParameter("languageCodes", string.Join(",", notFoundLanguageCodes)) });
             }
         }
     }
@@ -599,15 +595,15 @@ public class OfferService(
         var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerData == default)
         {
-            throw new NotFoundException($"{offerTypeId} {offerId} does not exist.");
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (!offerData.IsUserCompanyProvider)
         {
-            throw new ForbiddenException("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
+            throw ForbiddenException.Create(OfferServiceErrors.MISSING_PERMISSION);
         }
         if (!offerData.IsStatusActive)
         {
-            throw new ConflictException($"offerStatus is in Incorrect State");
+            throw ConflictException.Create(OfferServiceErrors.OFFERSTATUS_INCORRECT_STATE);
         }
         offerRepository.AttachAndModifyOffer(offerId, offer =>
         {
@@ -624,27 +620,27 @@ public class OfferService(
         var result = await documentRepository.GetOfferDocumentContentAsync(offerId, documentId, documentTypeIdSettings, offerTypeId, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result is null)
         {
-            throw new NotFoundException($"document {documentId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!result.IsValidDocumentType)
         {
-            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported.");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!result.IsValidOfferType)
         {
-            throw new ControllerArgumentException($"offer {offerId} is not an {offerTypeId}");
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENT_TYPE_NOT_SUPPORTED, new ErrorParameter[] { new("offerId", offerId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
         if (!result.IsDocumentLinkedToOffer)
         {
-            throw new ControllerArgumentException($"Document {documentId} and {offerTypeId} id {offerId} do not match.");
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENT_ID_MISMATCH, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (result.IsInactive)
         {
-            throw new ConflictException($"Document {documentId} is in status INACTIVE");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENT_INACTIVE, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (result.Content == null)
         {
-            throw new UnexpectedConditionException($"document content should never be null");
+            throw UnexpectedConditionException.Create(OfferServiceErrors.DOCUMENT_CONTENT_NULL);
         }
         return (result.Content, result.MediaTypeId.MapToMediaType(), result.FileName);
     }
@@ -656,43 +652,43 @@ public class OfferService(
         var result = await portalRepositories.GetInstance<IDocumentRepository>().GetOfferDocumentsAsync(documentId, companyId, documentTypeIdSettings, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw new NotFoundException($"Document {documentId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (!result.IsProviderCompanyUser)
         {
-            throw new ForbiddenException($"Company {companyId} is not the same company of document {documentId}");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_SAME_AS_DOCUMENT_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()), new("documentId", documentId.ToString()) });
         }
 
         if (!result.OfferData.Any())
         {
-            throw new ControllerArgumentException($"Document {documentId} is not assigned to an {offerTypeId}");
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENT_NOT_ASSIGNED_TO_OFFER, new ErrorParameter[] { new("documentId", documentId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
 
         if (result.OfferData.Count() > 1)
         {
-            throw new ConflictException($"Document {documentId} is assigned to more than one {offerTypeId}");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENT_ASSIGNED_TO_MULTIPLE_OFFERS, new ErrorParameter[] { new("documentId", documentId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
 
         var offer = result.OfferData.Single();
         if (!offer.IsOfferType)
         {
-            throw new ConflictException($"Document {documentId} is not assigned to an {offerTypeId}");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENT_NOT_ASSIGNED_TO_OFFER, new ErrorParameter[] { new("documentId", documentId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
 
         if (offer.OfferStatusId != OfferStatusId.CREATED)
         {
-            throw new ConflictException($"{offerTypeId} {offer.OfferId} is in locked state");
+            throw ConflictException.Create(OfferServiceErrors.OFFER_LOCKED_STATE, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("OfferId", offer.OfferId.ToString()) });
         }
 
         if (!result.IsDocumentTypeMatch)
         {
-            throw new ControllerArgumentException($"Document {documentId} can not get retrieved. Document type not supported");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (result.DocumentStatusId == DocumentStatusId.LOCKED)
         {
-            throw new ConflictException($"Document in State {result.DocumentStatusId} can't be deleted");
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_DELETION_NOT_ALLOWED, new ErrorParameter[] { new("DocumentStatusId", result.DocumentStatusId.ToString()) });
         }
 
         portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);
@@ -835,15 +831,15 @@ public class OfferService(
 
         if (!exists)
         {
-            throw new NotFoundException($"subscription {subscriptionId} for offer {offerId} of type {offerTypeId} does not exist");
+            throw NotFoundException.Create(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()), new("offerId", offerId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
         }
 
         if (!isUserOfCompany)
         {
-            throw new ForbiddenException($"Company {companyId} is not part of the {offerCompanyRole} company");
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerCompanyRole", offerCompanyRole.ToString()) });
         }
 
-        return details ?? throw new UnexpectedConditionException($"details for offer {offerId}, subscription {subscriptionId}, company {companyId}, offerType {offerTypeId}, should never be null here");
+        return details ?? throw UnexpectedConditionException.Create(OfferServiceErrors.DETAILS_SHOULD_NOT_BE_NULL, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()), new("companyId", companyId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
     }
 
     private async Task<IEnumerable<Guid>> ValidateRoleData(IEnumerable<UserRoleConfig> userRoles)
@@ -855,7 +851,7 @@ public class OfferService(
             .ConfigureAwait(false);
         if (roleData.Count < userRoles.Select(x => x.UserRoleNames).Sum(clientRoles => clientRoles.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+            throw ConfigurationException.Create(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST, new ErrorParameter[] { new ErrorParameter("userRoles", string.Join(", ", userRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))) });
         }
 
         return roleData;
@@ -896,19 +892,19 @@ public class OfferService(
         var assignedOfferSubscriptionData = await offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(subscriptionId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (assignedOfferSubscriptionData == default)
         {
-            throw new NotFoundException($"Subscription {subscriptionId} does not exist.");
+            throw NotFoundException.Create(OfferServiceErrors.SUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
         }
 
         var (status, isSubscribingCompany, _, connectorIds, serviceAccounts) = assignedOfferSubscriptionData;
 
         if (!isSubscribingCompany)
         {
-            throw new ForbiddenException("the calling user does not belong to the subscribing company");
+            throw ForbiddenException.Create(OfferServiceErrors.USER_NOT_BELONG_TO_COMPANY);
         }
 
         if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
         {
-            throw new ConflictException($"There is no active or pending subscription for company '{companyId}' and subscriptionId '{subscriptionId}'");
+            throw ConflictException.Create(OfferServiceErrors.NO_ACTIVE_OR_PENDING_SUBSCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
         }
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>

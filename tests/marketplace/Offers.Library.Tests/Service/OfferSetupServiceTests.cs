@@ -38,6 +38,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Tests.Shared.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using System.Collections.Immutable;
 using ServiceAccountData = Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models.ServiceAccountData;
 using TechnicalUserData = Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models.TechnicalUserData;
@@ -307,7 +308,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"OfferUrl {data.OfferUrl} must not contain #");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN.ToString());
     }
 
     [Fact]

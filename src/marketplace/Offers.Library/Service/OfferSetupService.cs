@@ -36,6 +36,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using System.Collections.Immutable;
 using System.Text.Json;
 using TechnicalUserData = Org.Eclipse.TractusX.Portal.Backend.Dim.Library.Models.TechnicalUserData;
@@ -97,7 +98,7 @@ public class OfferSetupService : IOfferSetupService
         _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", _identityData.CompanyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
-            throw new ControllerArgumentException($"OfferUrl {data.OfferUrl} must not contain #");
+            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("OfferUrl", data.OfferUrl) });
         }
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -202,7 +203,7 @@ public class OfferSetupService : IOfferSetupService
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ConflictException($"The app instance for offer {offerId} already exist");
+            throw ConflictException.Create(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -216,7 +217,7 @@ public class OfferSetupService : IOfferSetupService
         var appInstanceRepository = _portalRepositories.GetInstance<IAppInstanceRepository>();
         if (await appInstanceRepository.CheckInstanceHasAssignedSubscriptions(appInstanceId))
         {
-            throw new ConflictException($"The app instance {appInstanceId} is associated with exiting subscriptions");
+            throw ConflictException.Create(OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS, new ErrorParameter[] { new("appInstanceId", appInstanceId.ToString()) });
         }
 
         await _provisioningManager.DeleteCentralClientAsync(clientClientId)
@@ -236,12 +237,12 @@ public class OfferSetupService : IOfferSetupService
         var data = await _portalRepositories.GetInstance<IOfferRepository>().GetSingleInstanceOfferData(offerId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == null)
         {
-            throw new ConflictException($"App {offerId} does not exist.");
+            throw ConflictException.Create(OfferSetupServiceErrors.APP_DOES_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         if (!data.IsSingleInstance)
         {
-            throw new ConflictException($"offer {offerId} is not set up as single instance app");
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         Guid instanceId;
@@ -252,12 +253,12 @@ public class OfferSetupService : IOfferSetupService
         }
         catch (InvalidOperationException)
         {
-            throw new UnexpectedConditionException($"There should always be exactly one instance defined for a single instance offer {offerId}");
+            throw UnexpectedConditionException.Create(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         if (string.IsNullOrEmpty(internalClientId))
         {
-            throw new ConflictException($"clientId must not be empty for single instance offer {offerId}");
+            throw ConflictException.Create(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
         }
 
         await _provisioningManager.EnableClient(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -302,22 +303,22 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"OfferSubscription {requestId} does not exist");
+            throw NotFoundException.Create(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST, new ErrorParameter[] { new("requestId", requestId.ToString()) });
         }
 
         if (offerDetails.Status is not OfferSubscriptionStatusId.PENDING)
         {
-            throw new ConflictException("Status of the offer subscription must be pending");
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING);
         }
 
         if (!offerDetails.IsProviderCompany)
         {
-            throw new ForbiddenException("Only the providing company can setup the service");
+            throw ForbiddenException.Create(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE);
         }
 
         if (offerDetails.InstanceData.IsSingleInstance && offerDetails.AppInstanceIds.Count() != 1)
         {
-            throw new ConflictException("There must only be one app instance for single instance apps");
+            throw ConflictException.Create(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE);
         }
 
         return offerDetails;
@@ -426,14 +427,14 @@ public class OfferSetupService : IOfferSetupService
         _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", companyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
-            throw new ControllerArgumentException($"OfferUrl {data.OfferUrl} must not contain #");
+            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("OfferUrl", data.OfferUrl) });
         }
 
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
         var details = await GetAndValidateOfferDetails(data.RequestId, companyId, offerTypeId, offerSubscriptionRepository).ConfigureAwait(ConfigureAwaitOptions.None);
         if (details.InstanceData.IsSingleInstance)
         {
-            throw new ConflictException("This step is not eligible to run for single instance apps");
+            throw ConflictException.Create(OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE);
         }
 
         var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(data.RequestId,
@@ -459,19 +460,19 @@ public class OfferSetupService : IOfferSetupService
         var offerDetails = await offerSubscriptionRepository.GetSubscriptionActivationDataByIdAsync(offerSubscriptionId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
+            throw NotFoundException.Create(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         switch (offerDetails.InstanceData.IsSingleInstance)
         {
             case false:
-                throw new ConflictException("The process step is only executable for single instance apps");
+                throw ConflictException.Create(OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE);
             case true when offerDetails.AppInstanceIds.Count() != 1:
-                throw new ConflictException("There must only be one app instance for single instance apps");
+                throw ConflictException.Create(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE);
             default:
                 if (offerDetails.ProviderCompanyId != _identityData.CompanyId)
                 {
-                    throw new ConflictException("Subscription can only be activated by the provider of the offer");
+                    throw ConflictException.Create(OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER);
                 }
 
                 _portalRepositories.GetInstance<IAppSubscriptionDetailRepository>()
@@ -500,17 +501,17 @@ public class OfferSetupService : IOfferSetupService
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         if (clientCreationData == null)
         {
-            throw new NotFoundException($"offer subscription {offerSubscriptionId} does not exist");
+            throw NotFoundException.Create(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(clientCreationData.OfferUrl))
         {
-            throw new ConflictException("OfferUrl should be set");
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFERURL_SHOULD_BE_SET);
         }
 
         if (clientCreationData.OfferType != OfferTypeId.APP)
         {
-            throw new ConflictException($"Offers without type {OfferTypeId.APP} are not eligible to run");
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, new ErrorParameter[] { new("APP", OfferTypeId.APP.ToString()) });
         }
 
         var (_, iamClientId) = await CreateClient(clientCreationData.OfferUrl, clientCreationData.OfferId, false, userRolesRepository);
@@ -535,12 +536,12 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == null)
         {
-            throw new NotFoundException($"Offer subscription {offerSubscriptionId} does not exist");
+            throw NotFoundException.Create(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         if (!data.IsTechnicalUserNeeded)
         {
-            throw new ConflictException("Technical user is not needed");
+            throw ConflictException.Create(OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED);
         }
 
         var technicalUserClientId = data.ClientId ?? $"{data.OfferName}-{data.CompanyName}";
@@ -579,17 +580,17 @@ public class OfferSetupService : IOfferSetupService
 
         if (bpn is null)
         {
-            throw new ConflictException("Bpn must be set");
+            throw ConflictException.Create(OfferSetupServiceErrors.BPN_MUST_BE_SET);
         }
 
         if (offerName is null)
         {
-            throw new ConflictException($"Offer Name must be set for subscription {offerSubscriptionId}");
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         if (processId is null)
         {
-            throw new UnexpectedConditionException($"OfferSubscription {offerSubscriptionId} must be linked to a process");
+            throw UnexpectedConditionException.Create(OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         await _dimService.CreateTechnicalUser(bpn, new TechnicalUserData(processId.Value, $"sa-{offerName}-{offerSubscriptionId}"), cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -609,8 +610,7 @@ public class OfferSetupService : IOfferSetupService
         if (!await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw new ConflictException(
-                $"Company {_identityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
+            throw ConflictException.Create(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, new ErrorParameter[] { new("_identityData.CompanyId", _identityData.CompanyId.ToString()), new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, 1));
@@ -625,13 +625,13 @@ public class OfferSetupService : IOfferSetupService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == null)
         {
-            throw new NotFoundException($"Offer Subscription {offerSubscriptionId} does not exist");
+            throw NotFoundException.Create(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         if (offerDetails.InstanceData.IsSingleInstance)
         {
             if (offerDetails.AppInstanceIds.Count() != 1)
-                throw new ConflictException("There must only be one app instance for single instance apps");
+                throw ConflictException.Create(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE);
 
             await SetNotificationsToDone(serviceManagerRoles, offerDetails.OfferTypeId, offerDetails.OfferId, offerDetails.SalesManagerId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
@@ -700,8 +700,7 @@ public class OfferSetupService : IOfferSetupService
         if (offerDetails is { OfferTypeId: OfferTypeId.APP, InstanceData.IsSingleInstance: false })
         {
             if (string.IsNullOrEmpty(offerDetails.ClientClientId))
-                throw new ConflictException($"clientId must not be empty for offerSubscription {offerSubscriptionId}");
-
+                throw ConflictException.Create(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_OFFERSUBSCRIPTION, new ErrorParameter[] { new("offerSubscriptionId", offerSubscriptionId.ToString()) });
             try
             {
                 await _provisioningManager.EnableClient(offerDetails.ClientClientId!).ConfigureAwait(ConfigureAwaitOptions.None);
