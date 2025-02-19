@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.E
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -307,7 +308,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"OfferUrl {data.OfferUrl} must not contain #");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN.ToString());
     }
 
     [Fact]
