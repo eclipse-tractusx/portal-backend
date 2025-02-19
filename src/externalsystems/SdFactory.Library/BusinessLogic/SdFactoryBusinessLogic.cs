@@ -93,16 +93,21 @@ public class SdFactoryBusinessLogic(
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
-        var (companyId, businessPartnerNumber, countryCode, uniqueIdentifiers) = result;
+        var (companyId, legalName, businessPartnerNumber, countryCode, region, uniqueIdentifiers) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException(
                 $"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
+        if (string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(region))
+        {
+            throw new ConflictException(
+                $"CountryCode or Region for CompanyApplications {applicationId} and Company {companyId} is empty. Expected value: DE-NW and Current value: {countryCode}-{region}");
+        }
 
         await sdFactoryService
-            .RegisterSelfDescriptionAsync(applicationId, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
+            .RegisterSelfDescriptionAsync(applicationId, legalName, uniqueIdentifiers, countryCode, region, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 

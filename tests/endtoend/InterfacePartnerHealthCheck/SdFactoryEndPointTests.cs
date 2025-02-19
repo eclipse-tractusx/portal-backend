@@ -52,13 +52,12 @@ public class SdFactoryEndpointTests : EndToEndTestBase
         var body = DataHandleHelper.SerializeData(
             new SdFactoryRequestModel(
                 "TestAutomation",
+                "Legal Participant Company Name",
                 new List<RegistrationNumber> { new("local", "o12345678") },
-                "DE",
-                "DE",
+                "DE-NW",
+                "DE-NW",
                 SdFactoryRequestModelSdType.LegalParticipant,
-                "BPNL000000000000",
-                "BPNL000000000000",
-                "CAXSDUMMYCATENAZZ"
+                "BPNL000000000000"
             )
         );
 

@@ -227,14 +227,16 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid CompanyId, string? BusinessPartnerNumber, string Alpha2Code, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers)> GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid applicationId) =>
+    public Task<(Guid CompanyId, string legalName, string? BusinessPartnerNumber, string? Alpha2Code, string? Region, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers)> GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(Guid applicationId) =>
         portalDbContext.CompanyApplications.Where(companyApplication =>
                 companyApplication.Id == applicationId &&
                 companyApplication.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED)
-            .Select(ca => new ValueTuple<Guid, string?, string, IEnumerable<(UniqueIdentifierId Id, string Value)>>(
+            .Select(ca => new ValueTuple<Guid, string, string?, string?, string?, IEnumerable<(UniqueIdentifierId Id, string Value)>>(
                 ca.CompanyId,
+                ca.Company!.Name,
                 ca.Company!.BusinessPartnerNumber,
                 ca.Company.Address!.Country!.Alpha2Code,
+                ca.Company.Address!.Region,
                 ca.Company.CompanyIdentifiers.Select(x => new ValueTuple<UniqueIdentifierId, string>(x.UniqueIdentifierId, x.Value))))
             .SingleOrDefaultAsync();
 

@@ -455,14 +455,16 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .Select(c => c.Id)
             .ToAsyncEnumerable();
 
-    public Task<(Guid Id, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string CountryCode)> GetCompanyByProcessId(Guid processId) =>
+    public Task<(Guid Id, string LegalName, IEnumerable<(UniqueIdentifierId Id, string Value)> UniqueIdentifiers, string? BusinessPartnerNumber, string? CountryCode, string? Region)> GetCompanyByProcessId(Guid processId) =>
         context.Companies
             .Where(c => c.SdCreationProcessId == processId)
-            .Select(c => new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+            .Select(c => new ValueTuple<Guid, string, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string?, string?>(
                 c.Id,
+                c.Name,
                 c.CompanyIdentifiers.Select(ci => new ValueTuple<UniqueIdentifierId, string>(ci.UniqueIdentifierId, ci.Value)),
                 c.BusinessPartnerNumber,
-                c.Address!.Country!.Alpha2Code
+                c.Address!.Country!.Alpha2Code,
+                c.Address!.Region
             ))
             .SingleOrDefaultAsync();
 

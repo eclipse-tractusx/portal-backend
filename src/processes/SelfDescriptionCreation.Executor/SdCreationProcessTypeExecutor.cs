@@ -80,13 +80,18 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
         }
 
         var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
-        var (id, uniqueIdentifiers, businessPartnerNumber, countryCode) = await companyRepository.GetCompanyByProcessId(_processId.Value);
+        var (id, legalName, uniqueIdentifiers, businessPartnerNumber, countryCode, region) = await companyRepository.GetCompanyByProcessId(_processId.Value);
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException("BusinessPartnerNumber should never be null here.");
         }
+        if (string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(region))
+        {
+            throw new ConflictException(
+                $"CountryCode or Region is empty here. Expected value: DE-NW and Current value: {countryCode}-{region}");
+        }
 
-        await sdFactoryService.RegisterSelfDescriptionAsync(id, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
+        await sdFactoryService.RegisterSelfDescriptionAsync(id, legalName, uniqueIdentifiers, countryCode, region, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return ([ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE], ProcessStepStatusId.DONE, true, null);
