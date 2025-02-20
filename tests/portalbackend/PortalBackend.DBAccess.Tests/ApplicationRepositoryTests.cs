@@ -326,8 +326,10 @@ public class ApplicationRepositoryTests(TestDbFixture testDbFixture)
 
         // Assert
         data.CompanyId.Should().Be(CompanyId);
+        data.legalName.Should().Be("CX-Test-Access");
         data.BusinessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003CRHL");
         data.Alpha2Code.Should().Be("DE");
+        data.Region.Should().Be("BY");
         data.UniqueIdentifiers.Should().HaveCount(1);
     }
 

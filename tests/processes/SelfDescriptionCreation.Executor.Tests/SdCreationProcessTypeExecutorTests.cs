@@ -30,6 +30,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Processes.SelfDescriptionCreation.
 
 public class SdCreationProcessTypeExecutorTests
 {
+    private const string CountryCode = "DE";
+    private const string Region = "NW";
+    private const string LegalName = "Legal Participant Company Name";
+    private const string Bpn = "BPNL000000001TEST";
     private readonly ICompanyRepository _companyRepository;
     private readonly IConnectorsRepository _connectorsRepository;
     private readonly SdCreationProcessTypeExecutor _executor;
@@ -98,11 +102,13 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange
-        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, string, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string?, string?>(
             Guid.NewGuid(),
+            LegalName,
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000001TEST",
-            "DE");
+            Bpn,
+            CountryCode,
+            Region);
         A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
             .Returns(company);
 
@@ -115,7 +121,7 @@ public class SdCreationProcessTypeExecutorTests
             x => x == ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(company.Item1, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(company.Item1, A<string>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -134,7 +140,7 @@ public class SdCreationProcessTypeExecutorTests
         // Arrange
         var connector = new ValueTuple<Guid, string, Guid>(
             Guid.NewGuid(),
-            "BPNL000000001TEST",
+            Bpn,
             Guid.NewGuid());
         A.CallTo(() => _connectorsRepository.GetConnectorForProcessId(processId))
             .Returns(connector);
@@ -148,7 +154,7 @@ public class SdCreationProcessTypeExecutorTests
             x => x == ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, A<string>._, "BPNL000000001TEST", A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, A<string>._, Bpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -167,16 +173,18 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, string, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string?, string?>(
             Guid.NewGuid(),
+            LegalName,
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000001TEST",
-            "DE");
+            Bpn,
+            CountryCode,
+            Region);
         A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
             .Returns(company);
 
         var error = _fixture.Create<TestException>();
-        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<string>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .Throws(error);
 
         // Act execute
@@ -205,16 +213,18 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange execute
-        var company = new ValueTuple<Guid, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string>(
+        var company = new ValueTuple<Guid, string, IEnumerable<(UniqueIdentifierId Id, string Value)>, string?, string?, string?>(
             Guid.NewGuid(),
+            LegalName,
             new List<(UniqueIdentifierId Id, string Value)> { new(UniqueIdentifierId.VAT_ID, "test") },
-            "BPNL000000001TEST",
-            "DE");
+            Bpn,
+            CountryCode,
+            Region);
         A.CallTo(() => _companyRepository.GetCompanyByProcessId(processId))
             .Returns(company);
 
         var error = new SystemException(_fixture.Create<string>());
-        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterSelfDescriptionAsync(A<Guid>._, A<string>._, A<IEnumerable<(UniqueIdentifierId Id, string Value)>>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .Throws(error);
 
         // Act execute
