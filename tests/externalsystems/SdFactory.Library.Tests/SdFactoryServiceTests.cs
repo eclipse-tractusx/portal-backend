@@ -82,7 +82,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        await _service.RegisterConnectorAsync(id, "https://connect-tor.com", Bpn, CancellationToken.None);
+        await _service.RegisterConnectorAsync(id, "https://company.connector-url.org", "https://connect-tor.com", Bpn, CancellationToken.None);
 
         // Assert
         _documents.Should().BeEmpty();
@@ -97,7 +97,7 @@ public class SdFactoryServiceTests
         using var httpClient = CreateHttpClient(httpMessageHandlerMock);
 
         // Act
-        async Task Action() => await _service.RegisterConnectorAsync(id, "https://connect-tor.com", Bpn, CancellationToken.None);
+        async Task Action() => await _service.RegisterConnectorAsync(id, "https://company.connector-url.org", "https://connect-tor.com", Bpn, CancellationToken.None);
 
         // Assert
         var exception = await Assert.ThrowsAsync<ServiceException>(Action);

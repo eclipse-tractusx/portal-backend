@@ -138,8 +138,9 @@ public class SdCreationProcessTypeExecutorTests
         initializationResult.ScheduleStepTypeIds.Should().BeNull();
 
         // Arrange
-        var connector = new ValueTuple<Guid, string, Guid>(
+        var connector = new ValueTuple<Guid, string, string, Guid>(
             Guid.NewGuid(),
+            "https://company.connector-url.org",
             Bpn,
             Guid.NewGuid());
         A.CallTo(() => _connectorsRepository.GetConnectorForProcessId(processId))
@@ -154,7 +155,7 @@ public class SdCreationProcessTypeExecutorTests
             x => x == ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
         result.ProcessStepStatusId.Should().Be(ProcessStepStatusId.DONE);
 
-        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, A<string>._, Bpn, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryService.RegisterConnectorAsync(connector.Item1, connector.Item2, A<string>._, Bpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

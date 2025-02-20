@@ -44,10 +44,11 @@ public class SdFactoryBusinessLogic(
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
         Guid connectorId,
+        string connectorUrl,
         string selfDescriptionDocumentUrl,
         string businessPartnerNumber,
         CancellationToken cancellationToken) =>
-        sdFactoryService.RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
+        sdFactoryService.RegisterConnectorAsync(connectorId, connectorUrl, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)

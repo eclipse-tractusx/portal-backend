@@ -49,8 +49,8 @@ public record ConnectorSdFactoryRequestModel(
     [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
     [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
     [property: JsonPropertyName("policies")] string Policies,
-    [property: JsonPropertyName("issuer")] string Issuer,
-    [property: JsonPropertyName("holder")] string Holder
+    [property: JsonPropertyName("holder")] string Holder,
+    [property: JsonPropertyName("connectorUrl")] string ConnectorUrl
 );
 
 public enum SdFactoryRequestModelSdType

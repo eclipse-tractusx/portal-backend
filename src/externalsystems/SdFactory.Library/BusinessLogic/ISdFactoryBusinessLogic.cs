@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.BusinessLogic;
 
 public interface ISdFactoryBusinessLogic
 {
-    Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken);
+    Task RegisterConnectorAsync(Guid connectorId, string connectorUrl, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken);
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task ProcessFinishSelfDescriptionLpForApplication(SelfDescriptionResponseData data, Guid companyId, CancellationToken cancellationToken);
     Task ProcessFinishSelfDescriptionLpForConnector(SelfDescriptionResponseData data, CancellationToken cancellationToken);

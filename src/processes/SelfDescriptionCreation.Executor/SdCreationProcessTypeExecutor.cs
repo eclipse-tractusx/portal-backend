@@ -105,14 +105,14 @@ public class SdCreationProcessTypeExecutor(IPortalRepositories portalRepositorie
         }
 
         var connectorsRepository = portalRepositories.GetInstance<IConnectorsRepository>();
-        var (id, businessPartnerNumber, selfDescriptionDocumentId) = await connectorsRepository.GetConnectorForProcessId(_processId.Value).ConfigureAwait(false);
+        var (id, connectorUrl, businessPartnerNumber, selfDescriptionDocumentId) = await connectorsRepository.GetConnectorForProcessId(_processId.Value).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException("BusinessPartnerNumber should never be null here.");
         }
 
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
-        await sdFactoryService.RegisterConnectorAsync(id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
+        await sdFactoryService.RegisterConnectorAsync(id, connectorUrl, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return ([ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE], ProcessStepStatusId.DONE, true, null);

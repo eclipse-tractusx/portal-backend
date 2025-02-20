@@ -35,7 +35,7 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
     private readonly SdFactorySettings _settings = options.Value;
 
     /// <inheritdoc />
-    public async Task RegisterConnectorAsync(Guid connectorId, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken)
+    public async Task RegisterConnectorAsync(Guid connectorId, string connectorUrl, string selfDescriptionDocumentUrl, string businessPartnerNumber, CancellationToken cancellationToken)
     {
         var httpClient = await tokenService.GetAuthorizedClient<SdFactoryService>(_settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -46,8 +46,8 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
             string.Empty,
             string.Empty,
             string.Empty,
-            _settings.SdFactoryIssuerBpn,
-            businessPartnerNumber);
+            businessPartnerNumber,
+            connectorUrl);
 
         await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)
             .CatchingIntoServiceExceptionFor("sd-factory-connector-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE).ConfigureAwait(false);

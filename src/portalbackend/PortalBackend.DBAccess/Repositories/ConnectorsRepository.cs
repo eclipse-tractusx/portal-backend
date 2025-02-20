@@ -233,10 +233,10 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
             .Select(c => c.Id)
             .ToAsyncEnumerable();
 
-    public Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId) =>
+    public Task<(Guid Id, string ConnectorUrl, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId) =>
         dbContext.Connectors
             .Where(c => c.SdCreationProcessId == processId)
-            .Select(c => new ValueTuple<Guid, string?, Guid>(c.Id, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId!.Value))
+            .Select(c => new ValueTuple<Guid, string, string?, Guid>(c.Id, c.ConnectorUrl, c.Provider!.BusinessPartnerNumber, c.Provider.SelfDescriptionDocumentId!.Value))
             .SingleOrDefaultAsync();
 
     public Task<bool> CheckConnectorExists(string name, string connectorUrl) =>

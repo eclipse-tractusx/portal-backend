@@ -109,7 +109,7 @@ public interface IConnectorsRepository
     void DeleteConnectorAssignedSubscriptions(Guid connectorId, IEnumerable<Guid> assignedOfferSubscriptions);
     Func<int, int, Task<Pagination.Source<ConnectorMissingSdDocumentData>?>> GetConnectorsWithMissingSdDocument();
     IAsyncEnumerable<Guid> GetConnectorIdsWithMissingSelfDescription();
-    Task<(Guid Id, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
+    Task<(Guid Id, string ConnectorUrl, string? BusinessPartnerNumber, Guid SelfDescriptionDocumentId)> GetConnectorForProcessId(Guid processId);
     Task<bool> CheckConnectorExists(string name, string connectorUrl);
     Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForConnectorId(Guid connectorId);
 }

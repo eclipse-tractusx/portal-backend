@@ -249,7 +249,7 @@ public class ConnectorsBusinessLogic(
         {
             var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
             await sdFactoryBusinessLogic
-                .RegisterConnectorAsync(createdConnector.Id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
+                .RegisterConnectorAsync(createdConnector.Id, createdConnector.ConnectorUrl, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
@@ -458,7 +458,7 @@ public class ConnectorsBusinessLogic(
 
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
         await sdFactoryBusinessLogic
-            .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, bpn, cancellationToken)
+            .RegisterConnectorAsync(connectorId, data.ConnectorUrl, selfDescriptionDocumentUrl, bpn, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);

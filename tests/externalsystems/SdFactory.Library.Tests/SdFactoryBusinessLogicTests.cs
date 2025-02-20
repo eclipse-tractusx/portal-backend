@@ -111,10 +111,10 @@ public class SdFactoryBusinessLogicTests
         var id = Guid.NewGuid();
 
         // Act
-        await _sut.RegisterConnectorAsync(id, url, Bpn, CancellationToken.None);
+        await _sut.RegisterConnectorAsync(id, "https://company.connector-url.org", url, Bpn, CancellationToken.None);
 
         // Assert
-        A.CallTo(() => _service.RegisterConnectorAsync(id, url, Bpn, A<CancellationToken>._))
+        A.CallTo(() => _service.RegisterConnectorAsync(id, "https://company.connector-url.org", url, Bpn, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 

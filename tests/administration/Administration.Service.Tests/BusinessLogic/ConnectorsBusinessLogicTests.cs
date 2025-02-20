@@ -203,7 +203,7 @@ public class ConnectorsBusinessLogicTests
             x.ProviderId == _identity.CompanyId &&
             x.SdSkippedDate == (clearingHouseDisabled ? now : null));
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class ConnectorsBusinessLogicTests
         ex.Message.Should().Be("CONNECTOR_DUPLICATE");
         _connectors.Should().BeEmpty();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, A<Guid>._)).MustNotHaveHappened();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -286,7 +286,7 @@ public class ConnectorsBusinessLogicTests
 
         // Assert
         A.CallTo(() => _connectorsRepository.CreateConnector(A<string>._, A<string>._, A<string>._, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Fact]
@@ -384,7 +384,7 @@ public class ConnectorsBusinessLogicTests
             x.ProviderId == _identity.CompanyId &&
             x.SdSkippedDate == (clearingHouseDisabled ? now : null));
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Theory]
@@ -415,7 +415,7 @@ public class ConnectorsBusinessLogicTests
         result.Should().NotBeEmpty();
         _connectors.Should().HaveCount(1);
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappened(clearingHouseDisabled ? 0 : 1, Times.Exactly);
     }
 
     [Fact]
@@ -435,7 +435,7 @@ public class ConnectorsBusinessLogicTests
         _connectors.Should().BeEmpty();
         A.CallTo(() => _connectorsRepository.CreateConnectorAssignedSubscriptions(A<Guid>._, _validOfferSubscriptionId))
             .MustNotHaveHappened();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .MustNotHaveHappened();
     }
 
@@ -1174,7 +1174,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connectorId, null, A<Action<Connector>>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _documentRepository.AttachAndModifyDocument((Guid)data.SelfDescriptionDocumentId!, null, A<Action<Document>>._)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         connector.ConnectorUrl.Should().Be("https://new.de");
         document.DocumentStatusId.Should().Be(DocumentStatusId.INACTIVE);
     }
@@ -1541,7 +1541,7 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ValidCompanyId))
             .Returns(true);
 
-        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<string>._, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
 
         A.CallTo(() => _portalRepositories.GetInstance<ITechnicalUserRepository>()).Returns(_technicalUserRepository);
