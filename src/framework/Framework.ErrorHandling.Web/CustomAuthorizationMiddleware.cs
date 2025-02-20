@@ -29,22 +29,39 @@ public class CustomAuthorizationMiddleware(IErrorMessageService errorMessageServ
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         await next(context).ConfigureAwait(ConfigureAwaitOptions.None);
-        var errorId = Guid.NewGuid().ToString();
 
-        if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
+        switch (context.Response.StatusCode)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-            const string UnauthorizedAccess = "Unauthorized access";
-            await context.Response.WriteAsJsonAsync(CreateErrorResponse(HttpStatusCode.Unauthorized, new UnauthorizedAccessException(), errorId, UnauthorizedAccess, Enumerable.Repeat(new ErrorDetails("UnauthorizedAccess", nameof(UnauthorizedAccessException), UnauthorizedAccess, []), 1), null), Options).ConfigureAwait(ConfigureAwaitOptions.None);
-        }
+            case (int)HttpStatusCode.Unauthorized:
+                context.Response.ContentType = "application/json";
+                const string UnauthorizedAccess = "Unauthorized access";
+                await context.Response.WriteAsJsonAsync(
+                    CreateErrorResponse(
+                        HttpStatusCode.Unauthorized,
+                        new UnauthorizedAccessException(),
+                        Guid.NewGuid().ToString(),
+                        UnauthorizedAccess,
+                        Enumerable.Repeat(new ErrorDetails("UnauthorizedAccess", nameof(UnauthorizedAccessException), UnauthorizedAccess, []), 1),
+                        null),
+                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
+                break;
 
-        if (context.Response.StatusCode == (int)HttpStatusCode.Forbidden)
-        {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-            const string ForbiddenAccess = "Access forbidden";
-            await context.Response.WriteAsJsonAsync(CreateErrorResponse(HttpStatusCode.Forbidden, new ForbiddenException(), errorId, ForbiddenAccess, Enumerable.Repeat(new ErrorDetails("ForbiddenAccess", nameof(ForbiddenException), ForbiddenAccess, []), 1), null), Options).ConfigureAwait(ConfigureAwaitOptions.None);
+            case (int)HttpStatusCode.Forbidden:
+                context.Response.ContentType = "application/json";
+                const string ForbiddenAccess = "Access forbidden";
+                await context.Response.WriteAsJsonAsync(
+                    CreateErrorResponse(
+                        HttpStatusCode.Forbidden,
+                        new ForbiddenException(),
+                        Guid.NewGuid().ToString(),
+                        ForbiddenAccess,
+                        Enumerable.Repeat(new ErrorDetails("ForbiddenAccess", nameof(ForbiddenException), ForbiddenAccess, []), 1),
+                        null),
+                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
+                break;
+
+            default:
+                break;
         }
     }
 }
