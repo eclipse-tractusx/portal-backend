@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -61,7 +62,7 @@ public class TechnicalUserProfileServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer APP {_offerId} does not exists");
+        ex.Message.Should().Be(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -76,7 +77,7 @@ public class TechnicalUserProfileServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Offer name needs to be set here");
+        ex.Message.Should().Be(TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET.ToString());
     }
 
     [Fact]
@@ -122,7 +123,7 @@ public class TechnicalUserProfileServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Offer name needs to be set here");
+        ex.Message.Should().Be(TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET.ToString());
     }
 
     [Fact]

@@ -360,7 +360,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There must only be one app instance for single instance apps");
+        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -378,7 +378,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"OfferSubscription {data.RequestId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -394,7 +394,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Be("Status of the offer subscription must be pending");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -412,7 +412,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be("Only the providing company can setup the service");
+        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -451,7 +451,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(offerId);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"App {offerId} does not exist.");
+        ex.Message.Should().Be(OfferSetupServiceErrors.APP_DOES_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -462,7 +462,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithWithNoInstanceSetupIds);
 
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"There should always be exactly one instance defined for a single instance offer {_offerIdWithWithNoInstanceSetupIds}");
+        ex.Message.Should().Be(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE.ToString());
     }
 
     [Fact]
@@ -472,7 +472,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithoutClient);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"clientId must not be empty for single instance offer {_offerIdWithoutClient}");
+        ex.Message.Should().Be(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE.ToString());
     }
 
     [Fact]
@@ -482,7 +482,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithMultipleInstances);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"offer {_offerIdWithMultipleInstances} is not set up as single instance app");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE.ToString());
     }
 
     #endregion
@@ -539,7 +539,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"The app instance for offer {offerId} already exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS.ToString());
     }
 
     #endregion
@@ -635,7 +635,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _appInstanceRepository.RemoveAppInstanceAssignedServiceAccounts(A<Guid>._, A<IEnumerable<Guid>>._))
             .MustNotHaveHappened();
 
-        result.Message.Should().Be($"The app instance {appInstanceId} is associated with exiting subscriptions");
+        result.Message.Should().Be(OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS.ToString());
     }
 
     #endregion
@@ -659,7 +659,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"OfferUrl {data.OfferUrl} must not contain #");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN.ToString());
     }
 
     [Theory]
@@ -678,7 +678,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"OfferSubscription {offerSubscriptionId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -700,7 +700,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Status of the offer subscription must be pending");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING.ToString());
     }
 
     [Theory]
@@ -723,7 +723,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Only the providing company can setup the service");
+        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE.ToString());
     }
 
     [Theory]
@@ -748,7 +748,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There must only be one app instance for single instance apps");
+        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
     }
 
     [Theory]
@@ -784,7 +784,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("This step is not eligible to run for single instance apps");
+        ex.Message.Should().Be(OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE.ToString());
     }
 
     [Theory]
@@ -848,7 +848,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer Subscription {offerSubscriptionId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -869,7 +869,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("There must only be one app instance for single instance apps");
+        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
     }
 
     [Fact]
@@ -890,7 +890,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("The process step is only executable for single instance apps");
+        ex.Message.Should().Be(OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE.ToString());
     }
 
     [Fact]
@@ -912,7 +912,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Subscription can only be activated by the provider of the offer");
+        ex.Message.Should().Be(OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER.ToString());
     }
 
     [Fact]
@@ -973,7 +973,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"offer subscription {offerSubscriptionId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -992,7 +992,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Offers without type {OfferTypeId.APP} are not eligible to run");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE.ToString());
     }
 
     [Theory]
@@ -1055,7 +1055,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer subscription {offerSubscriptionId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
     }
 
     [Fact]
@@ -1073,7 +1073,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Technical user is not needed");
+        ex.Message.Should().Be(OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED.ToString());
     }
 
     [Theory]
@@ -1165,7 +1165,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("Bpn must be set");
+        ex.Message.Should().Be(OfferSetupServiceErrors.BPN_MUST_BE_SET.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1183,7 +1183,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Offer Name must be set for subscription {offerSubscriptionId}");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1201,7 +1201,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"OfferSubscription {offerSubscriptionId} must be linked to a process");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1272,7 +1272,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Offer Subscription {offerSubscriptionId} does not exist");
+        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1429,7 +1429,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Company {_identityService.IdentityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}");
+        ex.Message.Should().Be(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER.ToString());
     }
 
     [Fact]

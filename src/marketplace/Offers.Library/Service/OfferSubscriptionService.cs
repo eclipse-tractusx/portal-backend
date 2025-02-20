@@ -247,14 +247,14 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 agreementData.Select(x => x.AgreementId),
                 x => x.AgreementId)
             .IfAny(invalidConsents =>
-                throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new ErrorParameter("AgreementIds", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new ErrorParameter("OfferId", offerId.ToString()) }));
+                throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new(nameof(offerAgreementConsentData), string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new("OfferId", offerId.ToString()) }));
 
         agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE)
             .ExceptBy(
                 offerAgreementConsentData.Where(data => data.ConsentStatusId == ConsentStatusId.ACTIVE).Select(data => data.AgreementId),
                 x => x.AgreementId)
             .IfAny(missing =>
-            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, new ErrorParameter[] { new ErrorParameter("AgreementIds", string.Join(",", missing.Select(consent => consent.AgreementId))), new ErrorParameter("OfferId", offerId.ToString()) }));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, new ErrorParameter[] { new(nameof(offerAgreementConsentData), string.Join(",", missing.Select(consent => consent.AgreementId))), new("OfferId", offerId.ToString()) }));
         // ignore consents for inactive agreements
         return offerAgreementConsentData
             .ExceptBy(
@@ -268,7 +268,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyInformation == null)
         {
-            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.OFFER_NOT_EXIST, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.OFFER_NOT_EXIST, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (companyInformation.BusinessPartnerNumber == null)

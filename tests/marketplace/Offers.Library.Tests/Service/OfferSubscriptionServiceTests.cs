@@ -308,7 +308,7 @@ public class OfferSubscriptionServiceTests
         A.CallTo(() => _offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, A<Action<OfferSubscription>>._)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcess(A<ProcessTypeId>._)).MustNotHaveHappened();
         A.CallTo(() => _processStepRepository.CreateProcessStepRange(A<IEnumerable<(ProcessStepTypeId, ProcessStepStatusId, Guid)>>._)).MustNotHaveHappened();
-        result.Message.Should().Be($"company {_companyId} is already subscribed to {_existingOfferId}");
+        result.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
     }
 
     [Theory]
@@ -328,8 +328,8 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("companyId");
-        ex.Message.Should().Be($"Company {_notAssignedCompanyId} does not exist (Parameter 'companyId')");
+        ex.Parameters.First().Name.Should().Be("companyId");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -349,7 +349,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Offer {notExistingServiceId} does not exist");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NOTFOUND.ToString());
     }
 
     [Theory]
@@ -368,7 +368,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Be("The offer name has not been configured properly");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NAME_NOT_CONFIGURED.ToString());
     }
 
     [Theory]
@@ -388,9 +388,9 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith($"must be given for offer {_existingOfferId} (Parameter 'offerAgreementConsentData')");
-        ex.Message.Should().ContainAll(_agreementStatusDatas.Select(x => x.AgreementId).Select(id => id.ToString()));
+        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
+        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
     [Theory]
@@ -411,9 +411,9 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith($"are not valid for offer {_existingOfferId} (Parameter 'offerAgreementConsentData')");
-        ex.Message.Should().ContainAll(additional.Select(consent => consent.AgreementId.ToString()));
+        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
+        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
     }
 
     [Theory]
@@ -433,9 +433,9 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith($"must be given for offer {_existingOfferId} (Parameter 'offerAgreementConsentData')");
-        ex.Message.Should().ContainAll(_agreementStatusDatas.Select(x => x.AgreementId).Select(id => id.ToString()));
+        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
+        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
     [Theory]
@@ -453,7 +453,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Contain("has no BusinessPartnerNumber assigned");
+        ex.Message.Should().Contain(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER.ToString());
     }
 
     [Theory]
@@ -475,7 +475,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Be($"{offerTypeId} providing company is not set");
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.PROVIDING_COMPANY_NOT_SET.ToString());
     }
 
     #endregion
@@ -650,7 +650,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(" is already subscribed to ");
+        ex.Message.Should().Contain(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
     }
 
     #endregion

@@ -290,7 +290,7 @@ public class OfferService(
 
         if (responseData == default)
         {
-            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_SALESMANAGERID, new ErrorParameter[] { new("salesManagerId", salesManagerId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_SALESMANAGERID, new ErrorParameter[] { new(nameof(salesManagerId), salesManagerId.ToString()) });
         }
 
         if (!responseData.IsSameCompany)
@@ -300,7 +300,7 @@ public class OfferService(
 
         if (userRoleIds.Except(responseData.RoleIds).Any())
         {
-            throw ControllerArgumentException.Create(OfferServiceErrors.USER_NOT_SALESMANAGER, new ErrorParameter[] { new("salesManagerId", salesManagerId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.USER_NOT_SALESMANAGER, new ErrorParameter[] { new(nameof(salesManagerId), salesManagerId.ToString()) });
         }
     }
 
@@ -584,7 +584,7 @@ public class OfferService(
             var notFoundLanguageCodes = languageCodes.Except(foundLanguageCodes).ToList();
             if (notFoundLanguageCodes.Any())
             {
-                throw ControllerArgumentException.Create(OfferServiceErrors.LANGUAGE_CODES_NOT_EXIST, new ErrorParameter[] { new ErrorParameter("languageCodes", string.Join(",", notFoundLanguageCodes)) });
+                throw ControllerArgumentException.Create(OfferServiceErrors.LANGUAGE_CODES_NOT_EXIST, new ErrorParameter[] { new ErrorParameter(nameof(languageCodes), string.Join(",", notFoundLanguageCodes)) });
             }
         }
     }
@@ -624,7 +624,7 @@ public class OfferService(
         }
         if (!result.IsValidDocumentType)
         {
-            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
         if (!result.IsValidOfferType)
         {
@@ -683,7 +683,7 @@ public class OfferService(
 
         if (!result.IsDocumentTypeMatch)
         {
-            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED, new ErrorParameter[] { new("documentId", documentId.ToString()) });
         }
 
         if (result.DocumentStatusId == DocumentStatusId.LOCKED)
