@@ -107,7 +107,7 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
     protected IEnumerable<ErrorDetails> GetErrorDetails(Exception exception) =>
         exception is DetailException { HasDetails: true } detail
             ? detail.GetErrorDetails(errorMessageService)
-            : Enumerable.Empty<ErrorDetails>();
+            : [];
 
     protected static void LogErrorInformation(string errorId, Exception exception)
     {

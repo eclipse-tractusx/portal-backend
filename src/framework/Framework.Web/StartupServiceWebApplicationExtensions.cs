@@ -21,6 +21,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Serilog;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
@@ -50,6 +51,7 @@ public static class StartupServiceWebApplicationExtensions
         app.UseSession();
 
         app.UseCors(CorsExtensions.AllowSpecificOrigins);
+        app.UseMiddleware<CustomAuthorizationMiddleware>();
         app.UseAuthentication();
         app.UseAuthorization();
 
