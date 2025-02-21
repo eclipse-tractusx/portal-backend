@@ -93,8 +93,7 @@ public class SdFactoryBusinessLogicTests
 
         _options = Options.Create(new SdFactorySettings
         {
-            SdFactoryUrl = "https://www.api.sdfactory.com",
-            SdFactoryIssuerBpn = "BPNL00000003CRHK"
+            SdFactoryUrl = "https://www.api.sdfactory.com"
         });
         _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, _options);
     }
@@ -141,7 +140,6 @@ public class SdFactoryBusinessLogicTests
         var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
         {
             SdFactoryUrl = "https://www.api.sdfactory.com",
-            SdFactoryIssuerBpn = "BPNL00000003CRHK",
             ClearinghouseConnectDisabled = clearinghouseConnectDisabled
         }));
 
