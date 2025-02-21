@@ -848,7 +848,7 @@ public class UserBusinessLogicTests
         await sut.ModifyAppUserRolesAsync(_validOfferId, _companyUserId, userRoles);
 
         // Assert
-        A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<IdentityAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _userRolesRepository.RemoveIdentityAssignedRoles(A<IEnumerable<IdentityAssignedRole>>.That.Matches(x => x.Count() == 1))).MustHaveHappenedOnceExactly();
         notifications.Should().ContainSingle()
             .Which.Should().Match<Notification>(x =>
                 x.ReceiverUserId == _companyUserId &&
@@ -1676,7 +1676,7 @@ public class UserBusinessLogicTests
             .Invokes((Guid companyUserId, Guid companyUserRoleId) =>
                 _addedRoles.Add(new IdentityAssignedRole(companyUserId, companyUserRoleId)));
 
-        A.CallTo(() => _portalRepositories.RemoveRange(A<IEnumerable<IdentityAssignedRole>>._))
+        A.CallTo(() => _userRolesRepository.RemoveIdentityAssignedRoles(A<IEnumerable<IdentityAssignedRole>>._))
             .Invokes((IEnumerable<IdentityAssignedRole> roles) =>
             {
                 foreach (var role in roles)

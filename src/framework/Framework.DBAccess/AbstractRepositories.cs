@@ -49,23 +49,9 @@ public abstract class AbstractRepositories<TDbContext>(TDbContext dbContext) : I
         return attachedEntity;
     }
 
-    public void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class
-    {
-        foreach (var attachedEntity in entities.Select(entity => dbContext.Attach(entity).Entity))
-        {
-            setOptionalParameters.Invoke(attachedEntity);
-        }
-    }
-
-    public IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class =>
-        entities.Select(entity => dbContext.Attach(entity).Entity);
-
     /// <inheritdoc />
     public TEntity Remove<TEntity>(TEntity entity) where TEntity : class
         => dbContext.Remove(entity).Entity;
-
-    public void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-        => dbContext.RemoveRange(entities);
 
     public Task<int> SaveAsync()
     {

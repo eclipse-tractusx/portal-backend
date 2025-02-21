@@ -28,35 +28,29 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 
-public class UserRolesRepository : IUserRolesRepository
+public class UserRolesRepository(PortalDbContext context)
+    : IUserRolesRepository
 {
-    private readonly PortalDbContext _dbContext;
-
-    public UserRolesRepository(PortalDbContext portalDbContext)
-    {
-        _dbContext = portalDbContext;
-    }
-
     public IEnumerable<UserRole> CreateAppUserRoles(IEnumerable<(Guid AppId, string Role)> appIdRoles)
     {
         var appRoles = appIdRoles.Select(x => new UserRole(Guid.NewGuid(), x.Role, x.AppId)).ToList();
-        _dbContext.AddRange(appRoles);
+        context.AddRange(appRoles);
         return appRoles;
     }
 
     ///<inheritdoc/>
     public UserRole DeleteUserRole(Guid roleId) =>
-        _dbContext.Remove(new UserRole(roleId, null!, Guid.Empty)).Entity;
+        context.Remove(new UserRole(roleId, null!, Guid.Empty)).Entity;
 
     public IEnumerable<UserRoleDescription> CreateAppUserRoleDescriptions(IEnumerable<(Guid RoleId, string LanguageCode, string Description)> roleLanguageDescriptions)
     {
         var roleDescriptions = roleLanguageDescriptions.Select(x => new UserRoleDescription(x.RoleId, x.LanguageCode, x.Description)).ToList();
-        _dbContext.AddRange(roleDescriptions);
+        context.AddRange(roleDescriptions);
         return roleDescriptions;
     }
 
     public IdentityAssignedRole CreateIdentityAssignedRole(Guid companyUserId, Guid companyUserRoleId) =>
-        _dbContext.IdentityAssignedRoles.Add(
+        context.IdentityAssignedRoles.Add(
             new IdentityAssignedRole(
                 companyUserId,
                 companyUserRoleId
@@ -64,24 +58,24 @@ public class UserRolesRepository : IUserRolesRepository
             )).Entity;
 
     public void CreateIdentityAssignedRoleRange(IEnumerable<(Guid CompanyUserId, Guid CompanyUserRoleId)> companyUserRoleIds) =>
-        _dbContext.IdentityAssignedRoles.AddRange(
+        context.IdentityAssignedRoles.AddRange(
             companyUserRoleIds.Select(x =>
                 new IdentityAssignedRole(
                     x.CompanyUserId,
                     x.CompanyUserRoleId)));
 
     public IdentityAssignedRole DeleteIdentityAssignedRole(Guid companyUserId, Guid userRoleId) =>
-        _dbContext.IdentityAssignedRoles.Remove(
+        context.IdentityAssignedRoles.Remove(
             new IdentityAssignedRole(
                 companyUserId,
                 userRoleId
             )).Entity;
 
     public void DeleteCompanyUserAssignedRoles(IEnumerable<(Guid CompanyUserId, Guid UserRoleId)> companyUserAssignedRoleIds) =>
-        _dbContext.IdentityAssignedRoles.RemoveRange(companyUserAssignedRoleIds.Select(ids => new IdentityAssignedRole(ids.CompanyUserId, ids.UserRoleId)));
+        context.IdentityAssignedRoles.RemoveRange(companyUserAssignedRoleIds.Select(ids => new IdentityAssignedRole(ids.CompanyUserId, ids.UserRoleId)));
 
     public IAsyncEnumerable<UserRoleData> GetUserRoleDataUntrackedAsync(IEnumerable<Guid> userRoleIds) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(userRole => userRoleIds.Contains(userRole.Id))
             .Select(userRole => new UserRoleData(
@@ -94,7 +88,7 @@ public class UserRolesRepository : IUserRolesRepository
     {
         foreach (var clientRole in clientRoles)
         {
-            await foreach (var userRoleData in _dbContext.UserRoles
+            await foreach (var userRoleData in context.UserRoles
                 .AsNoTracking()
                 .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) && clientRole.UserRoleNames.Contains(userRole.UserRoleText))
                 .Select(userRole => new
@@ -115,7 +109,7 @@ public class UserRolesRepository : IUserRolesRepository
     }
 
     public IAsyncEnumerable<Guid> GetUserRoleIdsUntrackedAsync(IEnumerable<UserRoleConfig> clientRoles) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .SelectMany(ur => ur.Offer!.AppInstances.Select(ai => new
             {
                 ai.IamClient!.ClientClientId,
@@ -130,7 +124,7 @@ public class UserRolesRepository : IUserRolesRepository
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<(string UserRoleText, Guid RoleId, bool IsAssigned)> GetAssignedAndMatchingAppRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(role => role.OfferId == offerId)
             .Select(role => new
@@ -149,7 +143,7 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     public IAsyncEnumerable<UserRoleModificationData> GetAssignedAndMatchingCoreOfferRoles(Guid identityId, IEnumerable<string> userRoles, Guid offerId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(role => role.OfferId == offerId)
             .Select(role => new
@@ -159,6 +153,7 @@ public class UserRolesRepository : IUserRolesRepository
                 IsAssigned = role.IdentityAssignedRoles.Any(iar => iar.IdentityId == identityId),
                 IsAssignable = role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.Company!.Identities.Any(identity => identity.Id == identityId)))
             })
+
             // x.IsRequested && x.IsAssigned && x.IsAssignable ||   // no change but required to detect duplicates
             // x.IsRequested && !x.IsAssigned && x.IsAssignable ||  // to be assigned
             // !x.IsRequested && x.IsAssigned ||                    // to be unassigned
@@ -174,7 +169,7 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     public IAsyncEnumerable<UserRoleData> GetOwnCompanyPortalUserRoleDataUntrackedAsync(string clientId, IEnumerable<string> roles, Guid companyId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(userRole => userRole.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId) &&
                 roles.Contains(userRole.UserRoleText) &&
@@ -186,7 +181,7 @@ public class UserRolesRepository : IUserRolesRepository
             .AsAsyncEnumerable();
 
     public IAsyncEnumerable<(Guid OfferId, Guid RoleId, string RoleText, string Description)> GetCoreOfferRolesAsync(Guid companyId, string languageShortName, string clientId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(role => role.UserRoleCollections.Any(collection => collection.CompanyRoleAssignedRoleCollection!.CompanyRole!.CompanyAssignedRoles.Any(assigned => assigned.CompanyId == companyId)) &&
                            role.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId))
@@ -199,7 +194,7 @@ public class UserRolesRepository : IUserRolesRepository
             .ToAsyncEnumerable();
 
     public IAsyncEnumerable<OfferRoleInfo> GetAppRolesAsync(Guid offerId, Guid companyId, string languageShortName) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .Where(role => role.OfferId == offerId &&
                 role.Offer!.OfferSubscriptions.Any(subscription => subscription.CompanyId == companyId))
             .Select(role => new OfferRoleInfo(
@@ -209,14 +204,14 @@ public class UserRolesRepository : IUserRolesRepository
             )).AsAsyncEnumerable();
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync(string keyCloakClientId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(userRole => userRole.Offer!.AppInstances.Any(x => x.IamClient!.ClientClientId == keyCloakClientId))
             .Select(userRole => userRole.UserRoleText)
             .AsAsyncEnumerable();
 
     IAsyncEnumerable<UserRoleWithDescriptionTransferData> IUserRolesRepository.GetServiceAccountRolesAsync(Guid companyId, string clientId, string languageShortName) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .AsNoTracking()
             .Where(ur => ur.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientId) &&
                 ur.UserRoleCollections.Any(urc =>
@@ -232,7 +227,7 @@ public class UserRolesRepository : IUserRolesRepository
 
     /// <inheritdoc />
     public IAsyncEnumerable<string> GetUserRolesForOfferIdAsync(Guid offerId) =>
-        _dbContext.UserRoles
+        context.UserRoles
             .Where(x => x.OfferId == offerId)
             .Select(x => x.UserRoleText)
             .AsAsyncEnumerable();
@@ -242,7 +237,7 @@ public class UserRolesRepository : IUserRolesRepository
     {
         foreach (var clientRole in clientRoles)
         {
-            await foreach (var companyUserData in _dbContext.IdentityAssignedRoles
+            await foreach (var companyUserData in context.IdentityAssignedRoles
                 .AsNoTracking()
                 .Where(companyAssignedUserRole => companyAssignedUserRole.UserRole!.Offer!.AppInstances.Any(ai => ai.IamClient!.ClientClientId == clientRole.ClientId) &&
                                                   clientRole.UserRoleNames.Contains(companyAssignedUserRole.UserRole.UserRoleText) &&
@@ -261,7 +256,7 @@ public class UserRolesRepository : IUserRolesRepository
     }
 
     public IAsyncEnumerable<(Guid IdentityId, IEnumerable<(string ClientClientId, Guid UserRoleId, string UserRoleText)> InstanceRoleData)> GetUsersWithUserRolesForApplicationId(Guid applicationId, IEnumerable<string> iamClientIds) =>
-        _dbContext.Identities
+        context.Identities
             .Where(identity => identity.Company!.CompanyApplications.Any(companyApplication => companyApplication.Id == applicationId))
             .Select(identity => new
             {
@@ -285,9 +280,12 @@ public class UserRolesRepository : IUserRolesRepository
             .Take(2)
             .ToAsyncEnumerable();
 
+    public void RemoveIdentityAssignedRoles(IEnumerable<IdentityAssignedRole> identityAssignedRoles) =>
+        context.IdentityAssignedRoles.RemoveRange(identityAssignedRoles);
+
     /// <inheritdoc />
     public IAsyncEnumerable<Guid> GetRolesForClient(string technicalUserProfileClient) =>
-        _dbContext.AppInstances
+        context.AppInstances
             .AsNoTracking()
             .Where(instance => technicalUserProfileClient == instance.IamClient!.ClientClientId)
             .SelectMany(instance => instance.App!.UserRoles.Select(role => role.Id))
@@ -295,7 +293,7 @@ public class UserRolesRepository : IUserRolesRepository
 
     /// <inheritdoc />
     public Task<(bool IsValid, bool IsActive, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetActiveOfferRolesAsync(Guid offerId, OfferTypeId offerTypeId, string? languageShortName, string defaultLanguageShortName) =>
-        _dbContext.Offers
+        context.Offers
             .AsNoTracking()
             .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new
@@ -322,7 +320,7 @@ public class UserRolesRepository : IUserRolesRepository
 
     /// <inheritdoc />
     public Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName) =>
-        _dbContext.Offers
+        context.Offers
             .AsNoTracking()
             .Where(offer => offer!.Id == offerId && offer.OfferTypeId == offerTypeId)
             .Select(offer => new

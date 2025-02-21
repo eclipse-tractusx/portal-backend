@@ -221,10 +221,10 @@ public class UserRolesBusinessLogic : IUserRolesBusinessLogic
 
     private async Task DeleteRoles(Guid companyUserId, IEnumerable<string> iamClientIds, IEnumerable<UserRoleModificationData> rolesToDelete, string iamUserId)
     {
+        var userRoleRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
         var roleNamesToDelete = iamClientIds.ToDictionary(clientId => clientId, _ => rolesToDelete.Select(x => x.CompanyUserRoleText));
         await _provisioningManager.DeleteClientRolesFromCentralUserAsync(iamUserId, roleNamesToDelete)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        _portalRepositories.RemoveRange(rolesToDelete.Select(x =>
-            new IdentityAssignedRole(companyUserId, x.CompanyUserRoleId)));
+        userRoleRepository.RemoveIdentityAssignedRoles(rolesToDelete.Select(x => new IdentityAssignedRole(companyUserId, x.CompanyUserRoleId)));
     }
 }

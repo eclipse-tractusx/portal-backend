@@ -19,7 +19,7 @@
 
 <Project>
   <PropertyGroup>
-    <VersionPrefix>3.8.0</VersionPrefix>
+    <VersionPrefix>3.9.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
   </PropertyGroup>
 </Project>

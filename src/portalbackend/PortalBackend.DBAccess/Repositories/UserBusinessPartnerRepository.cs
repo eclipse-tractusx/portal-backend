@@ -46,7 +46,7 @@ public class UserBusinessPartnerRepository(PortalDbContext dbContext)
             )).Entity;
 
     public void DeleteCompanyUserAssignedBusinessPartners(IEnumerable<(Guid CompanyUserId, string BusinessPartnerNumber)> companyUserAssignedBusinessPartnerIds) =>
-        dbContext.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
+        dbContext.CompanyUserAssignedBusinessPartners.RemoveRange(companyUserAssignedBusinessPartnerIds.Select(ids => new CompanyUserAssignedBusinessPartner(ids.CompanyUserId, ids.BusinessPartnerNumber)));
 
     public Task<(bool IsValidUser, bool IsAssignedBusinessPartner, bool IsSameCompany)> GetOwnCompanyUserWithAssignedBusinessPartnerNumbersAsync(Guid companyUserId, Guid userCompanyId, string businessPartnerNumber) =>
         dbContext.CompanyUsers

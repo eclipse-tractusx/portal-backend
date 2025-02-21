@@ -108,4 +108,4 @@ public class CustomNpgsqlHistoryRepository(HistoryRepositoryDependencies depende
                 }
             ]);
 }
-#pragma warning enable EF1001
+#pragma warning restore EF1001
