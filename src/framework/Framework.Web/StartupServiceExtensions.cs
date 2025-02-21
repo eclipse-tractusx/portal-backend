@@ -36,6 +36,7 @@ public static class StartupServiceExtensions
     public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
     {
         services.AddCors(options => options.SetupCors(configuration));
+        services.AddScoped<CustomAuthorizationMiddleware>();
 
         services.AddDistributedMemoryCache();
         services.AddSession(options =>
