@@ -43,10 +43,6 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
             connectorId.ToString(),
             SdFactoryRequestModelSdType.ServiceOffering,
             selfDescriptionDocumentUrl,
-            string.Empty,
-            string.Empty,
-            string.Empty,
-            _settings.SdFactoryIssuerBpn,
             businessPartnerNumber);
 
         await httpClient.PostAsJsonAsync(default(string?), requestModel, cancellationToken)

@@ -61,8 +61,7 @@ public class SdFactoryServiceTests
         _portalRepositories = A.Fake<IPortalRepositories>();
         _options = Options.Create(new SdFactorySettings
         {
-            SdFactoryUrl = "https://www.api.sdfactory.com",
-            SdFactoryIssuerBpn = "BPNL00000003CRHK"
+            SdFactoryUrl = "https://www.api.sdfactory.com"
         });
         _tokenService = A.Fake<ITokenService>();
         SetupRepositoryMethods();

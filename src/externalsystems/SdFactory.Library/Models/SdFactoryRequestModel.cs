@@ -46,10 +46,6 @@ public record ConnectorSdFactoryRequestModel(
     [property: JsonPropertyName("externalId")] string ExternalId,
     [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
     [property: JsonPropertyName("providedBy")] string ProvidedBy,
-    [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
-    [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
-    [property: JsonPropertyName("policies")] string Policies,
-    [property: JsonPropertyName("issuer")] string Issuer,
     [property: JsonPropertyName("holder")] string Holder
 );
 

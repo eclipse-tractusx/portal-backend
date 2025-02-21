@@ -38,10 +38,4 @@ public class SdFactorySettings : KeyVaultAuthSettings
     /// </summary>
     [Required]
     public string SdFactoryUrl { get; set; } = null!;
-
-    /// <summary>
-    /// BPN of the issuer for the sd factory
-    /// </summary>
-    [Required]
-    public string SdFactoryIssuerBpn { get; set; } = null!;
 }
