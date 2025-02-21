@@ -58,7 +58,7 @@ public class ConsentRepository : IConsentRepository
 
     /// <inheritdoc />
     public void RemoveConsents(IEnumerable<Consent> consents) =>
-        _portalDbContext.RemoveRange(consents);
+        _portalDbContext.Consents.RemoveRange(consents);
 
     ///<inheritdoc/>
     public ConsentAssignedOffer CreateConsentAssignedOffer(Guid consentId, Guid offerId) =>

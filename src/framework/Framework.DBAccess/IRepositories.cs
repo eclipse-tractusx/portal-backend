@@ -31,10 +31,6 @@ public interface IRepositories
     TEntity Attach<TEntity>(TEntity entity, Action<TEntity>? setOptionalParameters = null)
         where TEntity : class;
 
-    void AttachRange<TEntity>(IEnumerable<TEntity> entities, Action<TEntity> setOptionalParameters) where TEntity : class;
-
-    IEnumerable<TEntity> AttachRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class;
-
     /// <summary>
     /// Removes the given entity from the database
     /// </summary>
@@ -43,8 +39,6 @@ public interface IRepositories
     /// <returns>Returns the attached entity</returns>
     TEntity Remove<TEntity>(TEntity entity)
         where TEntity : class;
-
-    void RemoveRange<TEntity>(IEnumerable<TEntity> entities) where TEntity : class;
 
     T GetInstance<T>();
 

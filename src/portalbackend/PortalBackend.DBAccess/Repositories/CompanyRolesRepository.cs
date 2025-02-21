@@ -47,7 +47,7 @@ public class CompanyRolesRepository : ICompanyRolesRepository
         _dbContext.AddRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 
     public void RemoveCompanyAssignedRoles(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds) =>
-        _dbContext.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
+        _dbContext.CompanyAssignedRoles.RemoveRange(companyRoleIds.Select(companyRoleId => new CompanyAssignedRole(companyId, companyRoleId)));
 
     public Task<CompanyRoleAgreementConsentData?> GetCompanyRoleAgreementConsentDataAsync(Guid applicationId) =>
         _dbContext.CompanyApplications

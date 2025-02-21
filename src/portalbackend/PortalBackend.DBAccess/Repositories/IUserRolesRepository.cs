@@ -87,4 +87,5 @@ public interface IUserRolesRepository
     Task<(bool IsValid, bool IsProvider, IEnumerable<ActiveAppRoleDetails>? AppRoleDetails)> GetOfferProviderRolesAsync(Guid offerId, OfferTypeId offerTypeId, Guid companyId, string? languageShortName, string defaultLanguageShortName);
 
     IAsyncEnumerable<(Guid IdentityId, IEnumerable<(string ClientClientId, Guid UserRoleId, string UserRoleText)> InstanceRoleData)> GetUsersWithUserRolesForApplicationId(Guid applicationId, IEnumerable<string> iamClientIds);
+    void RemoveIdentityAssignedRoles(IEnumerable<IdentityAssignedRole> identityAssignedRoles);
 }

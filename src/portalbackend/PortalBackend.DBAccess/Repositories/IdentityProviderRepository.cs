@@ -68,7 +68,7 @@ public class IdentityProviderRepository : IIdentityProviderRepository
         _context.Remove(new CompanyIdentityProvider(companyId, identityProviderId));
 
     public void DeleteCompanyIdentityProviderRange(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdentityProviderIds) =>
-        _context.RemoveRange(companyIdentityProviderIds.Select(x => new CompanyIdentityProvider(x.CompanyId, x.IdentityProviderId)));
+        _context.CompanyIdentityProviders.RemoveRange(companyIdentityProviderIds.Select(x => new CompanyIdentityProvider(x.CompanyId, x.IdentityProviderId)));
 
     public void CreateCompanyIdentityProviders(IEnumerable<(Guid CompanyId, Guid IdentityProviderId)> companyIdIdentityProviderIds) =>
         _context.CompanyIdentityProviders
