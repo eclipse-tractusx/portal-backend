@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<OfferSetupServiceErrors, string> {
-        { OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {0} must not contain #" },
+        { OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {data.OfferUrl} must not contain #" },
         { OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, "The app instance for offer {offerId} already exist" },
         { OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS, "The app instance {appInstanceId} is associated with exiting subscriptions" },
         { OfferSetupServiceErrors.APP_DOES_NOT_EXIST, "App {offerId} does not exist." },

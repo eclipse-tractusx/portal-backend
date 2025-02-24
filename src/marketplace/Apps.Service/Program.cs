@@ -52,6 +52,8 @@ await WebAppHelper
             .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
+            .AddTransient<IOfferSetupService, OfferSetupService>()
+            .AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>()
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddSingleton<IErrorMessageContainer, AppChangeErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppExtensionErrorMessageContainer>()

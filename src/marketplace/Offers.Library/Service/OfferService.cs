@@ -75,7 +75,7 @@ public class OfferService(
                 .CheckAgreementsExistsForSubscriptionAsync(offerAgreementConsentData.Select(x => x.AgreementId), subscriptionId, offerTypeId)
                 .ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_AGREEMENTS, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.INVALID_AGREEMENTS, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         var consentAssignedOfferSubscriptionRepository = portalRepositories.GetInstance<IConsentAssignedOfferSubscriptionRepository>();
@@ -189,7 +189,7 @@ public class OfferService(
         var result = await portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, companyId, statusId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(OfferServiceErrors.OFFER_STATUS_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_STATUS_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("statusId", statusId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {

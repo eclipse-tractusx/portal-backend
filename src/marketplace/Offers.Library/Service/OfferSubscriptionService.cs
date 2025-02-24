@@ -273,7 +273,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         if (companyInformation.BusinessPartnerNumber == null)
         {
-            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, new ErrorParameter[] { new("OrganizationName", companyInformation.OrganizationName) });
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, new ErrorParameter[] { new("organizationName", companyInformation.OrganizationName) });
         }
 
         return companyInformation;
@@ -290,7 +290,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (activeOrPendingSubscriptionExists)
         {
-            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("CompanyId", companyInformation.CompanyId.ToString()), new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("companyId", companyInformation.CompanyId.ToString()), new("offerId", offerId.ToString()) });
         }
 
         return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, userId);

@@ -98,7 +98,7 @@ public class OfferSetupService : IOfferSetupService
         _logger.LogDebug("AutoSetup started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", _identityData.CompanyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
-            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("OfferUrl", data.OfferUrl) });
+            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("offerUrl", data.OfferUrl) });
         }
 
         var offerSubscriptionsRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -427,7 +427,7 @@ public class OfferSetupService : IOfferSetupService
         _logger.LogDebug("AutoSetup Process started from Company {CompanyId} for {RequestId} with OfferUrl: {OfferUrl}", companyId, data.RequestId, data.OfferUrl);
         if (data.OfferUrl.Contains('#', StringComparison.OrdinalIgnoreCase))
         {
-            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("OfferUrl", data.OfferUrl) });
+            throw ControllerArgumentException.Create(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, new ErrorParameter[] { new("offerUrl", data.OfferUrl) });
         }
 
         var offerSubscriptionRepository = _portalRepositories.GetInstance<IOfferSubscriptionsRepository>();
@@ -511,7 +511,7 @@ public class OfferSetupService : IOfferSetupService
 
         if (clientCreationData.OfferType != OfferTypeId.APP)
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, new ErrorParameter[] { new("APP", OfferTypeId.APP.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, new ErrorParameter[] { new("offerTypeId", OfferTypeId.APP.ToString()) });
         }
 
         var (_, iamClientId) = await CreateClient(clientCreationData.OfferUrl, clientCreationData.OfferId, false, userRolesRepository);
@@ -610,7 +610,7 @@ public class OfferSetupService : IOfferSetupService
         if (!await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .CheckOfferSubscriptionForProvider(offerSubscriptionId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, new ErrorParameter[] { new("_identityData.CompanyId", _identityData.CompanyId.ToString()), new("offerSubscriptionId", offerSubscriptionId.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, new ErrorParameter[] { new("companyId", _identityData.CompanyId.ToString()), new("offerSubscriptionId", offerSubscriptionId.ToString()) });
         }
 
         _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, 1));

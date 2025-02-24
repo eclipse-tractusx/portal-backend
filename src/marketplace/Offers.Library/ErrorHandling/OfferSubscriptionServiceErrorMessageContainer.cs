@@ -37,8 +37,8 @@ public class OfferSubscriptionServiceErrorMessageContainer : IErrorMessageContai
                 { OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, "Agreements are not valid for offer {offerId}" },
                 { OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, "Consent to agreements must be given for offer {offerId}" },
                 { OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST, "Company does not exist" },
-                { OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, "company {0} has no BusinessPartnerNumber assigned" },
-                { OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, "company {0} is already subscribed to {offerId}" }
+                { OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, "company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned" },
+                { OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, "company {companyInformation.CompanyId} is already subscribed to {offerId}" }
     }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
     public Type Type { get => typeof(OfferSubscriptionServiceErrors); }
