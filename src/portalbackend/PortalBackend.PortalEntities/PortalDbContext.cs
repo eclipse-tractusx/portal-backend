@@ -1489,6 +1489,9 @@ public class PortalDbContext(DbContextOptions<PortalDbContext> options, IAuditHa
                 .HasForeignKey(d => d.LanguageShortName)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        modelBuilder.Entity<Address>()
+            .Property(t => t.Region).HasDefaultValue("");
     }
 
     /// <inheritdoc />

@@ -7570,7 +7570,6 @@ components:
           nullable: true
         region:
           type: string
-          nullable: true
         streetAdditional:
           type: string
           nullable: true

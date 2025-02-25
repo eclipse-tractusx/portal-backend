@@ -78,6 +78,7 @@ public class RegistrationBusinessLogicTest
     private readonly Guid _existingApplicationId;
     private readonly string _displayName;
     private readonly string _alpha2code;
+    private readonly string _region;
     private readonly string _vatId;
     private readonly TestException _error;
     private readonly IOptions<RegistrationSettings> _options;
@@ -137,6 +138,7 @@ public class RegistrationBusinessLogicTest
         _existingApplicationId = _fixture.Create<Guid>();
         _displayName = _fixture.Create<string>();
         _alpha2code = "XY";
+        _region = "XX";
         _vatId = "DE123456789";
         _error = _fixture.Create<TestException>();
 
@@ -479,18 +481,19 @@ public class RegistrationBusinessLogicTest
     #region SetCompanyWithAddress
 
     [Theory]
-    [InlineData(null, null, null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.NAME_NOT_EMPTY)]
-    [InlineData("filled", null, null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.CITY_NOT_EMPTY)]
-    [InlineData("filled", "filled", null, null, new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.STREET_NOT_EMPTY)]
-    [InlineData("filled", "filled", "filled", "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.COUNTRY_CODE_MIN_LENGTH)]
-    [InlineData("filled", "filled", "filled", "XX",
+    [InlineData(null, null, null, null, "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.NAME_NOT_EMPTY)]
+    [InlineData("filled", null, null, null, "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.CITY_NOT_EMPTY)]
+    [InlineData("filled", "filled", null, null, "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.STREET_NOT_EMPTY)]
+    [InlineData("filled", "filled", "filled", "", "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.COUNTRY_CODE_MIN_LENGTH)]
+    [InlineData("filled", "filled", "filled", "XX", "", new UniqueIdentifierId[] { }, new string[] { }, RegistrationValidationErrors.REGION_INVALID)]
+    [InlineData("filled", "filled", "filled", "XX", "XX",
         new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE }, new[] { "filled", "" },
         RegistrationValidationErrors.UNIQUE_IDS_NO_EMPTY_VALUES)]
-    [InlineData("filled", "filled", "filled", "XX",
+    [InlineData("filled", "filled", "filled", "XX", "XX",
         new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.VAT_ID },
         new[] { "filled", "filled" }, RegistrationValidationErrors.UNIQUE_IDS_NO_DUPLICATE_VALUES)]
     public async Task SetCompanyWithAddressAsync_WithMissingData_ThrowsArgumentException(string? name, string? city,
-        string? streetName, string? countryCode, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds,
+        string? streetName, string? countryCode, string region, IEnumerable<UniqueIdentifierId> uniqueIdentifierIds,
         IEnumerable<string> values, RegistrationValidationErrors error)
     {
         //Arrange
@@ -513,7 +516,7 @@ public class RegistrationBusinessLogicTest
 
         var uniqueIdData = uniqueIdentifierIds.Zip(values, (id, value) => new CompanyUniqueIdData(id, value));
         var companyData = new CompanyDetailData(Guid.NewGuid(), name!, city!, streetName!, countryCode!, null, null,
-            null, null, null, null, uniqueIdData);
+            region, null, null, null, uniqueIdData);
 
         // Act
         Task Act() => sut.SetCompanyDetailDataAsync(Guid.NewGuid(), companyData);
@@ -541,7 +544,7 @@ public class RegistrationBusinessLogicTest
             _dateTimeProvider,
             _mailingProcessCreation);
 
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null,
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, _region,
             null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
@@ -566,7 +569,7 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
         A.CallTo(() => identityData.CompanyId).Returns(companyId);
         A.CallTo(() => _identityService.IdentityData).Returns(identityData);
-        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, null,
+        var companyData = new CompanyDetailData(companyId, "name", "munich", "main street", "de", null, null, _region,
             null, null, null, Enumerable.Empty<CompanyUniqueIdData>());
 
         var sut = new RegistrationBusinessLogic(
@@ -607,6 +610,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "invalid")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .Create();
 
         var sut = new RegistrationBusinessLogic(
@@ -630,6 +634,47 @@ public class RegistrationBusinessLogicTest
             .Be(RegistrationValidationErrors.BPN_INVALID.ToString());
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("Berlin")]
+    public async Task SetCompanyWithAddressAsync__WithInvalidRegion_ThrowsControllerArgumentException(string invalidRegion)
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var identityData = A.Fake<IIdentityData>();
+        A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identityData.CompanyId).Returns(companyId);
+        A.CallTo(() => _identityService.IdentityData).Returns(identityData);
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, invalidRegion)
+            .Create();
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            null!,
+            null!,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider,
+            _mailingProcessCreation);
+
+        // Act
+        Task Act() => sut.SetCompanyDetailDataAsync(applicationId, companyData);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should()
+            .Be(RegistrationValidationErrors.REGION_INVALID.ToString());
+    }
+
     [Fact]
     public async Task SetCompanyWithAddressAsync__WithExistingBpn_ModifiesCompany()
     {
@@ -646,6 +691,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
         A.CallTo(() => _companyRepository.CheckBpnExists("BPNL00000001TEST")).Returns(true);
@@ -710,6 +756,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
@@ -775,6 +822,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
@@ -841,6 +889,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, bpn)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
@@ -909,6 +958,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
@@ -1008,6 +1058,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
@@ -1116,6 +1167,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [firstIdData, secondIdData, thirdIdData])
             .Create();
 
@@ -1198,6 +1250,7 @@ public class RegistrationBusinessLogicTest
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
         var identityData = A.Fake<IIdentityData>();
@@ -1244,6 +1297,7 @@ public class RegistrationBusinessLogicTest
         var companyData = _fixture.Build<CompanyDetailData>()
             .With(x => x.BusinessPartnerNumber, default(string?))
             .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
             .With(x => x.UniqueIds,
                 identifiers.Select(id =>
                     _fixture.Build<CompanyUniqueIdData>()

@@ -59,7 +59,7 @@ public class ApplicationRepositoryTests(TestDbFixture testDbFixture)
         result.StreetName.Should().Be("Street");
         result.Streetadditional.Should().BeNull();
         result.Streetnumber.Should().Be("2");
-        result.Region.Should().BeNull();
+        result.Region.Should().Be("BY");
         result.Zipcode.Should().Be("00001");
 
         result.AgreementsData.Should().HaveCount(4);

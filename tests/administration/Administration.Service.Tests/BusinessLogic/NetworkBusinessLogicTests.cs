@@ -147,6 +147,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "123"), new CompanyUniqueIdData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "12")])
             .Create();
 
@@ -165,6 +166,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.BusinessPartnerNumber, "BPNL00000001FAIL")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -184,6 +186,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "X")
             .With(x => x.CompanyRoles, Enumerable.Empty<CompanyRoleId>())
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -206,6 +209,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XXX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", email) })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -220,12 +224,35 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("Berlin")]
+    public async Task HandlePartnerRegistration_WithInvalidRegion_ThrowsControllerArgumentException(string region)
+    {
+        // Arrange
+        var data = _fixture.Build<PartnerRegistrationData>()
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, region)
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
+            .Create();
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(RegistrationValidationErrors.REGION_INVALID.ToString());
+    }
+
+    [Theory]
+    [InlineData("")]
     public async Task HandlePartnerRegistration_WithInvalidFirstnameEmail_ThrowsControllerArgumentException(string firstName)
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", firstName, "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -246,6 +273,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "X")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", lastname, "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -265,6 +293,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XXX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.ExternalId, ExistingExternalId)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
@@ -287,6 +316,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.CountryAlpha2Code, "XX")
+            .With(x => x.Region, "XX")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
@@ -306,6 +336,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -327,6 +358,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -350,6 +382,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(notExistingIdpId, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -370,6 +403,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(IdpId, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();

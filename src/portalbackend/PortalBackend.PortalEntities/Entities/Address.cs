@@ -32,6 +32,7 @@ public class Address : IBaseEntity
         City = null!;
         Streetname = null!;
         CountryAlpha2Code = null!;
+        Region = null!;
         Companies = new HashSet<Company>();
     }
 
@@ -55,7 +56,7 @@ public class Address : IBaseEntity
     public string City { get; set; }
 
     [MaxLength(255)]
-    public string? Region { get; set; }
+    public string Region { get; set; }
 
     [MaxLength(255)]
     public string? Streetadditional { get; set; }

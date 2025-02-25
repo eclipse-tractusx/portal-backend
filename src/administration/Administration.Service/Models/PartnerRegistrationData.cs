@@ -32,7 +32,7 @@ public record PartnerRegistrationData
     string City,
     string StreetName,
     string CountryAlpha2Code,
-    string? Region,
+    string Region,
     string? StreetNumber,
     string? ZipCode,
     IEnumerable<CompanyUniqueIdData> UniqueIds,
