@@ -75,7 +75,7 @@ public class DocumentsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific document for the given id.
+    /// Retrieves a specific self description document for the given id.
     /// </summary>
     /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
     /// <returns>Returns the file.</returns>
