@@ -226,7 +226,7 @@ public class RegistrationBusinessLogic(
             result.CountryAlpha2Code ?? "",
             result.BusinessPartnerNumber,
             result.ShortName,
-            result.Region,
+            result.Region ?? "",
             result.Streetadditional,
             result.Streetnumber,
             result.Zipcode,
@@ -302,7 +302,7 @@ public class RegistrationBusinessLogic(
                     a.Streetname = initialData.Streetname!;
                     a.CountryAlpha2Code = initialData.CountryAlpha2Code!;
                     a.Zipcode = initialData.Zipcode;
-                    a.Region = initialData.Region;
+                    a.Region = initialData.Region!;
                     a.Streetadditional = initialData.Streetadditional;
                     a.Streetnumber = initialData.Streetnumber;
                 },
@@ -323,11 +323,11 @@ public class RegistrationBusinessLogic(
         return companyRepository.CreateAddress(
             modifyData.City,
             modifyData.StreetName,
+            modifyData.Region,
             modifyData.CountryAlpha2Code,
             a =>
             {
                 a.Zipcode = modifyData.ZipCode;
-                a.Region = modifyData.Region;
                 a.Streetadditional = modifyData.StreetAdditional;
                 a.Streetnumber = modifyData.StreetNumber;
             }

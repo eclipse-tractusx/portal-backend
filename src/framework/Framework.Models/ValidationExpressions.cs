@@ -41,4 +41,11 @@ public static class ValidationExpressions
     public const string LEI_CODE = "^[A-Za-z0-9]{20}$";
     public const string VIES = "^[A-Z]{2}[0-9A-Za-z+*.]{2,12}$";
     public const string EORI = "^[A-Z]{2}[A-Za-z0-9]{1,15}$";
+    /// <summary>
+    /// To validate Region field of Address.
+    /// </summary>
+    /// <remarks>
+    /// The pattern ensures ISO-1366-2 code value: NW
+    /// </remarks>
+    public const string Region = "^[A-Z1-9]{1,3}$";
 }

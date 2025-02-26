@@ -34,6 +34,7 @@ public static class RegistrationValidation
     private static readonly Regex LeiCodeRegex = new(ValidationExpressions.LEI_CODE, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex ViesRegex = new(ValidationExpressions.VIES, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex EoriRegex = new(ValidationExpressions.EORI, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex RegionRegex = new(ValidationExpressions.Region, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public static void ValidateData(this RegistrationData data)
     {
@@ -60,6 +61,11 @@ public static class RegistrationValidation
         if (data.CountryAlpha2Code.Length != 2)
         {
             throw ControllerArgumentException.Create(RegistrationValidationErrors.COUNTRY_CODE_MIN_LENGTH);
+        }
+
+        if (!RegionRegex.IsMatch(data.Region))
+        {
+            throw ControllerArgumentException.Create(RegistrationValidationErrors.REGION_INVALID);
         }
 
         var emptyIds = data.UniqueIds.Where(uniqueId => string.IsNullOrWhiteSpace(uniqueId.Value));

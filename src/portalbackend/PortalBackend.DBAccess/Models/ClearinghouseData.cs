@@ -31,7 +31,7 @@ public record ClearinghouseData(
 
 public record ClearinghouseAddressData(
     string CountryAlpha2Code,
-    string? Region,
+    string Region,
     string City,
     string? Zipcode,
     string? Streetnumber,

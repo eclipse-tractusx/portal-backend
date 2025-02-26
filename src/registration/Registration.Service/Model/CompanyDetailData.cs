@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
@@ -30,7 +29,7 @@ public record CompanyDetailData(
     string CountryAlpha2Code,
     [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     string? ShortName,
-    string? Region,
+    string Region,
     string? StreetAdditional,
     string? StreetNumber,
     string? ZipCode,

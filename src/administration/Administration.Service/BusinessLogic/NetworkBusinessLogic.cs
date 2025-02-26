@@ -130,12 +130,14 @@ public class NetworkBusinessLogic(
 
     private Guid CreatePartnerCompany(ICompanyRepository companyRepository, PartnerRegistrationData data)
     {
-        var address = companyRepository.CreateAddress(data.City, data.StreetName,
+        var address = companyRepository.CreateAddress(
+            data.City,
+            data.StreetName,
+            data.Region,
             data.CountryAlpha2Code,
             a =>
             {
                 a.Streetnumber = data.StreetNumber;
-                a.Region = data.Region;
                 a.Zipcode = data.ZipCode;
             });
 

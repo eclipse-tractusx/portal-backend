@@ -121,7 +121,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var (sut, context) = await CreateSut();
 
         // Act
-        var results = sut.CreateAddress("Munich", "Street", "DE", a =>
+        var results = sut.CreateAddress("Munich", "Street", "BY", "DE", a =>
         {
             a.Streetnumber = "5";
         });
@@ -136,6 +136,9 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
             .Which.Entity.Should().BeOfType<Address>()
             .Which.Should().Match<Address>(x =>
                 x.City == "Munich" &&
+                x.Streetname == "Street" &&
+                x.Region == "BY" &&
+                x.CountryAlpha2Code == "DE" &&
                 x.Streetnumber == "5"
             );
     }
