@@ -675,7 +675,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com/pool/v6/")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient(A<string>._, A<BpdmServiceSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
@@ -689,7 +689,7 @@ public class BpdmServiceTests
             .And.Match<HttpRequestMessage>(x =>
                 x.Method == HttpMethod.Put &&
                 x.RequestUri != null &&
-                x.RequestUri.AbsoluteUri == "https://business.partner.pool.base.address.com/v6/cx-memberships"
+                x.RequestUri.AbsoluteUri == "https://business.partner.pool.base.address.com/pool/v6/cx-memberships"
         );
         httpMessageHandlerMock.RequestMessage!.Content
             .Should().NotBeNull()
@@ -716,7 +716,7 @@ public class BpdmServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://business.partner.pool.base.address.com")
+            BaseAddress = new Uri("https://business.partner.pool.base.address.com/pool/v6")
         };
         A.CallTo(() => _tokenService.GetAuthorizedClient(A<string>._, A<BpdmServiceSettings>._, A<CancellationToken>._))
             .Returns(httpClient);
