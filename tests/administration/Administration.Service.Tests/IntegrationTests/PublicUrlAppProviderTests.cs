@@ -34,10 +34,11 @@ public class PublicUrlAppProviderTests : BasePublicUrlTests<CompanyDataControlle
     [SuppressMessage("SonarLint", "S2699", Justification = "Ignored because the assert is done in OpenInformationController_ReturnsCorrectAmount")]
     public async Task OpenInformationController_WithAppProvider_ReturnsCorrectAmount()
     {
-        await OpenInformationController_ReturnsCorrectAmount(7,
+        await OpenInformationController_ReturnsCorrectAmount(8,
             x => x.HttpMethods == "GET" && x.Url == "api/test/connectors/managed",
             x => x.HttpMethods == "POST" && x.Url == "api/test/connectors/managed",
             x => x.HttpMethods == "POST" && x.Url == "api/test/connectors/discovery",
+            x => x.HttpMethods == "GET" && x.Url == "api/test/documents/selfdescription/{documentid}",
             x => x.HttpMethods == "GET" && x.Url == "api/test/partnernetwork/membercompanies",
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/owncompany",
             x => x.HttpMethods == "GET" && x.Url == "api/test/subscriptionconfiguration/process/offer-subscription/{offersubscriptionid}",

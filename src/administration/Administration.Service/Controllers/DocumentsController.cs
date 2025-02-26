@@ -87,6 +87,7 @@ public class DocumentsController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [PublicUrl(CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]
     public async Task<ActionResult> GetSelfDescriptionDocumentsAsync([FromRoute] Guid documentId)
     {
         var (fileName, content, mediaType) = await _businessLogic.GetSelfDescriptionDocumentAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
