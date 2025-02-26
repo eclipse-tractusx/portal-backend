@@ -32,7 +32,7 @@ public class OfferSubscriptionServiceErrorMessageContainer : IErrorMessageContai
                 { OfferSubscriptionServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST, "invalid configuration, at least one of the configured roles does not exist in the database: {userRoles}" },
                 { OfferSubscriptionServiceErrors.PROVIDING_COMPANY_NOT_SET, "{offerTypeId} providing company is not set" },
                 { OfferSubscriptionServiceErrors.OFFER_NAME_NOT_CONFIGURED, "The offer name has not been configured properly" },
-                { OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, "Agreements are not valid for offer {offerId}" },
+                { OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, "agreements {agreementId} are not valid for offer {offerId}" },
                 { OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, "Consent to agreements {agreementId} must be given for offer {offerId}" },
                 { OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST, "Company {companyId} does not exist" },
                 { OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, "company {organizationName} has no BusinessPartnerNumber assigned" },

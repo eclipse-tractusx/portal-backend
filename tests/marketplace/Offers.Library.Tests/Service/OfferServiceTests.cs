@@ -610,7 +610,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_TYPE_ID_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -939,7 +939,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_TYPE_ID_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1217,7 +1217,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_TYPE_ID_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]

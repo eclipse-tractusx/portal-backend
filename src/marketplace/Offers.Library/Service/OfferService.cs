@@ -364,7 +364,7 @@ public class OfferService(
         var offerDetails = await offerRepository.GetOfferReleaseDataByIdAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerDetails == null)
         {
-            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_TYPE_ID_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         return offerDetails;
     }
@@ -509,7 +509,7 @@ public class OfferService(
 
         if (declineData == default)
         {
-            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", OfferTypeId.APP.ToString()), new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerType", offerType.ToString()), new("offerId", offerId.ToString()) });
         }
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
@@ -595,7 +595,7 @@ public class OfferService(
         var offerData = await offerRepository.GetOfferActiveStatusDataByIdAsync(offerId, offerTypeId, _identityData.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerData == default)
         {
-            throw NotFoundException.Create(OfferServiceErrors.OFFER_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_TYPE_ID_DOES_NOT_EXIST, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (!offerData.IsUserCompanyProvider)
         {
@@ -688,7 +688,7 @@ public class OfferService(
 
         if (result.DocumentStatusId == DocumentStatusId.LOCKED)
         {
-            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_DELETION_NOT_ALLOWED, new ErrorParameter[] { new("DocumentStatusId", result.DocumentStatusId.ToString()) });
+            throw ConflictException.Create(OfferServiceErrors.DOCUMENTSTATUS_DELETION_NOT_ALLOWED, new ErrorParameter[] { new("documentStatusId", result.DocumentStatusId.ToString()) });
         }
 
         portalRepositories.GetInstance<IOfferRepository>().RemoveOfferAssignedDocument(offer.OfferId, documentId);

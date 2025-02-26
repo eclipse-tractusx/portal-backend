@@ -41,7 +41,7 @@ public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
         { OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE, "The process step is only executable for single instance apps" },
         { OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER, "Subscription can only be activated by the provider of the offer" },
         { OfferSetupServiceErrors.OFFERURL_SHOULD_BE_SET, "OfferUrl should be set" },
-        { OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, "Offers without type {OfferTypeId.APP} are not eligible to run" },
+        { OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, "Offers without type {offerTypeId} are not eligible to run" },
         { OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED, "Technical user is not needed" },
         { OfferSetupServiceErrors.BPN_MUST_BE_SET, "Bpn must be set" },
         { OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET, "Offer Name must be set for subscription {offerSubscriptionId}" },
