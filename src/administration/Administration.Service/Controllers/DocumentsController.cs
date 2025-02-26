@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -75,7 +74,7 @@ public class DocumentsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a specific document for the given id.
+    /// Retrieves a specific self description document for the given id.
     /// </summary>
     /// <param name="documentId" example="4ad087bb-80a1-49d3-9ba9-da0b175cd4e3">Id of the document to get.</param>
     /// <returns>Returns the file.</returns>
@@ -84,7 +83,7 @@ public class DocumentsController : ControllerBase
     /// <response code="404">The document was not found.</response>
     [HttpGet]
     [Route("selfDescription/{documentId}")]
-    [Authorize(Roles = "view_documents")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [PublicUrl(CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER)]

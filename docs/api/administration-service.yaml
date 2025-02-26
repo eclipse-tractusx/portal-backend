@@ -1358,7 +1358,7 @@ paths:
     get:
       tags:
         - Documents
-      summary: 'Retrieves a specific document for the given id. (Authorization required - Roles: view_documents)'
+      summary: Retrieves a specific self description document for the given id.
       description: 'Example: GET: /api/administration/documents/selfDescription/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3'
       parameters:
         - name: documentId
@@ -1399,8 +1399,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal Server Error
-        '401':
-          description: The User is unauthorized
   '/api/administration/Documents/{documentId}/seeddata':
     get:
       tags:
