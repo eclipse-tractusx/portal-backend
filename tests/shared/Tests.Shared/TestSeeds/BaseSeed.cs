@@ -38,9 +38,9 @@ public class BaseSeed
 
         dbContext.Addresses.AddRange(new List<Address>
         {
-            new(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"), "Munich", "Street", "DE", DateTimeOffset.UtcNow)
+            new(new Guid("b4db3945-19a7-4a50-97d6-e66e8dfd04fb"), "Munich", "Street", "BY", "DE", DateTimeOffset.UtcNow)
             {
-                Zipcode = "00001", Streetnumber = "1", Region = "BY", Streetadditional = "foo"
+                Zipcode = "00001", Streetnumber = "1", Streetadditional = "foo"
             }
         });
 

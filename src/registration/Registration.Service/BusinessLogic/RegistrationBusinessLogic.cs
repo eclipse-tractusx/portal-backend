@@ -323,11 +323,11 @@ public class RegistrationBusinessLogic(
         return companyRepository.CreateAddress(
             modifyData.City,
             modifyData.StreetName,
+            modifyData.Region,
             modifyData.CountryAlpha2Code,
             a =>
             {
                 a.Zipcode = modifyData.ZipCode;
-                a.Region = modifyData.Region;
                 a.Streetadditional = modifyData.StreetAdditional;
                 a.Streetnumber = modifyData.StreetNumber;
             }

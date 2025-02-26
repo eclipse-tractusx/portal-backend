@@ -36,12 +36,13 @@ public class Address : IBaseEntity
         Companies = new HashSet<Company>();
     }
 
-    public Address(Guid id, string city, string streetname, string countryAlpha2Code, DateTimeOffset dateCreated) : this()
+    public Address(Guid id, string city, string streetname, string region, string countryAlpha2Code, DateTimeOffset dateCreated) : this()
     {
         Id = id;
         DateCreated = dateCreated;
         City = city;
         Streetname = streetname;
+        Region = region;
         CountryAlpha2Code = countryAlpha2Code;
     }
 

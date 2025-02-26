@@ -1001,10 +1001,10 @@ public class RegistrationBusinessLogicTest
                 modify(company);
             });
 
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .ReturnsLazily((string city, string streetName, string alpha2Code, Action<Address>? setParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .ReturnsLazily((string city, string streetName, string region, string alpha2Code, Action<Address>? setParameters) =>
             {
-                address = new Address(addressId, city, streetName, alpha2Code, default);
+                address = new Address(addressId, city, streetName, region, alpha2Code, default);
                 setParameters?.Invoke(address);
                 return address;
             });
@@ -1013,9 +1013,9 @@ public class RegistrationBusinessLogicTest
         await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName,
+        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName, companyData.Region,
                 companyData.CountryAlpha2Code, A<Action<Address>>._))
             .MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
@@ -1098,7 +1098,7 @@ public class RegistrationBusinessLogicTest
                     A<Action<Address>>._))
             .Invokes((Guid addressId, Action<Address>? initialize, Action<Address> modify) =>
             {
-                address = new Address(addressId, null!, null!, null!, default);
+                address = new Address(addressId, null!, null!, null!, null!, default);
                 initialize?.Invoke(address);
                 modify(address);
             });
@@ -1107,7 +1107,7 @@ public class RegistrationBusinessLogicTest
         await sut.SetCompanyDetailDataAsync(applicationId, companyData);
 
         // Assert
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>?>._))
             .MustNotHaveHappened();
         A.CallTo(
                 () => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._!))
@@ -3476,10 +3476,10 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>._, A<IEnumerable<UniqueIdentifierId>>._))
             .ReturnsLazily((string alpha2Code, IEnumerable<UniqueIdentifierId> identifiers) => (true, identifiers));
 
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .ReturnsLazily((string city, string streetName, string alpha2Code, Action<Address>? setParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .ReturnsLazily((string city, string streetName, string region, string alpha2Code, Action<Address>? setParameters) =>
             {
-                var address = new Address(Guid.NewGuid(), city, streetName, alpha2Code, _fixture.Create<DateTimeOffset>());
+                var address = new Address(Guid.NewGuid(), city, streetName, region, alpha2Code, _fixture.Create<DateTimeOffset>());
                 setParameters?.Invoke(address);
                 return address;
             });

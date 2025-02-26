@@ -517,13 +517,14 @@ public class NetworkBusinessLogicTests
             Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, default(Guid?)).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .Invokes((string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
                 {
                     var address = new Address(
                         Guid.NewGuid(),
                         city,
                         streetname,
+                        region,
                         countryAlpha2Code,
                         DateTimeOffset.UtcNow
                     );
@@ -653,13 +654,14 @@ public class NetworkBusinessLogicTests
             new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .Invokes((string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
                 {
                     var address = new Address(
                         Guid.NewGuid(),
                         city,
                         streetname,
+                        region,
                         countryAlpha2Code,
                         DateTimeOffset.UtcNow
                     );

@@ -54,12 +54,13 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         modify(company);
     }
 
-    Address ICompanyRepository.CreateAddress(string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters)
+    Address ICompanyRepository.CreateAddress(string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters)
     {
         var address = new Address(
             Guid.NewGuid(),
             city,
             streetname,
+            region,
             countryAlpha2Code,
             DateTimeOffset.UtcNow
         );
@@ -69,7 +70,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
-        var address = new Address(addressId, null!, null!, null!, default);
+        var address = new Address(addressId, null!, null!, null!, null!, default);
         initialize?.Invoke(address);
         context.Attach(address);
         modify(address);

@@ -18,7 +18,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 
