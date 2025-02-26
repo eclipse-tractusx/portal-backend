@@ -329,7 +329,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.Parameters.First().Name.Should().Be("companyId");
-        ex.Message.Should().Be(OfferSubscriptionServiceErrors.OFFER_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST.ToString());
     }
 
     [Theory]

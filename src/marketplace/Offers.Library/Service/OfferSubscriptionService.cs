@@ -268,7 +268,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyInformation == null)
         {
-            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.OFFER_NOT_EXIST, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (companyInformation.BusinessPartnerNumber == null)

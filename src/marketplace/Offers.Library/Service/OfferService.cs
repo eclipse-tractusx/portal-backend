@@ -158,7 +158,7 @@ public class OfferService(
                 requiredAgreements.Select(x => x.AgreementId),
                 consent => consent.AgreementId)
             .IfAny(invalidConsents =>
-            throw ControllerArgumentException.Create(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER, new ErrorParameter[] { new ErrorParameter("offerAgreementConsent", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new ErrorParameter("offerId", offerId.ToString()) }, nameof(offerAgreementConsent)));
+            throw ControllerArgumentException.Create(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER, new ErrorParameter[] { new ErrorParameter("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new ErrorParameter("offerId", offerId.ToString()) }, nameof(offerAgreementConsent)));
 
         // ignore consents refering to inactive agreements
         var activeAgreements = offerAgreementConsent.Agreements
@@ -189,7 +189,7 @@ public class OfferService(
         var result = await portalRepositories.GetInstance<IAgreementRepository>().GetOfferAgreementConsent(offerId, companyId, statusId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(OfferServiceErrors.OFFER_STATUS_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("statusId", statusId.ToString()) });
+            throw NotFoundException.Create(OfferServiceErrors.OFFER_STATUS_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()), new("offerTypeId", offerTypeId.ToString()), new("statusId", statusId.ToString()) });
         }
         if (!result.IsProviderCompany)
         {
@@ -477,7 +477,7 @@ public class OfferService(
                 AppName = offerDetails.OfferName,
                 TechnicalUserIds = technicalUserIds
             },
-            _ => throw UnexpectedConditionException.Create(OfferServiceErrors.OFFER_TYPE_NOT_IMPLEMENTED, new ErrorParameter[] { new("offerTypeId", OfferTypeId.APP.ToString()) }),
+            _ => throw UnexpectedConditionException.Create(OfferServiceErrors.OFFER_TYPE_NOT_IMPLEMENTED, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()) }),
         };
         var serializeNotificationContent = JsonSerializer.Serialize(notificationContent);
         var content = approveOfferNotificationTypeIds.Select(typeId => new ValueTuple<string?, NotificationTypeId>(serializeNotificationContent, typeId));
@@ -514,7 +514,7 @@ public class OfferService(
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
-            throw ConflictException.Create(OfferServiceErrors.OFFER_STATUS_IN_REVIEW, new ErrorParameter[] { new("offerType", offerType.ToString()), new("IN_REVIEW", OfferStatusId.IN_REVIEW.ToString()) });
+            throw ConflictException.Create(OfferServiceErrors.OFFER_STATUS_IN_REVIEW, new ErrorParameter[] { new("offerType", offerType.ToString()), new("offerStatusId_IN_REVIEW", OfferStatusId.IN_REVIEW.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(declineData.OfferName))
@@ -632,7 +632,7 @@ public class OfferService(
         }
         if (!result.IsDocumentLinkedToOffer)
         {
-            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENT_ID_MISMATCH, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
+            throw ControllerArgumentException.Create(OfferServiceErrors.DOCUMENT_ID_MISMATCH, new ErrorParameter[] { new("documentId", documentId.ToString()), new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (result.IsInactive)
         {

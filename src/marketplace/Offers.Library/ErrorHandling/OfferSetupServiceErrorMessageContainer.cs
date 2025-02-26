@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<OfferSetupServiceErrors, string> {
-        { OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {data.OfferUrl} must not contain #" },
+        { OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {offerUrl} must not contain #" },
         { OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, "The app instance for offer {offerId} already exist" },
         { OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS, "The app instance {appInstanceId} is associated with exiting subscriptions" },
         { OfferSetupServiceErrors.APP_DOES_NOT_EXIST, "App {offerId} does not exist." },
@@ -46,7 +46,7 @@ public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
         { OfferSetupServiceErrors.BPN_MUST_BE_SET, "Bpn must be set" },
         { OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET, "Offer Name must be set for subscription {offerSubscriptionId}" },
         { OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS, "OfferSubscription {offerSubscriptionId} must be linked to a process" },
-        { OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, "Company {_identityData.CompanyId} must be provider of the offer for offerSubscription {offerSubscriptionId}" },
+        { OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, "Company {companyId} must be provider of the offer for offerSubscription {offerSubscriptionId}" },
         { OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_OFFERSUBSCRIPTION, "clientId must not be empty for offerSubscription {offerSubscriptionId}" },
    }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
 
