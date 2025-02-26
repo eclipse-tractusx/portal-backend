@@ -84,6 +84,7 @@ public class DocumentsController : ControllerBase
     /// <response code="404">The document was not found.</response>
     [HttpGet]
     [Route("selfDescription/{documentId}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetSelfDescriptionDocumentsAsync([FromRoute] Guid documentId)
