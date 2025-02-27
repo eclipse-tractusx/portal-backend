@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Notifications.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Web.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -52,14 +53,16 @@ await WebAppHelper
             .AddTransient<IAppChangeBusinessLogic, AppChangeBusinessLogic>()
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-            .AddTransient<IOfferSetupService, OfferSetupService>()
-            .AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>()
             .AddSingleton<IErrorMessageService, ErrorMessageService>()
             .AddSingleton<IErrorMessageContainer, AppChangeErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppExtensionErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppReleaseErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, OfferServiceErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, OfferSetupServiceErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, OfferSubscriptionServiceErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, TechnicalUserProfileServiceErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))
             .AddOfferDocumentServices();

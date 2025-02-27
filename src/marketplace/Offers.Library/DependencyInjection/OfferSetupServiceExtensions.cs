@@ -40,7 +40,6 @@ public static class OfferSetupServiceCollectionExtension
             .AddTransient<IOfferService, OfferService>()
             .AddTransient<IOfferSetupService, OfferSetupService>()
             .AddTransient<IOfferSubscriptionService, OfferSubscriptionService>()
-            .AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>()
             .AddOfferSubscriptionProcess();
     }
 }
