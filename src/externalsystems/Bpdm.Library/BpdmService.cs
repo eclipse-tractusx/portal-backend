@@ -191,7 +191,7 @@ public class BpdmService : IBpdmService
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None));
 
-        await httpClient.PutAsJsonAsync("v6/cx-memberships", requestData, Options, cancellationToken)
+        await httpClient.PutAsJsonAsync("cx-memberships", requestData, Options, cancellationToken)
             .CatchingIntoServiceExceptionFor("bpdm-put-cx-membership", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
         return true;
     }
