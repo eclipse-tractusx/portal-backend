@@ -157,7 +157,8 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                 new ProviderDetailReturnData(
                     company.ProviderCompanyDetail!.Id,
                     company.Id,
-                    company.ProviderCompanyDetail.AutoSetupUrl),
+                    company.ProviderCompanyDetail.AutoSetupUrl,
+                    company.ProviderCompanyDetail.AutoSetupCallbackUrl),
                 company.CompanyAssignedRoles.Any(assigned => assigned.CompanyRoleId == companyRoleId)))
             .SingleOrDefaultAsync();
 
