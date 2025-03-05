@@ -652,6 +652,25 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
     }
 
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithOutdatedLegalPerson_WithoutSelfDescriptionDocument_ThrowsConflictException()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Failed, "Error code: E2025123", null);
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
+            .Returns((connectorId, null));
+
+        // Act
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
     #endregion
 
     #region DeleteConnector

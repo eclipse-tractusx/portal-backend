@@ -159,6 +159,18 @@ public class SdFactoryBusinessLogic(
                 con.DateLastChanged = DateTimeOffset.UtcNow;
             });
         }
+        // If the message contains the outdated legal person error code,
+        // the connector is activated but no document is created
+        else if (IsOutdatedLegalPerson(data.Message))
+        {
+            connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
+            {
+                con.StatusId = ConnectorStatusId.ACTIVE;
+                con.SelfDescriptionMessage = data.Message!;
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+                con.SdSkippedDate = DateTimeOffset.UtcNow;
+            });
+        }
         else
         {
             connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
@@ -175,11 +187,18 @@ public class SdFactoryBusinessLogic(
         }
     }
 
+    private static bool IsOutdatedLegalPerson(string? message) => message != null && message.Contains("E2025123");
+
     private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId)
     {
         var context = processData.CreateManualProcessData(processStepTypeId, portalRepositories, () => $"externalId {data.ExternalId}");
         if (data.Status == SelfDescriptionStatus.Confirm)
         {
+            context.FinalizeProcessStep();
+        }
+        else if (IsOutdatedLegalPerson(data.Message))
+        {
+            context.ScheduleProcessSteps([ProcessStepTypeId.RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON]);
             context.FinalizeProcessStep();
         }
         else
