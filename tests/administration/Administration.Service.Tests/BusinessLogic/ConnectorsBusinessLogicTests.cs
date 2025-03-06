@@ -653,11 +653,11 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
-    public async Task ProcessClearinghouseSelfDescription_WithOutdatedLegalPerson_WithoutSelfDescriptionDocument_ThrowsConflictException()
+    public async Task ProcessClearinghouseSelfDescription_WithOutdatedLegalPerson_WithoutSelfDescriptionDocument_CallsExpected()
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Failed, "Error code: E2025123", null);
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Failed, "Error code: E2245", null);
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
             .Returns((connectorId, null));
 
