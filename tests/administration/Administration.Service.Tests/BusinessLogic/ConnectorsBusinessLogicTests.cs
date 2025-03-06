@@ -863,15 +863,18 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
+        var connector = new Connector(connectorId, null!, null!, null!);
+
+        var userId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_DELETION_DECLINED.ToString());
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -880,7 +883,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.INACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
