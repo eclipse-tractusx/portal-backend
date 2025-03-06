@@ -204,7 +204,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.ParamName.Should().Be("languageCodes");
+        ex.Parameters.First().Name.Should().Be("languageCodes");
     }
 
     [Fact]
@@ -285,7 +285,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Message.Should().Be($"Invalid Agreement {nonExistingAgreementId} for subscription {_existingServiceId} (Parameter 'agreementId')");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_AGREEMENT.ToString());
     }
 
     [Fact]
@@ -312,7 +312,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Invalid OfferSubscription {notExistingServiceId} for OfferType SERVICE");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_OFFERSUBSCRIPTION.ToString());
     }
 
     [Fact]
@@ -323,7 +323,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Invalid OfferSubscription {_existingServiceId} for OfferType APP");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_OFFERSUBSCRIPTION.ToString());
     }
 
     #endregion
@@ -376,7 +376,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Message.Should().Be($"Invalid Agreements for subscription {_existingServiceId} (Parameter 'offerAgreementConsentData')");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_AGREEMENTS.ToString());
     }
 
     [Fact]
@@ -412,7 +412,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Invalid OfferSubscription {notExistingServiceId} for OfferType SERVICE");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_OFFERSUBSCRIPTION.ToString());
     }
 
     [Fact]
@@ -429,7 +429,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Invalid OfferSubscription {_existingServiceId} for OfferType APP");
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_OFFERSUBSCRIPTION.ToString());
     }
 
     #endregion
@@ -458,7 +458,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be($"Consent {notExistingId} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.CONSENT_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -476,7 +476,7 @@ public class OfferServiceTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        error.Message.Should().Be($"SalesManger is not a member of the company {_companyId}");
+        error.Message.Should().Be(OfferServiceErrors.SALESMANAGER_NOT_MEMBER_OF_COMPANY.ToString());
     }
 
     [Fact]
@@ -490,7 +490,7 @@ public class OfferServiceTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.Message.Should().Be($"User {_differentCompanyUserId} does not have sales Manager Role (Parameter 'salesManagerId')");
+        error.Message.Should().Be(OfferServiceErrors.USER_NOT_SALESMANAGER.ToString());
     }
 
     [Fact]
@@ -504,7 +504,7 @@ public class OfferServiceTests
 
         // Assert
         var error = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        error.ParamName.Should().Be("salesManagerId");
+        error.Parameters.First().Name.Should().Be("salesManagerId");
     }
 
     #endregion
@@ -610,7 +610,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"{offerType} {notExistingOffer} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -630,11 +630,11 @@ public class OfferServiceTests
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
         if (hasUserRoles)
         {
-            result.Message.Should().StartWith("Missing ");
+            result.Message.Should().StartWith(OfferServiceErrors.MISSING_PROPERTIES.ToString());
         }
         else
         {
-            result.Message.Should().Be("The app has no roles assigned");
+            result.Message.Should().Be(OfferServiceErrors.APP_NO_ROLES_ASSIGNED.ToString());
         }
     }
 
@@ -656,7 +656,7 @@ public class OfferServiceTests
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().StartWith($"{string.Join(", ", submitAppDocumentTypeIds)} are mandatory document types, ({string.Join(", ", missingAppDocumentTypeIds)} are missing)");
+        result.Message.Should().StartWith(OfferServiceErrors.MANDATORY_DOCUMENT_TYPES_MISSING.ToString());
     }
 
     [Fact]
@@ -677,7 +677,7 @@ public class OfferServiceTests
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().StartWith("The app has no roles assigned");
+        result.Message.Should().StartWith(OfferServiceErrors.APP_NO_ROLES_ASSIGNED.ToString());
     }
 
     [Theory]
@@ -763,7 +763,7 @@ public class OfferServiceTests
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().StartWith("PrivacyPolicies is missing for the app");
+        result.Message.Should().StartWith(OfferServiceErrors.PRIVACYPOLICIES_MISSING.ToString());
     }
 
     #endregion
@@ -885,7 +885,7 @@ public class OfferServiceTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Offer {offerId} Name is not yet set.");
+        ex.Message.Should().Be(OfferServiceErrors.OFFERID_NAME_NOT_SET.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -918,7 +918,7 @@ public class OfferServiceTests
 
         //Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Offer {offerId} providing company is not yet set.");
+        ex.Message.Should().Be(OfferServiceErrors.OFFERID_PROVIDING_COMPANY_NOT_SET.ToString());
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -939,7 +939,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"{offerType} {notExistingOffer} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -956,7 +956,7 @@ public class OfferServiceTests
 
         // Assert
         var result = await Assert.ThrowsAsync<ConflictException>(Act);
-        result.Message.Should().StartWith("Missing  : ");
+        result.Message.Should().StartWith(OfferServiceErrors.MISSING_PROPERTIES.ToString());
     }
 
     [Theory]
@@ -1064,7 +1064,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"{offerTypeId} must be in status {OfferStatusId.IN_REVIEW}");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_STATUS_IN_REVIEW.ToString());
     }
 
     [Theory]
@@ -1083,7 +1083,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"{offerTypeId} name is not set");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_NAME_NOT_SET.ToString());
     }
 
     [Theory]
@@ -1102,7 +1102,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"{offerTypeId} providing company is not set");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_PROVIDING_COMPANY_NOT_SET.ToString());
     }
 
     [Theory]
@@ -1217,7 +1217,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"{offerTypeId} {notExistingId} does not exist.");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_DOES_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1235,7 +1235,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("Missing permission: The user's company does not provide the requested app so they cannot deactivate it.");
+        ex.Message.Should().Be(OfferServiceErrors.MISSING_PERMISSION.ToString());
 
     }
 
@@ -1254,7 +1254,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be("offerStatus is in Incorrect State");
+        ex.Message.Should().Be(OfferServiceErrors.OFFERSTATUS_INCORRECT_STATE.ToString());
 
     }
 
@@ -1321,7 +1321,7 @@ public class OfferServiceTests
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_companyId} is not assigned with Offer {serviceId}");
+        ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER.ToString());
     }
 
     [Fact]
@@ -1338,7 +1338,7 @@ public class OfferServiceTests
 
         // Arrange
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"offer {serviceId}, offertype {OfferTypeId.SERVICE} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_OR_OFFERTYPE_NOT_EXIST.ToString());
     }
 
     #endregion
@@ -1362,7 +1362,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"offer {offerId}, offertype {offerTypeId}, offerStatus {OfferStatusId.CREATED} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_STATUS_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1382,7 +1382,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_companyId} is not assigned with Offer {offerId}");
+        ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER.ToString());
     }
 
     [Theory]
@@ -1414,7 +1414,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"agreements {additionalAgreementId} are not valid for offer {offerId} (Parameter 'offerAgreementConsent')");
+        ex.Message.Should().Be(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER.ToString());
         A.CallTo(() => _consentRepository.AddAttachAndModifyOfferConsents(A<IEnumerable<AppAgreementConsentStatus>>._, A<IEnumerable<AgreementConsentStatus>>._, A<Guid>._, A<Guid>._, A<Guid>._, A<DateTimeOffset>._))
             .MustNotHaveHappened();
     }
@@ -1521,7 +1521,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"document {documentId} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1543,7 +1543,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {documentId} can not get retrieved. Document type not supported.");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED.ToString());
     }
 
     [Theory]
@@ -1565,7 +1565,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"offer {offerId} is not an {offerTypeId}");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_TYPE_NOT_SUPPORTED.ToString());
     }
 
     [Theory]
@@ -1587,7 +1587,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {documentId} and {offerTypeId} id {offerId} do not match.");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_ID_MISMATCH.ToString());
     }
 
     [Theory]
@@ -1609,7 +1609,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {documentId} is in status INACTIVE");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_INACTIVE.ToString());
     }
 
     [Theory]
@@ -1631,7 +1631,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be($"document content should never be null");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_CONTENT_NULL.ToString());
     }
 
     #endregion
@@ -1674,7 +1674,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Document {_validDocumentId} does not exist");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_NOT_EXIST.ToString());
     }
 
     [Theory]
@@ -1691,7 +1691,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {_validDocumentId} is not assigned to an {offerTypeId}");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_NOT_ASSIGNED_TO_OFFER.ToString());
     }
 
     [Theory]
@@ -1716,7 +1716,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {_validDocumentId} is assigned to more than one {offerTypeId}");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_ASSIGNED_TO_MULTIPLE_OFFERS.ToString());
     }
 
     [Theory]
@@ -1735,7 +1735,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document {_validDocumentId} is not assigned to an {offerTypeId}");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENT_NOT_ASSIGNED_TO_OFFER.ToString());
     }
 
     [Theory]
@@ -1754,7 +1754,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be($"Company {_companyId} is not the same company of document {_validDocumentId}");
+        ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_SAME_AS_DOCUMENT_COMPANY.ToString());
     }
 
     [Theory]
@@ -1773,7 +1773,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"{offerTypeId} {offerId} is in locked state");
+        ex.Message.Should().Be(OfferServiceErrors.OFFER_LOCKED_STATE.ToString());
     }
 
     [Theory]
@@ -1792,7 +1792,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be($"Document {_validDocumentId} can not get retrieved. Document type not supported");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENTSTATUS_RETRIEVED_NOT_ALLOWED.ToString());
     }
 
     [Theory]
@@ -1810,7 +1810,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"Document in State {DocumentStatusId.LOCKED} can't be deleted");
+        ex.Message.Should().Be(OfferServiceErrors.DOCUMENTSTATUS_DELETION_NOT_ALLOWED.ToString());
     }
 
     #endregion
@@ -2109,7 +2109,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
-        ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+        ex.Message.Should().Contain(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
@@ -2137,7 +2137,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
+        ex.Message.Should().Contain(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2165,7 +2165,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {_companyId} is not part of the Provider company");
+        ex.Message.Should().Contain(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2226,7 +2226,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
-        ex.Message.Should().Contain("invalid configuration, at least one of the configured roles does not exist in the database:");
+        ex.Message.Should().Contain(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
@@ -2253,7 +2253,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain($"subscription {subscriptionId} for offer {appId} of type {OfferTypeId.APP} does not exist");
+        ex.Message.Should().Contain(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2280,7 +2280,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain($"Company {_companyId} is not part of the Subscriber company");
+        ex.Message.Should().Contain(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2381,7 +2381,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be($"Subscription {notExistingSubscriptionId} does not exist.");
+        ex.Message.Should().Be(OfferServiceErrors.SUBSCRIPTION_NOT_EXIST.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(notExistingSubscriptionId, _companyId))
             .MustHaveHappenedOnceExactly();
     }
@@ -2399,7 +2399,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be("the calling user does not belong to the subscribing company");
+        ex.Message.Should().Be(OfferServiceErrors.USER_NOT_BELONG_TO_COMPANY.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(subscriptionId, _companyId))
             .MustHaveHappenedOnceExactly();
     }
@@ -2420,7 +2420,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be($"There is no active or pending subscription for company '{_companyId}' and subscriptionId '{offerSubscriptionId}'");
+        ex.Message.Should().Be(OfferServiceErrors.NO_ACTIVE_OR_PENDING_SUBSCRIPTION.ToString());
         A.CallTo(() => _offerSubscriptionsRepository.GetCompanyAssignedOfferSubscriptionDataForCompanyUserAsync(offerSubscriptionId, _companyId))
             .MustHaveHappenedOnceExactly();
     }
