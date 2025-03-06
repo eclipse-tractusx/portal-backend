@@ -22,9 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Tests;
@@ -121,6 +124,47 @@ public class SdFactoryServiceTests
 
         // Assert
         _documents.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE123456789")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "123456789")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB123456")]
+    public async Task RegisterSelfDescriptionAsync_WithoutCountryCodeVatId_Expected(UniqueIdentifierId uniqueIdentifierId, string vatId)
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var uniqueIdentifiers = new List<(UniqueIdentifierId Id, string Value)>
+        {
+            new(uniqueIdentifierId, vatId)
+        };
+        var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.OK);
+        using var httpClient = CreateHttpClient(httpMessageHandlerMock);
+        var countrySubdivisionCode = string.Format("{0}-{1}", CountryCode, Region);
+        var requestModel = new SdFactoryRequestModel(
+            applicationId.ToString(),
+            LegalName,
+            uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value.GetUniqueIdentifierValue(x.Id, CountryCode))),
+            countrySubdivisionCode,
+            countrySubdivisionCode,
+            SdFactoryRequestModelSdType.LegalParticipant,
+            Bpn);
+
+        // Act
+        await _service.RegisterSelfDescriptionAsync(applicationId, LegalName, UniqueIdentifiers, CountryCode, Region, Bpn, CancellationToken.None);
+
+        // Assert
+        _documents.Should().BeEmpty();
+        if (uniqueIdentifierId == UniqueIdentifierId.VAT_ID)
+        {
+            requestModel.RegistrationNumber.Should().ContainSingle().And.Satisfy(
+                p => p.Type == "vatID" && p.Value == "DE123456789");
+        }
+        else if (uniqueIdentifierId == UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
+        {
+            requestModel.RegistrationNumber.Should().ContainSingle().And.Satisfy(
+                p => p.Type == "local" && p.Value == "HRB123456");
+        }
     }
 
     [Fact]
