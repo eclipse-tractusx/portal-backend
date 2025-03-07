@@ -436,7 +436,7 @@ public class SdFactoryBusinessLogicTests
     {
         // Arrange
         var connector = new Connector(Guid.NewGuid(), "con-air", "de", "https://one-url.com");
-        var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Failed, "Error Code: E2245", null);
+        var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Failed, "Error Code: E2010", null);
         var processId = Guid.NewGuid();
         var processStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
         var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
@@ -445,7 +445,7 @@ public class SdFactoryBusinessLogicTests
             .Returns<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?>(null);
         var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
         {
-            ConnectorAllowSdDocumentSkipErrorCode = "E2245",
+            ConnectorAllowSdDocumentSkipErrorCode = "E2010",
         }));
 
         // Act
