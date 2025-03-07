@@ -12,6 +12,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * integrated the tagus v2 api [#1220](https://github.com/eclipse-tractusx/portal-backend/pull/1220)
 * **Onboarding**
   * added set membership call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
+  * added regex validation for uniqueIds [#1163](https://github.com/eclipse-tractusx/portal-backend/pull/1163)
+  * update regex validation for commercial registration number [#1311](https://github.com/eclipse-tractusx/portal-backend/pull/1311)
 * **Administration Service**
   * added sd skipped date to connectors [#1234](https://github.com/eclipse-tractusx/portal-backend/pull/1234)
   * adjusted filter for `GET: /api/administration/serviceaccount/owncompany/serviceaccounts` [#1255](https://github.com/eclipse-tractusx/portal-backend/pull/1255)
@@ -34,8 +36,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Connectors**
   * fixed deletion of connectors without SD document [#1221](https://github.com/eclipse-tractusx/portal-backend/issues/1221)
   * fixed update of connectors [#1086](https://github.com/eclipse-tractusx/portal-backend/issues/1086)
-* **Onboarding Service Provider**
-  * added regex validation for uniqueIds [#1163](https://github.com/eclipse-tractusx/portal-backend/issues/1163)
 * **Offers**
   * adjusted roles for /subscriber endpoints [#1110](https://github.com/eclipse-tractusx/portal-backend/pull/1110)
 * **UserUpload**
