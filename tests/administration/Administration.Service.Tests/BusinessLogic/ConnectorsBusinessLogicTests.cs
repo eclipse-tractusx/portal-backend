@@ -863,9 +863,6 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var connector = new Connector(connectorId, null!, null!, null!);
-
-        var userId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
