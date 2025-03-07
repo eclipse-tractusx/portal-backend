@@ -183,20 +183,20 @@ public class SdFactoryBusinessLogic(
         var processData = await connectorsRepository.GetProcessDataForConnectorId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (processData != null)
         {
-            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, SdFactoryRequestModelSdType.ServiceOffering);
         }
     }
 
     private static bool IsOutdatedLegalPerson(string? message, string? expectedErrorCode) => message != null && expectedErrorCode != null && message.Contains(expectedErrorCode);
 
-    private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId)
+    private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId, SdFactoryRequestModelSdType sdType)
     {
         var context = processData.CreateManualProcessData(processStepTypeId, portalRepositories, () => $"externalId {data.ExternalId}");
         if (data.Status == SelfDescriptionStatus.Confirm)
         {
             context.FinalizeProcessStep();
         }
-        else if (IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
+        else if (sdType == SdFactoryRequestModelSdType.ServiceOffering && IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
         {
             context.ScheduleProcessSteps([ProcessStepTypeId.RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON]);
             context.FinalizeProcessStep();
@@ -220,7 +220,7 @@ public class SdFactoryBusinessLogic(
         var processData = await companyRepository.GetProcessDataForCompanyIdId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (processData != null)
         {
-            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, SdFactoryRequestModelSdType.LegalParticipant);
         }
     }
 
