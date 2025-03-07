@@ -739,8 +739,14 @@ public class RegistrationBusinessLogicTest
             c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
-    [Fact]
-    public async Task SetCompanyWithAddressAsync__WithCompanyNameChange_ModifiesCompany()
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE129273398")]
+    [InlineData(UniqueIdentifierId.VIES, "DE129273398")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814")]
+    [InlineData(UniqueIdentifierId.EORI, "DE12345678912345")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "529900T8BM49AURSDO55")]
+    public async Task SetCompanyWithAddressAsync__WithCompanyNameChange_ModifiesCompany(UniqueIdentifierId uniqueIdentifierId, string identifier)
     {
         //Arrange
         var applicationId = Guid.NewGuid();
@@ -757,7 +763,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, _region)
-            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(uniqueIdentifierId, identifier)])
             .Create();
 
         var sut = new RegistrationBusinessLogic(
