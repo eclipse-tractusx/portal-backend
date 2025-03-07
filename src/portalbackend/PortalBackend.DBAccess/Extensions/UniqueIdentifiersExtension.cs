@@ -23,7 +23,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 
 public static class UniqueIdentifiersExtension
 {
-    public static string GetUniqueIdentifierValue(this UniqueIdentifierId uniqueIdentifierId) =>
+    public static string GetUniqueIdentifierId(this UniqueIdentifierId uniqueIdentifierId) =>
         uniqueIdentifierId switch
         {
             UniqueIdentifierId.COMMERCIAL_REG_NUMBER => "schema:taxID",
@@ -32,5 +32,17 @@ public static class UniqueIdentifiersExtension
             UniqueIdentifierId.VIES => "EUID",
             UniqueIdentifierId.EORI => "gx:eori",
             _ => throw new ArgumentOutOfRangeException(nameof(uniqueIdentifierId), uniqueIdentifierId, "Unique Identifier not found for Clearing House Conversion")
+        };
+
+    public static string GetUniqueIdentifierValue(this string uniqueIdentifierValue, UniqueIdentifierId uniqueIdentifierId, string countryCode) =>
+        // Purpose of adding switch case here is to have a possibility in the future to format other identifier's values as well
+        uniqueIdentifierId switch
+        {
+            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => uniqueIdentifierValue,
+            UniqueIdentifierId.VAT_ID when !uniqueIdentifierValue.StartsWith(countryCode) => string.Format("{0}{1}", countryCode, uniqueIdentifierValue),
+            UniqueIdentifierId.LEI_CODE => uniqueIdentifierValue,
+            UniqueIdentifierId.VIES => uniqueIdentifierValue,
+            UniqueIdentifierId.EORI => uniqueIdentifierValue,
+            _ => uniqueIdentifierValue
         };
 }

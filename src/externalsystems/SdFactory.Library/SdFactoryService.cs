@@ -20,6 +20,7 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
@@ -58,7 +59,7 @@ public class SdFactoryService(ITokenService tokenService, IOptions<SdFactorySett
         var requestModel = new SdFactoryRequestModel(
             externalId.ToString(),
             legalName,
-            uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value)),
+            uniqueIdentifiers.Select(x => new RegistrationNumber(x.Id.GetSdUniqueIdentifierValue(), x.Value.GetUniqueIdentifierValue(x.Id, countryCode))),
             countrySubdivisionCode,
             countrySubdivisionCode,
             SdFactoryRequestModelSdType.LegalParticipant,
