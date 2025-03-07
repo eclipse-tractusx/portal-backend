@@ -432,6 +432,35 @@ public class SdFactoryBusinessLogicTests
     }
 
     [Fact]
+    public async Task ProcessFinishSelfDescriptionLpForConnector_ReceiveExpectedErrorMessage_NoDocumentCreated_ConnectorIsActivated()
+    {
+        // Arrange
+        var connector = new Connector(Guid.NewGuid(), "con-air", "de", "https://one-url.com");
+        var data = new SelfDescriptionResponseData(connector.Id, SelfDescriptionStatus.Failed, "Error Code: E2010", null);
+        var processId = Guid.NewGuid();
+        var processStep = new ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>(Guid.NewGuid(), ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepStatusId.TODO, processId, DateTimeOffset.UtcNow);
+        var processSteps = new List<ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>>();
+        SetupForProcessFinishForConnector(processId, connector, processStep, processSteps);
+        A.CallTo(() => _companyRepository.GetProcessDataForCompanyIdId(A<Guid>._))
+            .Returns<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?>(null);
+        var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
+        {
+            ConnectorAllowSdDocumentSkipErrorCode = "E2010",
+        }));
+
+        // Act
+        await sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.AttachAndModifyConnector(connector.Id, null, A<Action<Connector>>._))
+            .MustHaveHappenedOnceExactly();
+        connector.Should().NotBeNull();
+        connector.Name.Should().Be("con-air");
+        connector.StatusId.Should().Be(ConnectorStatusId.ACTIVE);
+        connector.SelfDescriptionDocumentId.Should().Be(null);
+    }
+
+    [Fact]
     public async Task ProcessFinishSelfDescriptionLpForConnector_ConfirmWitNoDocument_ThrowsConflictException()
     {
         // Arrange

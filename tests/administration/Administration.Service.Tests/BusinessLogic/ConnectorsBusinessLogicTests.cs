@@ -652,6 +652,25 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
     }
 
+    [Fact]
+    public async Task ProcessClearinghouseSelfDescription_WithOutdatedLegalPerson_WithoutSelfDescriptionDocument_CallsExpected()
+    {
+        // Arrange
+        var connectorId = Guid.NewGuid();
+        var data = new SelfDescriptionResponseData(connectorId, SelfDescriptionStatus.Failed, "Error code: E2245", null);
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(A<Guid>._))
+            .Returns((connectorId, null));
+
+        // Act
+        await _logic.ProcessClearinghouseSelfDescription(data, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _connectorsRepository.GetConnectorDataById(connectorId)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _sdFactoryBusinessLogic.ProcessFinishSelfDescriptionLpForConnector(data, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
     #endregion
 
     #region DeleteConnector
@@ -848,11 +867,11 @@ public class ConnectorsBusinessLogicTests
             .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
-        async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
+        await _logic.DeleteConnectorAsync(connectorId, true);
 
         // Assert
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_CONFLICT_DELETION_DECLINED.ToString());
+        A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -861,7 +880,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.INACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);

@@ -291,6 +291,9 @@ public class ConnectorsBusinessLogic(
             case ConnectorStatusId.ACTIVE when _settings.ClearinghouseConnectDisabled:
                 await DeleteConnectorWithoutDocuments(connectorId, result.ConnectorOfferSubscriptions, connectorsRepository);
                 break;
+            case ConnectorStatusId.ACTIVE when result.SelfDescriptionDocumentId == null && result.DocumentStatusId == null:
+                await DeleteConnectorWithoutDocuments(connectorId, result.ConnectorOfferSubscriptions, connectorsRepository);
+                break;
             case ConnectorStatusId.ACTIVE when result.SelfDescriptionDocumentId != null && result.DocumentStatusId != null:
                 await DeleteConnector(connectorId, result.ConnectorOfferSubscriptions, result.SelfDescriptionDocumentId.Value, result.DocumentStatusId.Value, connectorsRepository);
                 break;
