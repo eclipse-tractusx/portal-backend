@@ -39,7 +39,7 @@ public static class UniqueIdentifiersExtension
         uniqueIdentifierId switch
         {
             UniqueIdentifierId.COMMERCIAL_REG_NUMBER => uniqueIdentifierValue,
-            UniqueIdentifierId.VAT_ID when !uniqueIdentifierValue.Contains(countryCode) => string.Format("{0}{1}", countryCode, uniqueIdentifierValue),
+            UniqueIdentifierId.VAT_ID when !uniqueIdentifierValue.StartsWith(countryCode) => string.Format("{0}{1}", countryCode, uniqueIdentifierValue),
             UniqueIdentifierId.LEI_CODE => uniqueIdentifierValue,
             UniqueIdentifierId.VIES => uniqueIdentifierValue,
             UniqueIdentifierId.EORI => uniqueIdentifierValue,
