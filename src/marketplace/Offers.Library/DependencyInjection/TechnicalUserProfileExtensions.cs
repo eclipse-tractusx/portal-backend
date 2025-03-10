@@ -19,12 +19,18 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Service;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.DependencyInjection;
 
 public static class TechnicalUserProfileExtensions
 {
-    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services) =>
+    public static IServiceCollection AddTechnicalUserProfile(this IServiceCollection services)
+    {
         services.AddTransient<ITechnicalUserProfileService, TechnicalUserProfileService>();
+        services.AddTransient<IErrorMessageContainer, TechnicalUserProfileServiceErrorMessageContainer>();
+        return services;
+    }
 }

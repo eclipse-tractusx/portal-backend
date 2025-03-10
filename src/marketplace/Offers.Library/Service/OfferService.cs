@@ -514,7 +514,7 @@ public class OfferService(
 
         if (declineData.OfferStatus != OfferStatusId.IN_REVIEW)
         {
-            throw ConflictException.Create(OfferServiceErrors.OFFER_STATUS_IN_REVIEW, new ErrorParameter[] { new("offerType", offerType.ToString()), new("offerStatusId_IN_REVIEW", OfferStatusId.IN_REVIEW.ToString()) });
+            throw ConflictException.Create(OfferServiceErrors.OFFER_STATUS_IN_REVIEW, new ErrorParameter[] { new("offerType", offerType.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(declineData.OfferName))
@@ -678,7 +678,7 @@ public class OfferService(
 
         if (offer.OfferStatusId != OfferStatusId.CREATED)
         {
-            throw ConflictException.Create(OfferServiceErrors.OFFER_LOCKED_STATE, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("OfferId", offer.OfferId.ToString()) });
+            throw ConflictException.Create(OfferServiceErrors.OFFER_LOCKED_STATE, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offer.OfferId.ToString()) });
         }
 
         if (!result.IsDocumentTypeMatch)

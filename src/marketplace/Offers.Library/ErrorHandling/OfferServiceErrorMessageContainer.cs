@@ -56,7 +56,7 @@ public class OfferServiceErrorMessageContainer : IErrorMessageContainer
                 { OfferServiceErrors.MISSING_PROPERTIES, "Missing: {nullProperties}" },
                 { OfferServiceErrors.OFFER_IS_INCORRECT_STATUS, "Offer {offerId} is in InCorrect Status" },
                 { OfferServiceErrors.OFFER_INCORRECT_STATUS, "Offer {offerId} not found. Either Not Existing or incorrect offer type" },
-                { OfferServiceErrors.OFFER_STATUS_IN_REVIEW, "{offerType} must be in status {offerStatusId_IN_REVIEW}" },
+                { OfferServiceErrors.OFFER_STATUS_IN_REVIEW, "{offerType} must be in status IN_REVIEW" },
                 { OfferServiceErrors.OFFERID_PROVIDING_COMPANY_NOT_SET, "Offer {offerId} providing company is not yet set." },
                 { OfferServiceErrors.OFFERID_NAME_NOT_SET, "Offer {offerId} Name is not yet set." },
                 { OfferServiceErrors.OFFER_NAME_NOT_SET, "{offerType} name is not set" },
