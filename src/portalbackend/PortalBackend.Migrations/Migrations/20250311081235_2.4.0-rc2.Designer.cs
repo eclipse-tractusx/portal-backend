@@ -29,8 +29,8 @@ using System.Text.Json;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20250225132510_1284-Region_Required")]
-    partial class _1284Region_Required
+    [Migration("20250311081235_2.4.0-rc2")]
+    partial class _240rc2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -727,6 +727,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 807,
                             Label = "RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 808,
+                            Label = "RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON"
                         });
                 });
 

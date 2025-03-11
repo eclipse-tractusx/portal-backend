@@ -38,4 +38,10 @@ public class SdFactorySettings : KeyVaultAuthSettings
     /// </summary>
     [Required]
     public string SdFactoryUrl { get; set; } = null!;
+
+    /// <summary>
+    /// Expected error codes to skip connector self description document creation.
+    /// </summary>
+    [MinLength(1, ErrorMessage = "ConnectorAllowSdDocumentSkipErrorCode cannot be an empty string.")]
+    public string ConnectorAllowSdDocumentSkipErrorCode { get; set; } = null!;
 }
