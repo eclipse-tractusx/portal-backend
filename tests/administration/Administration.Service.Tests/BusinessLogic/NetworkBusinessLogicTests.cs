@@ -486,8 +486,33 @@ public class NetworkBusinessLogicTests
         ex.Message.Should().Contain(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS.ToString());
     }
 
-    [Fact]
-    public async Task HandlePartnerRegistration_WithIdpNotSetAndOnlyOneIdp_CallsExpected()
+    [Theory]
+    // Worldwide
+    [InlineData(UniqueIdentifierId.VAT_ID, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.VIES, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "WW")]
+    [InlineData(UniqueIdentifierId.EORI, "WW12345678912345", "WW")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "529900T8BM49AURSDO55", "WW")]
+
+    // DE
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE129273398", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "DE")]
+
+    // FR
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "Paris HRB 175450", "FR")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R HRB98814", "FR")]
+
+    // MX
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX-1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890&", "MX")]
+
+    // IN
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN123456789", "IN")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN-123456789", "IN")]
+    public async Task HandlePartnerRegistration_WithIdpNotSetAndOnlyOneIdp_CallsExpected(UniqueIdentifierId uniqueIdentifierId, string identifierValue, string countryCode)
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
@@ -509,11 +534,11 @@ public class NetworkBusinessLogicTests
             Bpn,
             "Munich",
             "Street",
-            "DE",
+            countryCode,
             "BY",
             "5",
             "00001",
-            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(uniqueIdentifierId, identifierValue) },
             Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, default(Guid?)).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
@@ -886,9 +911,17 @@ public class NetworkBusinessLogicTests
             .Returns(false);
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("WW", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI, UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES }));
         A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("DE", A<IEnumerable<UniqueIdentifierId>>._))
-            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI }));
-        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "DE"), A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.COMMERCIAL_REG_NUMBER }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("FR", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("MX", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("IN", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "WW" || x == "DE" || x == "FR" || x == "MX" || x == "IN"), A<IEnumerable<UniqueIdentifierId>>._))
             .Returns((false, Enumerable.Empty<UniqueIdentifierId>()));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))

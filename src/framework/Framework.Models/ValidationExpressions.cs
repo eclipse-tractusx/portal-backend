@@ -36,11 +36,6 @@ public static class ValidationExpressions
     /// </remarks>
     public const string Company = @"^(?!.*\s$)([\p{L}\u0E00-\u0E7F\d\p{Sc}@%*+_\-/\\,.:;=<>!?&^#'\x22()[\]]\s?){1,160}$";
     public const string ExternalCertificateNumber = @"^[a-zA-Z0-9]{0,36}$";
-    public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-z0-9](\\.|\\s|-)?){4,21}$";
-    public const string VAT_ID = "^(?!.*\\s$)([A-Za-z0-9](\\.|\\s|-|\\/)?){5,18}$";
-    public const string LEI_CODE = "^[A-Za-z0-9]{20}$";
-    public const string VIES = "^[A-Z]{2}[0-9A-Za-z+*.]{2,12}$";
-    public const string EORI = "^[A-Z]{2}[A-Za-z0-9]{1,15}$";
     /// <summary>
     /// To validate Region field of Address.
     /// </summary>
@@ -48,4 +43,32 @@ public static class ValidationExpressions
     /// The pattern ensures ISO-1366-2 code value: NW
     /// </remarks>
     public const string Region = "^[A-Z1-9]{1,3}$";
+
+    #region UniqueIdentifiers
+    public static class Worldwide
+    {
+        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-zÀ-ÿ0-9.()](\\.|\\s|-|_)?){4,50}$";
+        public const string VAT_ID = "^(?!.*\\s$)([A-Za-z0-9](\\.|\\s|-|\\/)?){5,18}$";
+        public const string LEI_CODE = "^[A-Za-z0-9]{20}$";
+        public const string VIES = "^[A-Z]{2}[0-9A-Za-z+*.]{2,12}$";
+        public const string EORI = "^[A-Z]{2}[A-Za-z0-9]{1,15}$";
+    }
+    public static class DE
+    {
+        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-zÀ-ÿ])([A-Za-zÀ-ÿ0-9.()](\\s|-|_)?){4,50}$";
+        public const string VAT_ID = "^DE\\d{9}$";
+    }
+    public static class FR
+    {
+        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-z0-9]\\s?){14,17}$";
+    }
+    public static class MX
+    {
+        public const string VAT_ID = "^[a-zA-Z\\d-&]{12,13}$";
+    }
+    public static class IN
+    {
+        public const string VAT_ID = "^[a-zA-Z\\d-]{5,15}$";
+    }
+    #endregion
 }
