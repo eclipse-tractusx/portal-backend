@@ -21,8 +21,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System.Text.Json;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
+using System.Text.Json;
 
 #nullable disable
 
