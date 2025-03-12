@@ -17,6 +17,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Collections.Immutable;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 
 public static class ValidationExpressions
@@ -45,30 +47,30 @@ public static class ValidationExpressions
     public const string Region = "^[A-Z1-9]{1,3}$";
 
     #region UniqueIdentifiers
-    public static class Worldwide
-    {
-        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-zÀ-ÿ0-9.()](\\.|\\s|-|_)?){4,50}$";
-        public const string VAT_ID = "^(?!.*\\s$)([A-Za-z0-9](\\.|\\s|-|\\/)?){5,18}$";
-        public const string LEI_CODE = "^[A-Za-z0-9]{20}$";
-        public const string VIES = "^[A-Z]{2}[0-9A-Za-z+*.]{2,12}$";
-        public const string EORI = "^[A-Z]{2}[A-Za-z0-9]{1,15}$";
-    }
-    public static class DE
-    {
-        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-zÀ-ÿ])([A-Za-zÀ-ÿ0-9.()](\\s|-|_)?){4,50}$";
-        public const string VAT_ID = "^DE\\d{9}$";
-    }
-    public static class FR
-    {
-        public const string COMMERCIAL_REG_NUMBER = "^(?!.*\\s$)([A-Za-z0-9]\\s?){14,17}$";
-    }
-    public static class MX
-    {
-        public const string VAT_ID = "^[a-zA-Z\\d-&]{12,13}$";
-    }
-    public static class IN
-    {
-        public const string VAT_ID = "^[a-zA-Z\\d-]{5,15}$";
-    }
+    public static readonly IReadOnlyDictionary<string, string> COMMERCIAL_REG_NUMBER = new Dictionary<string, string>
+        {
+            { "Worldwide", "^(?!.*\\s$)([A-Za-zÀ-ÿ0-9.()](\\.|\\s|-|_)?){4,50}$" },
+            { "DE", "^(?!.*\\s$)([A-Za-zÀ-ÿ])([A-Za-zÀ-ÿ0-9.()](\\s|-|_)?){4,50}$" },
+            { "FR", "^(?!.*\\s$)([A-Za-z0-9]\\s?){14,17}$" },
+        }.ToImmutableDictionary();
+    public static readonly IReadOnlyDictionary<string, string> VAT_ID = new Dictionary<string, string>
+        {
+            { "Worldwide", "^(?!.*\\s$)([A-Za-z0-9](\\.|\\s|-|\\/)?){5,18}$" },
+            { "DE", "^DE\\d{9}$" },
+            { "IN", "^[a-zA-Z\\d-]{5,15}$" },
+            { "MX", "^[a-zA-Z\\d-&]{12,13}$" },
+        }.ToImmutableDictionary();
+    public static readonly IReadOnlyDictionary<string, string> VIES = new Dictionary<string, string>
+        {
+            { "Worldwide", "^[A-Z]{2}[0-9A-Za-z+*.]{2,12}$" }
+        }.ToImmutableDictionary();
+    public static readonly IReadOnlyDictionary<string, string> EORI = new Dictionary<string, string>
+        {
+            { "Worldwide", "^[A-Z]{2}[A-Za-z0-9]{1,15}$" }
+        }.ToImmutableDictionary();
+    public static readonly IReadOnlyDictionary<string, string> LEI_CODE = new Dictionary<string, string>
+        {
+            { "Worldwide", "^[A-Za-z0-9]{20}$" }
+        }.ToImmutableDictionary();
     #endregion
 }

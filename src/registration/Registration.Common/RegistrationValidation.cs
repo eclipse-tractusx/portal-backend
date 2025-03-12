@@ -133,54 +133,21 @@ public static class RegistrationValidation
     }
 
     private static bool IsInvalidValueByUniqueIdentifier(string value, UniqueIdentifierId uniqueIdentifierId, string countryCode) =>
-        countryCode switch
+        uniqueIdentifierId switch
         {
-            "DE" => uniqueIdentifierId switch
-            {
-                UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !Regex(ValidationExpressions.DE.COMMERCIAL_REG_NUMBER).IsMatch(value),
-                UniqueIdentifierId.VAT_ID => !Regex(ValidationExpressions.DE.VAT_ID).IsMatch(value),
-                UniqueIdentifierId.LEI_CODE => !Regex(ValidationExpressions.Worldwide.LEI_CODE).IsMatch(value),
-                UniqueIdentifierId.VIES => !Regex(ValidationExpressions.Worldwide.VIES).IsMatch(value),
-                UniqueIdentifierId.EORI => !Regex(ValidationExpressions.Worldwide.EORI).IsMatch(value),
-                _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-            },
-            "FR" => uniqueIdentifierId switch
-            {
-                UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !Regex(ValidationExpressions.FR.COMMERCIAL_REG_NUMBER).IsMatch(value),
-                UniqueIdentifierId.VAT_ID => !Regex(ValidationExpressions.Worldwide.VAT_ID).IsMatch(value),
-                UniqueIdentifierId.LEI_CODE => !Regex(ValidationExpressions.Worldwide.LEI_CODE).IsMatch(value),
-                UniqueIdentifierId.VIES => !Regex(ValidationExpressions.Worldwide.VIES).IsMatch(value),
-                UniqueIdentifierId.EORI => !Regex(ValidationExpressions.Worldwide.EORI).IsMatch(value),
-                _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-            },
-            "MX" => uniqueIdentifierId switch
-            {
-                UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !Regex(ValidationExpressions.Worldwide.COMMERCIAL_REG_NUMBER).IsMatch(value),
-                UniqueIdentifierId.VAT_ID => !Regex(ValidationExpressions.MX.VAT_ID).IsMatch(value),
-                UniqueIdentifierId.LEI_CODE => !Regex(ValidationExpressions.Worldwide.LEI_CODE).IsMatch(value),
-                UniqueIdentifierId.VIES => !Regex(ValidationExpressions.Worldwide.VIES).IsMatch(value),
-                UniqueIdentifierId.EORI => !Regex(ValidationExpressions.Worldwide.EORI).IsMatch(value),
-                _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-            },
-            "IN" => uniqueIdentifierId switch
-            {
-                UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !Regex(ValidationExpressions.Worldwide.COMMERCIAL_REG_NUMBER).IsMatch(value),
-                UniqueIdentifierId.VAT_ID => !Regex(ValidationExpressions.IN.VAT_ID).IsMatch(value),
-                UniqueIdentifierId.LEI_CODE => !Regex(ValidationExpressions.Worldwide.LEI_CODE).IsMatch(value),
-                UniqueIdentifierId.VIES => !Regex(ValidationExpressions.Worldwide.VIES).IsMatch(value),
-                UniqueIdentifierId.EORI => !Regex(ValidationExpressions.Worldwide.EORI).IsMatch(value),
-                _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-            },
-            _ => uniqueIdentifierId switch
-            {
-                UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !Regex(ValidationExpressions.Worldwide.COMMERCIAL_REG_NUMBER).IsMatch(value),
-                UniqueIdentifierId.VAT_ID => !Regex(ValidationExpressions.Worldwide.VAT_ID).IsMatch(value),
-                UniqueIdentifierId.LEI_CODE => !Regex(ValidationExpressions.Worldwide.LEI_CODE).IsMatch(value),
-                UniqueIdentifierId.VIES => !Regex(ValidationExpressions.Worldwide.VIES).IsMatch(value),
-                UniqueIdentifierId.EORI => !Regex(ValidationExpressions.Worldwide.EORI).IsMatch(value),
-                _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-            }
+            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !IsRegexMatched(ValidationExpressions.COMMERCIAL_REG_NUMBER, countryCode).IsMatch(value),
+            UniqueIdentifierId.VAT_ID => !IsRegexMatched(ValidationExpressions.VAT_ID, countryCode).IsMatch(value),
+            UniqueIdentifierId.LEI_CODE => !IsRegexMatched(ValidationExpressions.LEI_CODE, countryCode).IsMatch(value),
+            UniqueIdentifierId.VIES => !IsRegexMatched(ValidationExpressions.VIES, countryCode).IsMatch(value),
+            UniqueIdentifierId.EORI => !IsRegexMatched(ValidationExpressions.EORI, countryCode).IsMatch(value),
+            _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
         };
 
-    private static Regex Regex(string regex) => new(regex, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static Regex IsRegexMatched(IReadOnlyDictionary<string, string> identifier, string countryCode)
+    {
+        if (!identifier.TryGetValue(countryCode, out var regex))
+            regex = identifier.GetValueOrDefault("Worldwide")!;
+
+        return new(regex, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    }
 }
