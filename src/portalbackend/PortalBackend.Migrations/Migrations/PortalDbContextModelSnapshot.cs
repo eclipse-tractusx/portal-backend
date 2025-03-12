@@ -724,6 +724,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migration
                         {
                             Id = 807,
                             Label = "RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE"
+                        },
+                        new
+                        {
+                            Id = 808,
+                            Label = "RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON"
                         });
                 });
 
