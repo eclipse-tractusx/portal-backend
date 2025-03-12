@@ -262,7 +262,7 @@ public class OfferProviderBusinessLogicTests
         };
 
         var serviceAccounts = technicalUsers
-            .Select(tu => (tu.Id, (string?)tu.ClientId, TechnicalUserKindId.INTERNAL))
+            .Select(tu => (tu.Id, tu.ClientId, TechnicalUserKindId.INTERNAL))
             .ToArray();
 
         A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
