@@ -80,7 +80,7 @@ public static class RegistrationValidation
                 Enumerable.Repeat(new ErrorParameter("duplicateValues", string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))), 1));
         }
 
-        data.UniqueIds.Where(uniqueId => IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId, data.CountryAlpha2Code))
+        data.UniqueIds.Where(uniqueId => !IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId, data.CountryAlpha2Code))
             .IfAny(invalidUniqueIdentifiersValues =>
                 {
                     throw new ControllerArgumentException(
@@ -135,11 +135,11 @@ public static class RegistrationValidation
     private static bool IsInvalidValueByUniqueIdentifier(string value, UniqueIdentifierId uniqueIdentifierId, string countryCode) =>
         uniqueIdentifierId switch
         {
-            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => !IsRegexMatched(ValidationExpressions.COMMERCIAL_REG_NUMBER, countryCode).IsMatch(value),
-            UniqueIdentifierId.VAT_ID => !IsRegexMatched(ValidationExpressions.VAT_ID, countryCode).IsMatch(value),
-            UniqueIdentifierId.LEI_CODE => !IsRegexMatched(ValidationExpressions.LEI_CODE, countryCode).IsMatch(value),
-            UniqueIdentifierId.VIES => !IsRegexMatched(ValidationExpressions.VIES, countryCode).IsMatch(value),
-            UniqueIdentifierId.EORI => !IsRegexMatched(ValidationExpressions.EORI, countryCode).IsMatch(value),
+            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => IsRegexMatched(ValidationExpressions.COMMERCIAL_REG_NUMBER, countryCode).IsMatch(value),
+            UniqueIdentifierId.VAT_ID => IsRegexMatched(ValidationExpressions.VAT_ID, countryCode).IsMatch(value),
+            UniqueIdentifierId.LEI_CODE => IsRegexMatched(ValidationExpressions.LEI_CODE, countryCode).IsMatch(value),
+            UniqueIdentifierId.VIES => IsRegexMatched(ValidationExpressions.VIES, countryCode).IsMatch(value),
+            UniqueIdentifierId.EORI => IsRegexMatched(ValidationExpressions.EORI, countryCode).IsMatch(value),
             _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
         };
 

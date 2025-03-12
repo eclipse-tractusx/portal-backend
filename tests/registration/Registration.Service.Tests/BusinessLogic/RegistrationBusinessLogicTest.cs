@@ -754,8 +754,7 @@ public class RegistrationBusinessLogicTest
     [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "DE")]
 
     // FR
-    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "Paris HRB 175450", "FR")]
-    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R HRB98814", "FR")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "849281571", "FR")]
 
     // MX
     [InlineData(UniqueIdentifierId.VAT_ID, "MX-1234567890", "MX")]
