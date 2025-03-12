@@ -121,35 +121,38 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             throw new ConflictException("Client should be set");
         }
 
-        if (data.ServiceAccounts.Count() > 1)
-        {
-            throw new ConflictException("There should be not more than one service account for the offer subscription");
-        }
+        List<CallbackTechnicalUserInfoData>? technicalUsersInfoData = null;
 
-        CallbackTechnicalUserInfoData? technicalUserInfoData = null;
-        if (data.ServiceAccounts.Count() == 1)
+        if (data.ServiceAccounts?.Any() == true)
         {
-            var serviceAccount = data.ServiceAccounts.First();
-            if (serviceAccount.TechnicalClientId == null)
-            {
-                throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
-            }
+            technicalUsersInfoData = [];
             async Task<string?> GetServiceAccountSecret(string technicalClientId)
             {
                 var internalClientId = await _provisioningManager.GetIdOfCentralClientAsync(technicalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
                 var authData = await _provisioningManager.GetCentralClientAuthDataAsync(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);
                 return authData.Secret;
             }
-            technicalUserInfoData = new CallbackTechnicalUserInfoData(
-                serviceAccount.TechnicalUserId,
-                serviceAccount.TechnicalUserKindId == TechnicalUserKindId.INTERNAL
+
+            foreach (var serviceAccount in data.ServiceAccounts)
+            {
+                if (serviceAccount.TechnicalClientId == null)
+                {
+                    throw new ConflictException($"ClientId of serviceAccount {serviceAccount.TechnicalUserId} should be set");
+                }
+
+                var secret = serviceAccount.TechnicalUserKindId == TechnicalUserKindId.INTERNAL
                     ? await GetServiceAccountSecret(serviceAccount.TechnicalClientId).ConfigureAwait(ConfigureAwaitOptions.None)
-                    : null,
-                serviceAccount.TechnicalClientId);
+                    : null;
+
+                technicalUsersInfoData.Add(new CallbackTechnicalUserInfoData(
+                    serviceAccount.TechnicalUserId,
+                    secret,
+                    serviceAccount.TechnicalClientId));
+            }
         }
 
         var callbackData = new OfferProviderCallbackData(
-            technicalUserInfoData,
+            technicalUsersInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
         await _offerProviderService

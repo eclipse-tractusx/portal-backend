@@ -217,30 +217,9 @@ public class OfferProviderBusinessLogicTests
         result.nextStepTypeIds.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo == null), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo == null), A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
-    }
-
-    [Fact]
-    public async Task TriggerProviderCallback_WithMultipleServiceAccountSet_Throws()
-    {
-        // Arrange
-        var fakeId = Guid.NewGuid();
-        var serviceAccounts = new (Guid, string?, TechnicalUserKindId)[]
-        {
-            new(Guid.NewGuid(), "sa1", TechnicalUserKindId.INTERNAL),
-            new(Guid.NewGuid(), "sa2", TechnicalUserKindId.INTERNAL)
-        };
-        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
-            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
-        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
-
-        // Act
-        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-
-        // Assert
-        ex.Message.Should().Be("There should be not more than one service account for the offer subscription");
     }
 
     [Fact]
@@ -268,8 +247,55 @@ public class OfferProviderBusinessLogicTests
         result.nextStepTypeIds.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo!.FirstOrDefault()!.TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task TriggerProviderCallback_WithValidData_InternalSA_MultipleTechnicalUsers_ReturnsExpected()
+    {
+        // Arrange
+        var technicalUsers = new[]
+        {
+        new { Id = Guid.NewGuid(), ClientId = "sa1", InternalClientId = Guid.NewGuid().ToString(), Secret = "test123" },
+        new { Id = Guid.NewGuid(), ClientId = "sa2", InternalClientId = Guid.NewGuid().ToString(), Secret = "test456" }
+        };
+
+        var serviceAccounts = technicalUsers
+            .Select(tu => (tu.Id, (string?)tu.ClientId, TechnicalUserKindId.INTERNAL))
+            .ToArray();
+
+        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(_subscriptionId))
+            .Returns((serviceAccounts, "cl1", "https://callback.com", OfferSubscriptionStatusId.ACTIVE));
+
+        foreach (var user in technicalUsers)
+        {
+            A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(user.ClientId))
+                .Returns(user.InternalClientId);
+            A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(user.InternalClientId))
+                .Returns(new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = user.Secret });
+        }
+
+        // Act
+        var result = await _sut.TriggerProviderCallback(_subscriptionId, CancellationToken.None);
+
+        // Assert
+        result.nextStepTypeIds.Should().BeNull();
+        result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.modified.Should().BeTrue();
+
+        var expectedTechnicalUsers = technicalUsers.Select(tu =>
+          new CallbackTechnicalUserInfoData(tu.Id, tu.Secret, tu.ClientId)).ToList();
+
+        // Verify the callback method was called with the expected data
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(
+            A<OfferProviderCallbackData>.That.Matches(x =>
+                x.TechnicalUsersInfo != null &&
+                x.TechnicalUsersInfo.SequenceEqual(expectedTechnicalUsers)
+            ),
+            A<string>._,
+            A<CancellationToken>._
+        )).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -296,7 +322,7 @@ public class OfferProviderBusinessLogicTests
             .MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUserInfo!.TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo!.FirstOrDefault()!.TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
