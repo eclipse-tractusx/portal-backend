@@ -45,7 +45,7 @@ public static class ValidationExpressions
     public const string Region = "^[A-Z1-9]{1,3}$";
 
     #region UniqueIdentifiers
-    private const string Worldwide = "Worldwide";
+    public const string Worldwide = "Worldwide";
     public static readonly IEnumerable<(string, string)> COMMERCIAL_REG_NUMBER =
         [
             ( Worldwide, "^(?!.*\\s$)([A-Za-zÀ-ÿ0-9.()](\\.|\\s|-|_)?){4,50}$" ),

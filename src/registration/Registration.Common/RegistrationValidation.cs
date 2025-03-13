@@ -146,7 +146,7 @@ public static class RegistrationValidation
     {
         if (!UniqueIdentifierExpressions.TryGetValue((uniqueIdentifierId, countryCode), out var regex))
         {
-            regex = UniqueIdentifierExpressions.GetValueOrDefault((uniqueIdentifierId, "Worldwide")) ?? throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId));
+            regex = UniqueIdentifierExpressions.GetValueOrDefault((uniqueIdentifierId, ValidationExpressions.Worldwide)) ?? throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId));
         }
         return regex.IsMatch(value);
     }
