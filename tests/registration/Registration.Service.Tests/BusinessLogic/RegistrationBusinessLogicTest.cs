@@ -739,8 +739,32 @@ public class RegistrationBusinessLogicTest
             c.BusinessPartnerNumber == companyData.BusinessPartnerNumber);
     }
 
-    [Fact]
-    public async Task SetCompanyWithAddressAsync__WithCompanyNameChange_ModifiesCompany()
+    [Theory]
+    // Worldwide
+    [InlineData(UniqueIdentifierId.VAT_ID, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.VIES, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "WW")]
+    [InlineData(UniqueIdentifierId.EORI, "WW12345678912345", "WW")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "529900T8BM49AURSDO55", "WW")]
+
+    // DE
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE129273398", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "DE")]
+
+    // FR
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "849281571", "FR")]
+
+    // MX
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX-1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890&", "MX")]
+
+    // IN
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN123456789", "IN")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN-123456789", "IN")]
+    public async Task SetCompanyWithAddressAsync__WithCompanyNameChange_ModifiesCompany(UniqueIdentifierId uniqueIdentifierId, string identifierValue, string countryCode)
     {
         //Arrange
         var applicationId = Guid.NewGuid();
@@ -755,9 +779,9 @@ public class RegistrationBusinessLogicTest
             .With(x => x.Name, "Test Company Updated Name")
             .With(x => x.BusinessPartnerNumber, "BPNL00000001TEST")
             .With(x => x.CompanyId, companyId)
-            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.CountryAlpha2Code, countryCode)
             .With(x => x.Region, _region)
-            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(uniqueIdentifierId, identifierValue)])
             .Create();
 
         var sut = new RegistrationBusinessLogic(
