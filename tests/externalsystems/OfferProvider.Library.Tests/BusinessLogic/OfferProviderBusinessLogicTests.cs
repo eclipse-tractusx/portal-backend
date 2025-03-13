@@ -247,8 +247,8 @@ public class OfferProviderBusinessLogicTests
         result.nextStepTypeIds.Should().BeNull();
         result.stepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.modified.Should().BeTrue();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo!.FirstOrDefault()!.TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
-            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo != null && x.TechnicalUsersInfo.Count() > 0 && x.TechnicalUsersInfo.First().TechnicalUserSecret == "test123"), A<string>._, A<CancellationToken>._))
+    .MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -257,8 +257,8 @@ public class OfferProviderBusinessLogicTests
         // Arrange
         var technicalUsers = new[]
         {
-        new { Id = Guid.NewGuid(), ClientId = "sa1", InternalClientId = Guid.NewGuid().ToString(), Secret = "test123" },
-        new { Id = Guid.NewGuid(), ClientId = "sa2", InternalClientId = Guid.NewGuid().ToString(), Secret = "test456" }
+            new { Id = Guid.NewGuid(), ClientId = "sa1", InternalClientId = Guid.NewGuid().ToString(), Secret = "test123" },
+            new { Id = Guid.NewGuid(), ClientId = "sa2", InternalClientId = Guid.NewGuid().ToString(), Secret = "test456" }
         };
 
         var serviceAccounts = technicalUsers
@@ -322,7 +322,7 @@ public class OfferProviderBusinessLogicTests
             .MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._))
             .MustNotHaveHappened();
-        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo!.FirstOrDefault()!.TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
+        A.CallTo(() => _offerProviderService.TriggerOfferProviderCallback(A<OfferProviderCallbackData>.That.Matches(x => x.TechnicalUsersInfo != null && x.TechnicalUsersInfo.Count() > 0 && x.TechnicalUsersInfo.First().TechnicalUserSecret == null), A<string>._, A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 
