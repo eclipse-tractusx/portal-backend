@@ -119,7 +119,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             .GetSubscriptionDetailDataForOwnUserAsync(subscriptionId, _identityData.CompanyId, OfferTypeId.SERVICE).ConfigureAwait(ConfigureAwaitOptions.None);
         if (subscriptionDetailData is null)
         {
-            throw NotFoundException.Create(ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(ServicesServiceErrors.SERVICES_SUBSCRIPTION_NOT_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         return subscriptionDetailData;

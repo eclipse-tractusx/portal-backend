@@ -248,7 +248,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw NotFoundException.Create(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()), new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
@@ -264,12 +264,12 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()), new("OfferSubscriptionStatusId", OfferSubscriptionStatusId.ACTIVE.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()), new("OfferSubscriptionStatusId", OfferSubscriptionStatusId.ACTIVE.ToString()) });
         }
 
         if (detailData == null)
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         if (url == detailData.SubscriptionUrl)

@@ -203,7 +203,7 @@ public class OfferSetupService : IOfferSetupService
                .CheckInstanceExistsForOffer(offerId)
                .ConfigureAwait(ConfigureAwaitOptions.None))
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         var userRolesRepository = _portalRepositories.GetInstance<IUserRolesRepository>();
@@ -237,12 +237,12 @@ public class OfferSetupService : IOfferSetupService
         var data = await _portalRepositories.GetInstance<IOfferRepository>().GetSingleInstanceOfferData(offerId, OfferTypeId.APP).ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == null)
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.APP_DOES_NOT_EXIST, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.APP_DOES_NOT_EXIST, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         if (!data.IsSingleInstance)
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         Guid instanceId;
@@ -253,12 +253,12 @@ public class OfferSetupService : IOfferSetupService
         }
         catch (InvalidOperationException)
         {
-            throw UnexpectedConditionException.Create(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw UnexpectedConditionException.Create(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         if (string.IsNullOrEmpty(internalClientId))
         {
-            throw ConflictException.Create(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         await _provisioningManager.EnableClient(internalClientId).ConfigureAwait(ConfigureAwaitOptions.None);

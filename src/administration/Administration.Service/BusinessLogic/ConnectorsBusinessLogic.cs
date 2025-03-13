@@ -138,7 +138,7 @@ public class ConnectorsBusinessLogic(
 
         if (!result.Exists)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         if (!result.IsOfferProvider)

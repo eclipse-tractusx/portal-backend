@@ -107,12 +107,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     public async Task<Guid> RemoveOfferSubscriptionAsync(Guid subscriptionId, OfferTypeId offerTypeId, string basePortalAddress)
     {
         var offerSubscriptionDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw NotFoundException.Create(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw NotFoundException.Create(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         var offerId = offerSubscriptionDetails.OfferId;
 
         if (string.IsNullOrEmpty(offerSubscriptionDetails.OfferName))
         {
-            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
         if (!offerSubscriptionDetails.IsProviderCompany)
         {
@@ -229,7 +229,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerProviderDetails == null)
         {
-            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         if (offerProviderDetails.OfferName is not null)
@@ -247,14 +247,14 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 agreementData.Select(x => x.AgreementId),
                 x => x.AgreementId)
             .IfAny(invalidConsents =>
-            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new("offerId", offerId.ToString()) }));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new(nameof(offerId), offerId.ToString()) }));
 
         agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE)
             .ExceptBy(
                 offerAgreementConsentData.Where(data => data.ConsentStatusId == ConsentStatusId.ACTIVE).Select(data => data.AgreementId),
                 x => x.AgreementId)
             .IfAny(missing =>
-            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, new ErrorParameter[] { new("agreementId", string.Join(",", missing.Select(consent => consent.AgreementId))), new("offerId", offerId.ToString()) }));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, new ErrorParameter[] { new("agreementId", string.Join(",", missing.Select(consent => consent.AgreementId))), new(nameof(offerId), offerId.ToString()) }));
         // ignore consents for inactive agreements
         return offerAgreementConsentData
             .ExceptBy(
@@ -290,7 +290,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (activeOrPendingSubscriptionExists)
         {
-            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("companyId", companyInformation.CompanyId.ToString()), new("offerId", offerId.ToString()) });
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("companyId", companyInformation.CompanyId.ToString()), new(nameof(offerId), offerId.ToString()) });
         }
 
         return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, userId);

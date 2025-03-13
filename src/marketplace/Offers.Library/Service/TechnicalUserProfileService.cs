@@ -50,7 +50,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new(nameof(offerId), offerId.ToString()) });
         }
 
         return CheckTechnicalUserData(data)
@@ -66,7 +66,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         return CheckTechnicalUserData(data)
