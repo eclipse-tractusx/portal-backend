@@ -589,7 +589,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
     }
 
     [Fact]
@@ -1376,7 +1376,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS.ToString());
     }
 
     [Theory]
@@ -2011,7 +2011,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES.ToString());
     }
 
     [Fact]

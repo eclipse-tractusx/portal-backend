@@ -247,7 +247,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 agreementData.Select(x => x.AgreementId),
                 x => x.AgreementId)
             .IfAny(invalidConsents =>
-           throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new("offerId", offerId.ToString()) }));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new("offerId", offerId.ToString()) }));
 
         agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE)
             .ExceptBy(

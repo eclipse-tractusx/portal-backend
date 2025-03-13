@@ -2109,7 +2109,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
@@ -2137,7 +2137,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2165,7 +2165,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2226,7 +2226,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConfigurationException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(A<Guid>._, A<Guid>._, A<Guid>._, A<OfferTypeId>._, A<IEnumerable<Guid>>._))
@@ -2253,7 +2253,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.SUBSCRIPTION_NOT_FOUND_FOR_OFFER.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
@@ -2280,7 +2280,7 @@ public class OfferServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
+        ex.Message.Should().Be(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE.ToString());
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionDetailsForSubscriberAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))

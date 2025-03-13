@@ -389,8 +389,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
-        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
     [Theory]
@@ -412,8 +411,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
-        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
     }
 
     [Theory]
@@ -434,8 +432,7 @@ public class OfferSubscriptionServiceTests
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
         ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
-        ex.Message.Should().EndWith(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
-        ex.Message.Should().ContainAll(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
     [Theory]
@@ -453,7 +450,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Contain(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER.ToString());
     }
 
     [Theory]
@@ -650,7 +647,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
+        ex.Message.Should().Be(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED.ToString());
     }
 
     #endregion

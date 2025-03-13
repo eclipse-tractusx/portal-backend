@@ -420,7 +420,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ServiceException>(Act);
-        ex.Message.Should().Contain(AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS.ToString());
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_SERVICE_ERROR_SAVED_USERS.ToString());
     }
 
     [Fact]
@@ -449,7 +449,7 @@ public class NetworkBusinessLogicTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS.ToString());
+        ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS.ToString());
     }
 
     [Fact]
