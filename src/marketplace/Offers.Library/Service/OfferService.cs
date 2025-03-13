@@ -158,7 +158,7 @@ public class OfferService(
                 requiredAgreements.Select(x => x.AgreementId),
                 consent => consent.AgreementId)
             .IfAny(invalidConsents =>
-            throw ControllerArgumentException.Create(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER, new ErrorParameter[] { new ErrorParameter("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new ErrorParameter("offerId", offerId.ToString()) }, nameof(offerAgreementConsent)));
+            throw ControllerArgumentException.Create(OfferServiceErrors.AGREEMENTS_NOT_VALID_FOR_OFFER, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new("offerId", offerId.ToString()) }));
 
         // ignore consents refering to inactive agreements
         var activeAgreements = offerAgreementConsent.Agreements
