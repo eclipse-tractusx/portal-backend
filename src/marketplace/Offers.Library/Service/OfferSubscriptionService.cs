@@ -65,7 +65,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         if (offerProviderDetails.ProviderCompanyId == null)
         {
-            throw new ConflictException($"{offerTypeId} providing company is not set");
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.PROVIDING_COMPANY_NOT_SET, new ErrorParameter[] { new(nameof(offerTypeId), offerTypeId.ToString()) });
         }
 
         var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -107,12 +107,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
     public async Task<Guid> RemoveOfferSubscriptionAsync(Guid subscriptionId, OfferTypeId offerTypeId, string basePortalAddress)
     {
         var offerSubscriptionDetails = await _portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
-            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw NotFoundException.Create(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            .GetOfferDetailsAndCheckProviderCompany(subscriptionId, _identityData.CompanyId, offerTypeId) ?? throw NotFoundException.Create(OfferSubscriptionServiceErrors.SUBSCRIPTION_NOTFOUND, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         var offerId = offerSubscriptionDetails.OfferId;
 
         if (string.IsNullOrEmpty(offerSubscriptionDetails.OfferName))
         {
-            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new("offerId", offerId.ToString()) });
+            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
         if (!offerSubscriptionDetails.IsProviderCompany)
         {
@@ -201,7 +201,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(false);
         if (roleData.Count < serviceManagerRoles.Sum(clientRoles => clientRoles.UserRoleNames.Count()))
         {
-            throw new ConfigurationException($"invalid configuration, at least one of the configured roles does not exist in the database: {string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))}");
+            throw ConfigurationException.Create(OfferSubscriptionServiceErrors.INVALID_CONFIGURATION_ROLES_NOT_EXIST, new ErrorParameter[] { new ErrorParameter("userRoles", string.Join(", ", serviceManagerRoles.Select(clientRoles => $"client: {clientRoles.ClientId}, roles: [{string.Join(", ", clientRoles.UserRoleNames)}]"))) });
         }
 
         await foreach (var receiver in _portalRepositories.GetInstance<IUserRepository>().GetServiceProviderCompanyUserWithRoleIdAsync(offerId, roleData))
@@ -229,13 +229,13 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOfferProviderDetailsAsync(offerId, offerTypeId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (offerProviderDetails == null)
         {
-            throw new NotFoundException($"Offer {offerId} does not exist");
+            throw NotFoundException.Create(OfferSubscriptionServiceErrors.OFFER_NOTFOUND, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()) });
         }
 
         if (offerProviderDetails.OfferName is not null)
             return offerProviderDetails;
 
-        throw new ConflictException("The offer name has not been configured properly");
+        throw ConflictException.Create(OfferSubscriptionServiceErrors.OFFER_NAME_NOT_CONFIGURED);
     }
 
     private async Task<IEnumerable<OfferAgreementConsentData>> ValidateConsent(IEnumerable<OfferAgreementConsentData> offerAgreementConsentData, Guid offerId)
@@ -247,15 +247,14 @@ public class OfferSubscriptionService : IOfferSubscriptionService
                 agreementData.Select(x => x.AgreementId),
                 x => x.AgreementId)
             .IfAny(invalidConsents =>
-                throw new ControllerArgumentException($"agreements {string.Join(",", invalidConsents.Select(consent => consent.AgreementId))} are not valid for offer {offerId}", nameof(offerAgreementConsentData)));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID, new ErrorParameter[] { new("agreementId", string.Join(",", invalidConsents.Select(consent => consent.AgreementId))), new(nameof(offerId), offerId.ToString()) }));
 
         agreementData.Where(x => x.AgreementStatusId == AgreementStatusId.ACTIVE)
             .ExceptBy(
                 offerAgreementConsentData.Where(data => data.ConsentStatusId == ConsentStatusId.ACTIVE).Select(data => data.AgreementId),
                 x => x.AgreementId)
             .IfAny(missing =>
-                throw new ControllerArgumentException($"consent to agreements {string.Join(",", missing.Select(x => x.AgreementId))} must be given for offer {offerId}", nameof(offerAgreementConsentData)));
-
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED, new ErrorParameter[] { new("agreementId", string.Join(",", missing.Select(consent => consent.AgreementId))), new(nameof(offerId), offerId.ToString()) }));
         // ignore consents for inactive agreements
         return offerAgreementConsentData
             .ExceptBy(
@@ -269,12 +268,12 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .GetOwnCompanyInformationAsync(companyId, companyUserId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (companyInformation == null)
         {
-            throw new ControllerArgumentException($"Company {companyId} does not exist", nameof(companyId));
+            throw ControllerArgumentException.Create(OfferSubscriptionServiceErrors.COMPANY_NOT_EXIST, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (companyInformation.BusinessPartnerNumber == null)
         {
-            throw new ConflictException($"company {companyInformation.OrganizationName} has no BusinessPartnerNumber assigned");
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_NO_BUSINESS_PARTNER_NUMBER, new ErrorParameter[] { new("organizationName", companyInformation.OrganizationName) });
         }
 
         return companyInformation;
@@ -291,7 +290,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (activeOrPendingSubscriptionExists)
         {
-            throw new ConflictException($"company {companyInformation.CompanyId} is already subscribed to {offerId}");
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.COMPANY_ALREADY_SUBSCRIBED, new ErrorParameter[] { new("companyId", companyInformation.CompanyId.ToString()), new(nameof(offerId), offerId.ToString()) });
         }
 
         return offerSubscriptionsRepository.CreateOfferSubscription(offerId, companyInformation.CompanyId, OfferSubscriptionStatusId.PENDING, userId);

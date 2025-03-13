@@ -248,7 +248,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerSubscriptionsRepository.GetUpdateUrlDataAsync(offerId, subscriptionId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == null)
         {
-            throw NotFoundException.Create(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(AppChangeErrors.APP_NOT_OFFER_OR_SUBSCRIPTION_EXISTS, new ErrorParameter[] { new(nameof(offerId), offerId.ToString()), new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         var (offerName, isSingleInstance, isUserOfCompany, requesterId, subscribingCompanyId, offerSubscriptionStatusId, detailData) = result;
@@ -259,17 +259,17 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!isUserOfCompany)
         {
-            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()), new("OfferSubscriptionStatusId", OfferSubscriptionStatusId.ACTIVE.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_SUBSCRIPTION_STATUS_BE_ACTIVE, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()), new("OfferSubscriptionStatusId", OfferSubscriptionStatusId.ACTIVE.ToString()) });
         }
 
         if (detailData == null)
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NO_SUBSCRIPTION_DATA_CONFIGURED, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         if (url == detailData.SubscriptionUrl)
@@ -345,7 +345,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         if (!result.IsStatusActive)
         {
@@ -357,7 +357,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         if (!_settings.DeleteActiveAppDocumentTypeIds.Contains(result.DocumentTypeId))
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         offerRepository.RemoveOfferAssignedDocument(appId, documentId);
         documentRepository.AttachAndModifyDocument(

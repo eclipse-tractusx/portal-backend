@@ -185,7 +185,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
 
         if (!serviceData.IsUserOfProvider)
         {
-            throw ForbiddenException.Create(ServicesServiceReleaseErrors.SERVICES_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(ServicesServiceReleaseErrors.SERVICES_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (data.SalesManager.HasValue)

@@ -78,12 +78,12 @@ public class ConnectorsBusinessLogic(
         var result = await portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorByIdForCompany(connectorId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new(nameof(connectorId), connectorId.ToString()) });
         }
 
         if (!result.IsProvidingOrHostCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString()) });
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new(nameof(connectorId), connectorId.ToString()) });
         }
 
         return result.ConnectorData;
@@ -110,7 +110,7 @@ public class ConnectorsBusinessLogic(
 
         if (string.IsNullOrEmpty(result.Bpn))
         {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         await ValidateTechnicalUser(technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -138,7 +138,7 @@ public class ConnectorsBusinessLogic(
 
         if (!result.Exists)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new("subscriptionId", subscriptionId.ToString()) });
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         if (!result.IsOfferProvider)
@@ -216,7 +216,7 @@ public class ConnectorsBusinessLogic(
     {
         if (selfDescriptionDocumentId is null && !_settings.ClearinghouseConnectDisabled)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new("companyId", companyId.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(companyId), companyId.ToString())]);
         }
 
         var (name, connectorUrl, type, location, provider, host, technicalUserId) = connectorInputModel;
@@ -268,10 +268,10 @@ public class ConnectorsBusinessLogic(
             ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE
         };
 
-        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId, processStepsToFilter).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new("connectorId", connectorId.ToString()) });
+        var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId, processStepsToFilter).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new(nameof(connectorId), connectorId.ToString()) });
         if (!result.IsProvidingOrHostCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, [new("companyId", companyId.ToString()), new("connectorId", connectorId.ToString())]);
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, [new(nameof(companyId), companyId.ToString()), new(nameof(connectorId), connectorId.ToString())]);
         }
 
         if (result is { ServiceAccountId: not null, UserStatusId: UserStatusId.ACTIVE or UserStatusId.PENDING } && deleteServiceAccount)
@@ -341,7 +341,7 @@ public class ConnectorsBusinessLogic(
             .Select(cos => cos.AssignedOfferSubscriptionIds);
         if (activeConnectorOfferSubscription.Any())
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION, new ErrorParameter[] { new("connectorId", connectorId.ToString()), new("activeConnectorOfferSubscription", string.Join(",", activeConnectorOfferSubscription)) });
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_DELETION_FAILED_OFFER_SUBSCRIPTION, new ErrorParameter[] { new(nameof(connectorId), connectorId.ToString()), new("activeConnectorOfferSubscription", string.Join(",", activeConnectorOfferSubscription)) });
         }
 
         var assignedOfferSubscriptions = connectorOfferSubscriptions.Select(cos => cos.AssignedOfferSubscriptionIds);
@@ -410,7 +410,7 @@ public class ConnectorsBusinessLogic(
 
         if (connector == null)
         {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, [new("connectorId", connectorId.ToString())]);
+            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, [new(nameof(connectorId), connectorId.ToString())]);
         }
 
         if (connector.ConnectorUrl == data.ConnectorUrl)
@@ -420,12 +420,12 @@ public class ConnectorsBusinessLogic(
 
         if (!connector.IsProviderCompany)
         {
-            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY, [new("companyId", _identityData.CompanyId.ToString()), new("connectorId", connectorId.ToString())]);
+            throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY, [new("companyId", _identityData.CompanyId.ToString()), new(nameof(connectorId), connectorId.ToString())]);
         }
 
         if (connector.Status == ConnectorStatusId.INACTIVE)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, [new("connectorId", connectorId.ToString()), new("connectorStatusId", ConnectorStatusId.INACTIVE.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE, [new(nameof(connectorId), connectorId.ToString()), new("connectorStatusId", ConnectorStatusId.INACTIVE.ToString())]);
         }
 
         var bpn = connector.Type == ConnectorTypeId.CONNECTOR_AS_A_SERVICE
@@ -453,7 +453,7 @@ public class ConnectorsBusinessLogic(
 
         if (connector.SelfDescriptionCompanyDocumentId is null)
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new("connectorId", connectorId.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(connectorId), connectorId.ToString())]);
         }
 
         var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
