@@ -187,6 +187,28 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
+    public async Task TriggerProviderCallback_WithTechnicalClientIdNotSet_Throws()
+    {
+        // Arrange
+        var technicalUserId = Guid.NewGuid();
+        var technicalUserInternalClientId = Guid.NewGuid().ToString();
+        var serviceAccounts = new (Guid, string?, TechnicalUserKindId)[]
+        {
+            new(technicalUserId, null, TechnicalUserKindId.INTERNAL)
+        };
+        var fakeId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
+            .Returns((serviceAccounts, "cl1", "callback", OfferSubscriptionStatusId.ACTIVE));
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be($"ClientId of serviceAccount {technicalUserId} should be set");
+    }
+
+    [Fact]
     public async Task TriggerProviderCallback_WithCallbackUrlNotSet_Skips()
     {
         // Arrange
