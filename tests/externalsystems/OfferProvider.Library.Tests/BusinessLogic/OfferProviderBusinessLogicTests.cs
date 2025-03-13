@@ -191,7 +191,6 @@ public class OfferProviderBusinessLogicTests
     {
         // Arrange
         var technicalUserId = Guid.NewGuid();
-        var technicalUserInternalClientId = Guid.NewGuid().ToString();
         var serviceAccounts = new (Guid, string?, TechnicalUserKindId)[]
         {
             new(technicalUserId, null, TechnicalUserKindId.INTERNAL)
