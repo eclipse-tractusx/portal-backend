@@ -50,7 +50,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()), new(nameof(offerId), offerId.ToString()) });
+            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, new ErrorParameter[] { new(nameof(offerTypeId), offerTypeId.ToString()), new(nameof(offerId), offerId.ToString()) });
         }
 
         return CheckTechnicalUserData(data)

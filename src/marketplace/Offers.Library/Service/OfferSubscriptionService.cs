@@ -65,7 +65,7 @@ public class OfferSubscriptionService : IOfferSubscriptionService
 
         if (offerProviderDetails.ProviderCompanyId == null)
         {
-            throw ConflictException.Create(OfferSubscriptionServiceErrors.PROVIDING_COMPANY_NOT_SET, new ErrorParameter[] { new("offerTypeId", offerTypeId.ToString()) });
+            throw ConflictException.Create(OfferSubscriptionServiceErrors.PROVIDING_COMPANY_NOT_SET, new ErrorParameter[] { new(nameof(offerTypeId), offerTypeId.ToString()) });
         }
 
         var activeAgreementConsents = await ValidateConsent(offerAgreementConsentData, offerId).ConfigureAwait(ConfigureAwaitOptions.None);

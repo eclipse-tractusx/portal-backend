@@ -345,7 +345,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         var result = await offerRepository.GetOfferAssignedAppDocumentsByIdAsync(appId, _identityData.CompanyId, OfferTypeId.APP, documentId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw NotFoundException.Create(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(AppChangeErrors.APP_DOCUMENT_FOR_APP_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         if (!result.IsStatusActive)
         {
@@ -357,7 +357,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
         }
         if (!_settings.DeleteActiveAppDocumentTypeIds.Contains(result.DocumentTypeId))
         {
-            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ConflictException.Create(AppChangeErrors.APP_CONFLICT_NOT_VALID_DOCUMENT_TYPE, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         offerRepository.RemoveOfferAssignedDocument(appId, documentId);
         documentRepository.AttachAndModifyDocument(
