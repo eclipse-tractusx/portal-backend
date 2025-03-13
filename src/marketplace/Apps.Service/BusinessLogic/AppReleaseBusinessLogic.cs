@@ -253,7 +253,7 @@ public class AppReleaseBusinessLogic(
 
         if (!appData.IsUserOfProvider)
         {
-            throw ForbiddenException.Create(AppReleaseErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(AppReleaseErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (appRequestModel.SalesManagerId.HasValue)

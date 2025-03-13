@@ -144,7 +144,7 @@ public class OfferService(
         }
         if (!result.IsProviderCompany)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         return result.OfferAgreementConsent;
     }
@@ -193,7 +193,7 @@ public class OfferService(
         }
         if (!result.IsProviderCompany)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSIGNED_WITH_OFFER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         return result.OfferAgreementConsentUpdate;
     }
@@ -248,7 +248,7 @@ public class OfferService(
         }
         if (!offerDetail.IsProviderCompanyUser)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSOCIATED_WITH_PROVIDER, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerId", offerId.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_ASSOCIATED_WITH_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("offerId", offerId.ToString()) });
         }
         if (offerDetail.OfferProviderData == null)
         {
@@ -295,7 +295,7 @@ public class OfferService(
 
         if (!responseData.IsSameCompany)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.SALESMANAGER_NOT_MEMBER_OF_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.SALESMANAGER_NOT_MEMBER_OF_COMPANY, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (userRoleIds.Except(responseData.RoleIds).Any())
@@ -657,7 +657,7 @@ public class OfferService(
 
         if (!result.IsProviderCompanyUser)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_SAME_AS_DOCUMENT_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()), new("documentId", documentId.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_SAME_AS_DOCUMENT_COMPANY, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("documentId", documentId.ToString()) });
         }
 
         if (!result.OfferData.Any())
@@ -708,7 +708,7 @@ public class OfferService(
 
         if (!result.IsUserOfProvidingCompany)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new("companyId", companyId.ToString())]);
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new(nameof(companyId), companyId.ToString())]);
         }
 
         return result.Information
@@ -741,7 +741,7 @@ public class OfferService(
 
         if (!offerProfileData.IsProvidingCompanyUser)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new("companyId", companyId.ToString())]);
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PROVIDER, [new(nameof(companyId), companyId.ToString())]);
         }
 
         if (offerProfileData.ServiceTypeIds?.All(x => x == ServiceTypeId.CONSULTANCY_SERVICE) ?? false)
@@ -836,10 +836,10 @@ public class OfferService(
 
         if (!isUserOfCompany)
         {
-            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE, new ErrorParameter[] { new("companyId", companyId.ToString()), new("offerCompanyRole", offerCompanyRole.ToString()) });
+            throw ForbiddenException.Create(OfferServiceErrors.COMPANY_NOT_PART_OF_ROLE, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("offerCompanyRole", offerCompanyRole.ToString()) });
         }
 
-        return details ?? throw UnexpectedConditionException.Create(OfferServiceErrors.DETAILS_SHOULD_NOT_BE_NULL, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()), new("companyId", companyId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
+        return details ?? throw UnexpectedConditionException.Create(OfferServiceErrors.DETAILS_SHOULD_NOT_BE_NULL, new ErrorParameter[] { new("offerId", offerId.ToString()), new("subscriptionId", subscriptionId.ToString()), new(nameof(companyId), companyId.ToString()), new("offerTypeId", offerTypeId.ToString()) });
     }
 
     private async Task<IEnumerable<Guid>> ValidateRoleData(IEnumerable<UserRoleConfig> userRoles)
@@ -904,7 +904,7 @@ public class OfferService(
 
         if (status != OfferSubscriptionStatusId.ACTIVE && status != OfferSubscriptionStatusId.PENDING)
         {
-            throw ConflictException.Create(OfferServiceErrors.NO_ACTIVE_OR_PENDING_SUBSCRIPTION, new ErrorParameter[] { new("companyId", companyId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
+            throw ConflictException.Create(OfferServiceErrors.NO_ACTIVE_OR_PENDING_SUBSCRIPTION, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()), new("subscriptionId", subscriptionId.ToString()) });
         }
 
         offerSubscriptionsRepository.AttachAndModifyOfferSubscription(subscriptionId, os =>

@@ -259,7 +259,7 @@ public class AppChangeBusinessLogic : IAppChangeBusinessLogic
 
         if (!isUserOfCompany)
         {
-            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ForbiddenException.Create(AppChangeErrors.APP_FORBIDDEN_COMPANY_NOT_APP_PROVIDER_COMPANY, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (offerSubscriptionStatusId != OfferSubscriptionStatusId.ACTIVE)
