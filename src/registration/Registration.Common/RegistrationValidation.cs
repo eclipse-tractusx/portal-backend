@@ -31,6 +31,15 @@ public static class RegistrationValidation
 {
     private static readonly Regex BpnRegex = new(ValidationExpressions.Bpn, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex RegionRegex = new(ValidationExpressions.Region, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly IReadOnlyDictionary<(UniqueIdentifierId, string), Regex> UniqueIdentifierExpressions = ImmutableDictionary.CreateRange(
+        new (UniqueIdentifierId Identifier, IEnumerable<(string Country, string Expression)> Expressions)[]
+        {
+            (UniqueIdentifierId.COMMERCIAL_REG_NUMBER, ValidationExpressions.COMMERCIAL_REG_NUMBER),
+            (UniqueIdentifierId.VAT_ID, ValidationExpressions.VAT_ID),
+            (UniqueIdentifierId.VIES, ValidationExpressions.VIES),
+            (UniqueIdentifierId.EORI, ValidationExpressions.EORI),
+            (UniqueIdentifierId.LEI_CODE, ValidationExpressions.LEI_CODE)
+        }.SelectMany(x => x.Expressions.Select(y => KeyValuePair.Create((x.Identifier, y.Country), new Regex(y.Expression, RegexOptions.Compiled, TimeSpan.FromSeconds(1))))));
 
     public static void ValidateData(this RegistrationData data)
     {
@@ -141,13 +150,4 @@ public static class RegistrationValidation
         }
         return regex.IsMatch(value);
     }
-    private static readonly IReadOnlyDictionary<(UniqueIdentifierId, string), Regex> UniqueIdentifierExpressions = ImmutableDictionary.CreateRange(
-        new (UniqueIdentifierId Identifier, IEnumerable<(string Country, string Expression)> Expressions)[]
-        {
-            (UniqueIdentifierId.COMMERCIAL_REG_NUMBER, ValidationExpressions.COMMERCIAL_REG_NUMBER),
-            (UniqueIdentifierId.VAT_ID, ValidationExpressions.VAT_ID),
-            (UniqueIdentifierId.VIES, ValidationExpressions.VIES),
-            (UniqueIdentifierId.EORI, ValidationExpressions.EORI),
-            (UniqueIdentifierId.LEI_CODE, ValidationExpressions.LEI_CODE)
-        }.SelectMany(x => x.Expressions.Select(y => KeyValuePair.Create((x.Identifier, y.Country), new Regex(y.Expression, RegexOptions.Compiled, TimeSpan.FromSeconds(1))))));
 }
