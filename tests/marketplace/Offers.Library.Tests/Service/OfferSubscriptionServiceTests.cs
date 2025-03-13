@@ -388,7 +388,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Parameters.First().Name.Should().Be("agreementId");
         ex.Message.Should().Be(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
@@ -410,7 +410,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Parameters.First().Name.Should().Be("agreementId");
         ex.Message.Should().Be(OfferSubscriptionServiceErrors.AGREEMENTS_NOT_VALID.ToString());
     }
 
@@ -431,7 +431,7 @@ public class OfferSubscriptionServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Action);
-        ex.Parameters.First().Name.Should().Be("offerAgreementConsentData");
+        ex.Parameters.First().Name.Should().Be("agreementId");
         ex.Message.Should().Be(OfferSubscriptionServiceErrors.CONSENT_TO_AGREEMENTS_REQUIRED.ToString());
     }
 
