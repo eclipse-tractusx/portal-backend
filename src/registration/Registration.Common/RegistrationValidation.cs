@@ -22,6 +22,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common.ErrorHandling;
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
@@ -80,7 +81,7 @@ public static class RegistrationValidation
                 Enumerable.Repeat(new ErrorParameter("duplicateValues", string.Join(", ", duplicateIds.Select(uniqueId => uniqueId.UniqueIdentifierId))), 1));
         }
 
-        data.UniqueIds.Where(uniqueId => !IsInvalidValueByUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId, data.CountryAlpha2Code))
+        data.UniqueIds.Where(uniqueId => !IsValidUniqueIdentifier(uniqueId.Value, uniqueId.UniqueIdentifierId, data.CountryAlpha2Code))
             .IfAny(invalidUniqueIdentifiersValues =>
                 {
                     throw new ControllerArgumentException(
@@ -132,22 +133,21 @@ public static class RegistrationValidation
         }
     }
 
-    private static bool IsInvalidValueByUniqueIdentifier(string value, UniqueIdentifierId uniqueIdentifierId, string countryCode) =>
-        uniqueIdentifierId switch
-        {
-            UniqueIdentifierId.COMMERCIAL_REG_NUMBER => IsRegexMatched(ValidationExpressions.COMMERCIAL_REG_NUMBER, countryCode).IsMatch(value),
-            UniqueIdentifierId.VAT_ID => IsRegexMatched(ValidationExpressions.VAT_ID, countryCode).IsMatch(value),
-            UniqueIdentifierId.LEI_CODE => IsRegexMatched(ValidationExpressions.LEI_CODE, countryCode).IsMatch(value),
-            UniqueIdentifierId.VIES => IsRegexMatched(ValidationExpressions.VIES, countryCode).IsMatch(value),
-            UniqueIdentifierId.EORI => IsRegexMatched(ValidationExpressions.EORI, countryCode).IsMatch(value),
-            _ => throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId)),
-        };
-
-    private static Regex IsRegexMatched(IReadOnlyDictionary<string, string> identifier, string countryCode)
+    private static bool IsValidUniqueIdentifier(string value, UniqueIdentifierId uniqueIdentifierId, string countryCode)
     {
-        if (!identifier.TryGetValue(countryCode, out var regex))
-            regex = identifier.GetValueOrDefault("Worldwide")!;
-
-        return new(regex, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+        if (!UniqueIdentifierExpressions.TryGetValue((uniqueIdentifierId, countryCode), out var regex))
+        {
+            regex = UniqueIdentifierExpressions.GetValueOrDefault((uniqueIdentifierId, "Worldwide")) ?? throw new ControllerArgumentException($"Unique identifier: {uniqueIdentifierId} is not available in the system", nameof(uniqueIdentifierId));
+        }
+        return regex.IsMatch(value);
     }
+    private static readonly IReadOnlyDictionary<(UniqueIdentifierId, string), Regex> UniqueIdentifierExpressions = ImmutableDictionary.CreateRange(
+        new (UniqueIdentifierId Identifier, IEnumerable<(string Country, string Expression)> Expressions)[]
+        {
+            (UniqueIdentifierId.COMMERCIAL_REG_NUMBER, ValidationExpressions.COMMERCIAL_REG_NUMBER),
+            (UniqueIdentifierId.VAT_ID, ValidationExpressions.VAT_ID),
+            (UniqueIdentifierId.VIES, ValidationExpressions.VIES),
+            (UniqueIdentifierId.EORI, ValidationExpressions.EORI),
+            (UniqueIdentifierId.LEI_CODE, ValidationExpressions.LEI_CODE)
+        }.SelectMany(x => x.Expressions.Select(y => KeyValuePair.Create((x.Identifier, y.Country), new Regex(y.Expression, RegexOptions.Compiled, TimeSpan.FromSeconds(1))))));
 }
