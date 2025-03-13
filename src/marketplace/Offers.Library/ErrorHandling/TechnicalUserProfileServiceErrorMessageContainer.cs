@@ -24,11 +24,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 
 public class TechnicalUserProfileServiceErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<TechnicalUserProfileServiceErrors, string> {
-        { TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, "Offer {offerTypeId} {offerId} does not exists" },
-        { TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, "Offer Subscription {subscriptionId} does not exists" },
-        { TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET, "Offer name needs to be set here" },
-    }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, "Offer {offerTypeId} {offerId} does not exists"),
+        new((int)TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, "Offer Subscription {subscriptionId} does not exists"),
+        new((int)TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET, "Offer name needs to be set here")
+    ]);
 
     public Type Type { get => typeof(TechnicalUserProfileServiceErrors); }
 

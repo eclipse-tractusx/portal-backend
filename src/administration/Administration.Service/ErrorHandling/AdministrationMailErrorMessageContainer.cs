@@ -24,10 +24,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandli
 
 public class AdministrationMailErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<AdministrationMailErrors, string> {
-                { AdministrationMailErrors.USER_NOT_FOUND, "User {userId} does not exist" },
-                { AdministrationMailErrors.INVALID_TEMPLATE, "{template} is not valid" },
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)AdministrationMailErrors.USER_NOT_FOUND, "User {userId} does not exist"),
+        new((int)AdministrationMailErrors.INVALID_TEMPLATE, "{template} is not valid")
+    ]);
 
     public Type Type { get => typeof(AdministrationMailErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }

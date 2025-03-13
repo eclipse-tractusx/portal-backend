@@ -24,33 +24,33 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 
 public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<OfferSetupServiceErrors, string> {
-        { OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {offerUrl} must not contain #" },
-        { OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, "The app instance for offer {offerId} already exist" },
-        { OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS, "The app instance {appInstanceId} is associated with exiting subscriptions" },
-        { OfferSetupServiceErrors.APP_DOES_NOT_EXIST, "App {offerId} does not exist." },
-        { OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST, "OfferSubscription {requestId} does not exist" },
-        { OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE, "offer {offerId} is not set up as single instance app" },
-        { OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE, "There should always be exactly one instance defined for a single instance offer {offerId}" },
-        { OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE, "clientId must not be empty for single instance offer {offerId}" },
-        { OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, "Offer Subscription {offerSubscriptionId} does not exist" },
-        { OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING, "Status of the offer subscription must be pending" },
-        { OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE, "Only the providing company can setup the service" },
-        { OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE, "There must only be one app instance for single instance apps" },
-        { OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE, "This step is not eligible to run for single instance apps" },
-        { OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE, "The process step is only executable for single instance apps" },
-        { OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER, "Subscription can only be activated by the provider of the offer" },
-        { OfferSetupServiceErrors.OFFERURL_SHOULD_BE_SET, "OfferUrl should be set" },
-        { OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, "Offers without type {offerTypeId} are not eligible to run" },
-        { OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED, "Technical user is not needed" },
-        { OfferSetupServiceErrors.BPN_MUST_BE_SET, "Bpn must be set" },
-        { OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET, "Offer Name must be set for subscription {offerSubscriptionId}" },
-        { OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS, "OfferSubscription {offerSubscriptionId} must be linked to a process" },
-        { OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, "Company {companyId} must be provider of the offer for offerSubscription {offerSubscriptionId}" },
-        { OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_OFFERSUBSCRIPTION, "clientId must not be empty for offerSubscription {offerSubscriptionId}" },
-   }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN, "OfferUrl {offerUrl} must not contain #"),
+        new((int)OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS, "The app instance for offer {offerId} already exist"),
+        new((int)OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS, "The app instance {appInstanceId} is associated with exiting subscriptions"),
+        new((int)OfferSetupServiceErrors.APP_DOES_NOT_EXIST, "App {offerId} does not exist."),
+        new((int)OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST, "OfferSubscription {requestId} does not exist"),
+        new((int)OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE, "offer {offerId} is not set up as single instance app"),
+        new((int)OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE, "There should always be exactly one instance defined for a single instance offer {offerId}"),
+        new((int)OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE, "clientId must not be empty for single instance offer {offerId}"),
+        new((int)OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST, "Offer Subscription {offerSubscriptionId} does not exist"),
+        new((int)OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING, "Status of the offer subscription must be pending"),
+        new((int)OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE, "Only the providing company can setup the service"),
+        new((int)OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE, "There must only be one app instance for single instance apps"),
+        new((int)OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE, "This step is not eligible to run for single instance apps"),
+        new((int)OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE, "The process step is only executable for single instance apps"),
+        new((int)OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER, "Subscription can only be activated by the provider of the offer"),
+        new((int)OfferSetupServiceErrors.OFFERURL_SHOULD_BE_SET, "OfferUrl should be set"),
+        new((int)OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE, "Offers without type {offerTypeId} are not eligible to run"),
+        new((int)OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED, "Technical user is not needed"),
+        new((int)OfferSetupServiceErrors.BPN_MUST_BE_SET, "Bpn must be set"),
+        new((int)OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET, "Offer Name must be set for subscription {offerSubscriptionId}"),
+        new((int)OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS, "OfferSubscription {offerSubscriptionId} must be linked to a process"),
+        new((int)OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER, "Company {companyId} must be provider of the offer for offerSubscription {offerSubscriptionId}"),
+        new((int)OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_OFFERSUBSCRIPTION, "clientId must not be empty for offerSubscription {offerSubscriptionId}")
+    ]);
 
-    public Type Type { get => typeof(OfferSetupServiceErrors); }
+    public Type Type new((int)get => typeof(OfferSetupServiceErrors); }
 
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
 }

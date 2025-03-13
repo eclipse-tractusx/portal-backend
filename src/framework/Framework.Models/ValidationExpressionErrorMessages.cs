@@ -25,10 +25,9 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
 // This class contains error messages for validation expressions
 public class ValidationExpressionErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<ValidationExpressionErrors, string> {
-                { ValidationExpressionErrors.INCORRECT_COMPANY_NAME, "{name}: length must be between 1 and 160 characters and not start or end with a white space" },
-
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)ValidationExpressionErrors.INCORRECT_COMPANY_NAME, "{name}: length must be between 1 and 160 characters and not start or end with a white space")
+    ]);
 
     public Type Type { get => typeof(ValidationExpressionErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }

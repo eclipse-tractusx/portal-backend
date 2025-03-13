@@ -24,15 +24,15 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.ErrorHandling
 
 public class ProvisioningServiceErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<ProvisioningServiceErrors, string> {
-                { ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, "userName is {userName} when trying to create user in realm {realm}" },
-                { ProvisioningServiceErrors.USER_CREATION_CONFLICT, "userName {userName} already exists in realm {realm}" },
-                { ProvisioningServiceErrors.USER_CREATION_NOTFOUND, "realm {realm} not found to create userName {userName}" },
-                { ProvisioningServiceErrors.USER_CREATION_ARGUMENT, "invalid realm {realm} or userName {userName} for usercreation" },
-                { ProvisioningServiceErrors.USER_CREATION_FAILURE, "unexpected error while creating userName {userName} in realm {realm}" },
-                { ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, "creation of userName {userName} in realm {realm} returns null" },
-                { ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, "{missingRoleIds} are not a valid UserRoleIds"}
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)ProvisioningServiceErrors.USER_CREATION_USERNAME_NULL, "userName is {userName} when trying to create user in realm {realm}"),
+        new((int)ProvisioningServiceErrors.USER_CREATION_CONFLICT, "userName {userName} already exists in realm {realm}"),
+        new((int)ProvisioningServiceErrors.USER_CREATION_NOTFOUND, "realm {realm} not found to create userName {userName}"),
+        new((int)ProvisioningServiceErrors.USER_CREATION_ARGUMENT, "invalid realm {realm} or userName {userName} for usercreation"),
+        new((int)ProvisioningServiceErrors.USER_CREATION_FAILURE, "unexpected error while creating userName {userName} in realm {realm}"),
+        new((int)ProvisioningServiceErrors.USER_CREATION_RETURNS_NULL, "creation of userName {userName} in realm {realm} returns null"),
+        new((int)ProvisioningServiceErrors.USER_NOT_VALID_USERROLEID, "{missingRoleIds} are not a valid UserRoleIds")
+    ]);
 
     public Type Type { get => typeof(ProvisioningServiceErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
