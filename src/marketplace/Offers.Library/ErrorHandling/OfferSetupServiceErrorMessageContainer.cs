@@ -50,7 +50,7 @@ public class OfferSetupServiceErrorMessageContainer : IErrorMessageContainer
         new((int)OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_OFFERSUBSCRIPTION, "clientId must not be empty for offerSubscription {offerSubscriptionId}")
     ]);
 
-    public Type Type new((int)get => typeof(OfferSetupServiceErrors); }
+    public Type Type { get => typeof(OfferSetupServiceErrors); }
 
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
 }
