@@ -4,6 +4,40 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.4.0-RC2
+
+### Feature
+
+* **Clearinghouse**
+  * concatenated the countryCode with vatId identifier to send to clearing house [#1310](https://github.com/eclipse-tractusx/portal-backend/pull/1310)
+* **Onboarding**
+  * update country wise regex in identifiers [#1316](https://github.com/eclipse-tractusx/portal-backend/pull/1316)
+* **Registration Service**
+  * made region field mandatory [#1296](https://github.com/eclipse-tractusx/portal-backend/pull/1296)
+  * made self-description document api accessible by anonymous user [#1297](https://github.com/eclipse-tractusx/portal-backend/pull/1297)
+* **SDCreation**
+  * adapted the tagus v2 api for sd factory [#1278](https://github.com/eclipse-tractusx/portal-backend/pull/1278)
+* **Connectors**
+  * adapted the tagus v2 api for connectors [#1290](https://github.com/eclipse-tractusx/portal-backend/pull/1290)
+
+
+### Bugfixes
+
+* **Connectors**
+  * added handling for outdated legal person in connector self-description process [#1317](https://github.com/eclipse-tractusx/portal-backend/pull/1317)
+* **BPDM**
+  * removed hardcoded v6 path in bpdm cx-memberships api call [#1300](https://github.com/eclipse-tractusx/portal-backend/pull/1300)
+* **Registration Service**
+  * adjust registration for processStepRepository [#1269](https://github.com/eclipse-tractusx/portal-backend/pull/1269)
+  * adjust registration for IRepository [#1267](https://github.com/eclipse-tractusx/portal-backend/pull/1267)
+* **TechnicalUser**
+  * adjust technical user creation  [#1273](https://github.com/eclipse-tractusx/portal-backend/pull/1273) 
+* **Miscellaneous**
+  * fixed the entity framework removeRange calls  [#1291](https://github.com/eclipse-tractusx/portal-backend/pull/1291)
+  * adjust error structure for 401 and 403 errors  [#1289](https://github.com/eclipse-tractusx/portal-backend/pull/1289)
+  * fixed error handling middleware from minimal apis  [#1276](https://github.com/eclipse-tractusx/portal-backend/pull/1276)
+  * adjust error handling to IExceptionFilter  [#1272](https://github.com/eclipse-tractusx/portal-backend/pull/1272)
+
 ## 2.4.0-RC1
 
 ### Feature
