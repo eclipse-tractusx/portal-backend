@@ -2,29 +2,55 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
-## Unreleased
-
-## 2.4.0-RC2
+## 2.4.0
 
 ### Feature
 
 * **Clearinghouse**
   * concatenated the countryCode with vatId identifier to send to clearing house [#1310](https://github.com/eclipse-tractusx/portal-backend/pull/1310)
+  * integrated the tagus v2 api [#1220](https://github.com/eclipse-tractusx/portal-backend/pull/1220)
 * **Onboarding**
   * update country wise regex in identifiers [#1316](https://github.com/eclipse-tractusx/portal-backend/pull/1316)
+  * added set membership call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
 * **Registration Service**
   * made region field mandatory [#1296](https://github.com/eclipse-tractusx/portal-backend/pull/1296)
   * made self-description document api accessible by anonymous user [#1297](https://github.com/eclipse-tractusx/portal-backend/pull/1297)
+  * adjusted error handling to new structure [#1237](https://github.com/eclipse-tractusx/portal-backend/pull/1237)
 * **SDCreation**
   * adapted the tagus v2 api for sd factory [#1278](https://github.com/eclipse-tractusx/portal-backend/pull/1278)
+  * added process steps to await the sd creation response [#1189](https://github.com/eclipse-tractusx/portal-backend/pull/1189)
 * **Connectors**
   * adapted the tagus v2 api for connectors [#1290](https://github.com/eclipse-tractusx/portal-backend/pull/1290)
-
+* **Administration Service**
+  * added sd skipped date to connectors [#1234](https://github.com/eclipse-tractusx/portal-backend/pull/1234)
+  * adjusted filter for `GET: /api/administration/serviceaccount/owncompany/serviceaccounts` [#1255](https://github.com/eclipse-tractusx/portal-backend/pull/1255)
+  * added skipped date to `GET: /api/administration/companyData/missing-sd-document` [#1236](https://github.com/eclipse-tractusx/portal-backend/pull/1236)
+  * adjusted error handling to new structure [#1192](https://github.com/eclipse-tractusx/portal-backend/pull/1192)
+* **Apps Service**
+  * adjusted error handling to new structure [#1260](https://github.com/eclipse-tractusx/portal-backend/pull/1260)
+* **Offers**
+  * enabled decline of subscriptions for offer provider [#1171](https://github.com/eclipse-tractusx/portal-backend/pull/1171)
+  * added translatable agreements & consents [#1246](https://github.com/eclipse-tractusx/portal-backend/pull/1246)
+  * added support for multiple technical users per offer [#1197](https://github.com/eclipse-tractusx/portal-backend/pull/1197)
+  * added property to define whether technical users should be displayed per offer [#1215](https://github.com/eclipse-tractusx/portal-backend/pull/1215)
+* **TechnicalUser**
+  * added provider_owned technical user [#1249](https://github.com/eclipse-tractusx/portal-backend/pull/1249)
+  * enhanced technical user profile information with provider only flag [#1256](https://github.com/eclipse-tractusx/portal-backend/pull/1256)
+* **Keycloak**
+  * adjusted the token handling [#1209](https://github.com/eclipse-tractusx/portal-backend/pull/1209)
+* **Services Service**
+  * adjusted error handling to new structure [#1195](https://github.com/eclipse-tractusx/portal-backend/pull/1195)
+* **Documents**
+  * added document size to documents [#1164](https://github.com/eclipse-tractusx/portal-backend/pull/1164)
 
 ### Bugfixes
 
 * **Connectors**
   * added handling for outdated legal person in connector self-description process [#1317](https://github.com/eclipse-tractusx/portal-backend/pull/1317)
+  * fixed deletion of connectors without SD document [#1221](https://github.com/eclipse-tractusx/portal-backend/issues/1221)
+  * fixed update of connectors [#1086](https://github.com/eclipse-tractusx/portal-backend/issues/1086)
+  * fixed access check for managed connectors [#1124](https://github.com/eclipse-tractusx/portal-backend/pull/1124)
+  * fixed the edc discovery endpoint [#1120](https://github.com/eclipse-tractusx/portal-backend/pull/1120)
 * **BPDM**
   * removed hardcoded v6 path in bpdm cx-memberships api call [#1300](https://github.com/eclipse-tractusx/portal-backend/pull/1300)
 * **Registration Service**
@@ -37,109 +63,45 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * adjust error structure for 401 and 403 errors  [#1289](https://github.com/eclipse-tractusx/portal-backend/pull/1289)
   * fixed error handling middleware from minimal apis  [#1276](https://github.com/eclipse-tractusx/portal-backend/pull/1276)
   * adjust error handling to IExceptionFilter  [#1272](https://github.com/eclipse-tractusx/portal-backend/pull/1272)
-
-## 2.4.0-RC1
-
-### Feature
-
-* **Clearinghouse**
-  * integrated the tagus v2 api [#1220](https://github.com/eclipse-tractusx/portal-backend/pull/1220)
-* **Onboarding**
-  * added set membership call to bpdm [#1118](https://github.com/eclipse-tractusx/portal-backend/pull/1118)
-* **Administration Service**
-  * added sd skipped date to connectors [#1234](https://github.com/eclipse-tractusx/portal-backend/pull/1234)
-  * adjusted filter for `GET: /api/administration/serviceaccount/owncompany/serviceaccounts` [#1255](https://github.com/eclipse-tractusx/portal-backend/pull/1255)
-  * added skipped date to `GET: /api/administration/companyData/missing-sd-document` [#1236](https://github.com/eclipse-tractusx/portal-backend/pull/1236)
-* **Registration Service**
-  * adjusted error handling to new structure [#1237](https://github.com/eclipse-tractusx/portal-backend/pull/1237)
-* **Apps Service**
-  * adjusted error handling to new structure [#1260](https://github.com/eclipse-tractusx/portal-backend/pull/1260)
-* **Offers**
-  * enabled decline of subscriptions for offer provider [#1171](https://github.com/eclipse-tractusx/portal-backend/pull/1171)
-  * added translatable agreements & consents [#1246](https://github.com/eclipse-tractusx/portal-backend/pull/1246)
-* **TechnicalUser**
-  * added provider_owned technical user [#1249](https://github.com/eclipse-tractusx/portal-backend/pull/1249)
-  * enhanced technical user profile information with provider only flag [#1256](https://github.com/eclipse-tractusx/portal-backend/pull/1256)
-* **SDCreation**
-  * added process steps to await the sd creation response [#1189](https://github.com/eclipse-tractusx/portal-backend/pull/1189)
-
-### Bugfixes
-
-* **Connectors**
-  * fixed deletion of connectors without SD document [#1221](https://github.com/eclipse-tractusx/portal-backend/issues/1221)
-  * fixed update of connectors [#1086](https://github.com/eclipse-tractusx/portal-backend/issues/1086)
 * **Onboarding Service Provider**
   * added regex validation for uniqueIds [#1163](https://github.com/eclipse-tractusx/portal-backend/issues/1163)
 * **Offers**
   * adjusted roles for /subscriber endpoints [#1110](https://github.com/eclipse-tractusx/portal-backend/pull/1110)
 * **UserUpload**
   * fixed incorrect success and error count [#1226](https://github.com/eclipse-tractusx/portal-backend/pull/1226)
-
-### Technical Support
-
-* **.NET9**
-  * upgraded runtime version to .NET9 [#1161](https://github.com/eclipse-tractusx/portal-backend/pull/1161)
-* **ProcessWorker**
-  * added process worker as nuget package [#998](https://github.com/eclipse-tractusx/portal-backend/pull/998)
-* **Dependencies**
-  * updated app dependencies [#1235](https://github.com/eclipse-tractusx/portal-backend/pull/1235), [#1241](https://github.com/eclipse-tractusx/portal-backend/pull/1241), [#1242](https://github.com/eclipse-tractusx/portal-backend/pull/1242), [#1243](https://github.com/eclipse-tractusx/portal-backend/pull/1243), [#1251](https://github.com/eclipse-tractusx/portal-backend/pull/1251), [#1258](https://github.com/eclipse-tractusx/portal-backend/pull/1258)
-
-## 2.4.0-alpha.2
-
-### Feature
-
-* **Keycloak**
-  * adjusted the token handling [#1209](https://github.com/eclipse-tractusx/portal-backend/pull/1209)
-* **Administration Service**
-  * adjusted error handling to new structure [#1192](https://github.com/eclipse-tractusx/portal-backend/pull/1192)
-* **Services Service**
-  * adjusted error handling to new structure [#1195](https://github.com/eclipse-tractusx/portal-backend/pull/1195)
-* **Offers**
-  * added support for multiple technical users per offer [#1197](https://github.com/eclipse-tractusx/portal-backend/pull/1197)
-  * added property to define whether technical users should be displayed per offer [#1215](https://github.com/eclipse-tractusx/portal-backend/pull/1215)
-
-### Technical Support
-
-* **Dependencies**
-  * updated app dependencies [#1213](https://github.com/eclipse-tractusx/portal-backend/pull/1213), [#1214](https://github.com/eclipse-tractusx/portal-backend/pull/1214), [#1218](https://github.com/eclipse-tractusx/portal-backend/pull/1218), [#1219](https://github.com/eclipse-tractusx/portal-backend/pull/1219), [#1223](https://github.com/eclipse-tractusx/portal-backend/pull/1223), [#1224](https://github.com/eclipse-tractusx/portal-backend/pull/1224)
-
-## 2.4.0-alpha.1
-
-### Feature
-
-* **Documents**
-  * added document size to documents [#1164](https://github.com/eclipse-tractusx/portal-backend/pull/1164)
-
-### Change
-
 * **Marketplace Service**
   * added sorting to `GET: /api/apps/active` [#1132](https://github.com/eclipse-tractusx/portal-backend/pull/1132)
-
-### Technical Support
-
-* **Pre Checks**
-  * added filter to dependencies workflow [#1165](https://github.com/eclipse-tractusx/portal-backend/pull/1165)
-* **Dependencies**
-  * updated app dependencies [#1130](https://github.com/eclipse-tractusx/portal-backend/pull/1130), [#1203](https://github.com/eclipse-tractusx/portal-backend/pull/1203), [#1201](https://github.com/eclipse-tractusx/portal-backend/pull/1201), [#1194](https://github.com/eclipse-tractusx/portal-backend/pull/1194), [#1176](https://github.com/eclipse-tractusx/portal-backend/pull/1176), [#1178](https://github.com/eclipse-tractusx/portal-backend/pull/1178), [#1162](https://github.com/eclipse-tractusx/portal-backend/pull/1162), [#1159](https://github.com/eclipse-tractusx/portal-backend/pull/1159), [#1141](https://github.com/eclipse-tractusx/portal-backend/pull/1141)
-
-### Bugfixes
-
+  * added external service details to `GET: /api/apps/{appId}/subscription/{subscriptionId}/provider` [#1081](https://github.com/eclipse-tractusx/portal-backend/pull/1081)
 * **Documentation**
   * fixed the link to how to contribute [#1173](https://github.com/eclipse-tractusx/portal-backend/pull/1173)
-* **Connectors**
-  * fixed access check for managed connectors [#1124](https://github.com/eclipse-tractusx/portal-backend/pull/1124)
-  * fixed the edc discovery endpoint [#1120](https://github.com/eclipse-tractusx/portal-backend/pull/1120)
 * **Services Service**
   * added providerUrl to response for `Get: /api/services/{serviceId}` [#1126](https://github.com/eclipse-tractusx/portal-backend/pull/1126)
   * added external service details to `GET: /api/services/{serviceId}/subscription/{subscriptionId}/provider` [#1081](https://github.com/eclipse-tractusx/portal-backend/pull/1081)
 * **Administration Service**
   * added company shortname to `POST: api/administration/registration/network/{externalId}/partnerRegistration` [#1133](https://github.com/eclipse-tractusx/portal-backend/pull/1133)
-* **Marketplace Service**
-  * added external service details to `GET: /api/apps/{appId}/subscription/{subscriptionId}/provider` [#1081](https://github.com/eclipse-tractusx/portal-backend/pull/1081)
 * **Auditing**
   * fixed audit-expression-creation to accommodate changes in updated audit-package [#1122](https://github.com/eclipse-tractusx/portal-backend/pull/1182)
 * **Process Worker**
   * fixed error handling [#1119](https://github.com/eclipse-tractusx/portal-backend/pull/1119)
+
+### Technical Support
+* **.NET9**
+  * upgraded runtime version to .NET9 [#1161](https://github.com/eclipse-tractusx/portal-backend/pull/1161)
+* **ProcessWorker**
+  * added process worker as nuget package [#998](https://github.com/eclipse-tractusx/portal-backend/pull/998)
+* **Dependencies**
+  * updated app dependencies [#1235](https://github.com/eclipse-tractusx/portal-backend/pull/1235), [#1241](https://github.com/eclipse-tractusx/portal-backend/pull/1241), [#1242](https://github.com/eclipse-tractusx/portal-backend/pull/1242), [#1243](https://github.com/eclipse-tractusx/portal-backend/pull/1243), [#1251](https://github.com/eclipse-tractusx/portal-backend/pull/1251), [#1258](https://github.com/eclipse-tractusx/portal-backend/pull/1258),[#1213](https://github.com/eclipse-tractusx/portal-backend/pull/1213), [#1214](https://github.com/eclipse-tractusx/portal-backend/pull/1214), [#1218](https://github.com/eclipse-tractusx/portal-backend/pull/1218), [#1219](https://github.com/eclipse-tractusx/portal-backend/pull/1219), [#1223](https://github.com/eclipse-tractusx/portal-backend/pull/1223), [#1224](https://github.com/eclipse-tractusx/portal-backend/pull/1224),[#1130](https://github.com/eclipse-tractusx/portal-backend/pull/1130), [#1203](https://github.com/eclipse-tractusx/portal-backend/pull/1203), [#1201](https://github.com/eclipse-tractusx/portal-backend/pull/1201), [#1194](https://github.com/eclipse-tractusx/portal-backend/pull/1194), [#1176](https://github.com/eclipse-tractusx/portal-backend/pull/1176), [#1178](https://github.com/eclipse-tractusx/portal-backend/pull/1178), [#1162](https://github.com/eclipse-tractusx/portal-backend/pull/1162), [#1159](https://github.com/eclipse-tractusx/portal-backend/pull/1159), [#1141](https://github.com/eclipse-tractusx/portal-backend/pull/1141)
+* **Pre Checks**
+  * added filter to dependencies workflow [#1165](https://github.com/eclipse-tractusx/portal-backend/pull/1165)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
+* **Note for Gaia-X Clearing House Tagus upgrade**:
+  * If a company was onboarded with ELBE clearing house, the legal person self description document is not accepted when creating a connector with newer versions of the clearing house. Portal operators are advised to create new legal person and connector self description documents for all previously onboarded companies. The portal backend will activate connector without updated legal person self description document to allow for a transition phase. The connector will not have a document until reissuance for both company and connector is triggered by operators.
+* **Validation Limitations**: pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
+* **Validation of File Upload Limitation**: it is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+* **In Memory Storage Limitation**: sensitive information (such as passwords) is read in an unencrypted manner in memory.
 
 ## 2.3.0
 
