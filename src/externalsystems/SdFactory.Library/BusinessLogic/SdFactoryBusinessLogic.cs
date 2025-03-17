@@ -93,16 +93,21 @@ public class SdFactoryBusinessLogic(
             throw new ConflictException($"CompanyApplication {applicationId} is not in status SUBMITTED");
         }
 
-        var (companyId, businessPartnerNumber, countryCode, uniqueIdentifiers) = result;
+        var (companyId, legalName, businessPartnerNumber, countryCode, region, uniqueIdentifiers) = result;
 
         if (string.IsNullOrWhiteSpace(businessPartnerNumber))
         {
             throw new ConflictException(
                 $"BusinessPartnerNumber (bpn) for CompanyApplications {applicationId} company {companyId} is empty");
         }
+        if (string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(region))
+        {
+            throw new ConflictException(
+                $"CountryCode or Region for CompanyApplications {applicationId} and Company {companyId} is empty. Expected value: DE-NW and Current value: {countryCode}-{region}");
+        }
 
         await sdFactoryService
-            .RegisterSelfDescriptionAsync(applicationId, uniqueIdentifiers, countryCode, businessPartnerNumber, cancellationToken)
+            .RegisterSelfDescriptionAsync(applicationId, legalName, uniqueIdentifiers, countryCode, region, businessPartnerNumber, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -154,6 +159,18 @@ public class SdFactoryBusinessLogic(
                 con.DateLastChanged = DateTimeOffset.UtcNow;
             });
         }
+        // If the message contains the outdated legal person error code,
+        // the connector is activated but no document is created
+        else if (IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
+        {
+            connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
+            {
+                con.StatusId = ConnectorStatusId.ACTIVE;
+                con.SelfDescriptionMessage = data.Message!;
+                con.DateLastChanged = DateTimeOffset.UtcNow;
+                con.SdSkippedDate = DateTimeOffset.UtcNow;
+            });
+        }
         else
         {
             connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
@@ -166,15 +183,22 @@ public class SdFactoryBusinessLogic(
         var processData = await connectorsRepository.GetProcessDataForConnectorId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (processData != null)
         {
-            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE, SdFactoryRequestModelSdType.ServiceOffering);
         }
     }
 
-    private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId)
+    private static bool IsOutdatedLegalPerson(string? message, string? expectedErrorCode) => message != null && expectedErrorCode != null && message.Contains(expectedErrorCode);
+
+    private void HandleSdCreationProcess(VerifyProcessData<ProcessTypeId, ProcessStepTypeId> processData, SelfDescriptionResponseData data, ProcessStepTypeId processStepTypeId, ProcessStepTypeId retriggerProcessStepTypeId, SdFactoryRequestModelSdType sdType)
     {
         var context = processData.CreateManualProcessData(processStepTypeId, portalRepositories, () => $"externalId {data.ExternalId}");
         if (data.Status == SelfDescriptionStatus.Confirm)
         {
+            context.FinalizeProcessStep();
+        }
+        else if (sdType == SdFactoryRequestModelSdType.ServiceOffering && IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
+        {
+            context.ScheduleProcessSteps([ProcessStepTypeId.RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON]);
             context.FinalizeProcessStep();
         }
         else
@@ -196,7 +220,7 @@ public class SdFactoryBusinessLogic(
         var processData = await companyRepository.GetSelfDescriptionProcessDataForCompanyId(data.ExternalId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (processData != null)
         {
-            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE);
+            HandleSdCreationProcess(processData, data, ProcessStepTypeId.AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, ProcessStepTypeId.RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE, SdFactoryRequestModelSdType.LegalParticipant);
         }
     }
 

@@ -147,6 +147,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "123"), new CompanyUniqueIdData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "12")])
             .Create();
 
@@ -165,6 +166,7 @@ public class NetworkBusinessLogicTests
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.BusinessPartnerNumber, "BPNL00000001FAIL")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -184,6 +186,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "X")
             .With(x => x.CompanyRoles, Enumerable.Empty<CompanyRoleId>())
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -206,6 +209,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XXX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", email) })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -220,12 +224,35 @@ public class NetworkBusinessLogicTests
 
     [Theory]
     [InlineData("")]
+    [InlineData("Berlin")]
+    public async Task HandlePartnerRegistration_WithInvalidRegion_ThrowsControllerArgumentException(string region)
+    {
+        // Arrange
+        var data = _fixture.Build<PartnerRegistrationData>()
+            .With(x => x.BusinessPartnerNumber, Bpn)
+            .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, region)
+            .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "Test", "test", "test@email.com") })
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
+            .Create();
+
+        // Act
+        async Task Act() => await _sut.HandlePartnerRegistration(data);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(RegistrationValidationErrors.REGION_INVALID.ToString());
+    }
+
+    [Theory]
+    [InlineData("")]
     public async Task HandlePartnerRegistration_WithInvalidFirstnameEmail_ThrowsControllerArgumentException(string firstName)
     {
         // Arrange
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", firstName, "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -246,6 +273,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "X")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", lastname, "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -265,6 +293,7 @@ public class NetworkBusinessLogicTests
         var data = _fixture.Build<PartnerRegistrationData>()
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XXX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.ExternalId, ExistingExternalId)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
@@ -287,6 +316,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.UserDetails, new[] { new UserDetailData(null, Guid.NewGuid().ToString(), "test", "test", "test", "test@email.com") })
             .With(x => x.CountryAlpha2Code, "XX")
+            .With(x => x.Region, "XX")
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
 
@@ -306,6 +336,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -327,6 +358,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(null, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -350,6 +382,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(notExistingIdpId, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -370,6 +403,7 @@ public class NetworkBusinessLogicTests
             .With(x => x.ExternalId, Guid.NewGuid().ToString())
             .With(x => x.BusinessPartnerNumber, Bpn)
             .With(x => x.CountryAlpha2Code, "DE")
+            .With(x => x.Region, "XX")
             .With(x => x.UserDetails, new[] { new UserDetailData(IdpId, "123", "test", "test", "test", "test@email.com") })
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, VatId)])
             .Create();
@@ -452,8 +486,32 @@ public class NetworkBusinessLogicTests
         ex.Message.Should().Be(AdministrationNetworkErrors.NETWORK_CONFLICT_IDENTITY_PROVIDER_AS_NO_ALIAS.ToString());
     }
 
-    [Fact]
-    public async Task HandlePartnerRegistration_WithIdpNotSetAndOnlyOneIdp_CallsExpected()
+    [Theory]
+    // Worldwide
+    [InlineData(UniqueIdentifierId.VAT_ID, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.VIES, "WW129273398", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "WW")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "WW")]
+    [InlineData(UniqueIdentifierId.EORI, "WW12345678912345", "WW")]
+    [InlineData(UniqueIdentifierId.LEI_CODE, "529900T8BM49AURSDO55", "WW")]
+
+    // DE
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE129273398", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "München HRB 175450", "DE")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "F1103R_HRB98814", "DE")]
+
+    // FR
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "849281571", "FR")]
+
+    // MX
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX-1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890", "MX")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "MX1234567890&", "MX")]
+
+    // IN
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN123456789", "IN")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "IN-123456789", "IN")]
+    public async Task HandlePartnerRegistration_WithIdpNotSetAndOnlyOneIdp_CallsExpected(UniqueIdentifierId uniqueIdentifierId, string identifierValue, string countryCode)
     {
         // Arrange
         var newCompanyId = Guid.NewGuid();
@@ -475,21 +533,22 @@ public class NetworkBusinessLogicTests
             Bpn,
             "Munich",
             "Street",
-            "DE",
+            countryCode,
             "BY",
             "5",
             "00001",
-            new[] { new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, "DE123456789") },
+            new[] { new CompanyUniqueIdData(uniqueIdentifierId, identifierValue) },
             Enumerable.Range(1, 10).Select(_ => _fixture.Build<UserDetailData>().With(x => x.IdentityProviderId, default(Guid?)).WithEmailPattern(x => x.Email).Create()).ToImmutableArray(),
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .Invokes((string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
                 {
                     var address = new Address(
                         Guid.NewGuid(),
                         city,
                         streetname,
+                        region,
                         countryAlpha2Code,
                         DateTimeOffset.UtcNow
                     );
@@ -619,13 +678,14 @@ public class NetworkBusinessLogicTests
             new[] { new UserDetailData(IdpId, "123", "ironman", "tony", "stark", "tony@stark.com") },
             new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER }
         );
-        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
-            .Invokes((string city, string streetname, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .Invokes((string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters) =>
                 {
                     var address = new Address(
                         Guid.NewGuid(),
                         city,
                         streetname,
+                        region,
                         countryAlpha2Code,
                         DateTimeOffset.UtcNow
                     );
@@ -850,9 +910,17 @@ public class NetworkBusinessLogicTests
             .Returns(false);
         A.CallTo(() => _countryRepository.CheckCountryExistsByAlpha2CodeAsync(A<string>.That.Not.Matches(x => x == "XX")))
             .Returns(true);
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("WW", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI, UniqueIdentifierId.COMMERCIAL_REG_NUMBER, UniqueIdentifierId.VIES }));
         A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("DE", A<IEnumerable<UniqueIdentifierId>>._))
-            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.LEI_CODE, UniqueIdentifierId.EORI }));
-        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "DE"), A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID, UniqueIdentifierId.COMMERCIAL_REG_NUMBER }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("FR", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.COMMERCIAL_REG_NUMBER }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("MX", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers("IN", A<IEnumerable<UniqueIdentifierId>>._))
+            .Returns((true, new[] { UniqueIdentifierId.VAT_ID }));
+        A.CallTo(() => _countryRepository.GetCountryAssignedIdentifiers(A<string>.That.Not.Matches(x => x == "WW" || x == "DE" || x == "FR" || x == "MX" || x == "IN"), A<IEnumerable<UniqueIdentifierId>>._))
             .Returns((false, Enumerable.Empty<UniqueIdentifierId>()));
 
         A.CallTo(() => _identityProviderRepository.GetSingleManagedIdentityProviderAliasDataUntracked(_identity.CompanyId))

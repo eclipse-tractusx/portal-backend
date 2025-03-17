@@ -100,7 +100,11 @@ public class ClearinghouseBusinessLogic(
                     string.IsNullOrEmpty(data.Address.Streetnumber)
                         ? data.Address.Streetname
                         : string.Format("{0} {1}", data.Address.Streetname, data.Address.Streetnumber)),
-                data.Identifiers.Select(ci => new UniqueIdData(ci.UniqueIdentifierId.GetUniqueIdentifierValue(), ci.Value))),
+                data.Identifiers.Select(ci =>
+                    new UniqueIdData(
+                        ci.UniqueIdentifierId.GetUniqueIdentifierId(),
+                        ci.Value.GetUniqueIdentifierValue(ci.UniqueIdentifierId, data.Address.CountryAlpha2Code))
+                    )),
             validationMode,
             new CallBack(_settings.CallbackUrl, headers)
         );

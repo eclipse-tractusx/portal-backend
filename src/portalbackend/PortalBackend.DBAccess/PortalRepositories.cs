@@ -58,7 +58,7 @@ public class PortalRepositories(PortalDbContext portalDbContext) :
         CreateTypeEntry<INetworkRepository>(context => new NetworkRepository(context)),
         CreateTypeEntry<IOfferRepository>(context => new OfferRepository(context)),
         CreateTypeEntry<IOfferSubscriptionsRepository>(context => new OfferSubscriptionsRepository(context)),
-        CreateTypeEntry<IPortalProcessStepRepository>(context => new ProcessStepRepository<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context))),
+        CreateTypeEntry<IPortalProcessStepRepository>(context => new PortalProcessStepRepository(new PortalProcessDbContextAccess(context))),
         CreateTypeEntry<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>(context => new ProcessStepRepository<Process, ProcessType<Process, ProcessTypeId>, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId>, ProcessStepType<Process, ProcessTypeId, ProcessStepTypeId>, ProcessTypeId, ProcessStepTypeId>(new PortalProcessDbContextAccess(context))),
         CreateTypeEntry<ITechnicalUserRepository>(context => new TechnicalUserRepository(context)),
         CreateTypeEntry<IStaticDataRepository>(context => new StaticDataRepository(context)),

@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2022 BMW Group AG
  * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -28,13 +27,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.SdFactory.Library.Models;
 /// </summary>
 public record SdFactoryRequestModel(
     [property: JsonPropertyName("externalId")] string ExternalId,
+    [property: JsonPropertyName("name")] string LegalName,
     [property: JsonPropertyName("registrationNumber")] IEnumerable<RegistrationNumber> RegistrationNumber,
-    [property: JsonPropertyName("headquarterAddress.country")] string HeadquarterCountry,
-    [property: JsonPropertyName("legalAddress.country")] string LegalCountry,
+    [property: JsonPropertyName("headquarterAddress.countrySubdivisionCode")] string HeadquarterCountrySubdivisionCode,
+    [property: JsonPropertyName("legalAddress.countrySubdivisionCode")] string LegalCountrySubdivisionCode,
     [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
-    [property: JsonPropertyName("bpn")] string Bpn,
-    [property: JsonPropertyName("holder")] string Holder,
-    [property: JsonPropertyName("issuer")] string Issuer);
+    [property: JsonPropertyName("holder")] string Holder);
 
 public record RegistrationNumber(
     [property: JsonPropertyName("type")] string Type,
@@ -48,10 +46,6 @@ public record ConnectorSdFactoryRequestModel(
     [property: JsonPropertyName("externalId")] string ExternalId,
     [property: JsonPropertyName("type"), JsonConverter(typeof(JsonStringEnumConverter))] SdFactoryRequestModelSdType Type,
     [property: JsonPropertyName("providedBy")] string ProvidedBy,
-    [property: JsonPropertyName("aggregationOf")] string? AggregationOf,
-    [property: JsonPropertyName("termsAndConditions")] string? TermsAndConditions,
-    [property: JsonPropertyName("policies")] string Policies,
-    [property: JsonPropertyName("issuer")] string Issuer,
     [property: JsonPropertyName("holder")] string Holder
 );
 

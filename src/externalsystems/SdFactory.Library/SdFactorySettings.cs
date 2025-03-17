@@ -40,8 +40,8 @@ public class SdFactorySettings : KeyVaultAuthSettings
     public string SdFactoryUrl { get; set; } = null!;
 
     /// <summary>
-    /// BPN of the issuer for the sd factory
+    /// Expected error codes to skip connector self description document creation.
     /// </summary>
-    [Required]
-    public string SdFactoryIssuerBpn { get; set; } = null!;
+    [MinLength(1, ErrorMessage = "ConnectorAllowSdDocumentSkipErrorCode cannot be an empty string.")]
+    public string ConnectorAllowSdDocumentSkipErrorCode { get; set; } = null!;
 }

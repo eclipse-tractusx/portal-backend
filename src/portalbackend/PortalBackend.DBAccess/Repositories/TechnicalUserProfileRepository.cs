@@ -59,7 +59,7 @@ public class TechnicalUserProfileRepository : ITechnicalUserProfileRepository
 
     /// <inheritdoc />
     public void RemoveTechnicalUserProfiles(IEnumerable<Guid> technicalUserProfileIds) =>
-        _context.RemoveRange(technicalUserProfileIds.Select(profileId => new TechnicalUserProfile(profileId, Guid.Empty)));
+        _context.TechnicalUserProfiles.RemoveRange(technicalUserProfileIds.Select(profileId => new TechnicalUserProfile(profileId, Guid.Empty)));
 
     /// <inheritdoc />
     public void RemoveTechnicalUserProfilesForOffer(Guid offerId)

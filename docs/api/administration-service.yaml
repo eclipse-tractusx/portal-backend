@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Org.Eclipse.TractusX.Portal.Backend.Administration.Service
-  version: v2.4.0-RC1
+  version: v2.4.0-RC2
 paths:
   /api/administration/companydata/ownCompanyDetails:
     get:
@@ -1358,7 +1358,7 @@ paths:
     get:
       tags:
         - Documents
-      summary: 'Retrieves a specific document for the given id. (Authorization required - Roles: view_documents)'
+      summary: Retrieves a specific self description document for the given id.
       description: 'Example: GET: /api/administration/documents/selfDescription/4ad087bb-80a1-49d3-9ba9-da0b175cd4e3'
       parameters:
         - name: documentId
@@ -1399,8 +1399,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal Server Error
-        '401':
-          description: The User is unauthorized
   '/api/administration/Documents/{documentId}/seeddata':
     get:
       tags:
@@ -7570,7 +7568,6 @@ components:
           nullable: true
         region:
           type: string
-          nullable: true
         streetAdditional:
           type: string
           nullable: true
@@ -7712,6 +7709,7 @@ components:
         - AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
         - RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE
         - RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
+        - RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON
       type: string
     ProviderDetailData:
       type: object

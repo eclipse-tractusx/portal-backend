@@ -19,7 +19,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
 
@@ -32,7 +31,7 @@ public record PartnerRegistrationData
     string City,
     string StreetName,
     string CountryAlpha2Code,
-    string? Region,
+    string Region,
     string? StreetNumber,
     string? ZipCode,
     IEnumerable<CompanyUniqueIdData> UniqueIds,

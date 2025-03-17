@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -32,16 +32,27 @@ using Xunit;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web.Tests;
 
-public class GeneralHttpErrorHandlerTests
+public class GeneralHttpExceptionMiddlewareTests
 {
     private static readonly JsonSerializerOptions Options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+    private readonly IMockLogger<GeneralHttpExceptionMiddleware> _mockLogger;
+    private readonly GeneralHttpExceptionMiddleware _generalHttpErrorHandler;
 
-    public GeneralHttpErrorHandlerTests()
+    public GeneralHttpExceptionMiddlewareTests()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+
+        _mockLogger = A.Fake<IMockLogger<GeneralHttpExceptionMiddleware>>();
+        var logger = new MockLogger<GeneralHttpExceptionMiddleware>(_mockLogger);
+
+        var errorMessageService = A.Fake<IErrorMessageService>();
+        A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
+            .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
+
+        _generalHttpErrorHandler = new GeneralHttpExceptionMiddleware(logger, errorMessageService);
     }
 
     [Fact]
@@ -51,12 +62,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ArgumentException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadRequest);
@@ -69,12 +77,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ForbiddenException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Forbidden);
@@ -87,12 +92,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new NotFoundException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.NotFound);
@@ -105,12 +107,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new UnsupportedMediaTypeException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.UnsupportedMediaType);
@@ -123,12 +122,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ConflictException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Conflict);
@@ -141,12 +137,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ServiceException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadGateway);
@@ -159,12 +152,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ConfigurationException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
@@ -177,12 +167,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new ControllerArgumentException("That's a test", "testParam");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadRequest);
@@ -195,12 +182,9 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = new AggregateException("That's a test");
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         var httpContext = new DefaultHttpContext();
-        var logger = A.Fake<ILogger<GeneralHttpErrorHandler>>();
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.InternalServerError);
@@ -213,20 +197,19 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = ConflictException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") });
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         using var body = new MemoryStream();
-        var httpContext = new DefaultHttpContext();
-        httpContext.Response.Body = body;
+        var httpContext = new DefaultHttpContext { Response = { Body = body } };
 
-        var mockLogger = A.Fake<IMockLogger<GeneralHttpErrorHandler>>();
-        var logger = new MockLogger<GeneralHttpErrorHandler>(mockLogger);
+        var mockLogger = A.Fake<IMockLogger<GeneralHttpExceptionMiddleware>>();
+        var logger = new MockLogger<GeneralHttpExceptionMiddleware>(mockLogger);
 
         var errorMessageService = A.Fake<IErrorMessageService>();
         A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
             .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
 
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger, errorMessageService);
+        var generalHttpErrorHandler = new GeneralHttpExceptionMiddleware(logger, errorMessageService);
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.Conflict);
@@ -256,24 +239,14 @@ public class GeneralHttpErrorHandlerTests
         var expectedException = ServiceException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") }, new ForbiddenException("You don't have access to this resource", new UnauthorizedAccessException("No access")));
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         using var body = new MemoryStream();
-        var httpContext = new DefaultHttpContext();
-        httpContext.Response.Body = body;
-
-        var mockLogger = A.Fake<IMockLogger<GeneralHttpErrorHandler>>();
-        var logger = new MockLogger<GeneralHttpErrorHandler>(mockLogger);
-
-        var errorMessageService = A.Fake<IErrorMessageService>();
-        A.CallTo(() => errorMessageService.GetMessage(A<Type>._, A<int>._))
-            .ReturnsLazily((Type type, int code) => $"type: {type.Name} code: {code} first: {{first}} second: {{second}}");
-
-        var generalHttpErrorHandler = new GeneralHttpErrorHandler(MockNextMiddleware, logger, errorMessageService);
+        var httpContext = new DefaultHttpContext { Response = { Body = body } };
 
         // Act
-        await generalHttpErrorHandler.Invoke(httpContext);
+        await _generalHttpErrorHandler.InvokeAsync(httpContext, MockNextMiddleware);
 
         // Assert
         ((HttpStatusCode)httpContext.Response.StatusCode).Should().Be(HttpStatusCode.BadGateway);
-        A.CallTo(() => mockLogger.Log(
+        A.CallTo(() => _mockLogger.Log(
                 A<LogLevel>.That.IsEqualTo(LogLevel.Information),
                 expectedException,
                 A<string>.That.Matches(x =>

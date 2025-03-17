@@ -59,7 +59,7 @@ public class ApplicationRepositoryTests(TestDbFixture testDbFixture)
         result.StreetName.Should().Be("Street");
         result.Streetadditional.Should().BeNull();
         result.Streetnumber.Should().Be("2");
-        result.Region.Should().BeNull();
+        result.Region.Should().Be("BY");
         result.Zipcode.Should().Be("00001");
 
         result.AgreementsData.Should().HaveCount(4);
@@ -326,8 +326,10 @@ public class ApplicationRepositoryTests(TestDbFixture testDbFixture)
 
         // Assert
         data.CompanyId.Should().Be(CompanyId);
+        data.legalName.Should().Be("CX-Test-Access");
         data.BusinessPartnerNumber.Should().NotBeNullOrEmpty().And.Be("BPNL00000003CRHL");
         data.Alpha2Code.Should().Be("DE");
+        data.Region.Should().Be("BY");
         data.UniqueIdentifiers.Should().HaveCount(1);
     }
 

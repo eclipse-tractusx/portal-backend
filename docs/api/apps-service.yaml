@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Org.Eclipse.TractusX.Portal.Backend.Apps.Service
-  version: v2.4.0-RC1
+  version: v2.4.0-RC2
 paths:
   '/api/apps/AppChange/{appId}/role/activeapp':
     post:
@@ -3696,6 +3696,7 @@ components:
         - AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
         - RETRIGGER_AWAIT_SELF_DESCRIPTION_CONNECTOR_RESPONSE
         - RETRIGGER_AWAIT_SELF_DESCRIPTION_COMPANY_RESPONSE
+        - RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON
       type: string
     SubscriberSubscriptionDetailData:
       type: object

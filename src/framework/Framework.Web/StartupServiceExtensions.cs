@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Cors;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DependencyInjection;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Swagger;
 using System.IdentityModel.Tokens.Jwt;
@@ -35,6 +36,7 @@ public static class StartupServiceExtensions
     public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
     {
         services.AddCors(options => options.SetupCors(configuration));
+        services.AddScoped<CustomAuthorizationMiddleware>();
 
         services.AddDistributedMemoryCache();
         services.AddSession(options =>
@@ -43,7 +45,7 @@ public static class StartupServiceExtensions
             options.IdleTimeout = TimeSpan.FromMinutes(10);
         });
 
-        services.AddControllers()
+        services.AddControllers(options => options.Filters.Add<GeneralHttpExceptionFilter>())
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));

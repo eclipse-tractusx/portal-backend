@@ -1913,7 +1913,9 @@ public class OfferServiceTests
         A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _companyId))
             .Returns(new OfferProfileData(true, new[] { ServiceTypeId.DATASPACE_SERVICE }, profileData));
         A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
-            .Returns(new Guid[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
+            .Returns(new[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(new[] { Guid.NewGuid() }.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
             .Returns(new TechnicalUserProfile(newProfileId, offerId));
         var existingOffer = _fixture.Create<Offer>();
@@ -1925,7 +1927,7 @@ public class OfferServiceTests
                 setOptionalParameters(existingOffer);
             });
         // Act
-        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1", Enumerable.Empty<UserRoleConfig>());
+        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1", Enumerable.Repeat(new UserRoleConfig("technical_user_management", new[] { "UserRole1Id", "UserRole2Id" }), 1));
 
         // Assert
         A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
@@ -1946,6 +1948,94 @@ public class OfferServiceTests
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithProviderOnlyProfile_ReturnsExpectedResult(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var userRole1Id = _fixture.Create<Guid>();
+        var userRole2Id = _fixture.Create<Guid>();
+        var userRole3Id = _fixture.Create<Guid>();
+        var userRole4Id = _fixture.Create<Guid>();
+        var data = new[]
+        {
+            new TechnicalUserProfileData(null, new[]   // provider only
+            {
+                userRole1Id,
+                userRole2Id
+            }),
+            new TechnicalUserProfileData(null, new[]    // subscriber
+            {
+                userRole3Id,
+                userRole4Id
+            })
+        };
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _companyId))
+            .Returns(new OfferProfileData(true, new[] { ServiceTypeId.DATASPACE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
+        A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
+            .Returns(new[] { userRole1Id, userRole2Id, userRole3Id, userRole4Id }.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(new[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
+        A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
+            .Returns(new TechnicalUserProfile(Guid.NewGuid(), offerId));
+        var existingOffer = _fixture.Create<Offer>();
+        existingOffer.DateLastChanged = DateTimeOffset.UtcNow;
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._))
+            .Invokes((Guid _, Action<Offer> setOptionalParameters, Action<Offer>? initializeParemeters) =>
+            {
+                initializeParemeters?.Invoke(existingOffer);
+                setOptionalParameters(existingOffer);
+            });
+
+        // Act
+        await _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1", Enumerable.Repeat(new UserRoleConfig("technical_user_management", new[] { "UserRole1Id", "UserRole2Id" }), 1));
+
+        // Assert
+        A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
+            .MustHaveHappenedTwiceExactly();
+        A.CallTo(() => _technicalUserProfileRepository.CreateDeleteTechnicalUserProfileAssignedRoles(A<IEnumerable<(Guid, Guid)>>._, A<IEnumerable<(Guid, Guid)>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _offerRepository.AttachAndModifyOffer(offerId, A<Action<Offer>>._, A<Action<Offer>?>._)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+    }
+
+    [Theory]
+    [InlineData(OfferTypeId.APP)]
+    [InlineData(OfferTypeId.SERVICE)]
+    public async Task UpdateTechnicalUserProfiles_WithProviderOnlyAndOtherRoles_ThrowsConflictException(OfferTypeId offerTypeId)
+    {
+        // Arrange
+        var offerId = _fixture.Create<Guid>();
+        var newProfileId = _fixture.Create<Guid>();
+        var userRole1Id = _fixture.Create<Guid>();
+        var userRole2Id = _fixture.Create<Guid>();
+        var data = new[]
+        {
+            new TechnicalUserProfileData(null, new[]
+            {
+                userRole1Id,
+                userRole2Id
+            })
+        };
+        A.CallTo(() => _technicalUserProfileRepository.GetOfferProfileData(offerId, offerTypeId, _companyId))
+            .Returns(new OfferProfileData(true, new[] { ServiceTypeId.DATASPACE_SERVICE }, Enumerable.Empty<(Guid TechnicalUserProfileId, IEnumerable<Guid> UserRoleIds)>()));
+        A.CallTo(() => _userRolesRepository.GetRolesForClient("cl1"))
+            .Returns(new[] { userRole1Id, userRole2Id }.ToAsyncEnumerable());
+        A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>._))
+            .Returns(new[] { userRole1Id }.ToAsyncEnumerable());
+        A.CallTo(() => _technicalUserProfileRepository.CreateTechnicalUserProfile(A<Guid>._, offerId))
+            .Returns(new TechnicalUserProfile(newProfileId, offerId));
+        Task Act() => _sut.UpdateTechnicalUserProfiles(offerId, offerTypeId, data, "cl1", Enumerable.Repeat(new UserRoleConfig("technical_user_management", new[] { "UserRole1Id" }), 1));
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be(OfferServiceErrors.ROLES_MISSMATCH.ToString());
     }
 
     [Theory]

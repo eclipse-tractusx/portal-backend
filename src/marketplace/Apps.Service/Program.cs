@@ -58,6 +58,7 @@ await WebAppHelper
             .AddSingleton<IErrorMessageContainer, AppExtensionErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppReleaseErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, AppErrorMessageContainer>()
+            .AddSingleton<IErrorMessageContainer, OfferServiceErrorMessageContainer>()
             .AddSingleton<IErrorMessageContainer, ValidationExpressionErrorMessageContainer>()
             .AddTechnicalUserProfile()
             .ConfigureAppsSettings(builder.Configuration.GetSection("AppMarketPlace"))

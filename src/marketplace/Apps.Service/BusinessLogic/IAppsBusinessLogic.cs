@@ -104,7 +104,6 @@ public interface IAppsBusinessLogic
     /// </summary>
     /// <param name="subscriptionId">ID of the pending app to be declined.</param>
     Task DeclineAppSubscriptionAsync(Guid subscriptionId);
-
     /// <summary>
     /// Activates a pending app subscription for an app provided by the current user's company.
     /// </summary>

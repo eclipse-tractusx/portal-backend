@@ -29,7 +29,7 @@ public record RegistrationData(
     string CountryAlpha2Code,
     [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
     string? ShortName,
-    string? Region,
+    string Region,
     string? StreetAdditional,
     string? StreetNumber,
     string? ZipCode,

@@ -109,9 +109,9 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
     /// <inheritdoc />
     public Task<(byte[] Content, string FileName, MediaTypeId MediaTypeId)> GetDocumentDataByIdAndTypeAsync(Guid documentId, DocumentTypeId documentTypeId) =>
         dbContext.Documents
-        .Where(x => x.Id == documentId && x.DocumentTypeId == documentTypeId)
-        .Select(x => new ValueTuple<byte[], string, MediaTypeId>(x.DocumentContent, x.DocumentName, x.MediaTypeId))
-        .SingleOrDefaultAsync();
+            .Where(x => x.Id == documentId && x.DocumentTypeId == documentTypeId)
+            .Select(x => new ValueTuple<byte[], string, MediaTypeId>(x.DocumentContent, x.DocumentName, x.MediaTypeId))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public void RemoveDocument(Guid documentId) =>

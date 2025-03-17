@@ -26,6 +26,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
@@ -37,6 +38,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Tests;
 
 public class ClearinghouseBusinessLogicTests
 {
+    private static readonly Guid IdWithoutCountryCodeVatId = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
     private static readonly Guid IdWithoutBpn = new("0a9bd7b1-e692-483e-8128-dbf52759c7a5");
     private static readonly Guid IdWithApplicationCreated = new("7a8f5cb6-6ad2-4b88-a765-ff1888fcedbe");
     private static readonly Guid IdWithCustodianUnavailable = new("beaa6de5-d411-4da8-850e-06047d3170be");
@@ -178,6 +180,72 @@ public class ClearinghouseBusinessLogicTests
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
         ex.Message.Should().Be("BusinessPartnerNumber is null");
+    }
+
+    [Theory]
+    [InlineData(UniqueIdentifierId.VAT_ID, "DE123456789")]
+    [InlineData(UniqueIdentifierId.VAT_ID, "123456789")]
+    [InlineData(UniqueIdentifierId.COMMERCIAL_REG_NUMBER, "HRB123456")]
+    public async Task HandleStartClearingHouse_WithoutContryCodeVatId_ThrowsConflictException(UniqueIdentifierId uniqueIdentifierId, string vatId)
+    {
+        // Arrange
+        var checklist = ImmutableDictionary.CreateRange<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>([
+            new(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+            new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
+            new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE),
+            new(ApplicationChecklistEntryTypeId.CLEARING_HOUSE, ApplicationChecklistEntryStatusId.TO_DO)
+        ]);
+        var addressData = _fixture.Build<ClearinghouseAddressData>()
+            .With(x => x.CountryAlpha2Code, "DE")
+            .Create();
+        var dataWithoutCountryCodeVatId = _fixture.Build<ClearinghouseData>()
+            .With(x => x.ApplicationStatusId, CompanyApplicationStatusId.SUBMITTED)
+            .With(x => x.Address, addressData)
+            .With(x => x.Bpn, ValidBpn)
+            .With(x => x.Identifiers, [new CompanyUniqueIdentifier(uniqueIdentifierId, vatId)])
+            .Create();
+
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutCountryCodeVatId, ProcessStepTypeId.START_CLEARING_HOUSE, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        A.CallTo(() => _applicationRepository.GetClearinghouseDataForApplicationId(IdWithoutCountryCodeVatId))
+            .Returns(dataWithoutCountryCodeVatId);
+
+        var hearders = ImmutableDictionary.CreateRange<string, string>([new("Business-Partner-Number", ValidBpn)]);
+        var transferData = new ClearinghouseTransferData(
+            new LegalEntity(
+                dataWithoutCountryCodeVatId.Name,
+                new LegalAddress(
+                    dataWithoutCountryCodeVatId.Address!.CountryAlpha2Code,
+                    string.Format("{0}-{1}", dataWithoutCountryCodeVatId.Address.CountryAlpha2Code, dataWithoutCountryCodeVatId.Address.Region),
+                    dataWithoutCountryCodeVatId.Address.City,
+                    dataWithoutCountryCodeVatId.Address.Zipcode,
+                    string.IsNullOrEmpty(dataWithoutCountryCodeVatId.Address.Streetnumber)
+                        ? dataWithoutCountryCodeVatId.Address.Streetname
+                        : string.Format("{0} {1}", dataWithoutCountryCodeVatId.Address.Streetname, dataWithoutCountryCodeVatId.Address.Streetnumber)),
+                dataWithoutCountryCodeVatId.Identifiers.Select(ci =>
+                    new UniqueIdData(
+                        ci.UniqueIdentifierId.GetUniqueIdentifierId(),
+                        ci.Value.GetUniqueIdentifierValue(ci.UniqueIdentifierId, dataWithoutCountryCodeVatId.Address.CountryAlpha2Code))
+                    )),
+            ValidationModes.LEGAL_NAME,
+            new CallBack("https://www.test.de", hearders)
+        );
+        A.CallTo(() => _clearinghouseService.TriggerCompanyDataPost(transferData, A<CancellationToken>._));
+
+        // Act
+        var result = await _logic.HandleClearinghouse(context, CancellationToken.None);
+
+        // Assert
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        if (uniqueIdentifierId == UniqueIdentifierId.VAT_ID)
+        {
+            transferData.LegalEntity.Identifiers.Should().ContainSingle().And.Satisfy(
+                p => p.Type == "schema:vatID" && p.Value == "DE123456789");
+        }
+        else if (uniqueIdentifierId == UniqueIdentifierId.COMMERCIAL_REG_NUMBER)
+        {
+            transferData.LegalEntity.Identifiers.Should().ContainSingle().And.Satisfy(
+                p => p.Type == "schema:taxID" && p.Value == "HRB123456");
+        }
     }
 
     [Theory]

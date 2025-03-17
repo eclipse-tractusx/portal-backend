@@ -161,5 +161,4 @@ public interface IServiceBusinessLogic
     /// </summary>
     /// <param name="subscriptionId">ID of the pending service to be activated.</param>
     Task TriggerActivateOfferSubscription(Guid subscriptionId);
-
 }
