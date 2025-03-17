@@ -410,7 +410,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -429,7 +429,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion
@@ -912,7 +912,7 @@ public class RegistrationBusinessLogicTest
         // Arrange
         var documentId = Guid.NewGuid();
         var content = new byte[7];
-        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.JSON, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT, content.Length));
 
         // Act
@@ -921,6 +921,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         result.Should().NotBeNull();
         result.fileName.Should().Be("test.pdf");
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]
@@ -928,7 +929,7 @@ public class RegistrationBusinessLogicTest
     {
         // Arrange
         var documentId = Guid.NewGuid();
-        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns<Document?>(null);
 
         // Act
@@ -937,6 +938,7 @@ public class RegistrationBusinessLogicTest
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
         ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_DOC_NOT_EXIST.ToString());
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }))).MustHaveHappenedOnceExactly();
     }
 
     #endregion
@@ -991,7 +993,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -1007,7 +1009,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion
@@ -1043,7 +1045,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_APP_STATUS_STATUS_SUBMIT_FOUND_BPN.ToString());
     }
 
     [Fact]
@@ -1059,7 +1061,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Contain(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
+        ex.Message.Should().Be(AdministrationRegistrationErrors.REGISTRATION_NOT_COMP_APP_BPN_STATUS_SUBMIT.ToString());
     }
 
     #endregion

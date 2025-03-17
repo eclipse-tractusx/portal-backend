@@ -47,7 +47,7 @@ public interface IDocumentRepository
     /// </summary>
     /// <param name="documentId">Id of the document</param>
     /// <returns>Returns the document</returns>
-    Task<Document?> GetDocumentByIdAsync(Guid documentId);
+    Task<Document?> GetDocumentByIdAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds);
 
     Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, IEnumerable<Guid> ConsentIds, bool IsSameUser)> GetDocumentDetailsForIdUntrackedAsync(Guid documentId, Guid companyUserId);
 

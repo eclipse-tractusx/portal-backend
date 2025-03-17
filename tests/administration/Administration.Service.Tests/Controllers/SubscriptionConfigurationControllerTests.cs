@@ -124,7 +124,26 @@ public class SubscriptionConfigurationControllerTests
     {
         //Arrange
         var id = Guid.NewGuid();
-        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de");
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de", null);
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync())
+            .Returns(data);
+
+        //Act
+        var result = await _controller.GetServiceProviderCompanyDetail();
+
+        //Assert
+        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync()).MustHaveHappenedOnceExactly();
+        result.Should().BeOfType<ProviderDetailReturnData>();
+        result.Id.Should().Be(id);
+        result.CompanyId.Should().Be(CompanyId);
+    }
+
+    [Fact]
+    public async Task GetProviderCompanyDetail_WithValidCallback_ReturnsOk()
+    {
+        //Arrange
+        var id = Guid.NewGuid();
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de", "https://this-is-a-test-callback.de");
         A.CallTo(() => _logic.GetProviderCompanyDetailsAsync())
             .Returns(data);
 

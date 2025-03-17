@@ -568,7 +568,7 @@ public sealed class RegistrationBusinessLogic(
     public async Task<(string fileName, byte[] content, string contentType)> GetDocumentAsync(Guid documentId)
     {
         var document = await portalRepositories.GetInstance<IDocumentRepository>()
-            .GetDocumentByIdAsync(documentId)
+            .GetDocumentByIdAsync(documentId, [DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT])
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (document == null)
         {

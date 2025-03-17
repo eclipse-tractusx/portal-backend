@@ -118,8 +118,10 @@ public class DocumentRepository(PortalDbContext dbContext) : IDocumentRepository
         dbContext.Documents.Remove(new Document(documentId, null!, null!, null!, default, default, default, default, default));
 
     /// <inheritdoc />
-    public Task<Document?> GetDocumentByIdAsync(Guid documentId) =>
-        dbContext.Documents.SingleOrDefaultAsync(x => x.Id == documentId);
+    public Task<Document?> GetDocumentByIdAsync(Guid documentId, IEnumerable<DocumentTypeId> documentTypeIds) =>
+        dbContext.Documents
+            .Where(x => x.Id == documentId && documentTypeIds.Contains(x.DocumentTypeId))
+            .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public Task<(Guid DocumentId, DocumentStatusId DocumentStatusId, bool IsSameApplicationUser, DocumentTypeId documentTypeId, bool IsQueriedApplicationStatus, IEnumerable<Guid> applicationId)> GetDocumentDetailsForApplicationUntrackedAsync(Guid documentId, Guid userCompanyId, IEnumerable<CompanyApplicationStatusId> applicationStatusIds) =>

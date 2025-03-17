@@ -7734,6 +7734,9 @@ components:
         url:
           type: string
           nullable: true
+        callbackUrl:
+          type: string
+          nullable: true
       additionalProperties: false
     Reason:
       type: object

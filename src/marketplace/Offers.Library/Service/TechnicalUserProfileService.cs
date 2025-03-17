@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -49,7 +50,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw new NotFoundException($"Offer {offerTypeId} {offerId} does not exists");
+            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, new ErrorParameter[] { new(nameof(offerTypeId), offerTypeId.ToString()), new(nameof(offerId), offerId.ToString()) });
         }
 
         return CheckTechnicalUserData(data)
@@ -65,7 +66,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (data == default)
         {
-            throw new NotFoundException($"Offer Subscription {subscriptionId} does not exists");
+            throw NotFoundException.Create(TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
 
         return CheckTechnicalUserData(data)
@@ -77,7 +78,7 @@ public class TechnicalUserProfileService : ITechnicalUserProfileService
     {
         if (string.IsNullOrWhiteSpace(data.OfferName))
         {
-            throw new ConflictException("Offer name needs to be set here");
+            throw ConflictException.Create(TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET);
         }
 
         return !data.IsSingleInstance && data.ServiceAccountProfiles.Any();

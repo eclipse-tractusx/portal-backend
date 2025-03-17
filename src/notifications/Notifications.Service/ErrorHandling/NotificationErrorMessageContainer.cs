@@ -24,12 +24,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Notifications.Service.ErrorHandlin
 
 public class NotificationErrorMessageContainer : IErrorMessageContainer
 {
-    private static readonly IReadOnlyDictionary<int, string> _messageContainer = new Dictionary<NotificationErrors, string> {
-                { NotificationErrors.USER_NOT_FOUND, "User {userId} does not exist" },
-                { NotificationErrors.NOTIFICATION_NOT_FOUND, "Notification {notificationId} does not exist." },
-                { NotificationErrors.INVALID_NOTIFICATION_TYPE, "Notification Type {notificationTypeId} is invalid." },
-                { NotificationErrors.USER_NOT_RECEIVER, "The user is not the receiver of the notification" }
-            }.ToImmutableDictionary(x => (int)x.Key, x => x.Value);
+    private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
+        new((int)NotificationErrors.USER_NOT_FOUND, "User {userId} does not exist"),
+        new((int)NotificationErrors.NOTIFICATION_NOT_FOUND, "Notification {notificationId} does not exist."),
+        new((int)NotificationErrors.INVALID_NOTIFICATION_TYPE, "Notification Type {notificationTypeId} is invalid."),
+        new((int)NotificationErrors.USER_NOT_RECEIVER, "The user is not the receiver of the notification")
+    ]);
 
     public Type Type { get => typeof(NotificationErrors); }
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }

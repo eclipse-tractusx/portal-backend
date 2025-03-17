@@ -19,7 +19,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests.Setup;
@@ -1186,6 +1188,26 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.CompanyId.Should().Be(new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
         changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.OfferSubscriptionStatusId.Should().Be(OfferSubscriptionStatusId.PENDING);
         changedEntries.Single().Entity.Should().BeOfType<OfferSubscription>().Which.RequesterId.Should().Be(new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
+    }
+
+    #endregion
+
+    #region GetOfferSubscriptionRetriggerProcessesForCompanyId
+
+    [Fact]
+    public async Task GetOfferSubscriptionRetriggerProcessesForCompanyId_ReturnsExpectedResult()
+    {
+        // Arrange
+        var companyId = new Guid("3390c2d7-75c1-4169-aa27-6ce00e1f3cdd");
+        var (sut, _) = await CreateSut();
+
+        var result = await sut.GetOfferSubscriptionRetriggerProcessesForCompanyId(companyId).ToListAsync();
+
+        result.Should().ContainSingle()
+            .Which.Should().Match<(Process Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId> ProcessStep)>(x =>
+                x.Process.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION &&
+                x.ProcessStep.ProcessStepTypeId == ProcessStepTypeId.RETRIGGER_PROVIDER &&
+                x.ProcessStep.ProcessStepStatusId == ProcessStepStatusId.TODO);
     }
 
     #endregion

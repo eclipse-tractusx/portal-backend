@@ -50,12 +50,12 @@ public class NetworkBusinessLogic(
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (!data.Exists)
         {
-            throw NotFoundException.Create(NetworkErrors.NETWORK_COMPANY_NOT_FOUND, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw NotFoundException.Create(NetworkErrors.NETWORK_COMPANY_NOT_FOUND, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (data.CompanyApplications.Count() != 1)
         {
-            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY, new ErrorParameter[] { new("companyId", companyId.ToString()) });
+            throw ConflictException.Create(NetworkErrors.NETWORK_CONFLICT_ONLY_ONE_APPLICATION_PER_COMPANY, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (data.ProcessId == null)

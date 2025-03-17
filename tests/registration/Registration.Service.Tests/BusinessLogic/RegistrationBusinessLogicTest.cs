@@ -592,7 +592,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION.ToString());
     }
 
     [Fact]
@@ -1454,7 +1454,7 @@ public class RegistrationBusinessLogicTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_INVALID_STATUS_REQUEST_APPLICATION_STATUS.ToString());
     }
 
     [Theory]
@@ -2089,7 +2089,7 @@ public class RegistrationBusinessLogicTest
 
         // Arrange
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Contain(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES.ToString());
+        ex.Message.Should().Be(RegistrationErrors.REGISTRATION_ARG_INVALID_COMPANY_ROLES.ToString());
     }
 
     [Fact]
@@ -3138,7 +3138,7 @@ public class RegistrationBusinessLogicTest
         var content = new byte[7];
         A.CallTo(() => _documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identity.IdentityId))
             .Returns((documentId, true, true, false));
-        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId))
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(A<Guid>._, A<IEnumerable<DocumentTypeId>>._))
             .Returns(new Document(documentId, content, content, "test.pdf", MediaTypeId.PDF, DateTimeOffset.UtcNow, DocumentStatusId.LOCKED, DocumentTypeId.APP_CONTRACT, content.Length));
         var sut = new RegistrationBusinessLogic(Options.Create(new RegistrationSettings()), null!, null!, null!, null!, _portalRepositories, null!, _identityService, _dateTimeProvider, _mailingProcessCreation);
 
@@ -3149,6 +3149,7 @@ public class RegistrationBusinessLogicTest
         result.Should().NotBeNull();
         result.FileName.Should().Be("test.pdf");
         result.MediaType.Should().Be("application/pdf");
+        A.CallTo(() => _documentRepository.GetDocumentByIdAsync(documentId, A<IEnumerable<DocumentTypeId>>.That.IsSameSequenceAs(new[] { DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT }))).MustHaveHappenedOnceExactly();
     }
 
     [Fact]

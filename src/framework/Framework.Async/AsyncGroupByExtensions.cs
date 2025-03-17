@@ -21,28 +21,28 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 
 public static class AsyncGroupByExtensions
 {
-    public static async IAsyncEnumerable<IGrouping<TKey, TElement>> PreSortedGroupBy<T, TKey, TElement>(this IAsyncEnumerable<T> Data, Func<T, TKey> KeySelector, Func<T, TElement> ElementSelector) where T : notnull where TKey : notnull
+    public static async IAsyncEnumerable<IGrouping<TKey, TElement>> PreSortedGroupBy<T, TKey, TElement>(this IAsyncEnumerable<T> data, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<TKey, TKey, bool>? isEqualKey = null) where T : notnull where TKey : notnull
     {
-        await using var enumerator = Data.GetAsyncEnumerator();
+        await using var enumerator = data.GetAsyncEnumerator();
 
         var hasNext = await enumerator.MoveNextAsync().ConfigureAwait(false);
         if (hasNext)
         {
-            var key = KeySelector(enumerator.Current);
+            var key = keySelector(enumerator.Current);
             TKey nextKey = default!;
             while (true)
             {
                 var values = new LinkedList<TElement>();
                 do
                 {
-                    values.AddLast(ElementSelector(enumerator.Current));
+                    values.AddLast(elementSelector(enumerator.Current));
                     hasNext = await enumerator.MoveNextAsync().ConfigureAwait(false);
                     if (hasNext)
                     {
-                        nextKey = KeySelector(enumerator.Current);
+                        nextKey = keySelector(enumerator.Current);
                     }
                 }
-                while (hasNext && nextKey.Equals(key));
+                while (hasNext && (isEqualKey == null ? nextKey.Equals(key) : isEqualKey(nextKey, key)));
                 yield return new Grouping<TKey, TElement>(key, values);
                 if (!hasNext)
                 {
@@ -54,7 +54,7 @@ public static class AsyncGroupByExtensions
         yield break;
     }
 
-    public static IAsyncEnumerable<IGrouping<TKey, T>> PreSortedGroupBy<T, TKey>(this IAsyncEnumerable<T> Data, Func<T, TKey> KeySelector) where T : notnull where TKey : notnull => Data.PreSortedGroupBy(KeySelector, x => x);
+    public static IAsyncEnumerable<IGrouping<TKey, T>> PreSortedGroupBy<T, TKey>(this IAsyncEnumerable<T> data, Func<T, TKey> keySelector) where T : notnull where TKey : notnull => data.PreSortedGroupBy(keySelector, x => x);
 
     private sealed class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
     {

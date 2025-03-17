@@ -18,9 +18,12 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -30,30 +33,26 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Ex
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfigurationBusinessLogic
+public class SubscriptionConfigurationBusinessLogic(
+    IOfferSubscriptionProcessService offerSubscriptionProcessService,
+    IPortalRepositories portalRepositories,
+    IIdentityService identityService)
+    : ISubscriptionConfigurationBusinessLogic
 {
-    private readonly IOfferSubscriptionProcessService _offerSubscriptionProcessService;
-    private readonly IPortalRepositories _portalRepositories;
-    private readonly IIdentityData _identityData;
-
-    public SubscriptionConfigurationBusinessLogic(IOfferSubscriptionProcessService offerSubscriptionProcessService, IPortalRepositories portalRepositories, IIdentityService identityService)
-    {
-        _offerSubscriptionProcessService = offerSubscriptionProcessService;
-        _portalRepositories = portalRepositories;
-        _identityData = identityService.IdentityData;
-    }
+    private readonly IIdentityData _identityData = identityService.IdentityData;
 
     /// <inheritdoc />
     public async Task<ProviderDetailReturnData> GetProviderCompanyDetailsAsync()
     {
         var companyId = _identityData.CompanyId;
-        var result = await _portalRepositories.GetInstance<ICompanyRepository>()
+        var result = await portalRepositories.GetInstance<ICompanyRepository>()
             .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
             throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
+
         if (!result.IsProviderCompany)
         {
             throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
@@ -78,7 +77,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 
     private async Task SetOfferProviderCompanyDetailsInternalAsync(ProviderDetailData data, Guid companyId)
     {
-        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -92,9 +91,14 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
-                details => { details.AutoSetupUrl = providerDetailData.Url; },
                 details =>
                 {
+                    details.AutoSetupUrl = providerDetailData.Url;
+                    details.AutoSetupCallbackUrl = providerDetailData.CallbackUrl;
+                },
+                details =>
+                {
+                    details.AutoSetupCallbackUrl = data.CallbackUrl;
                     details.AutoSetupUrl = data.Url;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
@@ -106,9 +110,32 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
             hasChanges = true;
         }
 
+        if (providerDetailData.CallbackUrl is not null && data.CallbackUrl is null)
+        {
+            await HandleOfferSetupProcesses(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+            hasChanges = true;
+        }
+
         if (hasChanges)
         {
-            await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        }
+    }
+
+    private async Task HandleOfferSetupProcesses(Guid companyId)
+    {
+        var processData = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
+            .GetOfferSubscriptionRetriggerProcessesForCompanyId(companyId)
+            .PreSortedGroupBy(x => x.Process, x => x.ProcessStep, (left, right) => left.Id == right.Id)
+            .Select(group => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(group.Key, group))
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        foreach (var context in processData.Select(data =>
+                     data.CreateManualProcessData(ProcessStepTypeId.RETRIGGER_PROVIDER, portalRepositories, () => $"processId {data.Process!.Id}")))
+        {
+            context.FinalizeProcessStep();
+            context.ScheduleProcessSteps(Enumerable.Repeat(ProcessStepTypeId.AWAIT_START_AUTOSETUP, 1));
         }
     }
 
@@ -129,11 +156,7 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
 
         companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>
         {
-            if (data.CallbackUrl != null)
-            {
-                providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
-            }
-
+            providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
             providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
         });
     }
@@ -158,18 +181,17 @@ public class SubscriptionConfigurationBusinessLogic : ISubscriptionConfiguration
     public Task RetriggerCreateDimTechnicalUser(Guid offerSubscriptionId) =>
         TriggerProcessStep(offerSubscriptionId, ProcessStepTypeId.RETRIGGER_OFFERSUBSCRIPTION_CREATE_DIM_TECHNICAL_USER, true);
 
-    /// <inheritdoc />
     private async Task TriggerProcessStep(Guid offerSubscriptionId, ProcessStepTypeId stepToTrigger, bool mustBePending)
     {
         var nextStep = stepToTrigger.GetOfferSubscriptionStepToRetrigger();
-        var context = await _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null, mustBePending)
+        var context = await offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscriptionId, stepToTrigger, null, mustBePending)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        _offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
-        await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+        offerSubscriptionProcessService.FinalizeProcessSteps(context, Enumerable.Repeat(nextStep, 1));
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<ProcessStepData> GetProcessStepsForSubscription(Guid offerSubscriptionId) =>
-        _portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetProcessStepsForSubscription(offerSubscriptionId);
+        portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetProcessStepsForSubscription(offerSubscriptionId);
 }

@@ -168,23 +168,23 @@ public class RegistrationBusinessLogic(
         var documentDetails = await documentRepository.GetDocumentIdWithCompanyUserCheckAsync(documentId, _identityData.IdentityId).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails.DocumentId == Guid.Empty)
         {
-            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         if (!documentDetails.IsSameUser && !documentDetails.IsRoleOperator)
         {
-            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_NOT_PERMITTED_DOCUMENT_ACCESS, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_NOT_PERMITTED_DOCUMENT_ACCESS, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         if (documentDetails.IsStatusConfirmed)
         {
-            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw ForbiddenException.Create(RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
-        var document = await documentRepository.GetDocumentByIdAsync(documentId).ConfigureAwait(ConfigureAwaitOptions.None);
+        var document = await documentRepository.GetDocumentByIdAsync(documentId, [DocumentTypeId.COMMERCIAL_REGISTER_EXTRACT]).ConfigureAwait(ConfigureAwaitOptions.None);
         if (document is null)
         {
-            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         return (document.DocumentName, document.DocumentContent, document.MediaTypeId.MapToMediaType());
     }
@@ -851,7 +851,7 @@ public class RegistrationBusinessLogic(
         var details = await documentRepository.GetDocumentDetailsForApplicationUntrackedAsync(documentId, _identityData.CompanyId, _settings.ApplicationStatusIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (details == default)
         {
-            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         if (!_settings.DocumentTypeIds.Contains(details.documentTypeId))
         {
@@ -900,11 +900,11 @@ public class RegistrationBusinessLogic(
         var documentDetails = await documentRepository.GetDocumentAsync(documentId, _settings.RegistrationDocumentTypeIds).ConfigureAwait(ConfigureAwaitOptions.None);
         if (documentDetails == default)
         {
-            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
         if (!documentDetails.IsDocumentTypeMatch)
         {
-            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new("documentId", documentId.ToString()) });
+            throw NotFoundException.Create(RegistrationErrors.REGISTRATION_DOCUMENT_NOT_EXIST, new ErrorParameter[] { new(nameof(documentId), documentId.ToString()) });
         }
 
         return (documentDetails.FileName, documentDetails.Content, documentDetails.MediaTypeId.MapToMediaType());

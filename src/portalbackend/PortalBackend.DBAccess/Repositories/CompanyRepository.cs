@@ -136,10 +136,10 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, string Url)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
+    public Task<(Guid ProviderCompanyDetailId, string Url, string? CallbackUrl)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
         context.ProviderCompanyDetails.AsNoTracking()
             .Where(details => details.CompanyId == companyId)
-            .Select(details => new ValueTuple<Guid, string>(details.Id, details.AutoSetupUrl))
+            .Select(details => new ValueTuple<Guid, string, string?>(details.Id, details.AutoSetupUrl, details.AutoSetupCallbackUrl))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
@@ -158,7 +158,8 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                 new ProviderDetailReturnData(
                     company.ProviderCompanyDetail!.Id,
                     company.Id,
-                    company.ProviderCompanyDetail.AutoSetupUrl),
+                    company.ProviderCompanyDetail.AutoSetupUrl,
+                    company.ProviderCompanyDetail.AutoSetupCallbackUrl),
                 company.CompanyAssignedRoles.Any(assigned => assigned.CompanyRoleId == companyRoleId)))
             .SingleOrDefaultAsync();
 
@@ -478,7 +479,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .Select(x => new ValueTuple<bool, Guid, IEnumerable<Guid>>(true, x.Id, x.CompanyApplications.Where(a => a.ApplicationStatusId == CompanyApplicationStatusId.SUBMITTED).Select(a => a.Id)))
             .SingleOrDefaultAsync();
 
-    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetProcessDataForCompanyIdId(Guid companyId) =>
+    public Task<VerifyProcessData<ProcessTypeId, ProcessStepTypeId>?> GetSelfDescriptionProcessDataForCompanyId(Guid companyId) =>
         context.Companies
             .Where(c => c.Id == companyId && c.SdCreationProcess!.ProcessTypeId == ProcessTypeId.SELF_DESCRIPTION_CREATION)
             .Select(c => new VerifyProcessData<ProcessTypeId, ProcessStepTypeId>(

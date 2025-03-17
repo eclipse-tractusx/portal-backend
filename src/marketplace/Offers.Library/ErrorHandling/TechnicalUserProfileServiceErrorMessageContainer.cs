@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,20 +20,24 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using System.Collections.Immutable;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Models;
+namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.ErrorHandling;
 
-// This class contains error messages for validation expressions
-public class ValidationExpressionErrorMessageContainer : IErrorMessageContainer
+public class TechnicalUserProfileServiceErrorMessageContainer : IErrorMessageContainer
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
-        new((int)ValidationExpressionErrors.INCORRECT_COMPANY_NAME, "{name}: length must be between 1 and 160 characters and not start or end with a white space")
+        new((int)TechnicalUserProfileServiceErrors.OFFER_NOT_FOUND, "Offer {offerTypeId} {offerId} does not exists"),
+        new((int)TechnicalUserProfileServiceErrors.OFFER_SUBSCRIPTION_NOT_FOUND, "Offer Subscription {subscriptionId} does not exists"),
+        new((int)TechnicalUserProfileServiceErrors.OFFER_NAME_NOT_SET, "Offer name needs to be set here")
     ]);
 
-    public Type Type { get => typeof(ValidationExpressionErrors); }
+    public Type Type { get => typeof(TechnicalUserProfileServiceErrors); }
+
     public IReadOnlyDictionary<int, string> MessageContainer { get => _messageContainer; }
 }
 
-public enum ValidationExpressionErrors
+public enum TechnicalUserProfileServiceErrors
 {
-    INCORRECT_COMPANY_NAME
+    OFFER_NOT_FOUND,
+    OFFER_SUBSCRIPTION_NOT_FOUND,
+    OFFER_NAME_NOT_SET
 }
