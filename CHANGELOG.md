@@ -97,7 +97,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Known Knowns
 
 * Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
-* During end-to-end testing, some minor issues and in regards to system internal **notifications** as well as the **UI** were detected.
 * **Note for Gaia-X Clearing House Tagus upgrade**:
   * If a company was onboarded with ELBE clearing house, the legal person self description document is not accepted when creating a connector with newer versions of the clearing house. Portal operators are advised to create new legal person and connector self description documents for all previously onboarded companies. The portal backend will activate connector without updated legal person self description document to allow for a transition phase. The connector will not have a document until reissuance for both company and connector is triggered by operators.
 * **Validation Limitations**: pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
