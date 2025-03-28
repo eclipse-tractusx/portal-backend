@@ -120,6 +120,12 @@
     "last_editor_id": null
   },
   {
+    "id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "user_role": "Connector Management",
+    "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
+    "last_editor_id": null
+  },
+  {
     "id": "3940f9b0-4393-4463-b659-15463098557b",
     "user_role": "Semantic Model Management",
     "offer_id": "0ffcb416-1101-4ba6-8d4a-a9dfa31745a4",
