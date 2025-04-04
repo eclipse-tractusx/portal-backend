@@ -45,7 +45,7 @@ public class ClearinghouseService : IClearinghouseService
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
 
-        var result = await httpClient.PostAsJsonAsync(default(string?), data, cancellationToken)
+        await httpClient.PostAsJsonAsync(default(string?), data, cancellationToken)
             .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
     }
 }
