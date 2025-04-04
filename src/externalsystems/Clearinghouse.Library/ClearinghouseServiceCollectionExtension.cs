@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
@@ -37,9 +38,15 @@ public static class ClearinghouseServiceCollectionExtension
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
-        var baseAddress = settings.Value.BaseAddress;
+        // Get settings of all available clearing houses
+        var defaultClientDetails = settings.Value.DefaultClearinghouseCredentials;
+        var regionalClientDetails = settings.Value.RegionalClearinghouseCredentials.IsNullOrEmpty()
+            ? null
+            : settings.Value.RegionalClearinghouseCredentials.Select(x => ($"{typeof(ClearinghouseService).Name}{x.CountryAlpha2Code}", x.BaseAddress));
         services
-            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/")
+            // Adding all clients of available clearing houses in advance to avoid socket exhaustion issue
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>($"{typeof(ClearinghouseService).Name}{defaultClientDetails.CountryAlpha2Code}", defaultClientDetails.BaseAddress)
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(regionalClientDetails!)
             .AddTransient<IClearinghouseService, ClearinghouseService>()
             .AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
 

@@ -26,16 +26,24 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 /// <summary>
 /// Settings used in business logic concerning connectors.
 /// </summary>
-public class ClearinghouseSettings : KeyVaultAuthSettings
+public class ClearinghouseSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string CallbackUrl { get; set; } = null!;
+
+    [Required]
+    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+
+    [Required]
+    public ClearinghouseCredentialsSettings DefaultClearinghouseCredentials { get; set; } = null!;
+    public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = null!;
+}
+
+public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    public string CallbackUrl { get; set; } = null!;
-
-    public bool UseDimWallet { get; set; }
-
     [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+    public string CountryAlpha2Code { get; set; } = null!;
 }
