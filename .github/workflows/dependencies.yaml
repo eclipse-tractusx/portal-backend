@@ -74,6 +74,14 @@ jobs:
       - name: Generate Dependencies file
         run: java -jar ./scripts/download/org.eclipse.dash.licenses-1.1.1.jar PACKAGES -project automotive.tractusx -summary DEPENDENCIES || true
 
+      - name: Check for restricted dependencies
+        run: |
+          restricted=$(grep ' restricted,' DEPENDENCIES || true)
+          if [[ -n "$restricted" ]]; then
+            echo "The following dependencies are restricted: $restricted"
+            exit 1
+          fi
+
       - name: Check if dependencies were changed
         id: dependencies-changed
         run: |
@@ -85,15 +93,6 @@ jobs:
             echo "dependencies not changed"
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Check for restricted dependencies
-        run: |
-          restricted=$(grep ' restricted,' DEPENDENCIES || true)
-          if [[ -n "$restricted" ]]; then
-            echo "The following dependencies are restricted: $restricted"
-            exit 1
-          fi
-        if: steps.dependencies-changed.outputs.changed == 'true'
 
       - name: Upload DEPENDENCIES file
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
