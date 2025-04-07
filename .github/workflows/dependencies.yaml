@@ -46,8 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # change to preview .NET 9 until fix for https://github.com/NuGet/Home/issues/12954 gets released for .NET 8
-        dotnet-version: ['9.0']
+        # dotnet list command doesn't work with 9.0.202, switch to 9.0.104 as a workaround
+        dotnet-version: ['9.0.104']
 
     steps:
   
