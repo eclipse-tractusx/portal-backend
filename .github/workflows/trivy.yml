@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           scan-type: "config"
           hide-progress: false
@@ -68,7 +68,7 @@ jobs:
           limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         if: always()
         with:
           sarif_file: "trivy-results1.sarif"
@@ -91,7 +91,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-registration-service:latest"
@@ -105,7 +105,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results3.sarif"
 
@@ -127,7 +127,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-administration-service:latest"
@@ -141,7 +141,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results4.sarif"
 
@@ -163,7 +163,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-marketplace-app-service:latest"
@@ -177,7 +177,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results5.sarif"
 
@@ -199,7 +199,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-maintenance-service:latest"
@@ -213,7 +213,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results6.sarif"
 
@@ -235,7 +235,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-notification-service:latest"
@@ -249,7 +249,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results7.sarif"
 
@@ -271,7 +271,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-services-service:latest"
@@ -285,7 +285,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results8.sarif"
 
@@ -307,7 +307,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-portal-migrations:latest"
@@ -321,7 +321,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results9.sarif"
 
@@ -343,7 +343,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-provisioning-migrations:latest"
@@ -357,7 +357,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results10.sarif"
 
@@ -379,7 +379,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-processes-worker:latest"
@@ -393,7 +393,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results11.sarif"
 
@@ -415,7 +415,7 @@ jobs:
       # For public images, no ENV vars must be set.
       - name: Run Trivy vulnerability scanner
         if: always()
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
           # Path to Docker image
           image-ref: "${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_NAME }}-iam-seeding:latest"
@@ -429,6 +429,6 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
+        uses: github/codeql-action/upload-sarif@fc7e4a0fa01c3cca5fd6a1fddec5c0740c977aa2 # v3.28.14
         with:
           sarif_file: "trivy-results12.sarif"
