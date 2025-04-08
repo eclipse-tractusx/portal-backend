@@ -35,7 +35,7 @@ public static class OnboardingServiceProviderServiceCollectionExtension
         services.AddTransient<LoggingHandler<OnboardingServiceProviderService>>();
         _ = services.BuildServiceProvider();
         return services
-            .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>(string.Empty)
+            .AddCustomHttpClientWithAuthentication<OnboardingServiceProviderService>()
             .AddTransient<IOnboardingServiceProviderBusinessLogic, OnboardingServiceProviderBusinessLogic>()
             .AddTransient<IOnboardingServiceProviderService, OnboardingServiceProviderService>();
     }

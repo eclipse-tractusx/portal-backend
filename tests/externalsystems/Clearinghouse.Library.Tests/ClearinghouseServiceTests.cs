@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
@@ -52,6 +53,7 @@ public class ClearinghouseServiceTests
                 Scope = "defaultScope",
                 Username = "defaultUserName",
                 BaseAddress = "https://defaultBase.address.com",
+                ValidationPath = "/api/default/validation",
                 ClientId = "defaultClientId",
                 ClientSecret = "defaultClientSecret",
                 GrantType = "DefaultCred",
@@ -64,6 +66,7 @@ public class ClearinghouseServiceTests
                     Scope = "regionalScope",
                     Username = "regionalUserName",
                     BaseAddress = "https://regionalBase.address.com",
+                    ValidationPath = "/api/regional/validation",
                     ClientId = "regionalClientId",
                     ClientSecret = "regionalClientSecret",
                     GrantType = "regionalCred",
@@ -91,8 +94,8 @@ public class ClearinghouseServiceTests
         {
             BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        var credentials = _options.Value.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == data.LegalEntity.Address.CountryAlpha2Code) ?? _options.Value.DefaultClearinghouseCredentials;
-        A.CallTo(() => _tokenService.GetAuthorizedClient($"{typeof(ClearinghouseService).Name}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act
@@ -126,8 +129,8 @@ public class ClearinghouseServiceTests
         {
             BaseAddress = new Uri(baseAddress)
         };
-        var credentials = _options.Value.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == data.LegalEntity.Address.CountryAlpha2Code) ?? _options.Value.DefaultClearinghouseCredentials;
-        A.CallTo(() => _tokenService.GetAuthorizedClient($"{typeof(ClearinghouseService).Name}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act
@@ -148,8 +151,8 @@ public class ClearinghouseServiceTests
         {
             BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        var credentials = _options.Value.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == data.LegalEntity.Address.CountryAlpha2Code) ?? _options.Value.DefaultClearinghouseCredentials;
-        A.CallTo(() => _tokenService.GetAuthorizedClient($"{typeof(ClearinghouseService).Name}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act
@@ -172,8 +175,8 @@ public class ClearinghouseServiceTests
         {
             BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        var credentials = _options.Value.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == data.LegalEntity.Address.CountryAlpha2Code) ?? _options.Value.DefaultClearinghouseCredentials;
-        A.CallTo(() => _tokenService.GetAuthorizedClient($"{typeof(ClearinghouseService).Name}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act
@@ -196,8 +199,8 @@ public class ClearinghouseServiceTests
         {
             BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        var credentials = _options.Value.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == data.LegalEntity.Address.CountryAlpha2Code) ?? _options.Value.DefaultClearinghouseCredentials;
-        A.CallTo(() => _tokenService.GetAuthorizedClient($"{typeof(ClearinghouseService).Name}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act

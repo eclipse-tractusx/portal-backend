@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
@@ -36,7 +38,18 @@ public class ClearinghouseSettings
 
     [Required]
     public ClearinghouseCredentialsSettings DefaultClearinghouseCredentials { get; set; } = null!;
-    public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = null!;
+    public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = [];
+
+    public bool Validate()
+    {
+        if (RegionalClearinghouseCredentials.IsNullOrEmpty())
+            return true;
+
+        RegionalClearinghouseCredentials.DuplicatesBy(x => x.CountryAlpha2Code)
+            .IfAny(duplicate => throw new ConfigurationException($"CountryCodes {string.Join(", ", duplicate.Select(x => x.CountryAlpha2Code))} are ambiguous"));
+
+        return true;
+    }
 }
 
 public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
@@ -44,6 +57,9 @@ public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
 
-    [Required]
+    [Required(AllowEmptyStrings = false)]
+    public string ValidationPath { get; set; } = null!;
+
+    [Required(AllowEmptyStrings = false)]
     public string CountryAlpha2Code { get; set; } = null!;
 }
