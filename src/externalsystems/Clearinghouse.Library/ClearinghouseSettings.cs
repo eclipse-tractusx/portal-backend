@@ -48,7 +48,7 @@ public class ClearinghouseSettings
         RegionalClearinghouseCredentials.DuplicatesBy(x => x.CountryAlpha2Code)
             .IfAny(duplicate => throw new ConfigurationException($"CountryCodes {string.Join(", ", duplicate.Select(x => x.CountryAlpha2Code))} are ambiguous"));
 
-        return true;
+        return RegionalClearinghouseCredentials.Any(c => c.Validate());
     }
 }
 
@@ -62,4 +62,22 @@ public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
 
     [Required(AllowEmptyStrings = false)]
     public string CountryAlpha2Code { get; set; } = null!;
+
+    public bool Validate()
+    {
+        new ConfigurationValidation<ClearinghouseCredentialsSettings>()
+            .NotNullOrWhiteSpace(BaseAddress, () => nameof(BaseAddress))
+            .NotNullOrWhiteSpace(ValidationPath, () => nameof(ValidationPath))
+            .NotNullOrWhiteSpace(CountryAlpha2Code, () => nameof(CountryAlpha2Code))
+            .NotNullOrWhiteSpace(TokenAddress, () => nameof(TokenAddress));
+
+        var hasUsernamePassword = !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
+        var hasClientIdSecret = !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
+        if (!hasUsernamePassword && !hasClientIdSecret)
+        {
+            throw new ConfigurationException("Either Username and Password, or ClientId and ClientSecret must be provided.");
+        }
+
+        return true;
+    }
 }

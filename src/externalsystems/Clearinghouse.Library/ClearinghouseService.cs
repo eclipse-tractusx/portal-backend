@@ -26,22 +26,16 @@ using System.Net.Http.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
-public class ClearinghouseService : IClearinghouseService
+public class ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
+    : IClearinghouseService
 {
-    private readonly ITokenService _tokenService;
-    private readonly ClearinghouseSettings _settings;
-
-    public ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
-    {
-        _tokenService = tokenService;
-        _settings = options.Value;
-    }
+    private readonly ClearinghouseSettings _settings = options.Value;
 
     /// <inheritdoc />
     public async Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken)
     {
         var credentials = _settings.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
-        using var httpClient = await _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        using var httpClient = await tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
