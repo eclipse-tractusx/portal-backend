@@ -94,12 +94,12 @@ public class ClearinghouseBusinessLogic(
                 data.Name,
                 new LegalAddress(
                     data.Address.CountryAlpha2Code,
-                    string.Format("{0}-{1}", data.Address.CountryAlpha2Code, data.Address.Region),
+                    $"{data.Address.CountryAlpha2Code}-{data.Address.Region}",
                     data.Address.City,
                     data.Address.Zipcode,
                     string.IsNullOrEmpty(data.Address.Streetnumber)
                         ? data.Address.Streetname
-                        : string.Format("{0} {1}", data.Address.Streetname, data.Address.Streetnumber)),
+                        : $"{data.Address.Streetname} {data.Address.Streetnumber}"),
                 data.Identifiers.Select(ci =>
                     new UniqueIdData(
                         ci.UniqueIdentifierId.GetUniqueIdentifierId(),

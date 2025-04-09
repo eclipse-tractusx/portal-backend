@@ -77,8 +77,7 @@ public class ClearinghouseBusinessLogicTests
 
         _logic = new ClearinghouseBusinessLogic(_portalRepositories, _clearinghouseService, _checklistService, _dateTimeProvider, Options.Create(new ClearinghouseSettings
         {
-            CallbackUrl = "https://api.com",
-            UseDimWallet = false
+            CallbackUrl = "https://api.com"
         }));
     }
 

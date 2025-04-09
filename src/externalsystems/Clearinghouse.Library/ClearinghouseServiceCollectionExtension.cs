@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
@@ -30,16 +31,25 @@ public static class ClearinghouseServiceCollectionExtension
 {
     public static IServiceCollection AddClearinghouseService(this IServiceCollection services, IConfigurationSection section)
     {
-        services.AddOptions<ClearinghouseSettings>()
-            .Bind(section)
+        var options = services.AddOptions<ClearinghouseSettings>()
+            .Bind(section);
+        options
             .EnvironmentalValidation(section);
+        if (!EnvironmentExtensions.SkipValidation())
+        {
+            options.Validate(x => x.Validate());
+        }
         services.AddTransient<LoggingHandler<ClearinghouseService>>();
 
         var sp = services.BuildServiceProvider();
         var settings = sp.GetRequiredService<IOptions<ClearinghouseSettings>>();
-        var baseAddress = settings.Value.BaseAddress;
+        // Get settings of all available clearing houses
+        var defaultClientDetails = settings.Value.DefaultClearinghouseCredentials;
+        var regionalClientDetails = settings.Value.RegionalClearinghouseCredentials.Select(x => ($"{nameof(ClearinghouseService)}{x.CountryAlpha2Code}", x.BaseAddress));
         services
-            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(baseAddress.EndsWith('/') ? baseAddress : $"{baseAddress}/")
+            // Adding all clients of available clearing houses in advance to avoid socket exhaustion issue
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>($"{nameof(ClearinghouseService)}{defaultClientDetails.CountryAlpha2Code}", defaultClientDetails.BaseAddress)
+            .AddCustomHttpClientWithAuthentication<ClearinghouseService>(regionalClientDetails)
             .AddTransient<IClearinghouseService, ClearinghouseService>()
             .AddTransient<IClearinghouseBusinessLogic, ClearinghouseBusinessLogic>();
 
