@@ -20,6 +20,13 @@
 name: Push Nuget Packages and Tag
 
 on:
+  push:
+    branches:
+      - 'release/v*.*.*-RC*'
+      - 'main'
+    paths:
+      # service and transitive paths
+      - 'src/framework/**'
   workflow_dispatch:
     
 jobs:

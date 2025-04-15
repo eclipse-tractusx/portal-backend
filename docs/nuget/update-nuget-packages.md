@@ -82,6 +82,11 @@ To update the version of a specific package:
 
 NUGET_API_KEY is the key generated on nuget.org. The last command should only be executed within the github action [nuget-package-push](/.github/workflows/nuget-package-push.yml)
 
+## Github Action
+
+The github action to publish the newly created github packages will automatically be executed with every push on the main branch and or a rc candidate branch.
+It is to be expected that the action might fail due to duplicate versions if for example a package was updated within a release and will than be merged to main.
+
 ## NOTICE
 
 This work is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
