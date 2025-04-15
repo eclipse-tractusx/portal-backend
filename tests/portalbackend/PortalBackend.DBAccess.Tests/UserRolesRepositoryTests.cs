@@ -56,7 +56,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetCoreOfferRolesAsync(_validCompanyId, "en", ClientId).ToListAsync();
 
         // Assert
-        data.Should().HaveCount(19);
+        data.Should().HaveCount(20);
     }
 
     #endregion
@@ -109,7 +109,7 @@ public class UserRolesRepositoryTests : IAssemblyFixture<TestDbFixture>
         var data = await sut.GetServiceAccountRolesAsync(_validCompanyId, ClientId, Constants.DefaultLanguage).ToListAsync();
 
         // Assert
-        data.Should().HaveCount(19);
+        data.Should().HaveCount(20);
         data.Should().OnlyHaveUniqueItems();
     }
 
