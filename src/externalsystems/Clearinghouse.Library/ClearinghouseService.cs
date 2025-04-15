@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
@@ -25,26 +26,21 @@ using System.Net.Http.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 
-public class ClearinghouseService : IClearinghouseService
+public class ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
+    : IClearinghouseService
 {
-    private readonly ITokenService _tokenService;
-    private readonly ClearinghouseSettings _settings;
-
-    public ClearinghouseService(ITokenService tokenService, IOptions<ClearinghouseSettings> options)
-    {
-        _tokenService = tokenService;
-        _settings = options.Value;
-    }
+    private readonly ClearinghouseSettings _settings = options.Value;
 
     /// <inheritdoc />
     public async Task TriggerCompanyDataPost(ClearinghouseTransferData data, CancellationToken cancellationToken)
     {
-        using var httpClient = await _tokenService.GetAuthorizedClient<ClearinghouseService>(_settings, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+        var credentials = _settings.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        using var httpClient = await tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
 
         async ValueTask<(bool, string?)> CreateErrorMessage(HttpResponseMessage errorResponse) =>
             (false, (await errorResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None)));
 
-        await httpClient.PostAsJsonAsync("/api/v2/validation", data, cancellationToken)
+        await httpClient.PostAsJsonAsync(credentials.ValidationPath, data, cancellationToken)
             .CatchingIntoServiceExceptionFor("clearinghouse-post", HttpAsyncResponseMessageExtension.RecoverOptions.INFRASTRUCTURE, CreateErrorMessage).ConfigureAwait(false);
     }
 }

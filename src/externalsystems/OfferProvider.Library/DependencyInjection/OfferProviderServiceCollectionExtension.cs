@@ -36,7 +36,7 @@ public static class OfferProviderServiceCollectionExtension
         services.AddTransient<LoggingHandler<OfferProviderService>>();
 
         return services
-            .AddCustomHttpClientWithAuthentication<OfferProviderService>(null)
+            .AddCustomHttpClientWithAuthentication<OfferProviderService>()
             .AddTransient<IOfferProviderService, OfferProviderService>()
             .AddTransient<IOfferProviderBusinessLogic, OfferProviderBusinessLogic>();
     }

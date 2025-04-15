@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Linq;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
@@ -26,16 +28,56 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 /// <summary>
 /// Settings used in business logic concerning connectors.
 /// </summary>
-public class ClearinghouseSettings : KeyVaultAuthSettings
+public class ClearinghouseSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string CallbackUrl { get; set; } = null!;
+
+    [Required]
+    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+
+    [Required]
+    public ClearinghouseCredentialsSettings DefaultClearinghouseCredentials { get; set; } = null!;
+    public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = [];
+
+    public bool Validate()
+    {
+        if (RegionalClearinghouseCredentials.IsNullOrEmpty())
+            return true;
+
+        RegionalClearinghouseCredentials.DuplicatesBy(x => x.CountryAlpha2Code)
+            .IfAny(duplicate => throw new ConfigurationException($"CountryCodes {string.Join(", ", duplicate.Select(x => x.CountryAlpha2Code))} are ambiguous"));
+
+        return RegionalClearinghouseCredentials.Any(c => c.Validate());
+    }
+}
+
+public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
 {
     [Required(AllowEmptyStrings = false)]
     public string BaseAddress { get; set; } = null!;
 
     [Required(AllowEmptyStrings = false)]
-    public string CallbackUrl { get; set; } = null!;
+    public string ValidationPath { get; set; } = null!;
 
-    public bool UseDimWallet { get; set; }
+    [Required(AllowEmptyStrings = false)]
+    public string CountryAlpha2Code { get; set; } = null!;
 
-    [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
+    public bool Validate()
+    {
+        new ConfigurationValidation<ClearinghouseCredentialsSettings>()
+            .NotNullOrWhiteSpace(BaseAddress, () => nameof(BaseAddress))
+            .NotNullOrWhiteSpace(ValidationPath, () => nameof(ValidationPath))
+            .NotNullOrWhiteSpace(CountryAlpha2Code, () => nameof(CountryAlpha2Code))
+            .NotNullOrWhiteSpace(TokenAddress, () => nameof(TokenAddress));
+
+        var hasUsernamePassword = !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
+        var hasClientIdSecret = !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
+        if (!hasUsernamePassword && !hasClientIdSecret)
+        {
+            throw new ConfigurationException("Either Username and Password, or ClientId and ClientSecret must be provided.");
+        }
+
+        return true;
+    }
 }

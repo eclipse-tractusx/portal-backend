@@ -23,14 +23,26 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.HttpClientExtensions;
 
 public static class HttpClientExtensions
 {
-    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string? baseAddress) where T : class =>
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services) where T : class =>
+        services.AddCustomHttpClientWithAuthentication<T>(typeof(T).Name, null);
+
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string baseAddress) where T : class =>
         services.AddCustomHttpClientWithAuthentication<T>(typeof(T).Name, baseAddress);
+
+    public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, IEnumerable<(string clientName, string baseAddress)> clientDetails) where T : class
+    {
+        foreach (var (clientName, baseAddress) in clientDetails)
+        {
+            services.AddCustomHttpClientWithAuthentication<T>(clientName, baseAddress);
+        }
+        return services;
+    }
 
     public static IServiceCollection AddCustomHttpClientWithAuthentication<T>(this IServiceCollection services, string clientName, string? baseAddress) where T : class
     {
         services.AddHttpClient(clientName, c =>
         {
-            if (baseAddress != null)
+            if (!string.IsNullOrEmpty(baseAddress))
             {
                 c.BaseAddress = new Uri(baseAddress);
             }

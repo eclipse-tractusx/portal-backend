@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Tests.Shared;
@@ -44,14 +45,35 @@ public class ClearinghouseServiceTests
 
         _options = Options.Create(new ClearinghouseSettings
         {
-            Password = "passWord",
-            Scope = "test",
-            Username = "user@name",
-            BaseAddress = "https://base.address.com",
-            ClientId = "CatenaX",
-            ClientSecret = "pass@Secret",
-            GrantType = "cred",
-            TokenAddress = "https://key.cloak.com"
+            CallbackUrl = "https://callback.address.com",
+            RetriggerEndClearinghouseIntervalInDays = 30,
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                Password = "defaultPassword",
+                Scope = "defaultScope",
+                Username = "defaultUserName",
+                BaseAddress = "https://defaultBase.address.com",
+                ValidationPath = "/api/default/validation",
+                ClientId = "defaultClientId",
+                ClientSecret = "defaultClientSecret",
+                GrantType = "DefaultCred",
+                TokenAddress = "https://defaultKey.cloak.com",
+                CountryAlpha2Code = "Default"
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    Password = "regionalPassword",
+                    Scope = "regionalScope",
+                    Username = "regionalUserName",
+                    BaseAddress = "https://regionalBase.address.com",
+                    ValidationPath = "/api/regional/validation",
+                    ClientId = "regionalClientId",
+                    ClientSecret = "regionalClientSecret",
+                    GrantType = "regionalCred",
+                    TokenAddress = "https://regionalKey.cloak.com",
+                    CountryAlpha2Code = "CN"
+                }
+            ]
         });
         _tokenService = A.Fake<ITokenService>();
         _sut = new ClearinghouseService(_tokenService, _options);
@@ -70,9 +92,10 @@ public class ClearinghouseServiceTests
             new HttpMessageHandlerMock(HttpStatusCode.OK);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._))
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
             .Returns(httpClient);
 
         // Act
@@ -80,6 +103,42 @@ public class ClearinghouseServiceTests
 
         // Assert
         true.Should().BeTrue(); // One Assert is needed - just checking for no exception
+    }
+
+    [Theory]
+    [InlineData("DE")]
+    [InlineData("NL")]
+    [InlineData("FR")]
+    [InlineData("CN")]
+    public async Task TriggerCompanyDataPost_WithCountryAlpha2Code_SuccessResult(string countryAlpha2Code)
+    {
+        // Arrange
+        var legalAddress = _fixture.Build<LegalAddress>()
+            .With(x => x.CountryAlpha2Code, countryAlpha2Code)
+            .Create();
+        var legalEntity = _fixture.Build<LegalEntity>()
+            .With(x => x.Address, legalAddress)
+            .Create();
+        var data = _fixture.Build<ClearinghouseTransferData>()
+            .With(x => x.LegalEntity, legalEntity)
+            .Create();
+        var httpMessageHandlerMock =
+            new HttpMessageHandlerMock(HttpStatusCode.OK);
+        var baseAddress = countryAlpha2Code == "CN" ? "https://regionalBase.address.com" : "https://defaultBase.address.com";
+        using var httpClient = new HttpClient(httpMessageHandlerMock)
+        {
+            BaseAddress = new Uri(baseAddress)
+        };
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+            .Returns(httpClient);
+
+        // Act
+        await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
+
+        // Assert
+        credentials.BaseAddress.Should().Be(baseAddress);
+        true.Should().BeTrue();
     }
 
     [Fact]
@@ -90,9 +149,11 @@ public class ClearinghouseServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+            .Returns(httpClient);
 
         // Act
         async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
@@ -112,9 +173,11 @@ public class ClearinghouseServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, null, error);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+            .Returns(httpClient);
 
         // Act
         async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
@@ -134,9 +197,11 @@ public class ClearinghouseServiceTests
         var httpMessageHandlerMock = new HttpMessageHandlerMock(HttpStatusCode.BadRequest, stringContent);
         using var httpClient = new HttpClient(httpMessageHandlerMock)
         {
-            BaseAddress = new Uri("https://base.address.com")
+            BaseAddress = new Uri("https://defaultBase.address.com")
         };
-        A.CallTo(() => _tokenService.GetAuthorizedClient<ClearinghouseService>(_options.Value, A<CancellationToken>._)).Returns(httpClient);
+        var credentials = _options.Value.GetCredentials(data.LegalEntity.Address.CountryAlpha2Code);
+        A.CallTo(() => _tokenService.GetAuthorizedClient($"{nameof(ClearinghouseService)}{credentials.CountryAlpha2Code}", credentials, A<CancellationToken>._))
+            .Returns(httpClient);
 
         // Act
         async Task Act() => await _sut.TriggerCompanyDataPost(data, CancellationToken.None);
