@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SwashBuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="SwashBuckle.AspNetCore" Version="8.1.1" />
   </ItemGroup>
 
   <ItemGroup>
