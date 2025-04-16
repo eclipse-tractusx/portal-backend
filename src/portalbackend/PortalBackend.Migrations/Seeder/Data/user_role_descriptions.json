@@ -150,6 +150,16 @@
     "description": "Technical user to add offers; activate subscription requests and create managed connector registrations for 3rd parties."
   },
   {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "de",
+    "description": "Technischer User zur Verwaltung (Anzeigen, Erstellen, Modifizieren und Löschen) von Unternehmens-Connectors und des technischen Users über die API, für die vollständige Automatisierung der Connector-Registrierung."
+  },
+  {
+    "user_role_id": "607818be-4978-41f4-bf63-fa8d2de51169",
+    "language_short_name": "en",
+    "description": "Technical user to manage (view, create, modify, and delete) company connectors and the technical user via API for full automation of connector registration."
+  },
+  {
     "user_role_id": "34c42896-a003-4653-af8f-ba06ca595752",
     "language_short_name": "de",
     "description": "Technischer User zur Erstellung von Registrierungen von Drittanbietern durch Onboarding Service Provider."
