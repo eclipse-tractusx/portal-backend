@@ -20,6 +20,27 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record ProviderDetailData(string? Url, string? CallbackUrl);
+public record ProviderDetailData(string Url, string? CallbackUrl, string AuthUrl, string ClientId, string ClientSecret);
 
-public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url, string? CallbackUrl);
+public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url, string? CallbackUrl,
+    string AuthUrl,
+    string ClientId);
+public record ProviderDetails
+(
+    string Url,
+    string? CallbackUrl,
+    string AuthUrl,
+    string ClientId,
+    byte[] ClientSecret,
+    byte[]? InitializationVector,
+    int EncryptionMode
+);
+
+public record ProviderDetailsCreationData
+(
+    string AutoSetupUrl,
+    string AuthUrl,
+    string ClientId,
+    byte[] ClientSecret,
+    int EncryptionMode
+);

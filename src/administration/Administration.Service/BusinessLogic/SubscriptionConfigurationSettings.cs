@@ -1,6 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 BMW Group AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,24 +19,29 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Validation;
-using Org.Eclipse.TractusX.Portal.Backend.Framework.Token;
 using System.ComponentModel.DataAnnotations;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
+namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
-/// <summary>
-/// Settings used in business logic concerning daps.
-/// </summary>
-public class OfferProviderSettings : KeyVaultAuthSettings
+public class SubscriptionConfigurationSettings
 {
-    [Required]
-    [DistinctValues("x => x.ClientId")]
-    public IEnumerable<UserRoleConfig> ServiceManagerRoles { get; init; } = null!;
-
     [Required]
     [DistinctValues("x => x.Index")]
     public IEnumerable<EncryptionModeConfig> EncryptionConfigs { get; set; } = null!;
 
     [Required]
     public int EncryptionConfigIndex { get; set; }
+}
+
+public static class SubscriptionConfigurationSettingsExtension
+{
+    public static IServiceCollection ConfigureSubscriptionConfigurationSettings(
+        this IServiceCollection services,
+        IConfigurationSection section)
+    {
+        services.AddOptions<SubscriptionConfigurationSettings>()
+            .Bind(section)
+            .EnvironmentalValidation(section);
+        return services;
+    }
 }

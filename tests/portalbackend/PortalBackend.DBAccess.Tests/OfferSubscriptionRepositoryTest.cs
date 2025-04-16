@@ -432,6 +432,23 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     [Fact]
+    public async Task GetTriggerProviderInformation_WithValidData_And_WithProviderDetails_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var result = await sut.GetTriggerProviderInformation(new Guid("81a8211d-6261-4969-8123-a420364ae997"));
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.OfferName.Should().Be("Test App 1");
+        result!.AuthDetails.Should().NotBeNull();
+        result!.AuthDetails!.AuthUrl.Should().Be("https://auth-url.com");
+        result.IsSingleInstance.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task GetTriggerProviderInformation_WithNotExistingId_ReturnsNull()
     {
         // Arrange

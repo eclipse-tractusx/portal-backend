@@ -315,7 +315,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
 
     /// <inheritdoc />
     public Task<TriggerProviderInformation?> GetTriggerProviderInformation(Guid offerSubscriptionId) =>
-        dbContext.OfferSubscriptions
+         dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
             .Select(x => new
             {
@@ -324,6 +324,11 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 OfferId = x.Offer!.Id,
                 OfferName = x.Offer.Name,
                 x.Offer.ProviderCompany!.ProviderCompanyDetail!.AutoSetupUrl,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.AuthUrl,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.ClientId,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.ClientSecret,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.InitializationVector,
+                x.Offer.ProviderCompany!.ProviderCompanyDetail!.EncryptionMode,
                 x.Offer.SalesManagerId,
                 x.Offer.OfferTypeId,
                 CompanyUserId = x.Requester.Id,
@@ -333,6 +338,13 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 x.OfferId,
                 x.OfferName,
                 x.AutoSetupUrl,
+               x.AuthUrl == null ? null : new ProviderAuthInformation(
+                    x.AuthUrl,
+                    x.ClientId,
+                    x.ClientSecret,
+                    x.InitializationVector,
+                    x.EncryptionMode
+                ),
                 new CompanyInformationData(
                     x.RequesterCompany!.Id,
                     x.RequesterCompany.Name,
@@ -427,13 +439,19 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, TechnicalUserKindId TechnicalUserKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
+    public Task<(IEnumerable<(Guid TechnicalUserId, string? TechnicalClientId, TechnicalUserKindId TechnicalUserKindId)> ServiceAccounts, string? ClientId, string? CallbackUrl, ProviderAuthInformation? AuthDetails, OfferSubscriptionStatusId Status)> GetTriggerProviderCallbackInformation(Guid offerSubscriptionId) =>
         dbContext.OfferSubscriptions
             .Where(x => x.Id == offerSubscriptionId)
-            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, OfferSubscriptionStatusId>(
+            .Select(x => new ValueTuple<IEnumerable<(Guid, string?, TechnicalUserKindId)>, string?, string?, ProviderAuthInformation?, OfferSubscriptionStatusId>(
                     x.Technicalusers.Select(sa => new ValueTuple<Guid, string?, TechnicalUserKindId>(sa.Id, sa.ClientClientId, sa.TechnicalUserKindId)),
                     x.AppSubscriptionDetail!.AppInstance!.IamClient!.ClientClientId,
                     x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AutoSetupCallbackUrl,
+                    x.Offer.ProviderCompany.ProviderCompanyDetail!.AuthUrl == null ? null : new ProviderAuthInformation(x.Offer!.ProviderCompany!.ProviderCompanyDetail!.AuthUrl,
+                                                 x.Offer!.ProviderCompany!.ProviderCompanyDetail!.ClientId,
+                                                 x.Offer!.ProviderCompany!.ProviderCompanyDetail!.ClientSecret,
+                                                 x.Offer!.ProviderCompany!.ProviderCompanyDetail!.InitializationVector,
+                                                 x.Offer!.ProviderCompany!.ProviderCompanyDetail!.EncryptionMode
+                                                 ),
                     x.OfferSubscriptionStatusId
             ))
             .SingleOrDefaultAsync();

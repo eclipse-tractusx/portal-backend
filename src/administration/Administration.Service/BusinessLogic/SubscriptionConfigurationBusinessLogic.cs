@@ -17,11 +17,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
@@ -33,12 +35,16 @@ using Org.Eclipse.TractusX.Portal.Backend.Processes.OfferSubscription.Library.Ex
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 
+/// <summary>
+/// Implementation of <see cref="ISubscriptionConfigurationBusinessLogic"/>.
+/// </summary>
 public class SubscriptionConfigurationBusinessLogic(
     IOfferSubscriptionProcessService offerSubscriptionProcessService,
     IPortalRepositories portalRepositories,
-    IIdentityService identityService)
-    : ISubscriptionConfigurationBusinessLogic
+    IIdentityService identityService,
+    IOptions<SubscriptionConfigurationSettings> options) : ISubscriptionConfigurationBusinessLogic
 {
+    private readonly SubscriptionConfigurationSettings _settings = options.Value;
     private readonly IIdentityData _identityData = identityService.IdentityData;
 
     /// <inheritdoc />
@@ -46,16 +52,16 @@ public class SubscriptionConfigurationBusinessLogic(
     {
         var companyId = _identityData.CompanyId;
         var result = await portalRepositories.GetInstance<ICompanyRepository>()
-            .GetProviderCompanyDetailAsync(CompanyRoleId.SERVICE_PROVIDER, companyId)
+            .GetProviderCompanyDetailAsync([CompanyRoleId.SERVICE_PROVIDER, CompanyRoleId.APP_PROVIDER], companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
         if (result == default)
         {
-            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         if (!result.IsProviderCompany)
         {
-            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, [new(nameof(companyId), companyId.ToString())]);
         }
 
         return result.ProviderDetailReturnData;
@@ -64,12 +70,23 @@ public class SubscriptionConfigurationBusinessLogic(
     /// <inheritdoc />
     public Task SetProviderCompanyDetailsAsync(ProviderDetailData data)
     {
-        data.Url?.EnsureValidHttpsUrl(() => nameof(data.Url));
+        data.Url.EnsureValidHttpsUrl(() => nameof(data.Url));
+        data.AuthUrl.EnsureValidHttpsUrl(() => nameof(data.AuthUrl));
         data.CallbackUrl?.EnsureValidHttpsUrl(() => nameof(data.CallbackUrl));
 
         if (data.Url is { Length: > 100 })
         {
-            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, new ErrorParameter[] { new("Url", nameof(data.Url)) });
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new ErrorParameter("Url", nameof(data.Url))]);
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ClientId))
+        {
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_CLIENT_MUST_SET);
+        }
+
+        if (string.IsNullOrWhiteSpace(data.ClientSecret))
+        {
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_SECRET_MUST_SET);
         }
 
         return SetOfferProviderCompanyDetailsInternalAsync(data, _identityData.CompanyId);
@@ -81,47 +98,66 @@ public class SubscriptionConfigurationBusinessLogic(
         var providerDetailData = await companyRepository
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        var hasChanges = false;
-        if (providerDetailData == default && data.Url != null)
+
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
+        var (secret, initializationVector) = CryptoHelper.Encrypt(data.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
+        if (providerDetailData.providerDetails == default && data.Url != null)
         {
-            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository);
-            hasChanges = true;
+            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository, secret, initializationVector, cryptoConfig.Index);
         }
-        else if (providerDetailData != default && data.Url != null)
+        else if (providerDetailData.providerDetails != default && data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
                 details =>
                 {
-                    details.AutoSetupUrl = providerDetailData.Url;
-                    details.AutoSetupCallbackUrl = providerDetailData.CallbackUrl;
+
+                    details.AutoSetupUrl = providerDetailData.providerDetails.Url;
+                    details.AutoSetupCallbackUrl = providerDetailData.providerDetails.CallbackUrl;
+                    details.AuthUrl = providerDetailData.providerDetails.AuthUrl;
+                    details.ClientId = providerDetailData.providerDetails.ClientId;
+                    details.ClientSecret = providerDetailData.providerDetails.ClientSecret;
+                    details.InitializationVector = providerDetailData.providerDetails.InitializationVector;
+                    details.EncryptionMode = providerDetailData.providerDetails.EncryptionMode;
                 },
                 details =>
                 {
                     details.AutoSetupCallbackUrl = data.CallbackUrl;
                     details.AutoSetupUrl = data.Url;
+                    details.AutoSetupCallbackUrl = data.CallbackUrl;
+                    details.AuthUrl = data.AuthUrl;
+                    details.ClientId = data.ClientId;
+                    details.ClientSecret = secret;
+                    details.InitializationVector = initializationVector;
+                    details.EncryptionMode = cryptoConfig.Index;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
-            hasChanges = true;
-        }
-        else if (providerDetailData != default && data.Url == null)
-        {
-            companyRepository.RemoveProviderCompanyDetails(providerDetailData.ProviderCompanyDetailId);
-            hasChanges = true;
-        }
 
-        if (providerDetailData.CallbackUrl is not null && data.CallbackUrl is null)
+        }
+        if (providerDetailData.providerDetails?.CallbackUrl is not null && data.CallbackUrl is null)
         {
             await HandleOfferSetupProcesses(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
-            hasChanges = true;
         }
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (hasChanges)
-        {
-            await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-        }
     }
 
+    public async Task DeleteOfferProviderCompanyDetailsAsync()
+    {
+        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
+        var companyId = _identityData.CompanyId;
+        (var providerCompanyDetailId, _) = await companyRepository
+            .GetProviderCompanyDetailsExistsForUser(companyId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (providerCompanyDetailId == Guid.Empty)
+        {
+            throw ConflictException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_AUTO_SETUP_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
+        }
+
+        companyRepository.RemoveProviderCompanyDetails(providerCompanyDetailId);
+        await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
+    }
     private async Task HandleOfferSetupProcesses(Guid companyId)
     {
         var processData = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
@@ -139,24 +175,28 @@ public class SubscriptionConfigurationBusinessLogic(
         }
     }
 
-    private static async Task HandleCreateProviderCompanyDetails(ProviderDetailData data, Guid companyId, ICompanyRepository companyRepository)
+    private static async Task HandleCreateProviderCompanyDetails(ProviderDetailData data, Guid companyId, ICompanyRepository companyRepository, byte[] secret, byte[]? initializationVector, int index)
     {
-        var result = await companyRepository
-            .IsValidCompanyRoleOwner(companyId, new[] { CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER })
+        var (isValidCompanyId, isCompanyRoleOwner) = await companyRepository
+            .IsValidCompanyRoleOwner(companyId, [CompanyRoleId.APP_PROVIDER, CompanyRoleId.SERVICE_PROVIDER])
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        if (!result.IsValidCompanyId)
+        if (!isValidCompanyId)
         {
-            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, new ErrorParameter[] { new("Url", nameof(data.Url)) });
+            throw ControllerArgumentException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, [new ErrorParameter("Url", nameof(data.Url))]);
         }
 
-        if (!result.IsCompanyRoleOwner)
+        if (!isCompanyRoleOwner)
         {
-            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ForbiddenException.Create(AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, [new ErrorParameter(nameof(companyId), companyId.ToString())]);
         }
 
-        companyRepository.CreateProviderCompanyDetail(companyId, data.Url!, providerDetails =>
+        companyRepository.CreateProviderCompanyDetail(companyId, new ProviderDetailsCreationData(data.Url!, data.AuthUrl, data.ClientId, secret, index), providerDetails =>
         {
-            providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
+            if (data.CallbackUrl != null)
+            {
+                providerDetails.AutoSetupCallbackUrl = data.CallbackUrl;
+            }
+            providerDetails.InitializationVector = initializationVector;
             providerDetails.DateLastChanged = DateTimeOffset.UtcNow;
         });
     }

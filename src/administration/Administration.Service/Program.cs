@@ -88,6 +88,7 @@ await WebAppHelper
         builder.Services.AddMailingProcessCreation(builder.Configuration.GetSection("MailingProcessCreation"));
 
         builder.Services
+            .ConfigureSubscriptionConfigurationSettings(builder.Configuration.GetSection("OfferProvider"))
             .AddTransient<ISubscriptionConfigurationBusinessLogic, SubscriptionConfigurationBusinessLogic>()
             .AddTransient<IServiceAccountManagement, ServiceAccountManagement>()
             .AddPartnerRegistration(builder.Configuration)

@@ -110,7 +110,7 @@ public class SubscriptionConfigurationControllerTests
     public async Task SetCompanyDetail_WithValidData_ReturnsNoContent()
     {
         //Arrange
-        var data = new ProviderDetailData("https://this-is-a-test.de", null);
+        var data = new ProviderDetailData("https://this-is-a-test.de", null, "https//auth.url", "test", "Sup3rS3cureTest!");
         //Act
         var result = await _controller.SetProviderCompanyDetail(data);
 
@@ -124,7 +124,7 @@ public class SubscriptionConfigurationControllerTests
     {
         //Arrange
         var id = Guid.NewGuid();
-        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de", null);
+        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de", "https://auth.url", "client-id", "Sup3rS3cureTest!");
         A.CallTo(() => _logic.GetProviderCompanyDetailsAsync())
             .Returns(data);
 
@@ -139,21 +139,13 @@ public class SubscriptionConfigurationControllerTests
     }
 
     [Fact]
-    public async Task GetProviderCompanyDetail_WithValidCallback_ReturnsOk()
+    public async Task DeleteProviderCompanyDetail_Success_ReturnsNoContent()
     {
-        //Arrange
-        var id = Guid.NewGuid();
-        var data = new ProviderDetailReturnData(id, CompanyId, "https://this-is-a-test.de", "https://this-is-a-test-callback.de");
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync())
-            .Returns(data);
-
         //Act
-        var result = await _controller.GetServiceProviderCompanyDetail();
+        var result = await _controller.DeleteProviderCompanyDetail();
 
         //Assert
-        A.CallTo(() => _logic.GetProviderCompanyDetailsAsync()).MustHaveHappenedOnceExactly();
-        result.Should().BeOfType<ProviderDetailReturnData>();
-        result.Id.Should().Be(id);
-        result.CompanyId.Should().Be(CompanyId);
+        A.CallTo(() => _logic.DeleteOfferProviderCompanyDetailsAsync()).MustHaveHappenedOnceExactly();
+        Assert.IsType<NoContentResult>(result);
     }
 }

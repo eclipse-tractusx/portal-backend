@@ -26,7 +26,10 @@ public class AdministrationSubscriptionConfigurationErrorMessageContainer : IErr
 {
     private static readonly IReadOnlyDictionary<int, string> _messageContainer = ImmutableDictionary.CreateRange<int, string>([
         new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND, "Company {companyId} not found"),
-        new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER, "Company {companyId} is not a service-provider"),
+        new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_AUTO_SETUP_NOT_FOUND, "Company {companyId} does not have auto setup configured" ),
+        new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER, "Company {companyId} is not an App/Service provider"),
+        new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_CLIENT_MUST_SET, "Client id should not be null or empty"),
+        new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_CONFLICT_SECRET_MUST_SET, "Client secret should not be null or empty"),
         new((int)AdministrationSubscriptionConfigurationErrors.SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR, "the maximum allowed length is 100 characters")
     ]);
 
@@ -37,7 +40,10 @@ public class AdministrationSubscriptionConfigurationErrorMessageContainer : IErr
 public enum AdministrationSubscriptionConfigurationErrors
 {
     SUBSCRIPTION_CONFLICT_COMPANY_NOT_FOUND,
-    SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_SERVICE_PROVIDER,
+    SUBSCRIPTION_CONFLICT_AUTO_SETUP_NOT_FOUND,
+    SUBSCRIPTION_FORBIDDEN_COMPANY_NOT_PROVIDER,
+    SUBSCRIPTION_CONFLICT_CLIENT_MUST_SET,
+    SUBSCRIPTION_CONFLICT_SECRET_MUST_SET,
     SUBSCRIPTION_ARGUMENT_MAX_LENGTH_ALLOW_HUNDRED_CHAR
 
 }
