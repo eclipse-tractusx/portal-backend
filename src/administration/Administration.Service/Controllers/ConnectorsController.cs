@@ -61,6 +61,25 @@ public class ConnectorsController(IConnectorsBusinessLogic logic)
         logic.GetAllCompanyConnectorDatas(page, size);
 
     /// <summary>
+    /// Retrieves all company registered provided connectors and their status.
+    /// </summary>
+    /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>
+    /// <param name="size" example="15">Optional query parameter defining the number of connectors listed per page.</param>
+    /// <returns>Paginated result of connector view models.</returns>
+    /// <remarks>
+    /// Example: GET: /api/administration/connectors/provided <br />
+    /// Example: GET: /api/administration/connectors/provided?page=0&amp;size=15
+    /// </remarks>
+    /// <response code="200">Returns a list of all of the current user's company's provided connectors.</response>
+    [HttpGet]
+    [Route("provided")]
+    [Authorize(Roles = "view_connectors")]
+    [Authorize(Policy = PolicyTypes.ValidCompany)]
+    [ProducesResponseType(typeof(Pagination.Response<ConnectorData>), StatusCodes.Status200OK)]
+    public Task<Pagination.Response<ConnectorData>> GetCompanyProvidedConnectorsForCurrentUserAsync([FromQuery] int page = 0, [FromQuery] int size = 15) =>
+        logic.GetAllProvidedConnectorsData(page, size);
+
+    /// <summary>
     /// Retrieves all registered connectors which are managed connectors of company customers and their status.
     /// </summary>
     /// <param name="page" example="0">Optional query parameter defining the requested page number.</param>

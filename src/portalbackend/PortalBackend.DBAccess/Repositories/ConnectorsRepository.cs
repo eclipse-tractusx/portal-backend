@@ -60,6 +60,34 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
         ).SingleOrDefaultAsync();
 
     /// <inheritdoc/>
+    public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllProvidedConnectorsForCompanyId(Guid companyId) =>
+        (skip, take) => Pagination.CreateSourceQueryAsync(
+            skip,
+            take,
+            dbContext.Connectors.AsNoTracking()
+                .Where(x => x.ProviderId == companyId &&
+                       x.StatusId != ConnectorStatusId.INACTIVE &&
+                       x.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+                .GroupBy(c => c.ProviderId),
+            connector => connector.OrderByDescending(c => c.Name),
+            con => new ConnectorData(
+                con.Name,
+                con.Location!.Alpha2Code,
+                con.Id,
+                con.TypeId,
+                con.StatusId,
+                con.HostId,
+                con.Host!.Name,
+                con.SelfDescriptionDocumentId,
+                con.TechnicalUserId == null ? null : new TechnicalUserData(
+                    con.TechnicalUser!.Id,
+                    con.TechnicalUser.Name,
+                    con.TechnicalUser.ClientClientId,
+                    con.TechnicalUser.Description),
+                con.ConnectorUrl)
+        ).SingleOrDefaultAsync();
+
+    /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ManagedConnectorData>?>> GetManagedConnectorsForCompany(Guid companyId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
