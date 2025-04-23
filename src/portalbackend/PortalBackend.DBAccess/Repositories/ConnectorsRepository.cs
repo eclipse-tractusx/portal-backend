@@ -33,41 +33,20 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
 {
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
-        (skip, take) => Pagination.CreateSourceQueryAsync(
-            skip,
-            take,
-            dbContext.Connectors.AsNoTracking()
-                .Where(x => x.ProviderId == companyId &&
-                       x.StatusId != ConnectorStatusId.INACTIVE &&
-                       x.TypeId == ConnectorTypeId.COMPANY_CONNECTOR)
-                .GroupBy(c => c.ProviderId),
-            connector => connector.OrderByDescending(c => c.Name),
-            con => new ConnectorData(
-                con.Name,
-                con.Location!.Alpha2Code,
-                con.Id,
-                con.TypeId,
-                con.StatusId,
-                con.HostId,
-                con.Host!.Name,
-                con.SelfDescriptionDocumentId,
-                con.TechnicalUserId == null ? null : new TechnicalUserData(
-                    con.TechnicalUser!.Id,
-                    con.TechnicalUser.Name,
-                    con.TechnicalUser.ClientClientId,
-                    con.TechnicalUser.Description),
-                con.ConnectorUrl)
-        ).SingleOrDefaultAsync();
+        GetConnectorsByType(companyId, ConnectorTypeId.COMPANY_CONNECTOR);
 
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllProvidedConnectorsForCompanyId(Guid companyId) =>
+        GetConnectorsByType(companyId, ConnectorTypeId.CONNECTOR_AS_A_SERVICE);
+
+    private Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetConnectorsByType(Guid companyId, ConnectorTypeId connectorTypeId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             dbContext.Connectors.AsNoTracking()
                 .Where(x => x.ProviderId == companyId &&
-                       x.StatusId != ConnectorStatusId.INACTIVE &&
-                       x.TypeId == ConnectorTypeId.CONNECTOR_AS_A_SERVICE)
+                            x.StatusId != ConnectorStatusId.INACTIVE &&
+                            x.TypeId == connectorTypeId)
                 .GroupBy(c => c.ProviderId),
             connector => connector.OrderByDescending(c => c.Name),
             con => new ConnectorData(
