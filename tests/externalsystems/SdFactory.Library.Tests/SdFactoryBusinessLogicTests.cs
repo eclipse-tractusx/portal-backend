@@ -18,6 +18,7 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
@@ -65,7 +66,8 @@ public class SdFactoryBusinessLogicTests
     private readonly SdFactoryBusinessLogic _sut;
     private readonly IFixture _fixture;
     private readonly IApplicationChecklistService _checklistService;
-    private readonly IOptions<SdFactorySettings> _options;
+    private readonly IOptions<SdFactorySettings> _sdFactoryOptions;
+    private readonly IOptions<ClearinghouseSettings> _clearinghouseOptions;
     private readonly IPortalRepositories _portalRepositories;
 
     public SdFactoryBusinessLogicTests()
@@ -91,11 +93,25 @@ public class SdFactoryBusinessLogicTests
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IProcessStepRepository<ProcessTypeId, ProcessStepTypeId>>()).Returns(_portalProcessStepRepository);
 
-        _options = Options.Create(new SdFactorySettings
+        _sdFactoryOptions = Options.Create(new SdFactorySettings
         {
             SdFactoryUrl = "https://www.api.sdfactory.com"
         });
-        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, _options);
+        _clearinghouseOptions = Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = false
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = "CN",
+                    ClearinghouseConnectDisabled = true
+                }
+            ]
+        });
+        _sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, _sdFactoryOptions, _clearinghouseOptions);
     }
 
     #endregion
@@ -137,10 +153,21 @@ public class SdFactoryBusinessLogicTests
         var entry = new ApplicationChecklistEntry(Guid.NewGuid(), ApplicationChecklistEntryTypeId.SELF_DESCRIPTION_LP, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns((CompanyId, LegalName, Bpn, CountryCode, Region, UniqueIdentifiers));
-        var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
+        var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, _sdFactoryOptions, Options.Create(new ClearinghouseSettings
         {
-            SdFactoryUrl = "https://www.api.sdfactory.com",
-            ClearinghouseConnectDisabled = clearinghouseConnectDisabled
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = clearinghouseConnectDisabled
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode,
+                    ClearinghouseConnectDisabled = clearinghouseConnectDisabled
+                }
+            ]
         }));
 
         // Act
@@ -446,7 +473,7 @@ public class SdFactoryBusinessLogicTests
         var sut = new SdFactoryBusinessLogic(_service, _portalRepositories, _checklistService, Options.Create(new SdFactorySettings
         {
             ConnectorAllowSdDocumentSkipErrorCode = "E2010",
-        }));
+        }), _clearinghouseOptions);
 
         // Act
         await sut.ProcessFinishSelfDescriptionLpForConnector(data, CancellationToken.None);

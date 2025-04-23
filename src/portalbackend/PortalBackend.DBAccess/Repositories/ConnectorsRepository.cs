@@ -189,7 +189,8 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                         .Any(ps =>
                             ps.ProcessStepStatusId == ProcessStepStatusId.TODO &&
                             processStepsToFilter.Contains(ps.ProcessStepTypeId)),
-                    connector.TechnicalUser.ExternalTechnicalUserCreationData == null ? null : connector.TechnicalUser.ExternalTechnicalUserCreationData!.ProcessId)
+                    connector.TechnicalUser.ExternalTechnicalUserCreationData == null ? null : connector.TechnicalUser.ExternalTechnicalUserCreationData!.ProcessId),
+                connector.LocationId
             )).SingleOrDefaultAsync();
 
     /// <inheritdoc />

@@ -249,6 +249,13 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
                 ca.Company.BusinessPartnerNumber))
             .SingleOrDefaultAsync();
 
+    public Task<string?> GetCompanyCountryByApplicationId(Guid applicationId) =>
+        portalDbContext.CompanyApplications
+            .AsNoTracking()
+            .Where(ca => ca.Id == applicationId)
+            .Select(ca => ca.Company!.Address!.CountryAlpha2Code)
+            .SingleOrDefaultAsync();
+
     public IAsyncEnumerable<CompanyInvitedUserData> GetInvitedUsersWithoutInitialRoles(Guid applicationId, IEnumerable<Guid> userRoleIds) =>
         portalDbContext.Invitations
             .Where(invitation => invitation.CompanyApplicationId == applicationId)

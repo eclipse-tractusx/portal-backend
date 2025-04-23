@@ -22,6 +22,7 @@ using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLogic;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
@@ -46,6 +47,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Tests.Busin
 public class ConnectorsBusinessLogicTests
 {
     private const string ValidCompanyBpn = "CATENAXBPN123";
+    private const string CountryCode_de = "de";
     private static readonly Guid CompanyUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020002");
     private static readonly Guid ServiceAccountUserId = new("ac1cf001-7fbc-1f2f-817f-bce058020003");
     private static readonly Guid ValidCompanyId = Guid.NewGuid();
@@ -91,8 +93,8 @@ public class ConnectorsBusinessLogicTests
         _dateTimeProvider = A.Fake<IDateTimeProvider>();
         _identity = A.Fake<IIdentityData>();
         _connectors = new List<Connector>();
-        var options = A.Fake<IOptions<ConnectorsSettings>>();
-        var settings = new ConnectorsSettings
+        var connectorOptions = A.Fake<IOptions<ConnectorsSettings>>();
+        var connectorSettings = new ConnectorsSettings
         {
             MaxPageSize = 15,
             ValidCertificationContentTypes = new[]
@@ -102,15 +104,31 @@ public class ConnectorsBusinessLogicTests
                 "application/pkix-cert"
             }
         };
+        var clearinghouseOptions = A.Fake<IOptions<ClearinghouseSettings>>();
+        var clearinghouseSettings = new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = false
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = "CN",
+                    ClearinghouseConnectDisabled = true
+                }
+            ]
+        };
         _documentRepository = A.Fake<IDocumentRepository>();
         SetupRepositoryMethods();
 
-        A.CallTo(() => options.Value).Returns(settings);
+        A.CallTo(() => connectorOptions.Value).Returns(connectorSettings);
+        A.CallTo(() => clearinghouseOptions.Value).Returns(clearinghouseSettings);
         A.CallTo(() => _identityService.IdentityData).Returns(_identity);
 
         SetupIdentity();
 
-        _logic = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        _logic = new ConnectorsBusinessLogic(_portalRepositories, connectorOptions, clearinghouseOptions, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
     }
 
     #region GetAllCompanyConnectorDatas
@@ -240,11 +258,24 @@ public class ConnectorsBusinessLogicTests
                 "application/x-pem-file",
                 "application/x-x509-ca-cert",
                 "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = clearingHouseDisabled
             },
-            ClearinghouseConnectDisabled = clearingHouseDisabled
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = clearingHouseDisabled
+                }
+            ]
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, ServiceAccountUserId);
 
         // Act
         var result = await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -266,7 +297,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         A.CallTo(() => _connectorsRepository.CheckConnectorExists(A<string>._, A<string>._))
             .Returns(true);
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", ServiceAccountUserId);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, ServiceAccountUserId);
         Task Act() => _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
         // Act
@@ -284,7 +315,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var saId = Guid.NewGuid();
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", saId);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, saId);
 
         // Act
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -306,7 +337,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithClientIdNull_DoesntSaveData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
 
         // Act
         var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -328,11 +359,24 @@ public class ConnectorsBusinessLogicTests
                 "application/x-pem-file",
                 "application/x-x509-ca-cert",
                 "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = true
             },
-            ClearinghouseConnectDisabled = true
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = true
+                }
+            ]
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
 
         // Act
@@ -347,7 +391,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
 
         // Act
@@ -376,7 +420,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithCompanyWithoutBpn_ThrowsUnexpectedConditionException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyWithoutBpnId);
 
         // Act
@@ -391,7 +435,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithFailingDapsService_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
 
         // Act
         var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -422,11 +466,24 @@ public class ConnectorsBusinessLogicTests
                 "application/x-pem-file",
                 "application/x-x509-ca-cert",
                 "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = clearingHouseDisabled
             },
-            ClearinghouseConnectDisabled = clearingHouseDisabled
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = clearingHouseDisabled
+                }
+            ]
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, ServiceAccountUserId);
         SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged();
         // Act
         var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
@@ -447,7 +504,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, null);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -456,8 +513,21 @@ public class ConnectorsBusinessLogicTests
                 "application/x-pem-file",
                 "application/x-x509-ca-cert",
                 "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = clearingHouseDisabled
             },
-            ClearinghouseConnectDisabled = clearingHouseDisabled
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = clearingHouseDisabled
+                }
+            ]
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         SetupTechnicalIdentity();
@@ -478,7 +548,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         A.CallTo(() => _connectorsRepository.CheckConnectorExists(A<string>._, A<string>._))
             .Returns(true);
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, ServiceAccountUserId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, ServiceAccountUserId);
         Task Act() => _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Act
@@ -518,7 +588,7 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((false, default, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -537,7 +607,7 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, false, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -556,7 +626,7 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, true, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -575,7 +645,7 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -594,7 +664,7 @@ public class ConnectorsBusinessLogicTests
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == ValidCompanyId)))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
@@ -612,7 +682,7 @@ public class ConnectorsBusinessLogicTests
         var companyId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, Guid.NewGuid(), companyId, null));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
 
         SetupTechnicalIdentity();
 
@@ -629,7 +699,7 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var saId = Guid.NewGuid();
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "de", _validOfferSubscriptionId, saId);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, saId);
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
@@ -743,7 +813,7 @@ public class ConnectorsBusinessLogicTests
         };
         var userId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, userId, _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, userId, _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
@@ -789,7 +859,7 @@ public class ConnectorsBusinessLogicTests
         };
         var userId = id == null ? default(Guid?) : new Guid(id);
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId, _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, statusId, userId, _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         A.CallTo(() => _documentRepository.AttachAndModifyDocument(A<Guid>._, A<Action<Document>>._, A<Action<Document>>._))
             .Invokes((Guid docId, Action<Document>? initialize, Action<Document> modify)
@@ -828,7 +898,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId, true);
@@ -845,16 +915,37 @@ public class ConnectorsBusinessLogicTests
     {
         // Arrange
         var connectorId = Guid.NewGuid();
-        var options = A.Fake<IOptions<ConnectorsSettings>>();
-        var settings = new ConnectorsSettings { ClearinghouseConnectDisabled = true };
-        A.CallTo(() => options.Value).Returns(settings);
-        var sut = new ConnectorsBusinessLogic(_portalRepositories, options, _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
+        var sut = new ConnectorsBusinessLogic(_portalRepositories,
+        Options.Create(new ConnectorsSettings
+        {
+            MaxPageSize = 15,
+            ValidCertificationContentTypes = new[]
+            {
+                "application/x-pem-file",
+                "application/x-x509-ca-cert",
+                "application/pkix-cert"
+            }
+        }),
+        Options.Create(new ClearinghouseSettings
+        {
+            DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
+            {
+                CountryAlpha2Code = "DefaultOrWhatever",
+                ClearinghouseConnectDisabled = true
+            },
+            RegionalClearinghouseCredentials = [
+                new ClearinghouseCredentialsSettings {
+                    CountryAlpha2Code = CountryCode_de,
+                    ClearinghouseConnectDisabled = true
+                }
+            ]
+        }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
         var connectorOfferSubscriptions = new[] {
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         await sut.DeleteConnectorAsync(connectorId, true);
@@ -878,7 +969,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(_fixture.Create<Guid>(), OfferSubscriptionStatusId.PENDING),
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId, true);
@@ -899,7 +990,7 @@ public class ConnectorsBusinessLogicTests
         var connectorId = Guid.NewGuid();
         var selfDescriptionDocumentId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId, true);
@@ -918,7 +1009,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.ACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         await _logic.DeleteConnectorAsync(connectorId, true);
@@ -934,7 +1025,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.INACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.INACTIVE, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
@@ -966,7 +1057,7 @@ public class ConnectorsBusinessLogicTests
         // Arrange
         var connectorId = Guid.NewGuid();
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(connectorId, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(false, null, null, default, Enumerable.Empty<ConnectorOfferSubscription>(), UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
@@ -990,7 +1081,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, null, null, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);
@@ -1016,7 +1107,7 @@ public class ConnectorsBusinessLogicTests
             new ConnectorOfferSubscription(offerSubscriptionId3, OfferSubscriptionStatusId.PENDING),
         };
         A.CallTo(() => _connectorsRepository.GetConnectorDeleteDataAsync(A<Guid>._, _identity.CompanyId, A<IEnumerable<ProcessStepTypeId>>._))
-            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>()));
+            .Returns(new DeleteConnectorData(true, selfDescriptionDocumentId, DocumentStatusId, ConnectorStatusId.PENDING, connectorOfferSubscriptions, UserStatusId.ACTIVE, Guid.NewGuid(), _fixture.Create<DeleteServiceAccountData>(), CountryCode_de));
 
         // Act
         async Task Act() => await _logic.DeleteConnectorAsync(connectorId, true);

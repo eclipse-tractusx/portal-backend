@@ -63,6 +63,11 @@ public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
     [Required(AllowEmptyStrings = false)]
     public string CountryAlpha2Code { get; set; } = null!;
 
+    /// <summary>
+    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
+    /// </summary>
+    public bool ClearinghouseConnectDisabled { get; set; }
+
     public bool Validate()
     {
         new ConfigurationValidation<ClearinghouseCredentialsSettings>()

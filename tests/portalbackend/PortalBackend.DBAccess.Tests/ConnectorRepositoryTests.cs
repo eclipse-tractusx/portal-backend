@@ -287,6 +287,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result.Should().NotBeNull();
         result!.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().BeNull();
+        result.Location.Should().Be("DE");
     }
 
     [Fact]
@@ -303,6 +304,7 @@ public class ConnectorRepositoryTests : IAssemblyFixture<TestDbFixture>
         result!.IsProvidingOrHostCompany.Should().BeTrue();
         result.SelfDescriptionDocumentId.Should().Be(new Guid("e020787d-1e04-4c0b-9c06-bd1cd44724b3"));
         result.DocumentStatusId.Should().Be(DocumentStatusId.LOCKED);
+        result.Location.Should().Be("DE");
     }
 
     [Fact]

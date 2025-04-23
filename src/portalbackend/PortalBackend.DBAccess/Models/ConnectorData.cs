@@ -75,7 +75,8 @@ public record DeleteConnectorData(
     IEnumerable<ConnectorOfferSubscription> ConnectorOfferSubscriptions,
     UserStatusId? UserStatusId,
     Guid? ServiceAccountId,
-    DeleteServiceAccountData DeleteServiceAccountData
+    DeleteServiceAccountData DeleteServiceAccountData,
+    string Location
 );
 public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
 
