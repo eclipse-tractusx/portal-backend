@@ -59,7 +59,11 @@ public class SdFactoryBusinessLogic(
         var companyCountry = await portalRepositories.GetInstance<IApplicationRepository>()
             .GetCompanyCountryByApplicationId(context.ApplicationId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
-        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(companyCountry!);
+        if (string.IsNullOrWhiteSpace(companyCountry))
+        {
+            throw new ConflictException($"Country for CompanyApplications {context.ApplicationId} is empty.");
+        }
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(companyCountry);
         if (countrySpecificSettings.ClearinghouseConnectDisabled)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(

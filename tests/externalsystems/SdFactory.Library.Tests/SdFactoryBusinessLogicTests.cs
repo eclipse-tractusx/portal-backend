@@ -188,6 +188,31 @@ public class SdFactoryBusinessLogicTests
     }
 
     [Fact]
+    public async Task StartSelfDescriptionRegistration_WithValidData_EmptyCountryCode()
+    {
+        // Arrange
+        var checklist = ImmutableDictionary.CreateRange<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>(
+            [
+                new(ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE),
+                new(ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE),
+                new(ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE)
+            ]);
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
+            .Returns<(Guid, string, string?, string?, string?, IEnumerable<(UniqueIdentifierId, string)>)>(default);
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(string.Empty);
+        // Act
+        async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+        ex.Message.Should().Be($"Country for CompanyApplications {context.ApplicationId} is empty.");
+        A.CallTo(() => _service.RegisterSelfDescriptionAsync(ApplicationId, LegalName, UniqueIdentifiers, CountryCode, Region, Bpn, A<CancellationToken>._))
+            .MustNotHaveHappened();
+    }
+
+    [Fact]
     public async Task StartSelfDescriptionRegistration_WithNoApplication_ThrowsConflictException()
     {
         // Arrange
@@ -200,7 +225,8 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns<(Guid, string, string?, string?, string?, IEnumerable<(UniqueIdentifierId, string)>)>(default);
-
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
@@ -224,7 +250,8 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns((CompanyId, LegalName, null, CountryCode, Region, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
-
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
@@ -251,7 +278,8 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns((CompanyId, LegalName, Bpn, countryCode, region, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
-
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
@@ -367,7 +395,8 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns<(Guid, string, string?, string?, string?, IEnumerable<(UniqueIdentifierId, string)>)>(default);
-
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 
@@ -389,7 +418,8 @@ public class SdFactoryBusinessLogicTests
         var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(ApplicationId, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
         A.CallTo(() => _applicationRepository.GetCompanyAndApplicationDetailsWithUniqueIdentifiersAsync(ApplicationId))
             .Returns((CompanyId, LegalName, null, CountryCode, Region, Enumerable.Empty<(UniqueIdentifierId Id, string Value)>()));
-
+        A.CallTo(() => _applicationRepository.GetCompanyCountryByApplicationId(ApplicationId))
+            .Returns(CountryCode);
         // Act
         async Task Act() => await _sut.StartSelfDescriptionRegistration(context, CancellationToken.None);
 

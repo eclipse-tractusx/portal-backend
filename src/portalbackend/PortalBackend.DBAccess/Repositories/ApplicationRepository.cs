@@ -251,7 +251,6 @@ public class ApplicationRepository(PortalDbContext portalDbContext)
 
     public Task<string?> GetCompanyCountryByApplicationId(Guid applicationId) =>
         portalDbContext.CompanyApplications
-            .AsNoTracking()
             .Where(ca => ca.Id == applicationId)
             .Select(ca => ca.Company!.Address!.CountryAlpha2Code)
             .SingleOrDefaultAsync();
