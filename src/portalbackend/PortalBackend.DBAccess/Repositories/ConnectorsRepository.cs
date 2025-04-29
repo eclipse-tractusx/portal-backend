@@ -33,13 +33,20 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
 {
     /// <inheritdoc/>
     public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId) =>
+        GetConnectorsByType(companyId, ConnectorTypeId.COMPANY_CONNECTOR);
+
+    /// <inheritdoc/>
+    public Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllProvidedConnectorsForCompanyId(Guid companyId) =>
+        GetConnectorsByType(companyId, ConnectorTypeId.CONNECTOR_AS_A_SERVICE);
+
+    private Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetConnectorsByType(Guid companyId, ConnectorTypeId connectorTypeId) =>
         (skip, take) => Pagination.CreateSourceQueryAsync(
             skip,
             take,
             dbContext.Connectors.AsNoTracking()
                 .Where(x => x.ProviderId == companyId &&
-                       x.StatusId != ConnectorStatusId.INACTIVE &&
-                       x.TypeId == ConnectorTypeId.COMPANY_CONNECTOR)
+                            x.StatusId != ConnectorStatusId.INACTIVE &&
+                            x.TypeId == connectorTypeId)
                 .GroupBy(c => c.ProviderId),
             connector => connector.OrderByDescending(c => c.Name),
             con => new ConnectorData(

@@ -784,6 +784,40 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+  /api/administration/Connectors/provided:
+    get:
+      tags:
+        - Connectors
+      summary: 'Retrieves all company registered provided connectors and their status. (Authorization required - Roles: view_connectors)'
+      description: "Example: GET: /api/administration/connectors/provided \n\r\nExample: GET: /api/administration/connectors/provided?page=0&size=15"
+      parameters:
+        - name: page
+          in: query
+          description: Optional query parameter defining the requested page number.
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: Optional query parameter defining the number of connectors listed per page.
+          schema:
+            type: integer
+            format: int32
+            default: 15
+          example: 15
+      responses:
+        '200':
+          description: Returns a list of all of the current user's company's provided connectors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectorDataResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   /api/administration/Connectors/managed:
     get:
       tags:

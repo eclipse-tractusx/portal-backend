@@ -38,6 +38,14 @@ public interface IConnectorsBusinessLogic
     Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(int page, int size);
 
     /// <summary>
+    /// Get all provided connectors of a user's company.
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="size"></param>
+    /// <returns>AsyncEnumerable of the result connectors.</returns>
+    Task<Pagination.Response<ConnectorData>> GetAllProvidedConnectorsData(int page, int size);
+
+    /// <summary>
     /// Get all of a user's company's connectors by iam user ID.
     /// </summary>
     /// <param name="page"></param>

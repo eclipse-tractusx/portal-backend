@@ -38,6 +38,13 @@ public interface IConnectorsRepository
     Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllCompanyConnectorsForCompanyId(Guid companyId);
 
     /// <summary>
+    /// Get all provided connectors of a user's company.
+    /// </summary>
+    /// <param name="companyId">The id of the provider company.</param>
+    /// <returns>Queryable of connectors that allows transformation.</returns>
+    Func<int, int, Task<Pagination.Source<ConnectorData>?>> GetAllProvidedConnectorsForCompanyId(Guid companyId);
+
+    /// <summary>
     /// Get all managed connectors of a user's company by iam user ID.
     /// </summary>
     /// <param name="userCompanyId">users company id.</param>

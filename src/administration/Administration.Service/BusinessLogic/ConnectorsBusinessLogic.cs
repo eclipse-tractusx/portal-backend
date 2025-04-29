@@ -65,6 +65,14 @@ public class ConnectorsBusinessLogic(
             portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityData.CompanyId));
 
     /// <inheritdoc/>
+    public Task<Pagination.Response<ConnectorData>> GetAllProvidedConnectorsData(int page, int size) =>
+        Pagination.CreateResponseAsync(
+            page,
+            size,
+            _settings.MaxPageSize,
+            portalRepositories.GetInstance<IConnectorsRepository>().GetAllProvidedConnectorsForCompanyId(_identityData.CompanyId));
+
+    /// <inheritdoc/>
     public Task<Pagination.Response<ManagedConnectorData>> GetManagedConnectorForCompany(int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
