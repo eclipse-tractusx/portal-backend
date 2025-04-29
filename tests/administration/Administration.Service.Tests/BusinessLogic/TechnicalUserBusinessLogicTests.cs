@@ -54,6 +54,7 @@ public class TechnicalUserBusinessLogicTests
     private static readonly Guid ValidServiceAccountId = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountVersion = Guid.NewGuid();
     private static readonly Guid ValidServiceAccountWithDimDataId = Guid.NewGuid();
+    private static readonly Guid ValidServiceAccountWithDimDataIDWithPendingUserStatus = Guid.NewGuid();
     private static readonly Guid InactiveServiceAccount = Guid.NewGuid();
     private static readonly Guid ExternalServiceAccount = Guid.NewGuid();
     private readonly IIdentityData _identity;
@@ -245,6 +246,27 @@ public class TechnicalUserBusinessLogicTests
         result.Secret.Should().Be("test");
         result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
         result.AuthenticationServiceUrl.Should().Be("https://example.org/auth");
+        result.TechnicalUserKindId.Should().Be(TechnicalUserKindId.EXTERNAL);
+        A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._)).MustNotHaveHappened();
+    }
+
+    [Fact]
+    public async Task GetOwnCompanyServiceAccountDetailsAsync_WithValidInputAndDimCompanyDataWithPendingUserStatusId()
+    {
+        // Arrange
+        SetupGetOwnCompanyServiceAccountDetails();
+        var sut = new TechnicalUserBusinessLogic(_provisioningManager, _portalRepositories, _options, null!, _identityService, _serviceAccountManagement);
+
+        // Act
+        var result = await sut.GetOwnCompanyServiceAccountDetailsAsync(ValidServiceAccountWithDimDataIDWithPendingUserStatus);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Secret.Should().Be("test");
+        result.IamClientAuthMethod.Should().Be(IamClientAuthMethod.SECRET);
+        result.UserStatusId.Should().Be(UserStatusId.PENDING);
+        result.AuthenticationServiceUrl.Should().Be("Technical User Status is Still in pending state");
         result.TechnicalUserKindId.Should().Be(TechnicalUserKindId.EXTERNAL);
         A.CallTo(() => _provisioningManager.GetIdOfCentralClientAsync(A<string>._)).MustNotHaveHappened();
         A.CallTo(() => _provisioningManager.GetCentralClientAuthDataAsync(A<string>._)).MustNotHaveHappened();
@@ -844,12 +866,20 @@ public class TechnicalUserBusinessLogicTests
             .With(x => x.TechnicalUserKindId, TechnicalUserKindId.EXTERNAL)
             .Create();
 
+        var dataWithPendingUserStatus = _fixture.Build<TechnicalUserDetailedData>()
+            .With(x => x.DimServiceAccountData, dimServiceAccountData)
+            .With(x => x.Status, UserStatusId.PENDING)
+            .With(x => x.TechnicalUserKindId, TechnicalUserKindId.EXTERNAL)
+            .Create();
+
         A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUserDataUntrackedAsync(ValidServiceAccountId, ValidCompanyId))
             .Returns(data);
         A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUserDataUntrackedAsync(ValidServiceAccountWithDimDataId, ValidCompanyId))
             .Returns(dataWithDim);
+        A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUserDataUntrackedAsync(ValidServiceAccountWithDimDataIDWithPendingUserStatus, ValidCompanyId))
+            .Returns(dataWithPendingUserStatus);
         A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUserDataUntrackedAsync(
-                A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId || x == ValidServiceAccountWithDimDataId), ValidCompanyId))
+                A<Guid>.That.Not.Matches(x => x == ValidServiceAccountId || x == ValidServiceAccountWithDimDataId || x == ValidServiceAccountWithDimDataIDWithPendingUserStatus), ValidCompanyId))
             .Returns<TechnicalUserDetailedData?>(null);
         A.CallTo(() => _technicalUserRepository.GetOwnTechnicalUserDataUntrackedAsync(ValidServiceAccountId, A<Guid>.That.Not.Matches(x => x == ValidCompanyId)))
             .Returns<TechnicalUserDetailedData?>(null);

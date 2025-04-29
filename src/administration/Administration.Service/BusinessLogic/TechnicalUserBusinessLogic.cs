@@ -168,7 +168,10 @@ public class TechnicalUserBusinessLogic(
 
         if (result.DimServiceAccountData != null)
         {
-            authServiceUrl = result.DimServiceAccountData.AuthenticationServiceUrl;
+            authServiceUrl = result.Status == UserStatusId.PENDING
+                ? "Technical User Status is Still in pending state"
+                : result.DimServiceAccountData.AuthenticationServiceUrl;
+
             iamClientAuthMethod = IamClientAuthMethod.SECRET;
             var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
             secret = cryptoHelper.Decrypt(
