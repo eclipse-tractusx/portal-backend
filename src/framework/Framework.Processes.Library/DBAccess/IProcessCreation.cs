@@ -22,14 +22,12 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public interface IProcessCreation<TProcess, TProcessType, TProcessStep, TProcessStepType, in TProcessTypeId, in TProcessStepTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>
-    where TProcessType : class, IProcessType<TProcessTypeId>, IProcessTypeNavigation<TProcess, TProcessTypeId>
-    where TProcessStep : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcess, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
-    where TProcessStepType : class, IProcessStepType<TProcessStepTypeId>, IProcessStepTypeNavigation<TProcessStep, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessCreation<out TProcess, TProcessType, out TProcessStep, TProcessStepType>
+    where TProcess : class, IProcess, IProcessNavigation<TProcessStep>
+    where TProcessType : class, IProcessType, IProcessTypeNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep, IProcessStepNavigation<TProcess, TProcessType, TProcessStepType>
+    where TProcessStepType : class, IProcessStepType, IProcessStepTypeNavigation<TProcessStep, TProcessType>
 {
-    TProcess CreateProcess(Guid id, TProcessTypeId processTypeId, Guid version);
-    TProcessStep CreateProcessStep(Guid id, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now);
+    TProcess CreateProcess(Guid id, Guid version);
+    TProcessStep CreateProcessStep<TProcessTypeId, TProcessStepTypeId>(Guid id, TProcessTypeId processTypeId, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now);
 }

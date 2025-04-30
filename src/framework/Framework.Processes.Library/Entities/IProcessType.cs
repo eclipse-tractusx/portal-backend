@@ -21,10 +21,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 
-public interface IProcessType<out TProcessTypeId>
-    where TProcessTypeId : struct, IConvertible
+public interface IProcessType
 {
-    TProcessTypeId Id { get; }
+    int Id { get; }
 
     [MaxLength(255)]
     string Label { get; }

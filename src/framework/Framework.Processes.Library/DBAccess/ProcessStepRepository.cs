@@ -25,49 +25,44 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public class ProcessStepRepository<TProcess, TProcessType, TProcessStep, TProcessStepType, TProcessTypeId, TProcessStepTypeId>(IProcessRepositoryContextAccess<TProcess, TProcessType, TProcessStep, TProcessStepType, TProcessTypeId, TProcessStepTypeId> dbContext) :
-    IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>
-    where TProcessType : class, IProcessType<TProcessTypeId>, IProcessTypeNavigation<TProcess, TProcessTypeId>
-    where TProcessStep : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcess, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
-    where TProcessStepType : class, IProcessStepType<TProcessStepTypeId>, IProcessStepTypeNavigation<TProcessStep, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public class ProcessStepRepository<TProcess, TProcessType, TProcessStep, TProcessStepType>(IProcessRepositoryContextAccess<TProcess, TProcessType, TProcessStep, TProcessStepType> dbContext) :
+    IProcessStepRepository
+    where TProcess : class, IProcess, IProcessNavigation<TProcessStep>
+    where TProcessType : class, IProcessType, IProcessTypeNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep, IProcessStepNavigation<TProcess, TProcessType, TProcessStepType>
+    where TProcessStepType : class, IProcessStepType, IProcessStepTypeNavigation<TProcessStep, TProcessType>
 {
-    public IProcess<TProcessTypeId> CreateProcess(TProcessTypeId processTypeId) =>
-        dbContext.Processes.Add(dbContext.CreateProcess(Guid.NewGuid(), processTypeId, Guid.NewGuid())).Entity;
+    public IProcess CreateProcess() =>
+        dbContext.Processes.Add(dbContext.CreateProcess(Guid.NewGuid(), Guid.NewGuid())).Entity;
 
-    public IEnumerable<IProcess<TProcessTypeId>> CreateProcessRange(IEnumerable<TProcessTypeId> processTypeIds)
+    public IProcessStep CreateProcessStep<TProcessTypeId, TProcessStepTypeId>(TProcessTypeId processTypeId, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId)
+        where TProcessTypeId : struct, IConvertible
+        where TProcessStepTypeId : struct, IConvertible =>
+        dbContext.ProcessSteps.Add(dbContext.CreateProcessStep(Guid.NewGuid(), Convert.ToInt32(processTypeId), Convert.ToInt32(processStepTypeId), processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
+
+    public IEnumerable<IProcessStep> CreateProcessStepRange<TProcessTypeId, TProcessStepTypeId>(IEnumerable<(TProcessTypeId ProcessTypeId, TProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
+        where TProcessTypeId : struct, IConvertible
+        where TProcessStepTypeId : struct, IConvertible
     {
-        var processes = processTypeIds.Select(x => dbContext.CreateProcess(Guid.NewGuid(), x, Guid.NewGuid())).ToImmutableList();
-        dbContext.Processes.AddRange(processes);
-        return processes;
-    }
-
-    public IProcessStep<TProcessStepTypeId> CreateProcessStep(TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId) =>
-        dbContext.ProcessSteps.Add(dbContext.CreateProcessStep(Guid.NewGuid(), processStepTypeId, processStepStatusId, processId, DateTimeOffset.UtcNow)).Entity;
-
-    public IEnumerable<IProcessStep<TProcessStepTypeId>> CreateProcessStepRange(IEnumerable<(TProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
-    {
-        var processSteps = processStepTypeStatus.Select(x => dbContext.CreateProcessStep(Guid.NewGuid(), x.ProcessStepTypeId, x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToImmutableList();
+        var processSteps = processStepTypeStatus.Select(x => dbContext.CreateProcessStep(Guid.NewGuid(), Convert.ToInt32(x.ProcessTypeId), Convert.ToInt32(x.ProcessStepTypeId), x.ProcessStepStatusId, x.ProcessId, DateTimeOffset.UtcNow)).ToArray();
         dbContext.ProcessSteps.AddRange(processSteps);
         return processSteps;
     }
 
-    public void AttachAndModifyProcessStep(Guid processStepId, Action<IProcessStep<TProcessStepTypeId>>? initialize, Action<IProcessStep<TProcessStepTypeId>> modify)
+    public void AttachAndModifyProcessStep(Guid processStepId, Action<IProcessStep>? initialize, Action<IProcessStep> modify)
     {
-        var step = dbContext.CreateProcessStep(processStepId, default, default, Guid.Empty, default);
+        var step = dbContext.CreateProcessStep(processStepId, 0, 0, default, Guid.Empty, default);
         initialize?.Invoke(step);
         dbContext.ProcessSteps.Attach(step);
         step.DateLastChanged = DateTimeOffset.UtcNow;
         modify(step);
     }
 
-    public void AttachAndModifyProcessSteps(IEnumerable<(Guid ProcessStepId, Action<IProcessStep<TProcessStepTypeId>>? Initialize, Action<IProcessStep<TProcessStepTypeId>> Modify)> processStepIdsInitializeModifyData)
+    public void AttachAndModifyProcessSteps(IEnumerable<(Guid ProcessStepId, Action<IProcessStep>? Initialize, Action<IProcessStep> Modify)> processStepIdsInitializeModifyData)
     {
         var stepModifyData = processStepIdsInitializeModifyData.Select(data =>
             {
-                var step = dbContext.CreateProcessStep(data.ProcessStepId, default, default, Guid.Empty, default);
+                var step = dbContext.CreateProcessStep(data.ProcessStepId, 0, 0, default, Guid.Empty, default);
                 data.Initialize?.Invoke(step);
                 return (Step: step, data.Modify);
             }).ToImmutableList();
@@ -79,16 +74,15 @@ public class ProcessStepRepository<TProcess, TProcessType, TProcessStep, TProces
             });
     }
 
-    public IAsyncEnumerable<IProcess<TProcessTypeId>> GetActiveProcesses(IEnumerable<TProcessTypeId> processTypeIds, IEnumerable<TProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate) =>
+    public IAsyncEnumerable<IProcess> GetActiveProcesses(DateTimeOffset lockExpiryDate) =>
         dbContext.Processes
             .AsNoTracking()
             .Where(process =>
-                processTypeIds.Contains(process.ProcessTypeId) &&
-                process.ProcessSteps.Any(step => processStepTypeIds.Contains(step.ProcessStepTypeId) && step.ProcessStepStatusId == ProcessStepStatusId.TODO) &&
+                process.ProcessSteps.Any(step => step.ProcessStepType!.IsExecutable && step.ProcessStepStatusId == ProcessStepStatusId.TODO) &&
                 (process.LockExpiryDate == null || process.LockExpiryDate < lockExpiryDate))
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<(Guid ProcessStepId, TProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId) =>
+    public IAsyncEnumerable<(int ProcessTypeId, Guid ProcessStepId, int ProcessStepTypeId)> GetProcessStepData(Guid processId) =>
         dbContext.ProcessSteps
             .AsNoTracking()
             .Where(step =>
@@ -96,21 +90,23 @@ public class ProcessStepRepository<TProcess, TProcessType, TProcessStep, TProces
                 step.ProcessStepStatusId == ProcessStepStatusId.TODO)
             .OrderBy(step => step.ProcessStepTypeId)
             .Select(step =>
-                new ValueTuple<Guid, TProcessStepTypeId>(
+                new ValueTuple<int, Guid, int>(
+                    step.ProcessTypeId,
                     step.Id,
                     step.ProcessStepTypeId))
             .AsAsyncEnumerable();
 
-    public Task<(bool ProcessExists, VerifyProcessData<TProcessTypeId, TProcessStepTypeId> ProcessData)> IsValidProcess(Guid processId, TProcessTypeId processTypeId, IEnumerable<TProcessStepTypeId> processStepTypeIds) =>
+    public Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, int processTypeId, IEnumerable<int> processStepTypeIds) =>
         dbContext.Processes
             .AsNoTracking()
-            .Where(x => x.Id == processId && x.ProcessTypeId.Equals(processTypeId))
-            .Select(x => new ValueTuple<bool, VerifyProcessData<TProcessTypeId, TProcessStepTypeId>>(
+            .Where(x => x.Id == processId && x.ProcessSteps.Any(ps => ps.ProcessTypeId.Equals(processTypeId)))
+            .Select(x => new ValueTuple<bool, VerifyProcessData>(
                 true,
-                new VerifyProcessData<TProcessTypeId, TProcessStepTypeId>(
+                new VerifyProcessData(
                     x,
                     x.ProcessSteps
                         .Where(step =>
+                            step.ProcessTypeId.Equals(processTypeId) &&
                             processStepTypeIds.Contains(step.ProcessStepTypeId) &&
                             step.ProcessStepStatusId == ProcessStepStatusId.TODO))
             ))

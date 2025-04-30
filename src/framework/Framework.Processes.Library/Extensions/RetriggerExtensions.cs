@@ -28,22 +28,21 @@ public static class RetriggerExtensions
     public static async Task TriggerProcessStep<TProcessTypeId, TProcessStepTypeId>(
         this TProcessStepTypeId stepToTrigger,
         Guid processId,
-        IRepositories processRepositories,
-        Func<TProcessStepTypeId, (TProcessTypeId, TProcessStepTypeId)> getProcessStepForRetrigger)
-        where TProcessTypeId : struct, IConvertible
-        where TProcessStepTypeId : struct, IConvertible
+        IRepositories processRepositories)
+        where TProcessTypeId : struct, Enum
+        where TProcessStepTypeId : struct, Enum
     {
-        var (processType, nextStep) = getProcessStepForRetrigger(stepToTrigger);
+        var (processType, nextStep) = stepToTrigger.GetStepToRetrigger<TProcessTypeId, TProcessStepTypeId>();
 
-        var (validProcessId, processData) = await processRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().IsValidProcess(processId, processType, Enumerable.Repeat(stepToTrigger, 1)).ConfigureAwait(ConfigureAwaitOptions.None);
+        var (validProcessId, processData) = await processRepositories.GetInstance<IProcessStepRepository>().IsValidProcess(processId, Convert.ToInt32(processType), Enumerable.Repeat(Convert.ToInt32(stepToTrigger), 1)).ConfigureAwait(ConfigureAwaitOptions.None);
         if (!validProcessId)
         {
             throw new NotFoundException($"process {processId} does not exist");
         }
 
-        var context = processData.CreateManualProcessData(stepToTrigger, processRepositories, () => $"processId {processId}");
+        var context = processData.CreateManualProcessData<TProcessStepTypeId>(stepToTrigger, processRepositories, () => $"processId {processId}");
 
-        context.ScheduleProcessSteps(Enumerable.Repeat(nextStep, 1));
+        context.ScheduleProcessSteps(processType, Enumerable.Repeat(nextStep, 1));
         context.FinalizeProcessStep();
         await processRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

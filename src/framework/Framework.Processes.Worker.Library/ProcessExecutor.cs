@@ -24,66 +24,76 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library.Extensions;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 
-public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecutor<TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public class ProcessExecutor<TProcessTypeId> : IProcessExecutor
+    where TProcessTypeId : struct, Enum
 {
-    private readonly ImmutableDictionary<TProcessTypeId, IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> _executors;
-    private readonly IProcessStepRepository<TProcessTypeId, TProcessStepTypeId> _processStepRepository;
-    private readonly ILogger<ProcessExecutor<TProcessTypeId, TProcessStepTypeId>> _logger;
+    private readonly ImmutableDictionary<TProcessTypeId, IProcessTypeExecutor<TProcessTypeId>> _executors;
+    private readonly IProcessStepRepository _processStepRepository;
+    private readonly ILogger<ProcessExecutor<TProcessTypeId>> _logger;
 
-    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>> executors, IRepositories processRepositories, ILogger<ProcessExecutor<TProcessTypeId, TProcessStepTypeId>> logger)
+    public ProcessExecutor(IEnumerable<IProcessTypeExecutor<TProcessTypeId>> executors, IRepositories processRepositories, ILogger<ProcessExecutor<TProcessTypeId>> logger)
     {
-        _processStepRepository = processRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>();
-        _executors = executors.ToImmutableDictionary(executor => executor.GetProcessTypeId());
+        _processStepRepository = processRepositories.GetInstance<IProcessStepRepository>();
+        _executors = executors.ToImmutableDictionary(x => x.GetProcessTypeId());
         _logger = logger;
     }
 
-    public IEnumerable<TProcessTypeId> GetRegisteredProcessTypeIds() => _executors.Keys;
-    public IEnumerable<TProcessStepTypeId> GetExecutableStepTypeIds() => _executors.Values.SelectMany(executor => executor.GetExecutableStepTypeIds());
-
-    public async IAsyncEnumerable<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult> ExecuteProcess(Guid processId, TProcessTypeId processTypeId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<IProcessExecutor.ProcessExecutionResult> ExecuteProcess(Guid processId, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (!_executors.TryGetValue(processTypeId, out var executor))
-        {
-            throw new UnexpectedConditionException($"processType {processTypeId} is not a registered executable processType.");
-        }
-
         var allSteps = await _processStepRepository
             .GetProcessStepData(processId)
-            .PreSortedGroupBy(x => x.ProcessStepTypeId, x => x.ProcessStepId)
+            .PreSortedGroupBy(x => x.ProcessTypeId, x => new { x.ProcessStepTypeId, x.ProcessStepId })
             .ToDictionaryAsync(g => g.Key, g => g.AsEnumerable(), cancellationToken)
             .ConfigureAwait(false);
 
-        var context = new ProcessContext(
-            processId,
-            allSteps,
-            new ProcessStepTypeSet(allSteps.Keys.Where(x => executor.IsExecutableStepTypeId(x))),
-            executor);
+        foreach (var (processTypeId, steps) in allSteps)
+        {
+            if (!_executors.TryGetValue((TProcessTypeId)(object)processTypeId, out var executor))
+            {
+                throw new UnexpectedConditionException($"processType {processTypeId} is not a registered executable processType.");
+            }
 
-        var (modified, initialStepTypeIds) = await executor.InitializeProcess(processId, context.AllSteps.Keys).ConfigureAwait(false);
+            var executableProcessStepTypeIds = ((TProcessTypeId)(object)processTypeId).GetExecutableProcessStepTypeIdsForProcessType();
+            var context = new ProcessContext(
+                processId,
+                steps.GroupBy(x => x.ProcessStepTypeId, x => x.ProcessStepId).ToImmutableSortedDictionary<IGrouping<int, Guid>, int, IEnumerable<Guid>>(x => x.Key, guids => guids.AsEnumerable()),
+                new ProcessStepTypeSet(allSteps.Keys.Where<int>(x => executableProcessStepTypeIds.Contains(x))),
+                executor);
+            await foreach (var p in ExecuteProcessForType(executor, context, cancellationToken)) yield return p;
+        }
+    }
+
+    private async IAsyncEnumerable<IProcessExecutor.ProcessExecutionResult> ExecuteProcessForType(
+        IProcessTypeExecutor<TProcessTypeId> executor,
+        ProcessContext context,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var (modified, initialStepTypeIds) = await executor.InitializeProcess(context.ProcessId, context.AllSteps.Keys);
 
         modified |= ScheduleProcessStepTypeIds(initialStepTypeIds, context);
 
         yield return modified
-            ? IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.SaveRequested
-            : IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.Unmodified;
+            ? IProcessExecutor.ProcessExecutionResult.SaveRequested
+            : IProcessExecutor.ProcessExecutionResult.Unmodified;
 
         while (context.ExecutableStepTypeIds.TryGetNext(out var stepTypeId))
         {
-            if (await executor.IsLockRequested(stepTypeId).ConfigureAwait(false))
+            var isLockRequested = await executor.IsLockRequested(stepTypeId).ConfigureAwait(false);
+            if (isLockRequested)
             {
-                yield return IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.LockRequested;
+                yield return IProcessExecutor.ProcessExecutionResult.LockRequested;
             }
 
             ProcessStepStatusId resultStepStatusId;
-            IEnumerable<TProcessStepTypeId>? scheduleStepTypeIds;
-            IEnumerable<TProcessStepTypeId>? skipStepTypeIds;
+            IEnumerable<int>? scheduleStepTypeIds;
+            IEnumerable<int>? skipStepTypeIds;
             string? processMessage;
             bool success;
             try
@@ -103,7 +113,7 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
 
             if (!success)
             {
-                yield return IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.Unmodified;
+                yield return IProcessExecutor.ProcessExecutionResult.Unmodified;
             }
 
             modified |= SetProcessStepStatus(stepTypeId, resultStepStatusId, context, processMessage);
@@ -111,12 +121,12 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
             modified |= ScheduleProcessStepTypeIds(scheduleStepTypeIds, context);
 
             yield return modified
-                ? IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.SaveRequested
-                : IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.Unmodified;
+                ? IProcessExecutor.ProcessExecutionResult.SaveRequested
+                : IProcessExecutor.ProcessExecutionResult.Unmodified;
         }
     }
 
-    private bool ScheduleProcessStepTypeIds(IEnumerable<TProcessStepTypeId>? scheduleStepTypeIds, ProcessContext context)
+    private bool ScheduleProcessStepTypeIds(IEnumerable<int>? scheduleStepTypeIds, ProcessContext context)
     {
         if (scheduleStepTypeIds == null || !scheduleStepTypeIds.Any())
         {
@@ -124,15 +134,15 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
         }
 
         var newStepTypeIds = scheduleStepTypeIds.Except(context.AllSteps.Keys).ToList();
-        if (!newStepTypeIds.Any())
+        if (newStepTypeIds.Count == 0)
         {
             return false;
         }
 
-        foreach (var newStep in _processStepRepository.CreateProcessStepRange(newStepTypeIds.Select(stepTypeId => (stepTypeId, ProcessStepStatusId.TODO, context.ProcessId))))
+        foreach (var newStep in _processStepRepository.CreateProcessStepRange(newStepTypeIds.Select(stepTypeId => (context.Executor.GetProcessTypeId(), stepTypeId, ProcessStepStatusId.TODO, context.ProcessId))))
         {
             var processStepTypeId = newStep.ProcessStepTypeId;
-            context.AllSteps.Add(processStepTypeId, new[] { newStep.Id });
+            context.AllSteps.Add(processStepTypeId, [newStep.Id]);
             if (context.Executor.IsExecutableStepTypeId(processStepTypeId))
             {
                 context.ExecutableStepTypeIds.Add(processStepTypeId);
@@ -142,7 +152,7 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
         return true;
     }
 
-    private bool SkipProcessStepTypeIds(IEnumerable<TProcessStepTypeId>? skipStepTypeIds, ProcessContext context)
+    private bool SkipProcessStepTypeIds(IEnumerable<int>? skipStepTypeIds, ProcessContext context)
     {
         if (skipStepTypeIds == null || !skipStepTypeIds.Any())
         {
@@ -164,7 +174,7 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
         return modified;
     }
 
-    private bool SetProcessStepStatus(TProcessStepTypeId stepTypeId, ProcessStepStatusId stepStatusId, ProcessContext context, string? processMessage)
+    private bool SetProcessStepStatus(int stepTypeId, ProcessStepStatusId stepStatusId, ProcessContext context, string? processMessage)
     {
         if ((stepStatusId == ProcessStepStatusId.TODO && processMessage == null) || !context.AllSteps.Remove(stepTypeId, out var stepIds))
         {
@@ -190,23 +200,23 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
         return true;
     }
 
-    private sealed record ProcessContext(
+    public sealed record ProcessContext(
         Guid ProcessId,
-        IDictionary<TProcessStepTypeId, IEnumerable<Guid>> AllSteps,
+        IDictionary<int, IEnumerable<Guid>> AllSteps,
         ProcessStepTypeSet ExecutableStepTypeIds,
-        IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId> Executor
+        IProcessTypeExecutor<TProcessTypeId> Executor
     );
 
-    private sealed class ProcessStepTypeSet(IEnumerable<TProcessStepTypeId> items)
+    public sealed class ProcessStepTypeSet(IEnumerable<int> items)
     {
-        private readonly HashSet<TProcessStepTypeId> _items = [.. items];
+        private readonly HashSet<int> _items = [.. items];
 
-        public bool TryGetNext(out TProcessStepTypeId item)
+        public bool TryGetNext(out int item)
         {
             using var enumerator = _items.GetEnumerator();
             if (!enumerator.MoveNext())
             {
-                item = default;
+                item = 0;
                 return false;
             }
 
@@ -215,8 +225,8 @@ public class ProcessExecutor<TProcessTypeId, TProcessStepTypeId> : IProcessExecu
             return true;
         }
 
-        public void Add(TProcessStepTypeId item) => _items.Add(item);
+        public void Add(int item) => _items.Add(item);
 
-        public void Remove(TProcessStepTypeId item) => _items.Remove(item);
+        public void Remove(int item) => _items.Remove(item);
     }
 }

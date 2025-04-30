@@ -22,11 +22,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 
-public record ManualProcessStepData<TProcessTypeId, TProcessStepTypeId>(
+public record ManualProcessStepData<TProcessStepTypeId>(
     TProcessStepTypeId? ProcessStepTypeId,
-    IProcess<TProcessTypeId> Process,
-    IEnumerable<IProcessStep<TProcessStepTypeId>> ProcessSteps,
+    IProcess Process,
+    IEnumerable<IProcessStep> ProcessSteps,
     IRepositories ProcessRepositories
 )
-where TProcessTypeId : struct, IConvertible
 where TProcessStepTypeId : struct, IConvertible;

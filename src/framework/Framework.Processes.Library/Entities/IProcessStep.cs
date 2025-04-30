@@ -21,11 +21,11 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-public interface IProcessStep<out TProcessStepTypeId>
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessStep
 {
     Guid Id { get; }
-    TProcessStepTypeId ProcessStepTypeId { get; }
+    int ProcessTypeId { get; set; }
+    int ProcessStepTypeId { get; }
     ProcessStepStatusId ProcessStepStatusId { get; set; }
     Guid ProcessId { get; }
     DateTimeOffset DateCreated { get; }

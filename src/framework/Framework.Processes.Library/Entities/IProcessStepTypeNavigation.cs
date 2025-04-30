@@ -21,9 +21,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 
-public interface IProcessStepTypeNavigation<TProcessStep, TProcessStepTypeId>
-    where TProcessStep : class, IProcessStep<TProcessStepTypeId>
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessStepTypeNavigation<TProcessStep, out TProcessType>
+    where TProcessStep : class, IProcessStep
+    where TProcessType : class, IProcessType
 {
     ICollection<TProcessStep> ProcessSteps { get; }
+    TProcessType? ProcessType { get; }
 }

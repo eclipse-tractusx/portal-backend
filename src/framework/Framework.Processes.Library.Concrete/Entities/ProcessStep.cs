@@ -23,22 +23,23 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>(
+public class ProcessStep<TProcess>(
     Guid id,
-    TProcessStepTypeId processStepTypeId,
+    int processTypeId,
+    int processStepTypeId,
     ProcessStepStatusId processStepStatusId,
     Guid processId,
     DateTimeOffset dateCreated) :
-    IProcessStep<TProcessStepTypeId>,
-    IProcessStepNavigation<TProcess, ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
+    IProcessStep,
+    IProcessStepNavigation<TProcess, ProcessType<ProcessStep<TProcess>>, ProcessStepType<TProcess, ProcessType<ProcessStep<TProcess>>>>,
     IBaseEntity
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+    where TProcess : class, IProcess
 {
     public Guid Id { get; private set; } = id;
 
-    public TProcessStepTypeId ProcessStepTypeId { get; private set; } = processStepTypeId;
+    public int ProcessTypeId { get; set; } = processTypeId;
+
+    public int ProcessStepTypeId { get; private set; } = processStepTypeId;
 
     public ProcessStepStatusId ProcessStepStatusId { get; set; } = processStepStatusId;
 
@@ -52,6 +53,7 @@ public class ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>(
 
     // Navigation properties
     public virtual TProcess? Process { get; private set; }
-    public virtual ProcessStepType<TProcess, TProcessTypeId, TProcessStepTypeId>? ProcessStepType { get; private set; }
-    public virtual ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>? ProcessStepStatus { get; private set; }
+    public virtual ProcessType<ProcessStep<TProcess>>? ProcessType { get; private set; }
+    public virtual ProcessStepType<TProcess, ProcessType<ProcessStep<TProcess>>>? ProcessStepType { get; private set; }
+    public virtual ProcessStepStatus<TProcess>? ProcessStepStatus { get; private set; }
 }

@@ -21,11 +21,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library;
 
-public interface IProcessStepType<out TProcessStepTypeId>
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessStepType
 {
-    TProcessStepTypeId Id { get; }
+    int ProcessStepTypeId { get; }
+    int ProcessTypeId { get; }
 
     [MaxLength(255)]
     string Label { get; }
+
+    bool IsExecutable { get; }
 }

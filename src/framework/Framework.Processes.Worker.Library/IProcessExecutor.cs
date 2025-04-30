@@ -20,9 +20,7 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 
-public interface IProcessExecutor<TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessExecutor
 {
     enum ProcessExecutionResult
     {
@@ -31,7 +29,5 @@ public interface IProcessExecutor<TProcessTypeId, TProcessStepTypeId>
         Unmodified = 3
     }
 
-    IAsyncEnumerable<ProcessExecutionResult> ExecuteProcess(Guid processId, TProcessTypeId processTypeId, CancellationToken cancellationToken);
-    IEnumerable<TProcessTypeId> GetRegisteredProcessTypeIds();
-    IEnumerable<TProcessStepTypeId> GetExecutableStepTypeIds();
+    IAsyncEnumerable<ProcessExecutionResult> ExecuteProcess(Guid processId, CancellationToken cancellationToken);
 }

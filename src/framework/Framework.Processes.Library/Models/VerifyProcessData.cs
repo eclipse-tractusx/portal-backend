@@ -21,9 +21,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
 
-public record VerifyProcessData<TProcessTypeId, TProcessStepTypeId>(
-    IProcess<TProcessTypeId>? Process,
-    IEnumerable<IProcessStep<TProcessStepTypeId>>? ProcessSteps
-)
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible;
+public record VerifyProcessData(
+    IProcess? Process,
+    IEnumerable<IProcessStep>? ProcessSteps
+);

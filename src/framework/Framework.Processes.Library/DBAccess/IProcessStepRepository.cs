@@ -26,17 +26,21 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAcce
 /// <summary>
 /// Repository for accessing and creating processSteps on persistence layer.
 /// </summary>
-public interface IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessStepRepository
 {
-    IProcess<TProcessTypeId> CreateProcess(TProcessTypeId processTypeId);
-    IEnumerable<IProcess<TProcessTypeId>> CreateProcessRange(IEnumerable<TProcessTypeId> processTypeIds);
-    IProcessStep<TProcessStepTypeId> CreateProcessStep(TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId);
-    IEnumerable<IProcessStep<TProcessStepTypeId>> CreateProcessStepRange(IEnumerable<(TProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus);
-    void AttachAndModifyProcessStep(Guid processStepId, Action<IProcessStep<TProcessStepTypeId>>? initialize, Action<IProcessStep<TProcessStepTypeId>> modify);
-    void AttachAndModifyProcessSteps(IEnumerable<(Guid ProcessStepId, Action<IProcessStep<TProcessStepTypeId>>? Initialize, Action<IProcessStep<TProcessStepTypeId>> Modify)> processStepIdsInitializeModifyData);
-    IAsyncEnumerable<IProcess<TProcessTypeId>> GetActiveProcesses(IEnumerable<TProcessTypeId> processTypeIds, IEnumerable<TProcessStepTypeId> processStepTypeIds, DateTimeOffset lockExpiryDate);
-    IAsyncEnumerable<(Guid ProcessStepId, TProcessStepTypeId ProcessStepTypeId)> GetProcessStepData(Guid processId);
-    Task<(bool ProcessExists, VerifyProcessData<TProcessTypeId, TProcessStepTypeId> ProcessData)> IsValidProcess(Guid processId, TProcessTypeId processTypeId, IEnumerable<TProcessStepTypeId> processStepTypeIds);
+    IProcess CreateProcess();
+
+    IProcessStep CreateProcessStep<TProcessTypeId, TProcessStepTypeId>(TProcessTypeId processTypeId, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId)
+        where TProcessTypeId : struct, IConvertible
+        where TProcessStepTypeId : struct, IConvertible;
+
+    IEnumerable<IProcessStep> CreateProcessStepRange<TProcessTypeId, TProcessStepTypeId>(IEnumerable<(TProcessTypeId ProcessTypeId, TProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId, Guid ProcessId)> processStepTypeStatus)
+        where TProcessTypeId : struct, IConvertible
+        where TProcessStepTypeId : struct, IConvertible;
+
+    void AttachAndModifyProcessStep(Guid processStepId, Action<IProcessStep>? initialize, Action<IProcessStep> modify);
+    void AttachAndModifyProcessSteps(IEnumerable<(Guid ProcessStepId, Action<IProcessStep>? Initialize, Action<IProcessStep> Modify)> processStepIdsInitializeModifyData);
+    IAsyncEnumerable<IProcess> GetActiveProcesses(DateTimeOffset lockExpiryDate);
+    IAsyncEnumerable<(int ProcessTypeId, Guid ProcessStepId, int ProcessStepTypeId)> GetProcessStepData(Guid processId);
+    Task<(bool ProcessExists, VerifyProcessData ProcessData)> IsValidProcess(Guid processId, int processTypeId, IEnumerable<int> processStepTypeIds);
 }

@@ -22,12 +22,10 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 
-public interface IProcessRepositoryContextAccess<TProcess, TProcessType, TProcessStep, TProcessStepType, in TProcessTypeId, in TProcessStepTypeId> :
-    IProcessDbContext<TProcess, TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>,
-    IProcessCreation<TProcess, TProcessType, TProcessStep, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>
-    where TProcessStep : class, IProcessStep<TProcessStepTypeId>, IProcessStepNavigation<TProcess, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
-    where TProcessType : class, IProcessType<TProcessTypeId>, IProcessTypeNavigation<TProcess, TProcessTypeId>
-    where TProcessStepType : class, IProcessStepType<TProcessStepTypeId>, IProcessStepTypeNavigation<TProcessStep, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible;
+public interface IProcessRepositoryContextAccess<TProcess, TProcessType, TProcessStep, TProcessStepType> :
+    IProcessDbContext<TProcess, TProcessStep>,
+    IProcessCreation<TProcess, TProcessType, TProcessStep, TProcessStepType>
+    where TProcess : class, IProcess, IProcessNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep, IProcessStepNavigation<TProcess, TProcessType, TProcessStepType>
+    where TProcessType : class, IProcessType, IProcessTypeNavigation<TProcessStep>
+    where TProcessStepType : class, IProcessStepType, IProcessStepTypeNavigation<TProcessStep, TProcessType>;

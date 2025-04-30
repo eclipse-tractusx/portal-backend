@@ -22,12 +22,9 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Context;
 
-public interface IProcessDbContext<TProcess, TProcessType, TProcessStep, in TProcessTypeId, in TProcessStepTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<TProcessType, TProcessStep, TProcessTypeId, TProcessStepTypeId>
-    where TProcessType : class, IProcessType<TProcessTypeId>
-    where TProcessStep : class, IProcessStep<TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessDbContext<TProcess, TProcessStep>
+    where TProcess : class, IProcess, IProcessNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep
 {
     DbSet<TProcess> Processes { get; }
     DbSet<TProcessStep> ProcessSteps { get; }

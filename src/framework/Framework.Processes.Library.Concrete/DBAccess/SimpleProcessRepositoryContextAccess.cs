@@ -26,15 +26,16 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.DBAccess;
 
-public class SimpleProcessRepositoryContextAccess<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(TProcessDbContext dbContext) :
-    IProcessRepositoryContextAccess<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, ProcessStepType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
-    where TProcessDbContext : class, IProcessDbContext<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, IDbContext
+public class SimpleProcessRepositoryContextAccess<TProcessDbContext>(TProcessDbContext dbContext) :
+    IProcessRepositoryContextAccess<SimpleProcess, ProcessType<ProcessStep<SimpleProcess>>, ProcessStep<SimpleProcess>, ProcessStepType<SimpleProcess, ProcessType<ProcessStep<SimpleProcess>>>>
+    where TProcessDbContext : class, IProcessDbContext<SimpleProcess, ProcessStep<SimpleProcess>>, IDbContext
 {
-    public DbSet<SimpleProcess<TProcessTypeId, TProcessStepTypeId>> Processes => dbContext.Processes;
-    public DbSet<ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>> ProcessSteps => dbContext.ProcessSteps;
+    public DbSet<SimpleProcess> Processes => dbContext.Processes;
+    public DbSet<ProcessStep<SimpleProcess>> ProcessSteps => dbContext.ProcessSteps;
 
-    public SimpleProcess<TProcessTypeId, TProcessStepTypeId> CreateProcess(Guid id, TProcessTypeId processTypeId, Guid version) => new(id, processTypeId, version);
-    public ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId> CreateProcessStep(Guid id, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now) => new(id, processStepTypeId, processStepStatusId, processId, now);
+    public SimpleProcess CreateProcess(Guid id, Guid version) =>
+        new(id, version);
+
+    public ProcessStep<SimpleProcess> CreateProcessStep<TProcessTypeId, TProcessStepTypeId>(Guid id, TProcessTypeId processTypeId, TProcessStepTypeId processStepTypeId, ProcessStepStatusId processStepStatusId, Guid processId, DateTimeOffset now) =>
+        new(id, Convert.ToInt32(processTypeId), Convert.ToInt32(processStepTypeId), processStepStatusId, processId, now);
 }

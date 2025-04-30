@@ -26,17 +26,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library
 
 public static class ProcessExecutionServiceExtensions
 {
-    public static IServiceCollection AddProcessExecutionService<TProcessTypeId, TProcessStepTypeId>(this IServiceCollection services, IConfigurationSection section)
-        where TProcessTypeId : struct, IConvertible
-        where TProcessStepTypeId : struct, IConvertible
+    public static IServiceCollection AddProcessExecutionService<TProcessTypeId>(this IServiceCollection services, IConfigurationSection section)
+        where TProcessTypeId : struct, Enum
     {
         services.AddOptions<ProcessExecutionServiceSettings>()
             .Bind(section)
             .EnvironmentalValidation(section);
         services
-            .AddTransient<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>>()
-            .AddTransient<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>, ProcessExecutor<TProcessTypeId, TProcessStepTypeId>>()
+            .AddTransient<ProcessExecutionService<TProcessTypeId>>()
+            .AddTransient<IProcessExecutor, ProcessExecutor<TProcessTypeId>>()
             .AddTransient<IDateTimeProvider, UtcDateTimeProvider>();
+
         return services;
     }
 }

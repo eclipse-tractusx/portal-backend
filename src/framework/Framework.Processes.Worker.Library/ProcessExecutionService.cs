@@ -25,6 +25,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.ProcessIdentity;
 using System.Runtime.CompilerServices;
 
@@ -33,17 +34,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library
 /// <summary>
 /// Service that reads all open/pending processSteps of a checklist and triggers their execution.
 /// </summary>
-public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
+public class ProcessExecutionService<TProcessTypeId>
     where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly TimeSpan _lockExpiryTime;
-    private readonly ILogger<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>> _logger;
+    private readonly ILogger<ProcessExecutionService<TProcessTypeId>> _logger;
 
     /// <summary>
-    /// Creates a new instance of <see cref="ProcessExecutionService"/>
+    /// Creates a new instance of<see>
+    /// <cref>ProcessExecutionService</cref>
+    /// </see>
     /// </summary>
     /// <param name="serviceScopeFactory">access to the services</param>
     /// <param name="dateTimeProvider">date time provider</param>
@@ -53,7 +55,7 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
         IServiceScopeFactory serviceScopeFactory,
         IDateTimeProvider dateTimeProvider,
         IOptions<ProcessExecutionServiceSettings> options,
-        ILogger<ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>> logger)
+        ILogger<ProcessExecutionService<TProcessTypeId>> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _dateTimeProvider = dateTimeProvider;
@@ -71,26 +73,23 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
         {
             using var processServiceScope = _serviceScopeFactory.CreateScope();
             var executorRepositories = processServiceScope.ServiceProvider.GetRequiredService<IRepositories>();
-            var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor<TProcessTypeId, TProcessStepTypeId>>();
-            var processIdentityDataDetermination = processServiceScope.ServiceProvider.GetRequiredService<IProcessIdentityDataDetermination>();
-            //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
-            await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(ConfigureAwaitOptions.None);
+            var processExecutor = processServiceScope.ServiceProvider.GetRequiredService<IProcessExecutor>();
 
             using var outerLoopScope = _serviceScopeFactory.CreateScope();
             var outerLoopRepositories = outerLoopScope.ServiceProvider.GetRequiredService<IRepositories>();
 
-            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>().GetActiveProcesses(processExecutor.GetRegisteredProcessTypeIds(), processExecutor.GetExecutableStepTypeIds(), _dateTimeProvider.OffsetNow);
+            var activeProcesses = outerLoopRepositories.GetInstance<IProcessStepRepository>().GetActiveProcesses(_dateTimeProvider.OffsetNow);
             await foreach (var process in activeProcesses.WithCancellation(stoppingToken).ConfigureAwait(false))
             {
                 try
                 {
                     if (process.IsLocked())
                     {
-                        _logger.LogInformation("skipping locked process {processId} type {processType}, lock expires at {lockExpireDate}", process.Id, process.ProcessTypeId, process.LockExpiryDate);
+                        _logger.LogInformation("skipping locked process {ProcessId}, lock expires at {LockExpireDate}", process.Id, process.LockExpiryDate);
                         continue;
                     }
 
-                    _logger.LogInformation("start processing process {processId} type {processType}", process.Id, process.ProcessTypeId);
+                    _logger.LogInformation("start processing process {ProcessId}", process.Id);
                     await foreach (var hasChanged in ExecuteProcess(processExecutor, process, stoppingToken).ConfigureAwait(false))
                     {
                         if (hasChanged)
@@ -107,16 +106,16 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
                         executorRepositories.Clear();
                     }
 
-                    _logger.LogInformation("finished processing process {processId}", process.Id);
+                    _logger.LogInformation("finished processing process {ProcessId}", process.Id);
                 }
                 catch (SystemException ex) when (ex is not OutOfMemoryException)
                 {
-                    _logger.LogCritical(ex, "Critical error : processing process {processId} type {processType}: {message}", process.Id, process.ProcessTypeId, ex.Message);
+                    _logger.LogCritical(ex, "Critical error : processing process {ProcessId}: {Message}", process.Id, ex.Message);
                     executorRepositories.Clear();
                 }
                 catch (Exception ex) when (ex is not SystemException)
                 {
-                    _logger.LogInformation(ex, "error processing process {processId} type {processType}: {message}", process.Id, process.ProcessTypeId, ex.Message);
+                    _logger.LogInformation(ex, "error processing process {ProcessId}: {Message}", process.Id, ex.Message);
                     executorRepositories.Clear();
                 }
             }
@@ -128,14 +127,14 @@ public class ProcessExecutionService<TProcessTypeId, TProcessStepTypeId>
         }
     }
 
-    private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor<TProcessTypeId, TProcessStepTypeId> processExecutor, IProcess<TProcessTypeId> process, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<bool> ExecuteProcess(IProcessExecutor processExecutor, IProcess process, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, process.ProcessTypeId, cancellationToken).ConfigureAwait(false))
+        await foreach (var executionResult in processExecutor.ExecuteProcess(process.Id, cancellationToken).ConfigureAwait(false))
         {
             yield return executionResult switch
             {
-                IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.LockRequested => EnsureLock(process),
-                IProcessExecutor<TProcessTypeId, TProcessStepTypeId>.ProcessExecutionResult.SaveRequested => UpdateVersion(process),
+                IProcessExecutor.ProcessExecutionResult.LockRequested => EnsureLock(process),
+                IProcessExecutor.ProcessExecutionResult.SaveRequested => UpdateVersion(process),
                 _ => false
             };
         }

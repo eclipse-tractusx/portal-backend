@@ -22,17 +22,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessType<TProcess, TProcessTypeId>(TProcessTypeId id) :
-    IProcessType<TProcessTypeId>,
-    IProcessTypeNavigation<TProcess, TProcessTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>
-    where TProcessTypeId : struct, IConvertible
+public class ProcessType<TProcessStep>(int id, string label) :
+    IProcessType,
+    IProcessTypeNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep
 {
-    public TProcessTypeId Id { get; private set; } = id;
+    public int Id { get; private set; } = id;
 
     [MaxLength(255)]
-    public string Label { get; private set; } = id.ToString()!;
+    public string Label { get; private set; } = label.ToString();
 
     // Navigation properties
-    public virtual ICollection<TProcess> Processes { get; private set; } = new HashSet<TProcess>();
+    public virtual ICollection<TProcessStep> ProcessSteps { get; private set; } = new HashSet<TProcessStep>();
 }

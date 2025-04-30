@@ -19,12 +19,12 @@
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Entities;
 
-public interface IProcessStepNavigation<TProcess, TProcessStepType, TProcessTypeId, TProcessStepTypeId>
-    where TProcess : class, IProcess<TProcessTypeId>
-    where TProcessStepType : class, IProcessStepType<TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public interface IProcessStepNavigation<out TProcess, out TProcessType, out TProcessStepType>
+    where TProcess : class, IProcess
+    where TProcessType : class, IProcessType
+    where TProcessStepType : class, IProcessStepType
 {
     TProcess? Process { get; }
+    TProcessType ProcessType { get; }
     TProcessStepType? ProcessStepType { get; }
 }

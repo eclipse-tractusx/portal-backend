@@ -25,17 +25,15 @@ using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.DBAccess;
 
-public class SimpleProcessRepositories<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(TProcessDbContext dbContext) :
+public class SimpleProcessRepositories<TProcessDbContext>(TProcessDbContext dbContext) :
     AbstractRepositories<TProcessDbContext>(dbContext)
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
-    where TProcessDbContext : class, IProcessDbContext<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, IDbContext
+    where TProcessDbContext : class, IProcessDbContext<SimpleProcess, ProcessStep<SimpleProcess>>, IDbContext
 {
     protected override IReadOnlyDictionary<Type, Func<TProcessDbContext, object>> RepositoryTypes => ProcessRepositoryTypes;
     private static readonly IReadOnlyDictionary<Type, Func<TProcessDbContext, object>> ProcessRepositoryTypes = ImmutableDictionary.CreateRange(
     [
-        CreateTypeEntry<IProcessStepRepository<TProcessTypeId, TProcessStepTypeId>>(context =>
-            new ProcessStepRepository<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, ProcessType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId>, ProcessStep<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, ProcessStepType<SimpleProcess<TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>(
-                new SimpleProcessRepositoryContextAccess<TProcessTypeId, TProcessStepTypeId, TProcessDbContext>(context)))
+        CreateTypeEntry<IProcessStepRepository>(context =>
+            new ProcessStepRepository<SimpleProcess, ProcessType<ProcessStep<SimpleProcess>>, ProcessStep<SimpleProcess>, ProcessStepType<SimpleProcess, ProcessType<ProcessStep<SimpleProcess>>>>(
+                new SimpleProcessRepositoryContextAccess<TProcessDbContext>(context)))
     ]);
 }

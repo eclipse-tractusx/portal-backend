@@ -23,10 +23,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public class ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>(ProcessStepStatusId id) : IProcessStepStatus
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+public class ProcessStepStatus<TProcess>(ProcessStepStatusId id) : 
+    IProcessStepStatus
+    where TProcess : class, IProcess
 {
     public ProcessStepStatusId Id { get; private set; } = id;
 
@@ -34,5 +33,5 @@ public class ProcessStepStatus<TProcess, TProcessTypeId, TProcessStepTypeId>(Pro
     public string Label { get; private set; } = id.ToString();
 
     // Navigation properties
-    public virtual ICollection<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; private set; } = new HashSet<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>>();
+    public virtual ICollection<ProcessStep<TProcess>> ProcessSteps { get; private set; } = new HashSet<ProcessStep<TProcess>>();
 }

@@ -21,16 +21,17 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Worker.Library;
 
-public interface IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>
+public interface IProcessTypeExecutor<TProcessTypeId>
     where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
 {
-    record InitializationResult(bool Modified, IEnumerable<TProcessStepTypeId>? ScheduleStepTypeIds);
+    record InitializationResult(bool Modified, IEnumerable<int>? ScheduleStepTypeIds);
 
-    record StepExecutionResult(bool Modified, ProcessStepStatusId ProcessStepStatusId, IEnumerable<TProcessStepTypeId>? ScheduleStepTypeIds, IEnumerable<TProcessStepTypeId>? SkipStepTypeIds, string? ProcessMessage);
+    record StepExecutionResult(bool Modified, ProcessStepStatusId ProcessStepStatusId, IEnumerable<int>? ScheduleStepTypeIds, IEnumerable<int>? SkipStepTypeIds, string? ProcessMessage);
 
-    ValueTask<InitializationResult> InitializeProcess(Guid processId, IEnumerable<TProcessStepTypeId> processStepTypeIds);
-    ValueTask<bool> IsLockRequested(TProcessStepTypeId processStepTypeId);
+    TProcessTypeId GetProcessTypeId();
+
+    ValueTask<InitializationResult> InitializeProcess(Guid processId, IEnumerable<int> processStepTypeIds);
+    ValueTask<bool> IsLockRequested(int processStepTypeId);
 
     /// <summary>
     /// Executes the process step and returns the result
@@ -39,9 +40,5 @@ public interface IProcessTypeExecutor<TProcessTypeId, TProcessStepTypeId>
     /// <param name="processStepTypeIds">List of the processStepTypeIds</param>
     /// <param name="cancellationToken">Cancellation Token</param>
     /// <returns>The result of the execution</returns>
-    ValueTask<StepExecutionResult> ExecuteProcessStep(TProcessStepTypeId processStepTypeId, IEnumerable<TProcessStepTypeId> processStepTypeIds, CancellationToken cancellationToken);
-
-    bool IsExecutableStepTypeId(TProcessStepTypeId processStepTypeId);
-    TProcessTypeId GetProcessTypeId();
-    IEnumerable<TProcessStepTypeId> GetExecutableStepTypeIds();
+    ValueTask<StepExecutionResult> ExecuteProcessStep(int processStepTypeId, IEnumerable<int> processStepTypeIds, CancellationToken cancellationToken);
 }

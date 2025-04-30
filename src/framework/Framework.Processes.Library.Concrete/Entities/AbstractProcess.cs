@@ -23,26 +23,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Concrete.Entities;
 
-public abstract class AbstractProcess<TProcess, TProcessTypeId, TProcessStepTypeId>(
+public abstract class AbstractProcess<TProcess>(
     Guid id,
-    TProcessTypeId processTypeId,
     Guid version) :
-    IProcess<TProcessTypeId>,
-    IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>,
+    IProcess,
+    IProcessNavigation<ProcessStep<TProcess>>,
     IBaseEntity
-    where TProcess : class, IProcess<TProcessTypeId>, IProcessNavigation<ProcessType<TProcess, TProcessTypeId>, ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>, TProcessTypeId, TProcessStepTypeId>
-    where TProcessTypeId : struct, IConvertible
-    where TProcessStepTypeId : struct, IConvertible
+    where TProcess : class, IProcess, IProcessNavigation<ProcessStep<TProcess>>
 {
     public Guid Id { get; private set; } = id;
-
-    public TProcessTypeId ProcessTypeId { get; set; } = processTypeId;
 
     public DateTimeOffset? LockExpiryDate { get; set; }
 
     [ConcurrencyCheck]
     public Guid Version { get; set; } = version;
 
-    public virtual ProcessType<TProcess, TProcessTypeId> ProcessType { get; private set; } = default!;
-    public virtual ICollection<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>> ProcessSteps { get; private set; } = new HashSet<ProcessStep<TProcess, TProcessTypeId, TProcessStepTypeId>>();
+    public virtual ICollection<ProcessStep<TProcess>> ProcessSteps { get; private set; } = new HashSet<ProcessStep<TProcess>>();
 }
