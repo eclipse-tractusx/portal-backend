@@ -46,7 +46,6 @@ public class ClearinghouseServiceTests
         _options = Options.Create(new ClearinghouseSettings
         {
             CallbackUrl = "https://callback.address.com",
-            RetriggerEndClearinghouseIntervalInDays = 30,
             DefaultClearinghouseCredentials = new ClearinghouseCredentialsSettings
             {
                 Password = "defaultPassword",

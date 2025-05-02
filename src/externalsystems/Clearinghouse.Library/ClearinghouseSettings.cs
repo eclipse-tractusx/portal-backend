@@ -34,9 +34,6 @@ public class ClearinghouseSettings
     public string CallbackUrl { get; set; } = null!;
 
     [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
-
-    [Required]
     public ClearinghouseCredentialsSettings DefaultClearinghouseCredentials { get; set; } = null!;
     public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = [];
 
