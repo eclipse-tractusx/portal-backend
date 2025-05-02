@@ -334,6 +334,29 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateConnectorAsync_WithLinkedTechnicalUser_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var saId = Guid.NewGuid();
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", saId);
+        A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(saId, ValidCompanyId))
+                  .Returns(true);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(saId, ValidCompanyId))
+                   .Returns(true);
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE.ToString());
+        ex.Parameters.Should().NotBeNull().And.Satisfy(
+           x => x.Name == "technicalUserId"
+           &&
+           x.Value == saId.ToString()
+           );
+    }
+
+    [Fact]
     public async Task CreateConnectorAsync_WithClientIdNull_DoesntSaveData()
     {
         // Arrange
