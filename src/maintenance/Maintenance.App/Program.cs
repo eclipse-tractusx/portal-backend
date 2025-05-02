@@ -47,13 +47,9 @@ try
             services
                 .AddMaintenanceService()
                 .AddConfigurationProcessIdentityIdDetermination(hostContext.Configuration.GetSection("ProcessIdentity"))
-                .AddBatchDelete(hostContext.Configuration.GetSection("BatchDelete"))
-                .AddTransient<ITokenService, TokenService>()
-                .AddTransient<ICustodianBusinessLogic, CustodianBusinessLogic>()
-                .AddTransient<ICustodianService, CustodianService>()
+                .AddBatchProcessing(hostContext.Configuration.GetSection("BatchProcessing"))
                 .AddTransient<IApplicationChecklistService, ApplicationChecklistService>()
                 .AddTransient<IProcessIdentityDataDetermination, ProcessIdentityDataDetermination>()
-                .AddClearinghouseService(hostContext.Configuration.GetSection("Clearinghouse"))
                 .AddDbAuditing()
                 .AddPortalRepositories(hostContext.Configuration)
                 .AddDbContext<PortalDbContext>(o =>

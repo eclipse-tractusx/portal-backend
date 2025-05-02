@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
@@ -26,42 +27,50 @@ using Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.Processes.ApplicationChecklist.Library;
+using System.Collections.Immutable;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Tests;
 
-public class BatchDeleteServiceTests
+public class BatchProcessingServiceTests
 {
     private readonly IPortalRepositories _portalRepositories;
     private readonly IDocumentRepository _documentRepository;
     private readonly IAgreementRepository _agreementRepository;
     private readonly IOfferRepository _offerRepository;
-    private readonly BatchDeleteService _sut;
-    private readonly IMockLogger<BatchDeleteService> _mockLogger;
+    private readonly IApplicationChecklistService _checklistService;
+    private readonly IApplicationChecklistRepository _checklistRepository;
+    private readonly BatchProcessingService _sut;
+    private readonly IMockLogger<BatchProcessingService> _mockLogger;
 
-    public BatchDeleteServiceTests()
+    public BatchProcessingServiceTests()
     {
         var fixture = new Fixture().Customize(new AutoFakeItEasyCustomization { ConfigureMembers = true });
         fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _mockLogger = A.Fake<IMockLogger<BatchDeleteService>>();
-        ILogger<BatchDeleteService> logger = new MockLogger<BatchDeleteService>(_mockLogger);
+        _mockLogger = A.Fake<IMockLogger<BatchProcessingService>>();
+        ILogger<BatchProcessingService> logger = new MockLogger<BatchProcessingService>(_mockLogger);
 
         _portalRepositories = A.Fake<IPortalRepositories>();
         _documentRepository = A.Fake<IDocumentRepository>();
         _agreementRepository = A.Fake<IAgreementRepository>();
         _offerRepository = A.Fake<IOfferRepository>();
+        _checklistService = A.Fake<IApplicationChecklistService>();
+        _checklistRepository = A.Fake<IApplicationChecklistRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<IDocumentRepository>()).Returns(_documentRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IAgreementRepository>()).Returns(_agreementRepository);
         A.CallTo(() => _portalRepositories.GetInstance<IOfferRepository>()).Returns(_offerRepository);
+        A.CallTo(() => _portalRepositories.GetInstance<IApplicationChecklistRepository>()).Returns(_checklistRepository);
 
         var dateTimeProvider = A.Fake<IDateTimeProvider>();
         A.CallTo(() => dateTimeProvider.OffsetNow).Returns(DateTimeOffset.UtcNow);
 
-        var options = Options.Create(new BatchDeleteServiceSettings { DeleteIntervalInDays = 5 });
-        _sut = new BatchDeleteService(logger, options, _portalRepositories, dateTimeProvider);
+        var options = Options.Create(new BatchProcessingServiceSettings { DeleteDocumentsIntervalInDays = 5, RetriggerClearinghouseIntervalInDays = 0 });
+        _sut = new BatchProcessingService(logger, options, _portalRepositories, dateTimeProvider, _checklistService);
     }
 
     [Fact]
@@ -131,5 +140,63 @@ public class BatchDeleteServiceTests
         A.CallTo(() => _portalRepositories.SaveAsync())
             .MustNotHaveHappened();
         A.CallTo(() => _mockLogger.Log(A<LogLevel>.That.IsEqualTo(LogLevel.Error), A<Exception?>._, A<string>._)).MustHaveHappenedOnceExactly();
+    }
+
+    #region CheckEndClearinghouseProcesses
+
+    [Fact]
+    public async Task RetriggerClearinghouseProcess_ReturnExpected()
+    {
+        // Arrange
+        var applicationId = new Guid("c244f79a-7faf-4c59-bb85-fbfdf72ce46f");
+        var entry = new ApplicationChecklistEntry(applicationId, ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        A.CallTo(() => _checklistRepository.GetApplicationsForClearinghouseRetrigger(A<DateTimeOffset>._))
+            .Returns(Enumerable.Repeat(applicationId, 1).ToAsyncEnumerable());
+        SetupForRetriggerClearinghouseProcess(Enumerable.Repeat(entry, 1));
+
+        // Act
+        await _sut.RetriggerClearinghouseProcess(CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>.That.Matches(x => x.Count(y => y == ProcessStepTypeId.START_OVERRIDE_CLEARING_HOUSE) == 1))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        entry.Comment.Should().Be("Reset to retrigger clearinghouse");
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.TO_DO);
+    }
+
+    #endregion
+
+    private void SetupForRetriggerClearinghouseProcess(IEnumerable<ApplicationChecklistEntry> applicationChecklistEntries)
+    {
+        A.CallTo(() => _checklistService.FinalizeChecklistEntryAndProcessSteps(A<IApplicationChecklistService.ManualChecklistProcessStepData>._, A<Action<ApplicationChecklistEntry>>._, A<Action<ApplicationChecklistEntry>>._, A<IEnumerable<ProcessStepTypeId>>._))
+            .Invokes((IApplicationChecklistService.ManualChecklistProcessStepData data, Action<ApplicationChecklistEntry>? _, Action<ApplicationChecklistEntry> modifyApplicationChecklistEntry, IEnumerable<ProcessStepTypeId> _) =>
+            {
+                var entry = applicationChecklistEntries.SingleOrDefault(x => x.ApplicationId == data.ApplicationId);
+                if (entry == null)
+                    return;
+
+                entry.DateLastChanged = DateTimeOffset.UtcNow;
+                modifyApplicationChecklistEntry(entry);
+            });
+
+        A.CallTo(() => _checklistService.VerifyChecklistEntryAndProcessSteps(
+                A<Guid>._,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                A<IEnumerable<ApplicationChecklistEntryStatusId>>._,
+                ProcessStepTypeId.AWAIT_CLEARING_HOUSE_RESPONSE,
+                A<IEnumerable<ApplicationChecklistEntryTypeId>?>._,
+                A<IEnumerable<ProcessStepTypeId>?>._))
+            .ReturnsLazily((Guid id,
+                ApplicationChecklistEntryTypeId _,
+                IEnumerable<ApplicationChecklistEntryStatusId> _,
+                ProcessStepTypeId _,
+                IEnumerable<ApplicationChecklistEntryTypeId>? _,
+                IEnumerable<ProcessStepTypeId>? _) => new IApplicationChecklistService.ManualChecklistProcessStepData(
+                id,
+                new Process(Guid.NewGuid(), ProcessTypeId.APPLICATION_CHECKLIST, Guid.NewGuid()),
+                Guid.Empty,
+                ApplicationChecklistEntryTypeId.CLEARING_HOUSE,
+                ImmutableDictionary<ApplicationChecklistEntryTypeId, (ApplicationChecklistEntryStatusId, string?)>.Empty,
+                []));
     }
 }

@@ -41,13 +41,12 @@ public class MaintenanceService(IServiceScopeFactory serviceScopeFactory)
         //call processIdentityDataDetermination.GetIdentityData() once to initialize IdentityService IdentityData for synchronous use:
         await processIdentityDataDetermination.GetIdentityData().ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var batchDeleteBusinessLogic = scope.ServiceProvider.GetRequiredService<IBatchDeleteService>();
-        var clearinghouseBusinessLogic = scope.ServiceProvider.GetRequiredService<IClearinghouseBusinessLogic>();
+        var batchProcessingBusinessLogic = scope.ServiceProvider.GetRequiredService<IBatchProcessingService>();
 
         if (!cancellationToken.IsCancellationRequested)
         {
-            await batchDeleteBusinessLogic.CleanupDocuments(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
-            await clearinghouseBusinessLogic.CheckEndClearinghouseProcesses(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await batchProcessingBusinessLogic.RetriggerClearinghouseProcess(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
+            await batchProcessingBusinessLogic.CleanupDocuments(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         }
     }
 }
