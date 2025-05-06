@@ -73,7 +73,7 @@ public class ConnectorsBusinessLogic(
         Pagination.CreateResponseAsync(
             page,
             size,
-            _settings.MaxPageSize,
+            _connectorSettings.MaxPageSize,
             portalRepositories.GetInstance<IConnectorsRepository>().GetAllProvidedConnectorsForCompanyId(_identityData.CompanyId));
 
     /// <inheritdoc/>
