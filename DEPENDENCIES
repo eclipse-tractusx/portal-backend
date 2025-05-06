@@ -10,7 +10,6 @@ nuget/nuget/-/Fare/2.1.1, MIT, approved, clearlydefined
 nuget/nuget/-/FluentAssertions/7.2.0, MIT AND Apache-2.0 AND CC-BY-3.0-US AND OFL-1.1 AND BSD-3-Clause AND WTFPL AND (MIT OR GPL-2.0-only), approved, #20732
 nuget/nuget/-/Flurl.Http.Signed/4.0.2, MIT, approved, #16447
 nuget/nuget/-/Flurl.Signed/4.0.0, MIT, approved, #16448
-nuget/nuget/-/HtmlAgilityPack/1.11.72, MIT, approved, #9293
 nuget/nuget/-/Humanizer.Core/2.14.1, MIT, approved, #10060
 nuget/nuget/-/Json.More.Net/2.1.1, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #18191
 nuget/nuget/-/JsonPointer.Net/5.3.1, MIT AND OFL-1.1 AND CC-BY-SA-4.0, approved, #19476
@@ -20,19 +19,10 @@ nuget/nuget/-/Laraue.EfCoreTriggers.PostgreSql/9.0.0, MIT, approved, #17616
 nuget/nuget/-/MailKit/4.11.0, MIT AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust), approved, #20724
 nuget/nuget/-/MimeKit/4.11.0, MIT AND FSFULLRWD AND LicenseRef-scancode-ietf AND LicenseRef-scancode-ietf-trust AND (BSD-3-Clause AND LicenseRef-scancode-ietf-trust) AND BSD-3-Clause AND MS-PL AND CC-BY-SA-4.0 AND LicenseRef-MIT-style AND CC-PDDC AND GPL-2.0-only, approved, #20729
 nuget/nuget/-/Mono.TextTemplating/3.0.0, MIT, approved, #17609
-nuget/nuget/-/NHamcrest/4.0.0, MIT, approved, #19477
-nuget/nuget/-/NJsonSchema.Annotations/11.1.0, MIT, approved, #17773
-nuget/nuget/-/NJsonSchema/11.1.0, MIT, approved, #17775
-nuget/nuget/-/Namotion.Reflection/3.2.0, MIT, approved, #17778
 nuget/nuget/-/Newtonsoft.Json/13.0.1, MIT AND BSD-3-Clause, approved, #3266
-nuget/nuget/-/Newtonsoft.Json/13.0.3, MIT AND BSD-3-Clause, approved, #3266
 nuget/nuget/-/Npgsql.EntityFrameworkCore.PostgreSQL/9.0.4, PostgreSQL AND MIT, approved, #17615
 nuget/nuget/-/Npgsql/9.0.3, PostgreSQL, approved, #17608
 nuget/nuget/-/PasswordGenerator/2.1.0, MIT, approved, #3192
-nuget/nuget/-/ReportPortal.Client/3.10.0, Apache-2.0, approved, #20730
-nuget/nuget/-/ReportPortal.Shared/3.10.0, Apache-2.0, approved, #20731
-nuget/nuget/-/ReportPortal.XUnit/2.7.0, Apache-2.0, approved, #20726
-nuget/nuget/-/RestAssured.Net/4.7.0, Apache-2.0, approved, #19475
 nuget/nuget/-/SSH.NET/2024.2.0, MIT AND ISC, approved, #20722
 nuget/nuget/-/Serilog.AspNetCore/9.0.0, Apache-2.0 AND MIT, approved, #19193
 nuget/nuget/-/Serilog.Enrichers.CorrelationId/3.0.1, MIT, approved, clearlydefined
@@ -50,7 +40,6 @@ nuget/nuget/-/Serilog.Sinks.Debug/3.0.0, Apache-2.0, approved, #19185
 nuget/nuget/-/Serilog.Sinks.File/6.0.0, Apache-2.0, approved, #19183
 nuget/nuget/-/Serilog/4.2.0, Apache-2.0, approved, #17774
 nuget/nuget/-/SharpZipLib/1.4.2, MIT AND GFDL-1.3-or-later AND (Apache-2.0 AND MIT) AND WTFPL AND bzip2-1.0.6 AND LicenseRef-Permissive-license-with-conditions AND LicenseRef-Permission-Notice, approved, #10058
-nuget/nuget/-/Stubble.Core/1.10.8, MIT AND BSD-2-Clause, approved, #9297
 nuget/nuget/-/SwashBuckle.AspNetCore/8.1.1, MIT AND Apache-2.0, approved, #20727
 nuget/nuget/-/Swashbuckle.AspNetCore.Swagger/8.1.1, MIT AND Apache-2.0, approved, #20723
 nuget/nuget/-/Swashbuckle.AspNetCore.SwaggerGen/8.1.1, MIT AND Apache-2.0, approved, #20721
