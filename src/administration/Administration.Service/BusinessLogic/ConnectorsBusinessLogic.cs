@@ -20,6 +20,8 @@
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Administration.Service.Models;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.DateTimeProvider;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
@@ -44,7 +46,8 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Administration.Service.BusinessLog
 /// </summary>
 public class ConnectorsBusinessLogic(
     IPortalRepositories portalRepositories,
-    IOptions<ConnectorsSettings> options,
+    IOptions<ConnectorsSettings> connectorOptions,
+    IOptions<ClearinghouseSettings> clearinghouseOptions,
     ISdFactoryBusinessLogic sdFactoryBusinessLogic,
     IIdentityService identityService,
     IServiceAccountManagement serviceAccountManagement,
@@ -54,14 +57,15 @@ public class ConnectorsBusinessLogic(
 {
     private static readonly Regex BpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
     private readonly IIdentityData _identityData = identityService.IdentityData;
-    private readonly ConnectorsSettings _settings = options.Value;
+    private readonly ConnectorsSettings _connectorSettings = connectorOptions.Value;
+    private readonly ClearinghouseSettings _clearinghouseSettings = clearinghouseOptions.Value;
 
     /// <inheritdoc/>
     public Task<Pagination.Response<ConnectorData>> GetAllCompanyConnectorDatas(int page, int size) =>
         Pagination.CreateResponseAsync(
             page,
             size,
-            _settings.MaxPageSize,
+            _connectorSettings.MaxPageSize,
             portalRepositories.GetInstance<IConnectorsRepository>().GetAllCompanyConnectorsForCompanyId(_identityData.CompanyId));
 
     /// <inheritdoc/>
@@ -69,7 +73,7 @@ public class ConnectorsBusinessLogic(
         Pagination.CreateResponseAsync(
             page,
             size,
-            _settings.MaxPageSize,
+            _connectorSettings.MaxPageSize,
             portalRepositories.GetInstance<IConnectorsRepository>().GetAllProvidedConnectorsForCompanyId(_identityData.CompanyId));
 
     /// <inheritdoc/>
@@ -77,7 +81,7 @@ public class ConnectorsBusinessLogic(
         Pagination.CreateResponseAsync(
             page,
             size,
-            _settings.MaxPageSize,
+            _connectorSettings.MaxPageSize,
             portalRepositories.GetInstance<IConnectorsRepository>().GetManagedConnectorsForCompany(_identityData.CompanyId));
 
     public async Task<ConnectorData> GetCompanyConnectorData(Guid connectorId)
@@ -222,7 +226,8 @@ public class ConnectorsBusinessLogic(
         Guid companyId,
         CancellationToken cancellationToken)
     {
-        if (selfDescriptionDocumentId is null && !_settings.ClearinghouseConnectDisabled)
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(connectorInputModel.Location);
+        if (selfDescriptionDocumentId is null && !countrySpecificSettings.ClearinghouseConnectDisabled)
         {
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(companyId), companyId.ToString())]);
         }
@@ -240,8 +245,8 @@ public class ConnectorsBusinessLogic(
                 connector.HostId = host;
                 connector.TypeId = type;
                 connector.DateLastChanged = DateTimeOffset.UtcNow;
-                connector.StatusId = _settings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
-                connector.SdSkippedDate = _settings.ClearinghouseConnectDisabled ? dateTimeProvider.OffsetNow : null;
+                connector.StatusId = countrySpecificSettings.ClearinghouseConnectDisabled ? ConnectorStatusId.ACTIVE : ConnectorStatusId.PENDING;
+                connector.SdSkippedDate = countrySpecificSettings.ClearinghouseConnectDisabled ? dateTimeProvider.OffsetNow : null;
                 if (technicalUserId != null)
                 {
                     connector.TechnicalUserId = technicalUserId;
@@ -253,9 +258,9 @@ public class ConnectorsBusinessLogic(
             connectorsRepository.CreateConnectorAssignedSubscriptions(createdConnector.Id, subscriptionId.Value);
         }
 
-        if (!_settings.ClearinghouseConnectDisabled)
+        if (!countrySpecificSettings.ClearinghouseConnectDisabled)
         {
-            var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
+            var selfDescriptionDocumentUrl = $"{_connectorSettings.SelfDescriptionDocumentUrl}/{selfDescriptionDocumentId}";
             await sdFactoryBusinessLogic
                 .RegisterConnectorAsync(createdConnector.Id, selfDescriptionDocumentUrl, businessPartnerNumber, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -277,6 +282,7 @@ public class ConnectorsBusinessLogic(
         };
 
         var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId, processStepsToFilter).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new(nameof(connectorId), connectorId.ToString()) });
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(result.Location);
         if (!result.IsProvidingOrHostCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, [new(nameof(companyId), companyId.ToString()), new(nameof(connectorId), connectorId.ToString())]);
@@ -296,7 +302,7 @@ public class ConnectorsBusinessLogic(
                 await DeleteConnectorWithDocuments(connectorId, result.SelfDescriptionDocumentId.Value, result.ConnectorOfferSubscriptions, connectorsRepository);
                 break;
             // Connector should be able to deleted if the ClearinghouseConnectDisabled bit is disabled and no SD document was part of connector.
-            case ConnectorStatusId.ACTIVE when _settings.ClearinghouseConnectDisabled:
+            case ConnectorStatusId.ACTIVE when countrySpecificSettings.ClearinghouseConnectDisabled:
                 await DeleteConnectorWithoutDocuments(connectorId, result.ConnectorOfferSubscriptions, connectorsRepository);
                 break;
             case ConnectorStatusId.ACTIVE when result.SelfDescriptionDocumentId == null && result.DocumentStatusId == null:
@@ -467,7 +473,7 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(connectorId), connectorId.ToString())]);
         }
 
-        var selfDescriptionDocumentUrl = $"{_settings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
+        var selfDescriptionDocumentUrl = $"{_connectorSettings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
         await sdFactoryBusinessLogic
             .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, bpn, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -484,7 +490,7 @@ public class ConnectorsBusinessLogic(
         Pagination.CreateResponseAsync(
             page,
             size,
-            _settings.MaxPageSize,
+            _connectorSettings.MaxPageSize,
             portalRepositories.GetInstance<IConnectorsRepository>().GetConnectorsWithMissingSdDocument());
 
     public async Task TriggerSelfDescriptionCreation()

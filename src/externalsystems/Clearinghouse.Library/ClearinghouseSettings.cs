@@ -34,9 +34,6 @@ public class ClearinghouseSettings
     public string CallbackUrl { get; set; } = null!;
 
     [Required]
-    public int RetriggerEndClearinghouseIntervalInDays { get; set; }
-
-    [Required]
     public ClearinghouseCredentialsSettings DefaultClearinghouseCredentials { get; set; } = null!;
     public IEnumerable<ClearinghouseCredentialsSettings> RegionalClearinghouseCredentials { get; set; } = [];
 
@@ -62,6 +59,11 @@ public class ClearinghouseCredentialsSettings : KeyVaultAuthSettings
 
     [Required(AllowEmptyStrings = false)]
     public string CountryAlpha2Code { get; set; } = null!;
+
+    /// <summary>
+    ///  If <c>true</c> all sd factory calls are disabled and won't be called. The respective process steps will be skipped.
+    /// </summary>
+    public bool ClearinghouseConnectDisabled { get; set; }
 
     public bool Validate()
     {

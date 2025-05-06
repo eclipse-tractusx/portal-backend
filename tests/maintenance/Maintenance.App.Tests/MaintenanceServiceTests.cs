@@ -26,8 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Maintenance.App.Test
 
 public class MaintenanceServiceTests
 {
-    private readonly IBatchDeleteService _batchDeleteService;
-    private readonly IClearinghouseBusinessLogic _clearinghouseBusinessLogic;
+    private readonly IBatchProcessingService _batchProcessingService;
     private readonly MaintenanceService _service;
     private readonly IProcessIdentityDataDetermination _processIdentityDataDetermination;
 
@@ -38,13 +37,11 @@ public class MaintenanceServiceTests
             .ForEach(b => fixture.Behaviors.Remove(b));
         fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _batchDeleteService = A.Fake<IBatchDeleteService>();
-        _clearinghouseBusinessLogic = A.Fake<IClearinghouseBusinessLogic>();
+        _batchProcessingService = A.Fake<IBatchProcessingService>();
         _processIdentityDataDetermination = A.Fake<IProcessIdentityDataDetermination>();
 
         var serviceProvider = A.Fake<IServiceProvider>();
-        A.CallTo(() => serviceProvider.GetService(typeof(IBatchDeleteService))).Returns(_batchDeleteService);
-        A.CallTo(() => serviceProvider.GetService(typeof(IClearinghouseBusinessLogic))).Returns(_clearinghouseBusinessLogic);
+        A.CallTo(() => serviceProvider.GetService(typeof(IBatchProcessingService))).Returns(_batchProcessingService);
         A.CallTo(() => serviceProvider.GetService(typeof(IProcessIdentityDataDetermination))).Returns(_processIdentityDataDetermination);
         var serviceScope = A.Fake<IServiceScope>();
         A.CallTo(() => serviceScope.ServiceProvider).Returns(serviceProvider);
@@ -64,9 +61,9 @@ public class MaintenanceServiceTests
         // Assert
         A.CallTo(() => _processIdentityDataDetermination.GetIdentityData())
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _batchDeleteService.CleanupDocuments(A<CancellationToken>._))
+        A.CallTo(() => _batchProcessingService.CleanupDocuments(A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        A.CallTo(() => _clearinghouseBusinessLogic.CheckEndClearinghouseProcesses(A<CancellationToken>._))
+        A.CallTo(() => _batchProcessingService.RetriggerClearinghouseProcess(A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
     }
 }

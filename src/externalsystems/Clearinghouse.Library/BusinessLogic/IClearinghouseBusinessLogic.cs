@@ -26,5 +26,4 @@ public interface IClearinghouseBusinessLogic
 {
     Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> HandleClearinghouse(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken);
     Task ProcessEndClearinghouse(Guid applicationId, ClearinghouseResponseData data, CancellationToken cancellationToken);
-    Task CheckEndClearinghouseProcesses(CancellationToken cancellationToken);
 }

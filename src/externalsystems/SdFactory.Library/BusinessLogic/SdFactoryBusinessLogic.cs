@@ -18,6 +18,8 @@
  ********************************************************************************/
 
 using Microsoft.Extensions.Options;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library;
+using Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
@@ -36,10 +38,12 @@ public class SdFactoryBusinessLogic(
     ISdFactoryService sdFactoryService,
     IPortalRepositories portalRepositories,
     IApplicationChecklistService checklistService,
-    IOptions<SdFactorySettings> options)
+    IOptions<SdFactorySettings> sdFactoryOptions,
+    IOptions<ClearinghouseSettings> clearinghouseOptions)
     : ISdFactoryBusinessLogic
 {
-    private readonly SdFactorySettings _settings = options.Value;
+    private readonly SdFactorySettings _sdFactorySettings = sdFactoryOptions.Value;
+    private readonly ClearinghouseSettings _clearinghouseSettings = clearinghouseOptions.Value;
 
     /// <inheritdoc />
     public Task RegisterConnectorAsync(
@@ -52,7 +56,15 @@ public class SdFactoryBusinessLogic(
     /// <inheritdoc />
     public async Task<IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult> StartSelfDescriptionRegistration(IApplicationChecklistService.WorkerChecklistProcessStepData context, CancellationToken cancellationToken)
     {
-        if (_settings.ClearinghouseConnectDisabled)
+        var companyCountry = await portalRepositories.GetInstance<IApplicationRepository>()
+            .GetCompanyCountryByApplicationId(context.ApplicationId)
+            .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (string.IsNullOrWhiteSpace(companyCountry))
+        {
+            throw new ConflictException($"Country for CompanyApplications {context.ApplicationId} is empty.");
+        }
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(companyCountry);
+        if (countrySpecificSettings.ClearinghouseConnectDisabled)
         {
             return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
                 ProcessStepStatusId.SKIPPED,
@@ -161,7 +173,7 @@ public class SdFactoryBusinessLogic(
         }
         // If the message contains the outdated legal person error code,
         // the connector is activated but no document is created
-        else if (IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
+        else if (IsOutdatedLegalPerson(data.Message, _sdFactorySettings.ConnectorAllowSdDocumentSkipErrorCode))
         {
             connectorsRepository.AttachAndModifyConnector(data.ExternalId, null, con =>
             {
@@ -196,7 +208,7 @@ public class SdFactoryBusinessLogic(
         {
             context.FinalizeProcessStep();
         }
-        else if (sdType == SdFactoryRequestModelSdType.ServiceOffering && IsOutdatedLegalPerson(data.Message, _settings.ConnectorAllowSdDocumentSkipErrorCode))
+        else if (sdType == SdFactoryRequestModelSdType.ServiceOffering && IsOutdatedLegalPerson(data.Message, _sdFactorySettings.ConnectorAllowSdDocumentSkipErrorCode))
         {
             context.ScheduleProcessSteps([ProcessStepTypeId.RETRIGGER_CONNECTOR_SELF_DESCRIPTION_WITH_OUTDATED_LEGAL_PERSON]);
             context.FinalizeProcessStep();

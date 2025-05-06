@@ -22,11 +22,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Maintenance.App.Services;
 /// <summary>
 /// Service to delete the pending and inactive documents as well as the depending on consents from the database
 /// </summary>
-public interface IBatchDeleteService
+public interface IBatchProcessingService
 {
     /// <summary>
     /// Cleans up the documents and related entries from the database
     /// </summary>
     /// <param name="cancellationToken">The cancellation token</param>
     Task CleanupDocuments(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retriggers the clearinghouse validation step of companies
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token</param>
+    Task RetriggerClearinghouseProcess(CancellationToken cancellationToken);
 }

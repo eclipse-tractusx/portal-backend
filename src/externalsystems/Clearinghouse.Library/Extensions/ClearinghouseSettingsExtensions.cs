@@ -21,6 +21,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Clearinghouse.Library.Extensions;
 
 public static class ClearinghouseSettingsExtensions
 {
-    public static ClearinghouseCredentialsSettings GetCredentials(this ClearinghouseSettings settings, string countryCode) =>
+    public static ClearinghouseCredentialsSettings GetCountrySpecificSettings(this ClearinghouseSettings settings, string countryCode) =>
         settings.RegionalClearinghouseCredentials.FirstOrDefault(x => x.CountryAlpha2Code == countryCode) ?? settings.DefaultClearinghouseCredentials;
 }
