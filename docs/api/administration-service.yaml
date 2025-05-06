@@ -789,7 +789,7 @@ paths:
       tags:
         - Connectors
       summary: 'Retrieves all company registered provided connectors and their status. (Authorization required - Roles: view_connectors)'
-      description: "Example: GET: /api/administration/connectors/provided \n\r\nExample: GET: /api/administration/connectors/provided?page=0&size=15"
+      description: "Example: GET: /api/administration/connectors/provided \n\nExample: GET: /api/administration/connectors/provided?page=0&size=15"
       parameters:
         - name: page
           in: query
