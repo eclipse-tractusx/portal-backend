@@ -136,7 +136,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, ProviderDetails providerDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
+    public Task<(Guid ProviderCompanyDetailId, ProviderDetails ProviderDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
         context.ProviderCompanyDetails.AsNoTracking()
             .Where(details => details.CompanyId == companyId)
             .Select(details => new ValueTuple<Guid, ProviderDetails>(details.Id, new ProviderDetails(

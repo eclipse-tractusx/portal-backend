@@ -25,6 +25,7 @@ public record ProviderDetailData(string Url, string? CallbackUrl, string AuthUrl
 public record ProviderDetailReturnData(Guid? Id, Guid CompanyId, string? Url, string? CallbackUrl,
     string AuthUrl,
     string ClientId);
+
 public record ProviderDetails
 (
     string Url,

@@ -201,6 +201,22 @@ public class OfferProviderBusinessLogicTests
     }
 
     [Fact]
+    public async Task TriggerProviderCallback_WithNoAuthDetails_Throws()
+    {
+        // Arrange
+        var fakeId = Guid.NewGuid();
+        A.CallTo(() => _offerSubscriptionRepository.GetTriggerProviderCallbackInformation(fakeId))
+            .Returns((Enumerable.Empty<(Guid, string?, TechnicalUserKindId)>(), "cl1", "callback", null, OfferSubscriptionStatusId.ACTIVE));
+        async Task Act() => await _sut.TriggerProviderCallback(fakeId, CancellationToken.None);
+
+        // Act
+        var ex = await Assert.ThrowsAsync<ConflictException>(Act);
+
+        // Assert
+        ex.Message.Should().Be("Auth details in auto-setup should be configured for the company");
+    }
+
+    [Fact]
     public async Task TriggerProviderCallback_WithTechnicalClientIdNotSet_Throws()
     {
         // Arrange

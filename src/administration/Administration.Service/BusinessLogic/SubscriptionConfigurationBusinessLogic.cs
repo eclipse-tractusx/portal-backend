@@ -23,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.Async;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Identity;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.IO;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Extensions;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Models;
@@ -99,27 +100,26 @@ public class SubscriptionConfigurationBusinessLogic(
             .GetProviderCompanyDetailsExistsForUser(companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == _settings.EncryptionConfigIndex) ?? throw new ConfigurationException($"EncryptionModeIndex {_settings.EncryptionConfigIndex} is not configured");
-        var (secret, initializationVector) = CryptoHelper.Encrypt(data.ClientSecret, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(_settings.EncryptionConfigIndex);
+        var (secret, initializationVector) = cryptoHelper.Encrypt(data.ClientSecret);
 
-        if (providerDetailData.providerDetails == default && data.Url != null)
+        if (providerDetailData.ProviderDetails == default && data.Url != null)
         {
-            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository, secret, initializationVector, cryptoConfig.Index);
+            await HandleCreateProviderCompanyDetails(data, companyId, companyRepository, secret, initializationVector, _settings.EncryptionConfigIndex);
         }
-        else if (providerDetailData.providerDetails != default && data.Url != null)
+        else if (providerDetailData.ProviderDetails != default && data.Url != null)
         {
             companyRepository.AttachAndModifyProviderCompanyDetails(
                 providerDetailData.ProviderCompanyDetailId,
                 details =>
                 {
-
-                    details.AutoSetupUrl = providerDetailData.providerDetails.Url;
-                    details.AutoSetupCallbackUrl = providerDetailData.providerDetails.CallbackUrl;
-                    details.AuthUrl = providerDetailData.providerDetails.AuthUrl;
-                    details.ClientId = providerDetailData.providerDetails.ClientId;
-                    details.ClientSecret = providerDetailData.providerDetails.ClientSecret;
-                    details.InitializationVector = providerDetailData.providerDetails.InitializationVector;
-                    details.EncryptionMode = providerDetailData.providerDetails.EncryptionMode;
+                    details.AutoSetupUrl = providerDetailData.ProviderDetails.Url;
+                    details.AutoSetupCallbackUrl = providerDetailData.ProviderDetails.CallbackUrl;
+                    details.AuthUrl = providerDetailData.ProviderDetails.AuthUrl;
+                    details.ClientId = providerDetailData.ProviderDetails.ClientId;
+                    details.ClientSecret = providerDetailData.ProviderDetails.ClientSecret;
+                    details.InitializationVector = providerDetailData.ProviderDetails.InitializationVector;
+                    details.EncryptionMode = providerDetailData.ProviderDetails.EncryptionMode;
                 },
                 details =>
                 {
@@ -130,12 +130,12 @@ public class SubscriptionConfigurationBusinessLogic(
                     details.ClientId = data.ClientId;
                     details.ClientSecret = secret;
                     details.InitializationVector = initializationVector;
-                    details.EncryptionMode = cryptoConfig.Index;
+                    details.EncryptionMode = _settings.EncryptionConfigIndex;
                     details.DateLastChanged = DateTimeOffset.UtcNow;
                 });
 
         }
-        if (providerDetailData.providerDetails?.CallbackUrl is not null && data.CallbackUrl is null)
+        if (providerDetailData.ProviderDetails?.CallbackUrl is not null && data.CallbackUrl is null)
         {
             await HandleOfferSetupProcesses(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         }

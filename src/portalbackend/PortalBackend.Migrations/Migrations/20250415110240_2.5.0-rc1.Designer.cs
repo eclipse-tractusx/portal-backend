@@ -13,8 +13,8 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.Migrations.Migrations
 {
     [DbContext(typeof(PortalDbContext))]
-    [Migration("20250415110240_Auth-Auto-Setup")]
-    partial class AuthAutoSetup
+    [Migration("20250415110240_2.5.0-rc1")]
+    partial class _250rc1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

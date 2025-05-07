@@ -19,6 +19,7 @@
 
 using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
@@ -69,12 +70,20 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         {
             throw new ConflictException("Country should be set for the company");
         }
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
         {
+            var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
+            var secret = cryptoHelper.Decrypt(
+                data.AuthDetails!.ClientSecret,
+                data.AuthDetails.InitializationVector);
+
+            if (data.AuthDetails == null)
+            {
+                throw new ConflictException("Auth details in auto-setup should be configured for the company");
+            }
+
             var autoSetupData = new OfferThirdPartyAutoSetupData(
                 new OfferThirdPartyAutoSetupCustomerData(
                     data.CompanyInformationData.OrganizationName,
@@ -128,6 +137,10 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         {
             throw new ConflictException("Client should be set");
         }
+        if (data.AuthDetails == null)
+        {
+            throw new ConflictException("Auth details in auto-setup should be configured for the company");
+        }
 
         IEnumerable<CallbackTechnicalUserInfoData>? technicalUsersInfoData = null;
 
@@ -163,8 +176,10 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             technicalUsersInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == data.AuthDetails!.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {data.AuthDetails!.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(data.AuthDetails!.ClientSecret, data.AuthDetails.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
+        var secret = cryptoHelper.Decrypt(
+            data.AuthDetails!.ClientSecret,
+            data.AuthDetails.InitializationVector);
 
         await _offerProviderService
             .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)

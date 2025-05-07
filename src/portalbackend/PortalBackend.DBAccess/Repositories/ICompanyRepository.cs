@@ -65,7 +65,7 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, ProviderDetails providerDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
+    Task<(Guid ProviderCompanyDetailId, ProviderDetails ProviderDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
