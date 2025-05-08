@@ -74,15 +74,15 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
         {
-            var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
-            var secret = cryptoHelper.Decrypt(
-                data.AuthDetails!.ClientSecret,
-                data.AuthDetails.InitializationVector);
-
             if (data.AuthDetails == null)
             {
                 throw new ConflictException("Auth details in auto-setup should be configured for the company");
             }
+
+            var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
+            var secret = cryptoHelper.Decrypt(
+                data.AuthDetails!.ClientSecret,
+                data.AuthDetails.InitializationVector);
 
             var autoSetupData = new OfferThirdPartyAutoSetupData(
                 new OfferThirdPartyAutoSetupCustomerData(
