@@ -2,6 +2,27 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## Unreleased
+
+## 2.5.0-RC1
+
+* **Offers**
+  * adjusted provider callback url handling [#1227](https://github.com/eclipse-tractusx/portal-backend/pull/1227)
+  * added authentication details in auto setup configuration [#1232](https://github.com/eclipse-tractusx/portal-backend/pull/1232)
+  * Added the callback url in GET response of the api `api/administration/subscriptionconfiguration/owncompany` [#1305](https://github.com/eclipse-tractusx/portal-backend/pull/1305)
+  * added error handling for offer services [#1285](https://github.com/eclipse-tractusx/portal-backend/pull/1285)
+  * fixed the validation and request body for auto setup callback url [#1318](https://github.com/eclipse-tractusx/portal-backend/pull/1318)
+* **Clearinghouse**
+  * enabled region specific clearinghouses [#1333](https://github.com/eclipse-tractusx/portal-backend/pull/1333)
+* **TechnicalUser**
+  * added service endpoint message for pending user status of technical user [#1349](https://github.com/eclipse-tractusx/portal-backend/pull/1349)
+* **SDCreation**
+  * implemented country-specific SD toggle for SD Factory [#1345](https://github.com/eclipse-tractusx/portal-backend/pull/1345)
+* **Connectors**
+  * added connector management role [#1337](https://github.com/eclipse-tractusx/portal-backend/pull/1337)
+* **Registration Service**
+  * fixed document api to show only `COMMERCIAL_REGISTER_EXTRACT` type document  [#1275](https://github.com/eclipse-tractusx/portal-backend/pull/1275)
+
 ## 2.4.0
 
 ### Feature
