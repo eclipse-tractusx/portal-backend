@@ -17,8 +17,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.Extensions.Options;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Configuration;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Models.Encryption;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Enums;
+using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.DependencyInjection;
 using Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
@@ -32,6 +36,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     private readonly IPortalRepositories _portalRepositories;
     private readonly IOfferProviderService _offerProviderService;
     private readonly IProvisioningManager _provisioningManager;
+    private readonly OfferProviderSettings _settings;
 
     /// <summary>
     /// Constructor.
@@ -43,11 +48,13 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
     public OfferProviderBusinessLogic(
         IPortalRepositories portalRepositories,
         IOfferProviderService offerProviderService,
-        IProvisioningManager provisioningManager)
+        IProvisioningManager provisioningManager,
+        IOptions<OfferProviderSettings> options)
     {
         _portalRepositories = portalRepositories;
         _offerProviderService = offerProviderService;
         _provisioningManager = provisioningManager;
+        _settings = options.Value;
     }
 
     /// <inheritdoc />
@@ -67,6 +74,16 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         var triggerProvider = !string.IsNullOrWhiteSpace(data.AutoSetupUrl) && !data.IsSingleInstance;
         if (triggerProvider)
         {
+            if (data.AuthDetails == null)
+            {
+                throw new ConflictException("Auth details in auto-setup should be configured for the company");
+            }
+
+            var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
+            var secret = cryptoHelper.Decrypt(
+                data.AuthDetails!.ClientSecret,
+                data.AuthDetails.InitializationVector);
+
             var autoSetupData = new OfferThirdPartyAutoSetupData(
                 new OfferThirdPartyAutoSetupCustomerData(
                     data.CompanyInformationData.OrganizationName,
@@ -78,7 +95,7 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
                     data.OfferId)
             );
             await _offerProviderService
-                .TriggerOfferProvider(autoSetupData, data.AutoSetupUrl!, cancellationToken)
+                .TriggerOfferProvider(autoSetupData, data.AutoSetupUrl!, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)
                 .ConfigureAwait(ConfigureAwaitOptions.None);
         }
 
@@ -120,6 +137,10 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
         {
             throw new ConflictException("Client should be set");
         }
+        if (data.AuthDetails == null)
+        {
+            throw new ConflictException("Auth details in auto-setup should be configured for the company");
+        }
 
         IEnumerable<CallbackTechnicalUserInfoData>? technicalUsersInfoData = null;
 
@@ -155,8 +176,13 @@ public class OfferProviderBusinessLogic : IOfferProviderBusinessLogic
             technicalUsersInfoData,
             new CallbackClientInfoData(data.ClientId)
         );
+        var cryptoHelper = _settings.EncryptionConfigs.GetCryptoHelper(data.AuthDetails!.EncryptionMode);
+        var secret = cryptoHelper.Decrypt(
+            data.AuthDetails!.ClientSecret,
+            data.AuthDetails.InitializationVector);
+
         await _offerProviderService
-            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, cancellationToken)
+            .TriggerOfferProviderCallback(callbackData, data.CallbackUrl, data.AuthDetails.AuthUrl, data.AuthDetails.ClientId, secret, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         return (

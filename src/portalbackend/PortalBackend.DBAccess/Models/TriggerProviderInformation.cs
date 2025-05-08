@@ -25,11 +25,20 @@ public record TriggerProviderInformation(
     Guid OfferId,
     string? OfferName,
     string? AutoSetupUrl,
+    ProviderAuthInformation? AuthDetails,
     CompanyInformationData CompanyInformationData,
     OfferTypeId OfferTypeId,
     Guid? SalesManagerId,
     Guid CompanyUserId,
     bool IsSingleInstance
+);
+
+public record ProviderAuthInformation(
+    string AuthUrl,
+    string ClientId,
+    byte[] ClientSecret,
+    byte[]? InitializationVector,
+    int EncryptionMode
 );
 
 public record SubscriptionActivationData(

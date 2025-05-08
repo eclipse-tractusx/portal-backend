@@ -33,16 +33,26 @@ public interface IOfferProviderService
     /// </summary>
     /// <param name="autoSetupData">data needed for the call</param>
     /// <param name="autoSetupUrl">url of the provider</param>
+    /// <param name="authUrl">auth url of the provider</param>
+    /// <param name="clientId">client id of auth of the provider</param>
+    /// <param name="clientSecret">secret of auth of the provider</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, CancellationToken cancellationToken);
+    Task<bool> TriggerOfferProvider(OfferThirdPartyAutoSetupData autoSetupData, string autoSetupUrl, string authUrl,
+    string clientId,
+    string clientSecret, CancellationToken cancellationToken);
 
     /// <summary>
     /// Triggers the offer provider callback after the auto setup
     /// </summary>
     /// <param name="callbackData">the client and technical user data</param>
     /// <param name="callbackUrl">callback url of the provider</param>
+    /// <param name="authUrl">auth url of the provider</param>
+    /// <param name="clientId">client id of auth of the provider</param>
+    /// <param name="clientSecret">secret of auth of the provider</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <exception cref="ServiceException">throws an exception if the service call wasn't successfully</exception>
-    Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, CancellationToken cancellationToken);
+    Task<bool> TriggerOfferProviderCallback(OfferProviderCallbackData callbackData, string callbackUrl, string authUrl,
+    string clientId,
+    string clientSecret, CancellationToken cancellationToken);
 }

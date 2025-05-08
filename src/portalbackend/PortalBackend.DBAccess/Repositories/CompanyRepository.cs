@@ -136,37 +136,47 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<(Guid ProviderCompanyDetailId, string Url, string? CallbackUrl)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
+    public Task<(Guid ProviderCompanyDetailId, ProviderDetails ProviderDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId) =>
         context.ProviderCompanyDetails.AsNoTracking()
             .Where(details => details.CompanyId == companyId)
-            .Select(details => new ValueTuple<Guid, string, string?>(details.Id, details.AutoSetupUrl, details.AutoSetupCallbackUrl))
+            .Select(details => new ValueTuple<Guid, ProviderDetails>(details.Id, new ProviderDetails(
+                        details.AutoSetupUrl,
+                        details.AutoSetupCallbackUrl,
+                        details.AuthUrl,
+                        details.ClientId,
+                        details.ClientSecret,
+                        details.InitializationVector,
+                        details.EncryptionMode)))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    ProviderCompanyDetail ICompanyRepository.CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter)
+    ProviderCompanyDetail ICompanyRepository.CreateProviderCompanyDetail(Guid companyId, ProviderDetailsCreationData providerDetailsCreationData, Action<ProviderCompanyDetail>? setOptionalParameter)
     {
-        var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, dataUrl, DateTimeOffset.UtcNow);
+        var providerCompanyDetail = new ProviderCompanyDetail(Guid.NewGuid(), companyId, providerDetailsCreationData.AutoSetupUrl, providerDetailsCreationData.AuthUrl, providerDetailsCreationData.ClientId, providerDetailsCreationData.ClientSecret, providerDetailsCreationData.EncryptionMode);
         setOptionalParameter?.Invoke(providerCompanyDetail);
         return context.ProviderCompanyDetails.Add(providerCompanyDetail).Entity;
     }
 
     /// <inheritdoc />
-    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId) =>
-        context.Companies
-            .Where(company => company.Id == companyId)
-            .Select(company => new ValueTuple<ProviderDetailReturnData, bool>(
-                new ProviderDetailReturnData(
-                    company.ProviderCompanyDetail!.Id,
-                    company.Id,
-                    company.ProviderCompanyDetail.AutoSetupUrl,
-                    company.ProviderCompanyDetail.AutoSetupCallbackUrl),
-                company.CompanyAssignedRoles.Any(assigned => assigned.CompanyRoleId == companyRoleId)))
-            .SingleOrDefaultAsync();
+    public Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(IEnumerable<CompanyRoleId> requiredCompanyRoleIds, Guid companyId) =>
+         context.Companies
+             .Where(company => company.Id == companyId)
+             .Select(company => new ValueTuple<ProviderDetailReturnData, bool>(
+                 new ProviderDetailReturnData(
+                     company.ProviderCompanyDetail!.Id,
+                     company.Id,
+                     company.ProviderCompanyDetail.AutoSetupUrl,
+                     company.ProviderCompanyDetail.AutoSetupCallbackUrl,
+                     company.ProviderCompanyDetail.AuthUrl,
+                     company.ProviderCompanyDetail.ClientId
+                     ),
+                 company.CompanyAssignedRoles.Any(assigned => requiredCompanyRoleIds.Contains(assigned.CompanyRoleId))))
+             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
     public void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify)
     {
-        var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default);
+        var details = new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, null!, null!, null!, default);
         initialize(details);
         context.Attach(details);
         modify(details);
@@ -409,7 +419,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
 
     public void RemoveProviderCompanyDetails(Guid providerCompanyDetailId) =>
         context.ProviderCompanyDetails
-            .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, default));
+            .Remove(new ProviderCompanyDetail(providerCompanyDetailId, Guid.Empty, null!, null!, null!, null!, default));
 
     public Func<int, int, Task<Pagination.Source<CompanyMissingSdDocumentData>?>> GetCompaniesWithMissingSdDocument() =>
         (skip, take) => Pagination.CreateSourceQueryAsync(

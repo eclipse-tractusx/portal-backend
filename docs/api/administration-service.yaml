@@ -4990,6 +4990,38 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
+    delete:
+      tags:
+        - SubscriptionConfiguration
+      summary: 'Delete the auto setup configuration for app/service provider (Authorization required - Roles: add_service_offering, add_apps)'
+      description: 'Example: DELETE: api/administration/subscriptionconfiguration/owncompany'
+      responses:
+        '204':
+          description: Empty response on success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Auto setup configuration was not found.
+        '500':
+          description: Internal Server Error
+        '401':
+          description: The User is unauthorized
   '/api/administration/SubscriptionConfiguration/process/offer-subscription/{offerSubscriptionId}':
     get:
       tags:
@@ -7750,10 +7782,15 @@ components:
       properties:
         url:
           type: string
-          nullable: true
         callbackUrl:
           type: string
           nullable: true
+        authUrl:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          type: string
       additionalProperties: false
     ProviderDetailReturnData:
       type: object
@@ -7771,6 +7808,10 @@ components:
         callbackUrl:
           type: string
           nullable: true
+        authUrl:
+          type: string
+        clientId:
+          type: string
       additionalProperties: false
     Reason:
       type: object

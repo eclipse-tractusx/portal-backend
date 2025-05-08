@@ -65,24 +65,25 @@ public interface ICompanyRepository
     /// <returns><c>true</c> if the company exists for the given user, otherwise <c>false</c></returns>
     Task<(bool IsValidCompanyId, bool IsCompanyRoleOwner)> IsValidCompanyRoleOwner(Guid companyId, IEnumerable<CompanyRoleId> companyRoleIds);
 
-    Task<(Guid ProviderCompanyDetailId, string Url, string? CallbackUrl)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
+    Task<(Guid ProviderCompanyDetailId, ProviderDetails ProviderDetails)> GetProviderCompanyDetailsExistsForUser(Guid companyId);
 
     /// <summary>
     /// Creates service provider company details
     /// </summary>
     /// <param name="companyId">Id of the company</param>
-    /// <param name="dataUrl">Url for the service provider</param>
+    /// <param name="providerDetailsCreationData">provider company details of app/service provider</param>
     /// <param name="setOptionalParameter">action to set optional parameter</param>
     /// <returns>Returns the newly created entity</returns>
-    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, string dataUrl, Action<ProviderCompanyDetail>? setOptionalParameter = null);
+    /// </summary>
+    ProviderCompanyDetail CreateProviderCompanyDetail(Guid companyId, ProviderDetailsCreationData providerDetailsCreationData, Action<ProviderCompanyDetail>? setOptionalParameter = null);
 
     /// <summary>
     /// Gets the service provider company details data
     /// </summary>
-    /// <param name="companyRoleId">Id of the details</param>
-    /// <param name="companyId">Id of the users company</param>
+    /// <param name="requiredCompanyRoleId">required company role id which is allowed to modify the provider details</param>
+    /// <param name="companyId">required Id of the users company</param>
     /// <returns>Returns the details data</returns>
-    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(CompanyRoleId companyRoleId, Guid companyId);
+    Task<(ProviderDetailReturnData ProviderDetailReturnData, bool IsProviderCompany)> GetProviderCompanyDetailAsync(IEnumerable<CompanyRoleId> requiredCompanyRoleIds, Guid companyId);
 
     /// <summary>
     /// Updates the service provider company details
