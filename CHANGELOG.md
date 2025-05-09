@@ -32,10 +32,10 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Technical Support
 
 * **Dependencies**
- * updated app dependencies [#1271](https://github.com/eclipse-tractusx/portal-backend/pull/1271), [#1280](https://github.com/eclipse-tractusx/portal-backend/pull/1280), [#1293](https://github.com/eclipse-tractusx/portal-backend/pull/1293), [#1302](https://github.com/eclipse-tractusx/portal-backend/pull/1302), [#1315](https://github.com/eclipse-tractusx/portal-backend/pull/1315), [#1281](https://github.com/eclipse-tractusx/portal-backend/pull/1281),[#1270](https://github.com/eclipse-tractusx/portal-backend/pull/1270), [#1331](https://github.com/eclipse-tractusx/portal-backend/pull/1331), [#1336](https://github.com/eclipse-tractusx/portal-backend/pull/1336), [#1339](https://github.com/eclipse-tractusx/portal-backend/pull/1339), [#1348](https://github.com/eclipse-tractusx/portal-backend/pull/1348)
+  * updated app dependencies [#1271](https://github.com/eclipse-tractusx/portal-backend/pull/1271), [#1280](https://github.com/eclipse-tractusx/portal-backend/pull/1280), [#1293](https://github.com/eclipse-tractusx/portal-backend/pull/1293), [#1302](https://github.com/eclipse-tractusx/portal-backend/pull/1302), [#1315](https://github.com/eclipse-tractusx/portal-backend/pull/1315), [#1281](https://github.com/eclipse-tractusx/portal-backend/pull/1281),[#1270](https://github.com/eclipse-tractusx/portal-backend/pull/1270), [#1331](https://github.com/eclipse-tractusx/portal-backend/pull/1331), [#1336](https://github.com/eclipse-tractusx/portal-backend/pull/1336), [#1339](https://github.com/eclipse-tractusx/portal-backend/pull/1339), [#1348](https://github.com/eclipse-tractusx/portal-backend/pull/1348)
  * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
 * **Nuget packages**
- * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
+  * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
 
 ### Known Knowns
 
