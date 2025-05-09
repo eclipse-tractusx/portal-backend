@@ -11,7 +11,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Offers**
   * adjusted provider callback url handling [#1227](https://github.com/eclipse-tractusx/portal-backend/pull/1227)
   * added authentication details in auto setup configuration [#1232](https://github.com/eclipse-tractusx/portal-backend/pull/1232)
-  * Added the callback url in GET response of the api `api/administration/subscriptionconfiguration/owncompany` [#1305](https://github.com/eclipse-tractusx/portal-backend/pull/1305)
+  * added the callback url in GET response of the api `api/administration/subscriptionconfiguration/owncompany` [#1305](https://github.com/eclipse-tractusx/portal-backend/pull/1305)
   * added error handling for offer services [#1285](https://github.com/eclipse-tractusx/portal-backend/pull/1285)
 * **Clearinghouse**
   * enabled region specific clearinghouses [#1333](https://github.com/eclipse-tractusx/portal-backend/pull/1333)
@@ -40,8 +40,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 ### Known Knowns
 
 * Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
-
-
 
 ## 2.4.0
 
