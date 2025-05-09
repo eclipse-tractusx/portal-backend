@@ -2,6 +2,45 @@
 
 New features, fixed bugs, known defects and other noteworthy changes to each release of the Catena-X Portal Backend.
 
+## Unreleased
+
+## 2.5.0-RC1
+
+### Feature
+
+* **Offers**
+  * adjusted provider callback url handling [#1227](https://github.com/eclipse-tractusx/portal-backend/pull/1227)
+  * added authentication details in auto setup configuration [#1232](https://github.com/eclipse-tractusx/portal-backend/pull/1232)
+  * added the callback url in GET response of the api `api/administration/subscriptionconfiguration/owncompany` [#1305](https://github.com/eclipse-tractusx/portal-backend/pull/1305)
+  * added error handling for offer services [#1285](https://github.com/eclipse-tractusx/portal-backend/pull/1285)
+* **Clearinghouse**
+  * enabled region specific clearinghouses [#1333](https://github.com/eclipse-tractusx/portal-backend/pull/1333)
+* **TechnicalUser**
+  * added service endpoint message for pending user status of technical user [#1349](https://github.com/eclipse-tractusx/portal-backend/pull/1349)
+* **SDCreation**
+  * implemented country-specific SD toggle for SD Factory [#1345](https://github.com/eclipse-tractusx/portal-backend/pull/1345)
+* **Connectors**
+  * added connector management role [#1337](https://github.com/eclipse-tractusx/portal-backend/pull/1337)
+
+### Bugfixes
+
+* **Offers**
+  * fixed the validation and request body for auto setup callback url [#1318](https://github.com/eclipse-tractusx/portal-backend/pull/1318)
+* **Registration Service**
+  * fixed document api to show only `COMMERCIAL_REGISTER_EXTRACT` type document  [#1275](https://github.com/eclipse-tractusx/portal-backend/pull/1275)
+
+### Technical Support
+
+* **Dependencies**
+  * updated app dependencies [#1271](https://github.com/eclipse-tractusx/portal-backend/pull/1271), [#1280](https://github.com/eclipse-tractusx/portal-backend/pull/1280), [#1293](https://github.com/eclipse-tractusx/portal-backend/pull/1293), [#1302](https://github.com/eclipse-tractusx/portal-backend/pull/1302), [#1315](https://github.com/eclipse-tractusx/portal-backend/pull/1315), [#1281](https://github.com/eclipse-tractusx/portal-backend/pull/1281),[#1270](https://github.com/eclipse-tractusx/portal-backend/pull/1270), [#1331](https://github.com/eclipse-tractusx/portal-backend/pull/1331), [#1336](https://github.com/eclipse-tractusx/portal-backend/pull/1336), [#1339](https://github.com/eclipse-tractusx/portal-backend/pull/1339), [#1348](https://github.com/eclipse-tractusx/portal-backend/pull/1348)
+  * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
+* **Nuget packages**
+  * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
+
 ## 2.4.0
 
 ### Feature
