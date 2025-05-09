@@ -30,10 +30,13 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed document api to show only `COMMERCIAL_REGISTER_EXTRACT` type document  [#1275](https://github.com/eclipse-tractusx/portal-backend/pull/1275)
 
 ### Technical Support
+
+* **Dependencies**
  * updated app dependencies [#1271](https://github.com/eclipse-tractusx/portal-backend/pull/1271), [#1280](https://github.com/eclipse-tractusx/portal-backend/pull/1280), [#1293](https://github.com/eclipse-tractusx/portal-backend/pull/1293), [#1302](https://github.com/eclipse-tractusx/portal-backend/pull/1302), [#1315](https://github.com/eclipse-tractusx/portal-backend/pull/1315), [#1281](https://github.com/eclipse-tractusx/portal-backend/pull/1281),[#1270](https://github.com/eclipse-tractusx/portal-backend/pull/1270), [#1331](https://github.com/eclipse-tractusx/portal-backend/pull/1331), [#1336](https://github.com/eclipse-tractusx/portal-backend/pull/1336), [#1339](https://github.com/eclipse-tractusx/portal-backend/pull/1339), [#1348](https://github.com/eclipse-tractusx/portal-backend/pull/1348)
- * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
  * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
- 
+* **Nuget packages**
+ * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
+
 ### Known Knowns
 
 * Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
