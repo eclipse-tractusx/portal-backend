@@ -231,6 +231,15 @@ public class TechnicalUserRepository(PortalDbContext portalDbContext) : ITechnic
                 tu.Identity.CompanyId == companyId)
             .AnyAsync();
 
+    public Task<bool> CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(Guid technicalUserId, Guid companyId) =>
+        portalDbContext.TechnicalUsers
+            .Where(tu =>
+                tu.Id == technicalUserId &&
+               (tu.Connector != null ||
+                tu.OfferSubscription != null) &&
+                tu.Identity!.CompanyId == companyId)
+            .AnyAsync();
+
     public Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId) =>
         portalDbContext.TechnicalUsers
             .Where(tu => tu.ClientClientId == clientId)

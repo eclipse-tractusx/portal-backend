@@ -216,6 +216,12 @@ public class ConnectorsBusinessLogic(
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, [new ErrorParameter("technicalUserId", technicalUserId.Value.ToString()), new ErrorParameter("companyId", companyId.ToString())]);
         }
+
+        if (await portalRepositories.GetInstance<ITechnicalUserRepository>()
+        .CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None))
+        {
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE, [new ErrorParameter("technicalUserId", technicalUserId.Value.ToString())]);
+        }
     }
 
     private async Task<Guid> CreateAndRegisterConnectorAsync(

@@ -44,7 +44,8 @@ public class AdministrationConnectorErrorMessageContainer : IErrorMessageContain
         new((int)AdministrationConnectorErrors.CONNECTOR_CONFLICT_ALREADY_ASSIGNED,"Connector {externalId} already has a document assigned"),
         new((int)AdministrationConnectorErrors.CONNECTOR_NOT_HOST_COMPANY,"Company {companyId} is not the connectors host company"),
         new((int)AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE,"Connector {connectorId} is in state {connectorStatusId}"),
-        new((int)AdministrationConnectorErrors.CONNECTOR_DUPLICATE,"Connector {name} does already exists for url {connectorUrl}")
+        new((int)AdministrationConnectorErrors.CONNECTOR_DUPLICATE,"Connector {name} does already exists for url {connectorUrl}"),
+        new((int)AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE,"Technical User {technicalUserId} is already used by another connector or offer")
     ]);
 
     public Type Type { get => typeof(AdministrationConnectorErrors); }
@@ -72,5 +73,6 @@ public enum AdministrationConnectorErrors
     CONNECTOR_CONFLICT_ALREADY_ASSIGNED,
     CONNECTOR_NOT_HOST_COMPANY,
     CONNECTOR_CONFLICT_INACTIVE_STATE,
-    CONNECTOR_DUPLICATE
+    CONNECTOR_DUPLICATE,
+    CONNECTOR_ARGUMENT_TECH_USER_IN_USE
 }
