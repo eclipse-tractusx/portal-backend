@@ -28,7 +28,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceWebApplicationExtensions
 {
-    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version)
+    public static WebApplication CreateApp<TProgram>(this WebApplication app, string apiPath, string version, bool useMinimalApi)
     {
         app.UseSerilogRequestLogging();
 
@@ -51,7 +51,15 @@ public static class StartupServiceWebApplicationExtensions
         app.UseSession();
 
         app.UseCors(CorsExtensions.AllowSpecificOrigins);
-        app.UseMiddleware<CustomAuthorizationMiddleware>();
+        if (useMinimalApi)
+        {
+            app.UseMiddleware<GeneralHttpExceptionMiddleware>();
+        }
+        else
+        {
+            app.UseMiddleware<CustomAuthorizationMiddleware>();
+        }
+
         app.UseAuthentication();
         app.UseAuthorization();
 

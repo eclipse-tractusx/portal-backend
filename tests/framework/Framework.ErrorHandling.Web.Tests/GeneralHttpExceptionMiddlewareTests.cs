@@ -194,7 +194,8 @@ public class GeneralHttpExceptionMiddlewareTests
     public async Task Invoke_WithDetailedException()
     {
         // Arrange
-        var expectedException = ConflictException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") });
+        var expectedException = ConflictException.Create(TestErrors.FIRST_ERROR, [new("first", "foo"), new("second", "bar")
+        ]);
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         using var body = new MemoryStream();
         var httpContext = new DefaultHttpContext { Response = { Body = body } };
@@ -236,7 +237,8 @@ public class GeneralHttpExceptionMiddlewareTests
     public async Task Invoke_WithInnerException()
     {
         // Arrange
-        var expectedException = ServiceException.Create(TestErrors.FIRST_ERROR, new ErrorParameter[] { new("first", "foo"), new("second", "bar") }, new ForbiddenException("You don't have access to this resource", new UnauthorizedAccessException("No access")));
+        var expectedException = ServiceException.Create(TestErrors.FIRST_ERROR, [new("first", "foo"), new("second", "bar")
+        ], new ForbiddenException("You don't have access to this resource", new UnauthorizedAccessException("No access")));
         Task MockNextMiddleware(HttpContext _) => Task.FromException(expectedException);
         using var body = new MemoryStream();
         var httpContext = new DefaultHttpContext { Response = { Body = body } };

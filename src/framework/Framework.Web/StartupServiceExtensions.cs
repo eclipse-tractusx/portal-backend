@@ -33,10 +33,17 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class StartupServiceExtensions
 {
-    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName)
+    public static IServiceCollection AddDefaultServices<TProgram>(this IServiceCollection services, IConfigurationRoot configuration, string version, string cookieName, bool useMinimalApi)
     {
         services.AddCors(options => options.SetupCors(configuration));
-        services.AddScoped<CustomAuthorizationMiddleware>();
+        if (useMinimalApi)
+        {
+            services.AddScoped<GeneralHttpExceptionMiddleware>();
+        }
+        else
+        {
+            services.AddScoped<CustomAuthorizationMiddleware>();
+        }
 
         services.AddDistributedMemoryCache();
         services.AddSession(options =>
@@ -45,7 +52,11 @@ public static class StartupServiceExtensions
             options.IdleTimeout = TimeSpan.FromMinutes(10);
         });
 
-        services.AddControllers(options => options.Filters.Add<GeneralHttpExceptionFilter>())
+        services.AddControllers(options =>
+            {
+                if (!useMinimalApi)
+                    options.Filters.Add<GeneralHttpExceptionFilter>();
+            })
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));

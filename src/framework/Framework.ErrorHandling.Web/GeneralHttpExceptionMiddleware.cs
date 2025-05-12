@@ -32,6 +32,7 @@ public class GeneralHttpExceptionMiddleware(ILogger<GeneralHttpExceptionMiddlewa
         try
         {
             await next(context).ConfigureAwait(ConfigureAwaitOptions.None);
+            await EnhanceResponseForUnauthorizedAndForbidden(context).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         catch (Exception exception)
         {
