@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http.Signed" Version="4.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
