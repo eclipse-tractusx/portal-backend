@@ -241,6 +241,7 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         results.Should().NotBe(default);
         results.Bpn.Should().NotBeNullOrEmpty();
         results.Bpn.Should().Be("BPNL00000003CRHK");
+        results.CountryAlpha2Code.Should().Be("DE");
     }
 
     [Fact]

@@ -183,10 +183,10 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
     }
 
     /// <inheritdoc />
-    public Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId) =>
+    public Task<(string? Bpn, Guid? SelfDescriptionDocumentId, string? CountryAlpha2Code)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId) =>
         context.Companies.AsNoTracking()
             .Where(x => x.Id == companyId)
-            .Select(x => new ValueTuple<string?, Guid?>(x.BusinessPartnerNumber, x.SelfDescriptionDocumentId))
+            .Select(x => new ValueTuple<string?, Guid?, string?>(x.BusinessPartnerNumber, x.SelfDescriptionDocumentId, x.Address!.CountryAlpha2Code))
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
