@@ -959,10 +959,12 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
 
         // Assert
+        result.Should().NotBeNull();
         result.Exists.Should().BeTrue();
         result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.ProviderBpn.Should().Be("BPNL00000003LLHA");
         result.IsOfferProvider.Should().BeTrue();
+        result.CountryAlpha2Code.Should().Be("DE");
     }
 
     [Fact]
@@ -975,10 +977,12 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckOfferSubscriptionWithOfferProvider(new Guid("0b2ca541-206d-48ad-bc02-fb61fbcb5552"), Guid.NewGuid());
 
         // Assert
+        result.Should().NotBeNull();
         result.Exists.Should().BeTrue();
         result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
-        result.ProviderBpn.Should().Be("BPNL00000003AYRE");
+        result.ProviderBpn.Should().Be("BPNL00000003LLHA");
         result.IsOfferProvider.Should().BeFalse();
+        result.CountryAlpha2Code.Should().Be("DE");
     }
 
     [Fact]
@@ -991,7 +995,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
         var result = await sut.CheckOfferSubscriptionWithOfferProvider(Guid.NewGuid(), new Guid("0dcd8209-85e2-4073-b130-ac094fb47106"));
 
         // Assert
-        result.Exists.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     #endregion

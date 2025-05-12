@@ -125,6 +125,11 @@ public class ConnectorsBusinessLogic(
             throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
+        if (string.IsNullOrWhiteSpace(result.CountryAlpha2Code))
+        {
+            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
+        }
+
         await ValidateTechnicalUser(name, technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId, technicalUserId);
@@ -134,6 +139,7 @@ public class ConnectorsBusinessLogic(
             result.SelfDescriptionDocumentId,
             null,
             companyId,
+            result.CountryAlpha2Code,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -148,7 +154,7 @@ public class ConnectorsBusinessLogic(
             .CheckOfferSubscriptionWithOfferProvider(subscriptionId, companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (!result.Exists)
+        if (result == null || !result.Exists)
         {
             throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
@@ -171,7 +177,12 @@ public class ConnectorsBusinessLogic(
 
         if (string.IsNullOrWhiteSpace(result.ProviderBpn))
         {
-            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, [new(nameof(companyId), companyId.ToString())]);
+        }
+
+        if (string.IsNullOrWhiteSpace(result.CountryAlpha2Code))
+        {
+            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         await ValidateTechnicalUser(name, technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -183,6 +194,7 @@ public class ConnectorsBusinessLogic(
             result.SelfDescriptionDocumentId,
             subscriptionId,
             result.CompanyId,
+            result.CountryAlpha2Code,
             cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
@@ -231,9 +243,10 @@ public class ConnectorsBusinessLogic(
         Guid? selfDescriptionDocumentId,
         Guid? subscriptionId,
         Guid companyId,
+        string countryAlpha2Code,
         CancellationToken cancellationToken)
     {
-        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(connectorInputModel.Location);
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(countryAlpha2Code);
         if (selfDescriptionDocumentId is null && !countrySpecificSettings.ClearinghouseConnectDisabled)
         {
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(companyId), companyId.ToString())]);
@@ -424,12 +437,13 @@ public class ConnectorsBusinessLogic(
 
     private async Task UpdateConnectorUrlInternal(Guid connectorId, ConnectorUpdateRequest data, CancellationToken cancellationToken)
     {
+        var companyId = _identityData.CompanyId;
         var connectorsRepository = portalRepositories
             .GetInstance<IConnectorsRepository>();
         var documentRepository = portalRepositories
            .GetInstance<IDocumentRepository>();
         var connector = await connectorsRepository
-            .GetConnectorUpdateInformation(connectorId, _identityData.CompanyId)
+            .GetConnectorUpdateInformation(connectorId, companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (connector == null)
@@ -440,6 +454,11 @@ public class ConnectorsBusinessLogic(
         if (connector.ConnectorUrl == data.ConnectorUrl)
         {
             return;
+        }
+
+        if (string.IsNullOrWhiteSpace(connector.CountryAlpha2Code))
+        {
+            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         if (!connector.IsProviderCompany)
@@ -480,10 +499,14 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_NO_DESCRIPTION, [new(nameof(connectorId), connectorId.ToString())]);
         }
 
-        var selfDescriptionDocumentUrl = $"{_connectorSettings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
-        await sdFactoryBusinessLogic
-            .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, bpn, cancellationToken)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(connector.CountryAlpha2Code);
+        if (!countrySpecificSettings.ClearinghouseConnectDisabled)
+        {
+            var selfDescriptionDocumentUrl = $"{_connectorSettings.SelfDescriptionDocumentUrl}/{connector.SelfDescriptionCompanyDocumentId}";
+            await sdFactoryBusinessLogic
+                .RegisterConnectorAsync(connectorId, selfDescriptionDocumentUrl, bpn, cancellationToken)
+                .ConfigureAwait(ConfigureAwaitOptions.None);
+        }
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

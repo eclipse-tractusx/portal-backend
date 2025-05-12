@@ -46,6 +46,7 @@ public class AdministrationConnectorErrorMessageContainer : IErrorMessageContain
         new((int)AdministrationConnectorErrors.CONNECTOR_CONFLICT_INACTIVE_STATE,"Connector {connectorId} is in state {connectorStatusId}"),
         new((int)AdministrationConnectorErrors.CONNECTOR_DUPLICATE,"Connector {name} does already exists for url {connectorUrl}"),
         new((int)AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE,"Technical User {technicalUserId} is already used by another connector or offer"),
+        new((int)AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND,"The country code of company {companyId} must be set"),
         new((int)AdministrationConnectorErrors.CONNECTOR_MISSING_TECH_USER,"Connector {name} must have a technical user")
     ]);
 
@@ -76,5 +77,6 @@ public enum AdministrationConnectorErrors
     CONNECTOR_CONFLICT_INACTIVE_STATE,
     CONNECTOR_DUPLICATE,
     CONNECTOR_ARGUMENT_TECH_USER_IN_USE,
+    CONNECTOR_COUNTRYCODE_NOT_FOUND,
     CONNECTOR_MISSING_TECH_USER
 }
