@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
 using Serilog.Context;
@@ -63,9 +64,9 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
         CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
         CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
         CreateErrorEntry<ForbiddenException>(HttpStatusCode.Forbidden),
-        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, new[] { serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message })),
+        CreateErrorEntry<ServiceException>(HttpStatusCode.BadGateway, serviceException => (serviceException.Source, [serviceException.StatusCode == null ? "remote service call failed" : $"remote service returned status code: {(int)serviceException.StatusCode} {serviceException.StatusCode}", serviceException.Message])),
         CreateErrorEntry<UnsupportedMediaTypeException>(HttpStatusCode.UnsupportedMediaType),
-        CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, new[] { $"Invalid service configuration: {configurationException.Message}" }))
+        CreateErrorEntry<ConfigurationException>(HttpStatusCode.InternalServerError, configurationException => (configurationException.Source, [$"Invalid service configuration: {configurationException.Message}"]))
     ]);
 
     protected static (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel) GetErrorInformation(Exception error) =>
@@ -113,6 +114,40 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
     {
         LogContext.PushProperty("ErrorId", errorId);
         LogContext.PushProperty("StackTrace", exception.StackTrace);
+    }
+
+    protected async Task EnhanceResponseForUnauthorizedAndForbidden(HttpContext context)
+    {
+        switch (context.Response.StatusCode)
+        {
+            case (int)HttpStatusCode.Unauthorized:
+                context.Response.ContentType = "application/json";
+                const string UnauthorizedAccess = "Unauthorized access";
+                await context.Response.WriteAsJsonAsync(
+                    CreateErrorResponse(
+                        HttpStatusCode.Unauthorized,
+                        new UnauthorizedAccessException(),
+                        Guid.NewGuid().ToString(),
+                        UnauthorizedAccess,
+                        Enumerable.Repeat(new ErrorDetails("UnauthorizedAccess", nameof(UnauthorizedAccessException), UnauthorizedAccess, []), 1),
+                        null),
+                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
+                break;
+
+            case (int)HttpStatusCode.Forbidden:
+                context.Response.ContentType = "application/json";
+                const string ForbiddenAccess = "Access forbidden";
+                await context.Response.WriteAsJsonAsync(
+                    CreateErrorResponse(
+                        HttpStatusCode.Forbidden,
+                        new ForbiddenException(),
+                        Guid.NewGuid().ToString(),
+                        ForbiddenAccess,
+                        Enumerable.Repeat(new ErrorDetails("ForbiddenAccess", nameof(ForbiddenException), ForbiddenAccess, []), 1),
+                        null),
+                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
+                break;
+        }
     }
 
     protected sealed record MetaData(string Url, string Description);

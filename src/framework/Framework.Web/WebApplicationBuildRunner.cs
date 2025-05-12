@@ -27,29 +27,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 
 public static class WebApplicationBuildRunner
 {
-    [Obsolete("use BuildAndRunWebApplicationAsync instead")]
-    public static void BuildAndRunWebApplication<TProgram>(
-        string[] args,
-        string path,
-        string version,
-        string cookieName,
-        Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp) =>
-            BuildAndRunWebApplicationAsync<TProgram>(
-                args,
-                path,
-                version,
-                cookieName,
-                configureBuilder,
-                configureApp).GetAwaiter().GetResult();
-
     public static async Task BuildAndRunWebApplicationAsync<TProgram>(
         string[] args,
         string path,
         string version,
         string cookieName,
         Action<WebApplicationBuilder>? configureBuilder,
-        Action<WebApplication, IHostEnvironment>? configureApp)
+        Action<WebApplication, IHostEnvironment>? configureApp,
+        bool useMinimalApi = false)
     {
         LoggingExtensions.EnsureInitialized();
         Log.Information("Starting the application");
@@ -68,11 +53,11 @@ public static class WebApplicationBuildRunner
                 }
             });
             builder.Services
-                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName);
+                .AddDefaultServices<TProgram>(builder.Configuration, version, cookieName, useMinimalApi);
 
             configureBuilder?.Invoke(builder);
 
-            var app = builder.Build().CreateApp<TProgram>(path, version);
+            var app = builder.Build().CreateApp<TProgram>(path, version, useMinimalApi);
             configureApp?.Invoke(app, builder.Environment);
             await app.RunAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }

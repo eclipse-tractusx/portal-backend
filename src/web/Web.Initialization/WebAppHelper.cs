@@ -24,6 +24,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.Web;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.Authentication;
 using Org.Eclipse.TractusX.Portal.Backend.Keycloak.ErrorHandling;
@@ -40,6 +41,7 @@ public static class WebAppHelper
             .BuildAndRunWebApplicationAsync<TProgram>(args, path, version, ".Portal",
                 builder =>
                 {
+                    builder.Services.AddScoped<CustomAuthorizationMiddleware>();
                     configureBuilder.Invoke(builder);
                     builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
                     builder.Services.AddTransient<IAuthorizationHandler, MandatoryIdentityClaimHandler>();
@@ -53,6 +55,7 @@ public static class WebAppHelper
                 },
                 (app, environment) =>
                 {
+                    app.UseMiddleware<CustomAuthorizationMiddleware>();
                     if (environment.IsDevelopment())
                     {
                         app.UseDeveloperExceptionPage();

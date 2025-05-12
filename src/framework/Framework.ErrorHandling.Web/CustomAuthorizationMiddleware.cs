@@ -19,7 +19,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Service;
-using System.Net;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling.Web;
 
@@ -29,39 +28,6 @@ public class CustomAuthorizationMiddleware(IErrorMessageService errorMessageServ
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         await next(context).ConfigureAwait(ConfigureAwaitOptions.None);
-
-        switch (context.Response.StatusCode)
-        {
-            case (int)HttpStatusCode.Unauthorized:
-                context.Response.ContentType = "application/json";
-                const string UnauthorizedAccess = "Unauthorized access";
-                await context.Response.WriteAsJsonAsync(
-                    CreateErrorResponse(
-                        HttpStatusCode.Unauthorized,
-                        new UnauthorizedAccessException(),
-                        Guid.NewGuid().ToString(),
-                        UnauthorizedAccess,
-                        Enumerable.Repeat(new ErrorDetails("UnauthorizedAccess", nameof(UnauthorizedAccessException), UnauthorizedAccess, []), 1),
-                        null),
-                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
-                break;
-
-            case (int)HttpStatusCode.Forbidden:
-                context.Response.ContentType = "application/json";
-                const string ForbiddenAccess = "Access forbidden";
-                await context.Response.WriteAsJsonAsync(
-                    CreateErrorResponse(
-                        HttpStatusCode.Forbidden,
-                        new ForbiddenException(),
-                        Guid.NewGuid().ToString(),
-                        ForbiddenAccess,
-                        Enumerable.Repeat(new ErrorDetails("ForbiddenAccess", nameof(ForbiddenException), ForbiddenAccess, []), 1),
-                        null),
-                    Options).ConfigureAwait(ConfigureAwaitOptions.None);
-                break;
-
-            default:
-                break;
-        }
+        await EnhanceResponseForUnauthorizedAndForbidden(context).ConfigureAwait(ConfigureAwaitOptions.None);
     }
 }
