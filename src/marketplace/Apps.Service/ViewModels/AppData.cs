@@ -40,6 +40,7 @@ public record AppData(
     string Name,
     string ShortDescription,
     string Provider,
+    string Shortname,
     LicenseTypeId LicenseType,
     string Price,
     Guid LeadPictureId,

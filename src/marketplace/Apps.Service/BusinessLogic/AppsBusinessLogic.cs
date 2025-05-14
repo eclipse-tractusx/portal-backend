@@ -79,6 +79,7 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     app.Name ?? Constants.ErrorString,
                     app.ShortDescription ?? Constants.ErrorString,
                     app.VendorCompanyName,
+                    app.Shortname,
                     app.LicenseType,
                     app.LicenseText ?? Constants.ErrorString,
                     app.LeadPictureId,

@@ -22,4 +22,4 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
-public record ActiveAppData(Guid Id, string? Name, string VendorCompanyName, IEnumerable<string> UseCaseNames, Guid LeadPictureId, LicenseTypeId LicenseType, string? ShortDescription, string? LicenseText);
+public record ActiveAppData(Guid Id, string? Name, string VendorCompanyName, string? Shortname, IEnumerable<string> UseCaseNames, Guid LeadPictureId, LicenseTypeId LicenseType, string? ShortDescription, string? LicenseText);
