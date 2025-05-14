@@ -97,6 +97,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offer.MarketingUrl,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.ContactEmail,
                 offer.ContactNumber,
                 offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),

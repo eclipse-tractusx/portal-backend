@@ -52,6 +52,7 @@ public record AppDetailResponse(
     IEnumerable<Guid> Images,
     string ProviderUri,
     string Provider,
+    string ProviderShortname,
     string? ContactEmail,
     string? ContactNumber,
     IEnumerable<AppUseCaseData> UseCases,
