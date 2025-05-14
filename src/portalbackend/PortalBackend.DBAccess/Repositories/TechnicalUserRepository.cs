@@ -223,22 +223,23 @@ public class TechnicalUserRepository(PortalDbContext portalDbContext) : ITechnic
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public Task<bool> CheckActiveServiceAccountExistsForCompanyAsync(Guid technicalUserId, Guid companyId) =>
-        portalDbContext.TechnicalUsers
+    public async Task<(bool ActiveUserExists, bool LinkedToConnectorOrOffer)> CheckTechnicalUserDetailsAsync(Guid technicalUserId, Guid companyId)
+    {
+        var result = await portalDbContext.TechnicalUsers
             .Where(tu =>
                 tu.Id == technicalUserId &&
-                (tu.Identity!.UserStatusId == UserStatusId.ACTIVE || tu.Identity!.UserStatusId == UserStatusId.PENDING) &&
-                tu.Identity.CompanyId == companyId)
-            .AnyAsync();
-
-    public Task<bool> CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(Guid technicalUserId, Guid companyId) =>
-        portalDbContext.TechnicalUsers
-            .Where(tu =>
-                tu.Id == technicalUserId &&
-               (tu.Connector != null ||
-                tu.OfferSubscription != null) &&
                 tu.Identity!.CompanyId == companyId)
-            .AnyAsync();
+            .Select(tu => new
+            {
+                IsActiveOrPending = tu.Identity!.UserStatusId == UserStatusId.ACTIVE || tu.Identity.UserStatusId == UserStatusId.PENDING,
+                IsLinkedToConnectorOrOffer = tu.Connector != null || tu.OfferSubscription != null
+            })
+            .SingleOrDefaultAsync();
+
+        return result != null
+            ? (result.IsActiveOrPending, result.IsLinkedToConnectorOrOffer)
+            : (false, false);
+    }
 
     public Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId) =>
         portalDbContext.TechnicalUsers

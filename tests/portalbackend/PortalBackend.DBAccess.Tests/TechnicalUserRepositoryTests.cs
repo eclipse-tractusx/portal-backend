@@ -455,88 +455,84 @@ public class TechnicalUserRepositoryTests : IAssemblyFixture<TestDbFixture>
 
     #endregion
 
-    #region CheckActiveServiceAccountExistsForCompanyAsync
+    #region CheckTechnicalUserDetailsAsync
 
     [Fact]
-    public async Task CheckActiveServiceAccountExistsForCompanyAsync_ReturnsExpectedResult()
+    public async Task CheckTechnicalUserDetailsAsyncForActiveStatus_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.CheckActiveServiceAccountExistsForCompanyAsync(_validServiceAccountId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        var (active, _) = await sut.CheckTechnicalUserDetailsAsync(_validServiceAccountId, new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
-        result.Should().BeTrue();
+        active.Should().BeTrue();
     }
 
     [Fact]
-    public async Task CheckActiveServiceAccountExistsForCompanyAsyncForPendingStatus_ReturnsExpectedResult()
+    public async Task CheckTechnicalUserDetailsAsyncForPendingStatus_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.CheckActiveServiceAccountExistsForCompanyAsync(new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193394"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        var (active, _) = await sut.CheckTechnicalUserDetailsAsync(new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193394"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
-        result.Should().BeTrue();
+        active.Should().BeTrue();
     }
 
     [Fact]
-    public async Task CheckActiveServiceAccountExistsForCompanyAsyncForInactiveStatus_ReturnsExpectedResult()
+    public async Task CheckTechnicalUserDetailsAsyncForInactiveStatus_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.CheckActiveServiceAccountExistsForCompanyAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        var (active, _) = await sut.CheckTechnicalUserDetailsAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94d"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync
-
-    [Fact]
-    public async Task CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync_OfferLinked_ReturnsExpectedResult()
-    {
-        // Arrange
-        var (sut, _) = await CreateSut();
-
-        // Act
-        var result = await sut.CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
-
-        // Assert
-        result.Should().BeTrue();
+        active.Should().BeFalse();
     }
 
     [Fact]
-    public async Task CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync_ConnectorLinked_ReturnsExpectedResult()
+    public async Task CheckTechnicalUserDetailsAsyncForOfferLinked_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        var (_, linked) = await sut.CheckTechnicalUserDetailsAsync(new Guid("a946f314-f53e-4c72-9124-40b72bcc59aa"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
-        result.Should().BeTrue();
+        linked.Should().BeTrue();
     }
 
     [Fact]
-    public async Task CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync_NotLinked_ReturnsExpectedResult()
+    public async Task CheckTechnicalUserDetailsAsyncForConnectorLinked_ReturnsExpectedResult()
     {
         // Arrange
         var (sut, _) = await CreateSut();
 
         // Act
-        var result = await sut.CheckTechnicalUserLinkedToConnectorOrOfferCompanyAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94e"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+        var (_, linked) = await sut.CheckTechnicalUserDetailsAsync(new Guid("cd436931-8399-4c1d-bd81-7dffb298c7ca"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
 
         // Assert
-        result.Should().BeFalse();
+        linked.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckTechnicalUserDetailsAsyncForNotLinked_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, _) = await CreateSut();
+
+        // Act
+        var (_, linked) = await sut.CheckTechnicalUserDetailsAsync(new Guid("38c92162-6328-40ce-80f3-22e3f3e9b94e"), new Guid("2dc4249f-b5ca-4d42-bef1-7a7a950a4f87"));
+
+        // Assert
+        linked.Should().BeFalse();
     }
 
     #endregion
