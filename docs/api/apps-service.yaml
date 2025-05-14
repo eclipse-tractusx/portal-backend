@@ -3010,6 +3010,8 @@ components:
           format: uuid
         provider:
           type: string
+        shortname:
+          type: string
       additionalProperties: false
     ClientInfoData:
       type: object

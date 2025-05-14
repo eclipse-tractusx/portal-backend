@@ -96,7 +96,9 @@ public class AppsBusinessLogic : IAppsBusinessLogic
                     x.OfferName ?? Constants.ErrorString,
                     x.SubscriptionUrl,
                     x.LeadPictureId,
-                    x.Provider));
+                    x.Provider,
+                    x.Shortname
+                    ));
 
     /// <inheritdoc/>
     public async Task<AppDetailResponse> GetAppDetailsByIdAsync(Guid appId, string? languageShortName = null)
