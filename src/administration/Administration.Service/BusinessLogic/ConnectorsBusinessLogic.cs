@@ -211,10 +211,17 @@ public class ConnectorsBusinessLogic(
             return;
         }
 
-        if (!await portalRepositories.GetInstance<ITechnicalUserRepository>()
-                .CheckActiveServiceAccountExistsForCompanyAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None))
+        var (activeUserExists, linkedToConnectorOrOffer) = await portalRepositories.GetInstance<ITechnicalUserRepository>()
+                .CheckTechnicalUserDetailsAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+
+        if (!activeUserExists)
         {
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_NOT_ACTIVE, [new ErrorParameter("technicalUserId", technicalUserId.Value.ToString()), new ErrorParameter("companyId", companyId.ToString())]);
+        }
+
+        if (linkedToConnectorOrOffer)
+        {
+            throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE, [new ErrorParameter("technicalUserId", technicalUserId.Value.ToString())]);
         }
     }
 
