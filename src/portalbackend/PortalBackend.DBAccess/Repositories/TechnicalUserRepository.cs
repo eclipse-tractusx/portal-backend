@@ -223,23 +223,16 @@ public class TechnicalUserRepository(PortalDbContext portalDbContext) : ITechnic
             .SingleOrDefaultAsync();
 
     /// <inheritdoc />
-    public async Task<(bool ActiveUserExists, bool LinkedToConnectorOrOffer)> CheckTechnicalUserDetailsAsync(Guid technicalUserId, Guid companyId)
-    {
-        var result = await portalDbContext.TechnicalUsers
-            .Where(tu =>
-                tu.Id == technicalUserId &&
-                tu.Identity!.CompanyId == companyId)
-            .Select(tu => new
-            {
-                IsActiveOrPending = tu.Identity!.UserStatusId == UserStatusId.ACTIVE || tu.Identity.UserStatusId == UserStatusId.PENDING,
-                IsLinkedToConnectorOrOffer = tu.Connector != null || tu.OfferSubscription != null
-            })
-            .SingleOrDefaultAsync();
-
-        return result != null
-            ? (result.IsActiveOrPending, result.IsLinkedToConnectorOrOffer)
-            : (false, false);
-    }
+    public async Task<(bool ActiveUserExists, bool LinkedToConnectorOrOffer)> CheckTechnicalUserDetailsAsync(Guid technicalUserId, Guid companyId) =>
+    await portalDbContext.TechnicalUsers
+         .Where(tu =>
+             tu.Id == technicalUserId &&
+             tu.Identity!.CompanyId == companyId)
+         .Select(tu => new ValueTuple<bool, bool>(
+             tu.Identity!.UserStatusId == UserStatusId.ACTIVE || tu.Identity.UserStatusId == UserStatusId.PENDING,
+             tu.Connector != null || tu.OfferSubscription != null
+         ))
+         .SingleOrDefaultAsync();
 
     public Task<(Guid IdentityId, Guid CompanyId)> GetTechnicalUserDataByClientId(string clientId) =>
         portalDbContext.TechnicalUsers
