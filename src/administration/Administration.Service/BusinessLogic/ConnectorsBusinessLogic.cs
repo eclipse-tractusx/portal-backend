@@ -154,7 +154,7 @@ public class ConnectorsBusinessLogic(
             .CheckOfferSubscriptionWithOfferProvider(subscriptionId, companyId)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        if (result == null || !result.Exists)
+        if (result?.Exists != true)
         {
             throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
         }
