@@ -164,7 +164,7 @@ public class ServiceAccountController(ITechnicalUserBusinessLogic logic) : Contr
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("owncompany/serviceaccounts")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyServiceAccountData>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page, [FromQuery] int size, [FromQuery] bool? isOwner, [FromQuery] string? clientId, [FromQuery] bool filterForInactive = false, [FromQuery] IEnumerable<UserStatusId>? userStatus = null) =>
+    public Task<Pagination.Response<CompanyServiceAccountData>> GetServiceAccountsData([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] bool? isOwner = null, [FromQuery] string? clientId = null, [FromQuery] bool filterForInactive = false, [FromQuery] IEnumerable<UserStatusId>? userStatus = null) =>
         logic.GetOwnCompanyServiceAccountsDataAsync(page, size, clientId, isOwner, filterForInactive, userStatus);
 
     /// <summary>
