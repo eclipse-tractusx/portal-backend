@@ -22,6 +22,6 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 namespace Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Models;
 
 public record ServiceAccountCreationProcessData(
-    ProcessTypeId? ProcessTypeId,
+    ProcessTypeId ProcessTypeId,
     Guid? ProcessId
 );
