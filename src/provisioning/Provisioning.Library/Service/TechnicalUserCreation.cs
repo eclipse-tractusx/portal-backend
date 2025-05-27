@@ -54,7 +54,7 @@ public class TechnicalUserCreation(
             TechnicalUserTypeId technicalUserTypeId,
             bool enhanceTechnicalUserName,
             bool enabled,
-            ServiceAccountCreationProcessData? processData,
+            ServiceAccountCreationProcessData processData,
             Action<TechnicalUser>? setOptionalParameter)
     {
         var (name, description, iamClientAuthMethod, userRoleIds) = creationData;
@@ -136,24 +136,21 @@ public class TechnicalUserCreation(
                             technicalUserTypeId, TechnicalUserKindId.EXTERNAL, dimSaName, null, description, dimRoleData,
                             technicalUserRepository, userRolesRepository, setOptionalParameter);
                         var processStepRepository = portalRepositories.GetInstance<IPortalProcessStepRepository>();
-                        if (processData?.ProcessTypeId is not null)
+                        if (!processData.ProcessId.HasValue)
                         {
-                            if (processData.ProcessId is null)
-                            {
-                                var process = processStepRepository.CreateProcess(processData.ProcessTypeId.Value);
-                                processStepRepository.CreateProcessStep(
-                                    processData.ProcessTypeId.Value.GetInitialProcessStepTypeIdForSaCreation(),
-                                    ProcessStepStatusId.TODO, process.Id);
-                                processId = process.Id;
-                            }
-                            else
-                            {
-                                processId = processData.ProcessId.Value;
-                            }
-
-                            portalRepositories.GetInstance<ITechnicalUserRepository>()
-                                .CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
+                            var process = processStepRepository.CreateProcess(processData.ProcessTypeId);
+                            processStepRepository.CreateProcessStep(
+                                processData.ProcessTypeId.GetInitialProcessStepTypeIdForSaCreation(),
+                                ProcessStepStatusId.TODO, process.Id);
+                            processId = process.Id;
                         }
+                        else
+                        {
+                            processId = processData.ProcessId.Value;
+                        }
+
+                        portalRepositories.GetInstance<ITechnicalUserRepository>()
+                            .CreateExternalTechnicalUserCreationData(dimServiceAccountId, processId.Value);
 
                         serviceAccounts.Add(new CreatedServiceAccountData(
                             dimServiceAccountId,

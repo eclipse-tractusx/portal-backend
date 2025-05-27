@@ -267,8 +267,8 @@ public class OfferSetupServiceTests
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns(
             [
-                new("sa1", "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()),
-                new("sa2", "test1", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>())
+                new("sa1", "test", IamClientAuthMethod.SECRET, []),
+                new("sa2", "test1", IamClientAuthMethod.SECRET, [])
             ]);
 
         A.CallTo(() => _appInstanceRepository.CreateAppInstance(A<Guid>._, A<Guid>._))
@@ -304,11 +304,11 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_pendingSubscriptionId, url);
 
         // Act
-        async Task Act() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.APP, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
+        async Task Act() => await _sut.AutoSetupOfferAsync(data, [], OfferTypeId.APP, "https://base-address.com", []);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN));
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE));
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -374,11 +374,11 @@ public class OfferSetupServiceTests
             .Returns<OfferSubscriptionTransferData?>(null);
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, [], OfferTypeId.SERVICE, "https://base-address.com", []);
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Action);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST));
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -390,11 +390,11 @@ public class OfferSetupServiceTests
         var data = new OfferAutoSetupData(_validSubscriptionId, "https://new-url.com/");
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, [], OfferTypeId.SERVICE, "https://base-address.com", []);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Action);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING));
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -408,11 +408,11 @@ public class OfferSetupServiceTests
         A.CallTo(() => _identity.CompanyId).Returns(Guid.NewGuid());
 
         // Act
-        async Task Action() => await _sut.AutoSetupOfferAsync(data, Enumerable.Empty<UserRoleConfig>(), OfferTypeId.SERVICE, "https://base-address.com", Enumerable.Empty<UserRoleConfig>());
+        async Task Action() => await _sut.AutoSetupOfferAsync(data, [], OfferTypeId.SERVICE, "https://base-address.com", []);
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Action);
-        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE));
         A.CallTo(() => _portalRepositories.SaveAsync()).MustNotHaveHappened();
     }
 
@@ -425,10 +425,10 @@ public class OfferSetupServiceTests
     {
         // Arrange
         var appInstanceId = Guid.NewGuid();
-        var appInstance = new AppInstance(appInstanceId, _validOfferId, default);
+        var appInstance = new AppInstance(appInstanceId, _validOfferId, Guid.Empty);
         SetupCreateSingleInstance(appInstance);
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOffer(_validOfferId, A<OfferTypeId>._))
-            .Returns(new TechnicalUserCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, Enumerable.Empty<Guid>()) }.AsFakeIEnumerable(out var enumerator));
+            .Returns(new TechnicalUserCreationInfo[] { new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, []) }.AsFakeIEnumerable(out var enumerator));
 
         // Act
         var result = await _sut.ActivateSingleInstanceAppAsync(_validOfferId);
@@ -451,7 +451,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(offerId);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.APP_DOES_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.APP_DOES_NOT_EXIST));
     }
 
     [Fact]
@@ -462,7 +462,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithWithNoInstanceSetupIds);
 
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.SINGLE_INSTANCE_OFFER_MUST_HAVE_ONE_INSTANCE));
     }
 
     [Fact]
@@ -472,7 +472,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithoutClient);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.CLIENTID_EMPTY_FOR_SINGLE_INSTANCE));
     }
 
     [Fact]
@@ -482,7 +482,7 @@ public class OfferSetupServiceTests
         async Task Act() => await _sut.ActivateSingleInstanceAppAsync(_offerIdWithMultipleInstances);
 
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_NOT_SINGLE_INSTANCE));
     }
 
     #endregion
@@ -539,7 +539,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.APP_INSTANCE_ALREADY_EXISTS));
     }
 
     #endregion
@@ -550,13 +550,13 @@ public class OfferSetupServiceTests
     public async Task UpdateSingleInstance_CallsExpected()
     {
         // Arrange
-        const string url = "https://test.de";
+        const string Url = "https://test.de";
 
         // Act
-        await _sut.UpdateSingleInstance("test", url);
+        await _sut.UpdateSingleInstance("test", Url);
 
         // Assert
-        A.CallTo(() => _provisioningManager.UpdateClient("test", url, $"{url}/*"))
+        A.CallTo(() => _provisioningManager.UpdateClient("test", Url, $"{Url}/*"))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -635,7 +635,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _appInstanceRepository.RemoveAppInstanceAssignedServiceAccounts(A<Guid>._, A<IEnumerable<Guid>>._))
             .MustNotHaveHappened();
 
-        result.Message.Should().Be(OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS.ToString());
+        result.Message.Should().Be(nameof(OfferSetupServiceErrors.APP_INSTANCE_ASSOCIATED_WITH_SUBSCRIPTIONS));
     }
 
     #endregion
@@ -659,7 +659,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERURL_NOT_CONTAIN));
     }
 
     [Theory]
@@ -678,7 +678,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_SUBCRIPTION_NOT_EXIST));
     }
 
     [Theory]
@@ -700,7 +700,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_SUBSCRIPTION_PENDING));
     }
 
     [Theory]
@@ -723,7 +723,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ForbiddenException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.ONLY_PROVIDER_CAN_SETUP_SERVICE));
     }
 
     [Theory]
@@ -748,7 +748,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE));
     }
 
     [Theory]
@@ -784,7 +784,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.STEP_NOT_ELIGIBLE_FOR_SINGLE_INSTANCE));
     }
 
     [Theory]
@@ -848,7 +848,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST));
     }
 
     [Fact]
@@ -869,7 +869,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.ONLY_ONE_APP_INSTANCE_FOR_SINGLE_INSTANCE));
     }
 
     [Fact]
@@ -890,7 +890,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.PROCESS_STEP_ONLY_FOR_SINGLE_INSTANCE));
     }
 
     [Fact]
@@ -912,7 +912,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.SUBSCRIPTION_ONLY_ACTIVATED_BY_PROVIDER));
     }
 
     [Fact]
@@ -973,7 +973,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST));
     }
 
     [Fact]
@@ -992,7 +992,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERS_WITHOUT_TYPE_NOT_ELIGIBLE));
     }
 
     [Theory]
@@ -1001,20 +1001,20 @@ public class OfferSetupServiceTests
     public async Task CreateClient_WithValidData_ReturnsExpected(bool technicalUserNeeded)
     {
         // Arrange
-        const string clientId = "cl1";
-        const string url = "https://www.test.de";
+        const string ClientId = "cl1";
+        const string Url = "https://www.test.de";
         var offerSubscriptionId = Guid.NewGuid();
         var iamClientId = Guid.NewGuid();
-        var data = new OfferSubscriptionClientCreationData(_validOfferId, OfferTypeId.APP, url, technicalUserNeeded);
+        var data = new OfferSubscriptionClientCreationData(_validOfferId, OfferTypeId.APP, Url, technicalUserNeeded);
         var detail = new AppSubscriptionDetail(Guid.NewGuid(), offerSubscriptionId);
         A.CallTo(() => _offerSubscriptionsRepository.GetClientCreationData(offerSubscriptionId))
             .Returns(data);
         A.CallTo(() => _userRolesRepository.GetUserRolesForOfferIdAsync(_validOfferId))
             .Returns(Enumerable.Repeat("TestRole", 1).ToAsyncEnumerable());
-        A.CallTo(() => _provisioningManager.SetupClientAsync($"{url}/*", url, A<IEnumerable<string>>._, false))
-            .Returns(clientId);
-        A.CallTo(() => _clientRepository.CreateClient(clientId))
-            .Returns(new IamClient(iamClientId, clientId));
+        A.CallTo(() => _provisioningManager.SetupClientAsync($"{Url}/*", Url, A<IEnumerable<string>>._, false))
+            .Returns(ClientId);
+        A.CallTo(() => _clientRepository.CreateClient(ClientId))
+            .Returns(new IamClient(iamClientId, ClientId));
         A.CallTo(() => _appSubscriptionDetailRepository.CreateAppSubscriptionDetail(offerSubscriptionId, A<Action<AppSubscriptionDetail?>>._))
             .Invokes((Guid _, Action<AppSubscriptionDetail> setOptionalParameter) =>
             {
@@ -1055,7 +1055,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST));
     }
 
     [Fact]
@@ -1073,7 +1073,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.TECHNICAL_USER_NOT_NEEDED));
     }
 
     [Theory]
@@ -1104,7 +1104,7 @@ public class OfferSetupServiceTests
             .Returns(userRoleData.ToAsyncEnumerable());
         A.CallTo(() => _technicalUserProfileService.GetTechnicalUserProfilesForOfferSubscription(A<Guid>._))
             .Returns([new(Guid.NewGuid().ToString(), "test", IamClientAuthMethod.SECRET, roleIds)]);
-        A.CallTo(() => _technicalUserCreation.CreateTechnicalUsersAsync(A<TechnicalUserCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>._, A<Action<TechnicalUser>>._))
+        A.CallTo(() => _technicalUserCreation.CreateTechnicalUsersAsync(A<TechnicalUserCreationInfo>._, A<Guid>._, A<IEnumerable<string>>.That.IsSameSequenceAs(new[] { Bpn }), TechnicalUserTypeId.MANAGED, A<bool>._, A<bool>._, A<ServiceAccountCreationProcessData>.That.Matches(x => x.ProcessId == processId), A<Action<TechnicalUser>>._))
             .Invokes((TechnicalUserCreationInfo _,
                 Guid _,
                 IEnumerable<string> _,
@@ -1165,7 +1165,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.BPN_MUST_BE_SET.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.BPN_MUST_BE_SET));
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1183,7 +1183,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFER_NAME_MUST_BE_SET));
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1201,7 +1201,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<UnexpectedConditionException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERSUBSCRIPTION_MUST_BE_LINKED_TO_PROCESS));
         A.CallTo(() => _offerSubscriptionsRepository.GetDimTechnicalUserDataForSubscriptionId(offerSubscriptionId))
             .MustHaveHappenedOnceExactly();
     }
@@ -1272,7 +1272,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.OFFERSUBSCRIPTION_NOT_EXIST));
     }
 
     [Theory]
@@ -1288,7 +1288,7 @@ public class OfferSetupServiceTests
         A.CallTo(() => _notificationService.CreateNotificationsWithExistenceCheck(A<IEnumerable<UserRoleConfig>>._, null, A<IEnumerable<(string?, NotificationTypeId)>>._, A<Guid>._, A<string>._, A<string>._, A<bool?>._))
             .Returns(new[] { Guid.NewGuid() }.AsFakeIAsyncEnumerable(out var createNotificationsEnumerator));
         A.CallTo(() => _offerSubscriptionsRepository.GetSubscriptionActivationDataByIdAsync(offerSubscription.Id))
-            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, Enumerable.Empty<string>(), true));
+            .Returns(new SubscriptionActivationData(_validOfferId, OfferSubscriptionStatusId.PENDING, OfferTypeId.APP, "Test App", "Stark Industries", _companyId, requesterEmail, "Tony", "Stark", Guid.NewGuid(), new(true, null), [Guid.NewGuid()], offerSubscriptionProcessDataId, Guid.NewGuid(), _companyId, null, [], true));
         A.CallTo(() => _offerSubscriptionProcessService.VerifySubscriptionAndProcessSteps(offerSubscription.Id, ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, null, true))
             .Returns(new ManualProcessStepData<ProcessTypeId, ProcessStepTypeId>(ProcessStepTypeId.ACTIVATE_SUBSCRIPTION, _fixture.Create<Process>(), [processStep], _portalRepositories));
 
@@ -1429,7 +1429,7 @@ public class OfferSetupServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<ConflictException>(Act);
-        ex.Message.Should().Be(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER.ToString());
+        ex.Message.Should().Be(nameof(OfferSetupServiceErrors.COMPANY_MUST_BE_PROVIDER));
     }
 
     [Fact]
@@ -1483,11 +1483,10 @@ public class OfferSetupServiceTests
                         $"cl{count}",
                         new ServiceAccountData(Guid.NewGuid().ToString(), $"cl{count}",
                             new ClientAuthData(IamClientAuthMethod.SECRET) { Secret = "katze!1234" }),
-                        new UserRoleData[]
-                        {
+                        [
                             new(Guid.NewGuid(), $"client{count}", "role1"),
-                            new(Guid.NewGuid(), $"client{count}", "role2"),
-                        })
+                            new(Guid.NewGuid(), $"client{count}", "role2")
+                        ])
                 ]);
                 count++;
                 return result;
@@ -1547,7 +1546,7 @@ public class OfferSetupServiceTests
             .Returns(new OfferSubscriptionTransferData(OfferSubscriptionStatusId.PENDING, true, "Company",
                 _companyId, _companyUserId, _existingServiceId, offerTypeId, "Test Service",
                 Bpn, "user@email.com", "Tony", "Gilbert", (isSingleInstance, null),
-                Enumerable.Empty<Guid>(),
+                [],
                 null));
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferDetailsAndCheckProviderCompany(
                 A<Guid>.That.Not.Matches(x => x == _pendingSubscriptionId || x == _validSubscriptionId || x == _offerIdWithMultipleInstances),
@@ -1590,9 +1589,9 @@ public class OfferSetupServiceTests
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithoutClient, OfferTypeId.APP))
             .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, [(_validInstanceSetupId, string.Empty)]));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithMultipleInstances, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, false, Enumerable.Empty<(Guid, string)>()));
+            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, false, []));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(_offerIdWithWithNoInstanceSetupIds, OfferTypeId.APP))
-            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, Enumerable.Empty<(Guid, string)>()));
+            .Returns(new SingleInstanceOfferData(CompanyUserCompanyId, "app1", Bpn, true, []));
         A.CallTo(() => _offerRepository.GetSingleInstanceOfferData(A<Guid>.That.Not.Matches(x => x == _offerIdWithoutClient || x == _validOfferId || x == _offerIdWithMultipleInstances || x == _offerIdWithWithNoInstanceSetupIds), OfferTypeId.APP))
             .Returns<SingleInstanceOfferData?>(null);
     }

@@ -44,6 +44,6 @@ public interface ITechnicalUserCreation
             TechnicalUserTypeId technicalUserTypeId,
             bool enhanceTechnicalUserName,
             bool enabled,
-            ServiceAccountCreationProcessData? processData,
+            ServiceAccountCreationProcessData processData,
             Action<TechnicalUser>? setOptionalParameter = null);
 }
