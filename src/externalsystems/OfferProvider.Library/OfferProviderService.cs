@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library;
 
 public class OfferProviderService : IOfferProviderService
 {
+    private const string GrantType = "client_credentials";
     private readonly ITokenService _tokenService;
 
     /// <summary>
@@ -45,7 +46,8 @@ public class OfferProviderService : IOfferProviderService
         {
             TokenAddress = authUrl,
             ClientId = clientId,
-            ClientSecret = clientSecret
+            ClientSecret = clientSecret,
+            GrantType = GrantType
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -63,7 +65,8 @@ public class OfferProviderService : IOfferProviderService
         {
             TokenAddress = authUrl,
             ClientId = clientId,
-            ClientSecret = clientSecret
+            ClientSecret = clientSecret,
+            GrantType = GrantType
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
