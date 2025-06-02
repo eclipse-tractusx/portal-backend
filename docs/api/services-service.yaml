@@ -1527,7 +1527,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: The User is unauthorized
-  '/subscription/{subscriptionId}/decline':
+  '/api/services/subscription/{subscriptionId}/decline':
     put:
       tags:
         - Services
