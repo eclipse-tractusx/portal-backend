@@ -204,6 +204,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                         x.Subscription.OfferSubscriptionStatusId,
                         x.Subscription.Offer!.Name,
                         x.Company!.Name,
+                        x.Company!.Shortname,
                         x.Company.BusinessPartnerNumber,
                         x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(id => id.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.Technicalusers.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),

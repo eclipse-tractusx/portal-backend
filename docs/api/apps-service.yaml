@@ -3478,6 +3478,8 @@ components:
           nullable: true
         customer:
           type: string
+        providerShortName:
+          type: string
         bpn:
           type: string
           nullable: true
