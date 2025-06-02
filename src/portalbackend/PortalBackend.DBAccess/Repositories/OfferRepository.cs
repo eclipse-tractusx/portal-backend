@@ -535,6 +535,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE).Select(document => document.Id).FirstOrDefault(),
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE).Select(document => document.Id),
                     offer.ProviderCompany!.Name,
+                    offer.ProviderCompany!.Shortname,
                     offer.UseCases.Select(uc => uc.Name),
                     offer.OfferDescriptions.Select(od => new LocalizedDescription(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
                     offer.Documents.Where(d => d.DocumentTypeId != DocumentTypeId.APP_IMAGE && d.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)

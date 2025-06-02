@@ -354,6 +354,7 @@ public class AppReleaseBusinessLogic(
             result.leadPictureId,
             result.images,
             result.Provider,
+            result.Shortname,
             result.UseCases,
             result.Description,
             result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),

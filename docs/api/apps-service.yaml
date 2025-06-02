@@ -3227,6 +3227,8 @@ components:
         provider:
           type: string
           description: Provider of the app.
+        providerShortName:
+          type: string
         useCases:
           type: array
           items:

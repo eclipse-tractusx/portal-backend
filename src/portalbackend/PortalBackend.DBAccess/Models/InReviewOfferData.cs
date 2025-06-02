@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -47,6 +48,13 @@ public record InReviewOfferData(
     /// Provider of the app.
     /// </summary>
     string Provider,
+
+    /// <summary>
+    /// Shortname of the app provider.
+    /// </summary>
+    [property: JsonPropertyName("providerShortName")]
+    string Shortname,
+
 
     /// <summary>
     /// Names of the app's use cases.

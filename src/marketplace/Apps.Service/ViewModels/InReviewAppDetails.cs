@@ -20,6 +20,8 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
+
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -52,6 +54,8 @@ public record InReviewAppDetails(
     Guid LeadPictureId,
     IEnumerable<Guid> Images,
     string Provider,
+    [property: JsonPropertyName("providerShortName")]
+    string Shortname,
     IEnumerable<string> UseCases,
     IEnumerable<LocalizedDescription> Description,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
