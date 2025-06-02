@@ -3189,6 +3189,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         status:
           $ref: '#/components/schemas/OfferStatusId'
       additionalProperties: false

@@ -317,6 +317,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId))
             .SingleOrDefaultAsync();
 
