@@ -2541,6 +2541,9 @@ components:
           format: uuid
         provider:
           type: string
+        providerShortName:
+          type: string
+          nullable: true
         status:
           $ref: '#/components/schemas/OfferStatusId'
         lastChanged:
@@ -2574,7 +2577,7 @@ components:
         provider:
           type: string
           description: Provider.
-        shortname:
+        providerShortName:
           type: string
         licenseType:
           $ref: '#/components/schemas/LicenseTypeId'
@@ -3012,7 +3015,7 @@ components:
           format: uuid
         provider:
           type: string
-        shortname:
+        providerShortName:
           type: string
       additionalProperties: false
     ClientInfoData:

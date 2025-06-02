@@ -21,8 +21,18 @@
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// Model for offer data.
 /// </summary>
-public record AllOfferData(Guid Id, string? Name, Guid LeadPictureId, string Provider, OfferStatusId Status, DateTimeOffset? LastChanged);
+public record AllOfferData(
+    Guid Id,
+    string? Name,
+    Guid LeadPictureId,
+    string Provider,
+    [property: JsonPropertyName("providerShortName")]
+    string? ShortName,
+    OfferStatusId Status,
+    DateTimeOffset? LastChanged
+);

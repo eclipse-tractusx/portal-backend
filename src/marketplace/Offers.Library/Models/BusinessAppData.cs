@@ -17,10 +17,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-
+using System.Text.Json.Serialization;
 namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 
 /// <summary>
 /// Basic model for data needed in business application display.
 /// </summary>
-public record BusinessAppData(Guid Id, Guid SubscriptionId, string Name, string Uri, Guid LeadPictureId, string Provider, string Shortname);
+public record BusinessAppData(
+    Guid Id,
+    Guid SubscriptionId,
+    string Name,
+    string Uri,
+    Guid LeadPictureId,
+    string Provider,
+    [property: JsonPropertyName("providerShortName")] 
+    string Shortname
+);

@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -40,6 +41,7 @@ public record AppData(
     string Name,
     string ShortDescription,
     string Provider,
+    [property: JsonPropertyName("providerShortName")]
     string Shortname,
     LicenseTypeId LicenseType,
     string Price,

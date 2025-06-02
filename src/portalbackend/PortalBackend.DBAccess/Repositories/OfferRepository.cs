@@ -214,6 +214,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId,
                 offer.DateLastChanged
                 ))
