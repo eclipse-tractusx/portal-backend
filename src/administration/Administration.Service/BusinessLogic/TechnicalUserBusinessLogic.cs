@@ -354,6 +354,18 @@ public class TechnicalUserBusinessLogic(
     {
         var processData = await portalRepositories.GetInstance<ITechnicalUserRepository>().GetProcessDataForTechnicalUserCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
             .ConfigureAwait(ConfigureAwaitOptions.None);
+        if (processData == default)
+        {
+            var offerSubscriptionProcessData = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetProcessDataForTechnicalUserCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE])
+                .ToListAsync()
+                .ConfigureAwait(false);
+            processData = offerSubscriptionProcessData.Count switch
+            {
+                0 => throw new NotFoundException($"externalId {processId} does not exist"),
+                > 1 => throw new ConflictException("there should only be one external technical user for the subscription"),
+                var _ => offerSubscriptionProcessData.Single()
+            };
+        }
 
         var context = processData.ProcessData.CreateManualProcessData(ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE, portalRepositories, () => $"externalId {processId}");
 

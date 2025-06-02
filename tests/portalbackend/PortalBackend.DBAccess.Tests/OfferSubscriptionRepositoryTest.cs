@@ -1145,6 +1145,7 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
     }
 
     #endregion
+
     #region Create OfferSubscription
 
     [Fact]
@@ -1225,6 +1226,28 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
                 x.Process.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION &&
                 x.ProcessStep.ProcessStepTypeId == ProcessStepTypeId.RETRIGGER_PROVIDER &&
                 x.ProcessStep.ProcessStepStatusId == ProcessStepStatusId.TODO);
+    }
+
+    #endregion
+
+    #region GetProcessDataForTechnicalUserCallback
+
+    [Fact]
+    public async Task GetProcessDataForTechnicalUserCallback_ReturnsExpected()
+    {
+        // Arrange
+        var processId = new Guid("d91ac968-ffe8-466f-b34a-ae2517b7c6ab");
+        var (sut, _) = await CreateSut();
+
+        var result = await sut.GetProcessDataForTechnicalUserCallback(processId, [ProcessStepTypeId.AWAIT_CREATE_DIM_TECHNICAL_USER_RESPONSE]).ToListAsync();
+
+        result.Should().ContainSingle()
+            .Which.Should()
+            .Match<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid?
+                TechnicalUserId, Guid? TechnicalUserVersion)>(x =>
+                x.ProcessTypeId == ProcessTypeId.OFFER_SUBSCRIPTION &&
+                x.ProcessData.ProcessSteps!.Count() == 1 &&
+                x.TechnicalUserId == new Guid("4ce1b774-3d00-4e07-9a53-ae1f64193392"));
     }
 
     #endregion
