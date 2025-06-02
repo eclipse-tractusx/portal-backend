@@ -2770,6 +2770,8 @@ components:
           type: string
           description: provider name
           nullable: true
+        providerShortName:
+          type: string
         useCase:
           type: array
           items:

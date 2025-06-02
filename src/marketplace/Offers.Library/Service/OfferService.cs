@@ -262,6 +262,7 @@ public class OfferService(
             data.Provider,
             data.LeadPictureId,
             data.ProviderName,
+            data.Shortname,
             data.UseCase,
             data.Descriptions,
             data.Agreements.Select(a => new OfferAgreement(a.AgreementId, a.AgreementName, a.ConsentStatusId == null ? string.Empty : a.ConsentStatusId.ToString())),
