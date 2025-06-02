@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 
 public class OnboardingServiceProviderService : IOnboardingServiceProviderService
 {
+    private const string GrantType = "client_credentials";
     private readonly ITokenService _tokenService;
 
     /// <summary>
@@ -43,7 +44,8 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
         {
             TokenAddress = ospDetails.AuthUrl,
             ClientId = ospDetails.ClientId,
-            ClientSecret = ospDetails.ClientSecret
+            ClientSecret = ospDetails.ClientSecret,
+            GrantType = GrantType
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
