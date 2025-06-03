@@ -567,6 +567,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
 
     public IAsyncEnumerable<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds) =>
         dbContext.TechnicalUsers
+            .AsNoTracking()
             .Where(t => t.OfferSubscription!.ProcessId == processId && t.TechnicalUserKindId == TechnicalUserKindId.EXTERNAL)
             .Select(x => new ValueTuple<ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId>, Guid?, Guid?>(
                     x.OfferSubscription!.Process!.ProcessTypeId,
