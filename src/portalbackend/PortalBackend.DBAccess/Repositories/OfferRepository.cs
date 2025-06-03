@@ -72,8 +72,8 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
             .Select(a => new ActiveAppData(
                 a.Id,
                 a.Name,
-                a.ProviderCompany!.Shortname,
                 a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                a.ProviderCompany!.Shortname,
                 a.UseCases.Select(uc => uc.Name),
                 a.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 a.LicenseTypeId,
