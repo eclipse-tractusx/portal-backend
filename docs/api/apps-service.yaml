@@ -2581,6 +2581,7 @@ components:
           description: Provider.
         providerShortName:
           type: string
+          description: Short description.
         licenseType:
           $ref: '#/components/schemas/LicenseTypeId'
         price:
@@ -2625,6 +2626,7 @@ components:
           description: Provider of the app.
         providerShortname:
           type: string
+          description: Provider short name of the app.
         contactEmail:
           type: string
           description: Email address of the app's primary contact.
@@ -3227,6 +3229,7 @@ components:
           description: Provider of the app.
         providerShortName:
           type: string
+          description: Provider short name of the app.
         useCases:
           type: array
           items:

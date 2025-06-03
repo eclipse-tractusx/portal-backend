@@ -33,6 +33,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="LeadPictureId">Uri to app's lead picture.</param>
 /// <param name="Images">List of Images to app's secondary pictures.</param>
 /// <param name="Provider">Provider of the app.</param>
+/// <param name="Shortname">Provider short name of the app.</param>
 /// <param name="UseCases">Names of the app's use cases.</param>
 /// <param name="Description">description of the app.</param>
 /// <param name="Documents">documents assigned to offer</param>

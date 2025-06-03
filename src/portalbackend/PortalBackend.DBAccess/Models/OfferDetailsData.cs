@@ -31,6 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Images">List of Images to app's secondary pictures</param>
 /// <param name="ProviderUri">Uri to provider's marketing presence</param>
 /// <param name="Provider">Provider of the app</param>
+/// <param name="ProviderShortname">Provider short name of the app</param>
 /// <param name="ContactEmail">Email address of the app's primary contact</param>
 /// <param name="ContactNumber">Phone number of the app's primary contact</param>
 /// <param name="UseCases">Names of the app's use cases</param>

@@ -30,6 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 /// <param name="OfferSubscriptionStatus">Status of the offer subscription</param>
 /// <param name="Name">Name of the Offer</param>
 /// <param name="Customer">Name of the company subscribing the offer</param>
+/// <param name="Shortname">Short name of the company subscribing the offer</param>
 /// <param name="Bpn">When called from /provider bpn of the company subscribing the offer, otherwise the provider company's bpn</param>
 /// <param name="Contact">When called from /provider the company admins of the subscribing company, otherwise the salesmanagers of the offer provider</param>
 /// <param name="TechnicalUserData">Information about the technical user</param>

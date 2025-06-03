@@ -47,6 +47,7 @@ public record OfferSubscriptionStatusData(
 /// <param name="OfferId">Id of the Offer</param>
 /// <param name="OfferName">Name of the Offer</param>
 /// <param name="Provider">When called from /provider name of the company subscribing the offer, otherwise the provider company's name</param>
+/// <param name="Shortname">Provider short name of app</param>
 /// <param name="DocumentId">Id of the documents</param>
 public record ActiveOfferSubscriptionStatusData(
     [property: JsonPropertyName("offerId")] Guid OfferId,
