@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -36,21 +36,22 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="LicenseType">LicenseTypeId for app</param>
 /// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="UseCases">The apps use cases.</param>
-
 public record AppData(
     Guid Id,
     string Name,
     string ShortDescription,
     string Provider,
-    [property: JsonPropertyName("providerShortName")]
-    string Shortname,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     LicenseTypeId LicenseType,
     string Price,
     Guid LeadPictureId,
-    IEnumerable<string> UseCases);
+    IEnumerable<string> UseCases
+);
 
 /// <summary>
 /// View model of an Active App Documents
 /// </summary>
 /// <param name="Documents">Id of the App.</param>
-public record ActiveAppDocumentData(IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents);
+public record ActiveAppDocumentData(
+    IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents
+);

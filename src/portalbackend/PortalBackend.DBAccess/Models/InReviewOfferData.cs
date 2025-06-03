@@ -17,110 +17,88 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 public record InReviewOfferData(
-
     /// <summary>
     /// ID of the app.
     /// </summary>
     Guid id,
-
     /// <summary>
     /// Title or name of the app.
     /// </summary>
     string? title,
-
     /// <summary>
     /// Id of the Lead Image.
     /// </summary>
     Guid leadPictureId,
-
     /// <summary>
     /// List of Images to app's secondary pictures.
     /// </summary>
     IEnumerable<Guid> images,
-
     /// <summary>
     /// Provider of the app.
     /// </summary>
     string Provider,
-
     /// <summary>
     /// Shortname of the app provider.
     /// </summary>
-    [property: JsonPropertyName("providerShortName")]
-    string Shortname,
-
-
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     /// <summary>
     /// Names of the app's use cases.
     /// </summary>
     IEnumerable<string> UseCases,
-
     /// <summary>
     /// Descriptions of the app's
     /// </summary>
     IEnumerable<LocalizedDescription> Description,
-
     /// <summary>
     /// document assigned to offer
     /// </summary>
     IEnumerable<DocumentTypeData> Documents,
-
     /// <summary>
     /// Roles of the Apps
     /// </summary>
     IEnumerable<string> Roles,
-
     /// <summary>
     /// Languages that the app is available in.
     /// </summary>
     IEnumerable<string> Languages,
-
     /// <summary>
     /// Uri to provider's marketing presence.
     /// </summary>
     string? ProviderUri,
-
     /// <summary>
     /// Email address of the app's primary contact.
     /// </summary>
     string? ContactEmail,
-
     /// <summary>
     /// Phone number of the app's primary contact.
     /// </summary>
     string? ContactNumber,
-
     /// <summary>
     /// Pricing information of the app.
     /// </summary>
     string? Price,
-
     /// <summary>
     /// Tags assigned to offer.
     /// </summary>
     IEnumerable<string> Tags,
-
     /// <summary>
     /// Privacy Policy Id assigned to offer.
     /// </summary>
     IEnumerable<PrivacyPolicyId> MatchingPrivacyPolicies,
-
     /// <summary>
     /// License TypeId for offer.
     /// </summary>
     LicenseTypeId LicenseTypeId,
-
     /// <summary>
     /// License TypeId for offer.
     /// </summary>
     OfferStatusId OfferStatusId,
-
     /// <summary>
     /// Technical User Role Data
     /// </summary>
