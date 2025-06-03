@@ -364,7 +364,7 @@ public class ServicesController : ControllerBase
     /// <response code="400">If sub claim is empty/invalid or user does not exist, or any other parameters are invalid.</response>
     /// <response code="500">Internal Server Error.</response>
     [HttpPut]
-    [Route("/subscription/{subscriptionId}/decline")]
+    [Route("subscription/{subscriptionId}/decline")]
     [Authorize(Roles = "decline_subscription")]
     [Authorize(Policy = PolicyTypes.ValidIdentity)]
     [Authorize(Policy = PolicyTypes.ValidCompany)]
