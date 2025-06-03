@@ -27,6 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OnboardingServiceProvider.Library;
 public class OnboardingServiceProviderService : IOnboardingServiceProviderService
 {
     private const string GrantType = "client_credentials";
+    private const string Scope = "openid";
     private readonly ITokenService _tokenService;
 
     /// <summary>
@@ -45,7 +46,8 @@ public class OnboardingServiceProviderService : IOnboardingServiceProviderServic
             TokenAddress = ospDetails.AuthUrl,
             ClientId = ospDetails.ClientId,
             ClientSecret = ospDetails.ClientSecret,
-            GrantType = GrantType
+            GrantType = GrantType,
+            Scope = Scope
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OnboardingServiceProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
