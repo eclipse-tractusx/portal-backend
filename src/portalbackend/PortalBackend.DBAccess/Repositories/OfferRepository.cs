@@ -354,7 +354,6 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                     ? new OfferProviderData(
                         x.Offer.Name,
                         x.Offer.ProviderCompany!.Name,
-                        x.Offer.ProviderCompany!.Shortname,
                         x.Offer.Documents.Where(document => document.DocumentTypeId == documentTypeId && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                         x.Offer.ProviderCompany!.Name,
                         offerTypeId == OfferTypeId.APP

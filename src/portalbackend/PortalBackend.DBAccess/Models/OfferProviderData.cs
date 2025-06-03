@@ -19,7 +19,6 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -45,8 +44,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 public record OfferProviderData(
     string? Title,
     string Provider,
-    [property: JsonPropertyName("providerShortName")]
-    string Shortname,
     Guid LeadPictureId,
     string? ProviderName,
     IEnumerable<AppUseCaseData>? UseCase,

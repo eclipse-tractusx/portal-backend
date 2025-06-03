@@ -125,7 +125,6 @@ public class AppReleaseBusinessLogic(
             result.Provider,
             result.LeadPictureId,
             result.ProviderName,
-            result.Shortname,
             result.UseCase,
             result.Descriptions,
             result.Agreements,

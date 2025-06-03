@@ -21,7 +21,6 @@
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -50,8 +49,6 @@ public record AppProviderResponse(
     string Provider,
     Guid LeadPictureId,
     string? ProviderName,
-    [property: JsonPropertyName("providerShortName")]
-    string Shortname,
     IEnumerable<AppUseCaseData> UseCase,
     IEnumerable<LocalizedDescription> Descriptions,
     IEnumerable<OfferAgreement> Agreements,
