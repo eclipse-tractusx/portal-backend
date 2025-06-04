@@ -167,7 +167,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
+    public IAsyncEnumerable<(Guid OfferId, Guid SubscriptionId, string? OfferName, string SubscriptionUrl, Guid LeadPictureId, string Provider, string Shortname)> GetAllBusinessAppDataForUserIdAsync(Guid userId) =>
         dbContext.CompanyUsers.AsNoTracking()
             .Where(user => user.Id == userId && user.Identity!.IdentityTypeId == IdentityTypeId.COMPANY_USER)
             .SelectMany(user => user.Identity!.Company!.OfferSubscriptions.Where(subscription =>
@@ -175,13 +175,14 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 subscription.Offer.UserRoles.Any(ur => ur.IdentityAssignedRoles.Any(iar => iar.IdentityId == userId)) &&
                 subscription.AppSubscriptionDetail!.AppInstance != null &&
                 subscription.AppSubscriptionDetail.AppSubscriptionUrl != null))
-            .Select(offerSubscription => new ValueTuple<Guid, Guid, string?, string, Guid, string>(
+            .Select(offerSubscription => new ValueTuple<Guid, Guid, string?, string, Guid, string, string>(
                 offerSubscription.OfferId,
                 offerSubscription.Id,
                 offerSubscription.Offer!.Name,
                 offerSubscription.AppSubscriptionDetail!.AppSubscriptionUrl!,
                 offerSubscription.Offer!.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
-                offerSubscription.Offer!.ProviderCompany!.Name
+                offerSubscription.Offer!.ProviderCompany!.Name,
+                 offerSubscription.Offer!.ProviderCompany!.Shortname
             )).ToAsyncEnumerable();
 
     public Task<(bool Exists, bool IsUserOfCompany, OfferProviderSubscriptionDetail? Details)> GetOfferSubscriptionDetailsForProviderAsync(Guid offerId, Guid subscriptionId, Guid userCompanyId, OfferTypeId offerTypeId, IEnumerable<Guid> userRoleIds) =>
@@ -203,6 +204,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                         x.Subscription.OfferSubscriptionStatusId,
                         x.Subscription.Offer!.Name,
                         x.Company!.Name,
+                        x.Company!.Shortname,
                         x.Company.BusinessPartnerNumber,
                         x.Company.Identities.Where(i => i.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(id => id.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.Technicalusers.Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
@@ -238,6 +240,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                         x.Subscription.OfferSubscriptionStatusId,
                         x.Subscription.Offer!.Name,
                         x.ProviderCompany!.Name,
+                        x.ProviderCompany!.Shortname,
                         x.ProviderCompany.Identities.Where(x => x.IdentityTypeId == IdentityTypeId.COMPANY_USER).Select(i => i.CompanyUser!).Where(cu => cu.Email != null && cu.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Any(ur => userRoleIds.Contains(ur.Id))).Select(cu => cu.Email!),
                         x.Subscription.Technicalusers.Where(x => x.Identity!.IdentityAssignedRoles.Any()).Select(sa => new SubscriptionTechnicalUserData(sa.Id, sa.Name, sa.Identity!.IdentityAssignedRoles.Select(ur => ur.UserRole!).Select(ur => ur.UserRoleText))),
                         x.Subscription.ConnectorAssignedOfferSubscriptions.Select(caos => new SubscriptionAssignedConnectorData(
@@ -296,6 +299,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                     os.OfferId,
                     os.Offer!.Name,
                     os.Offer.ProviderCompany!.Name,
+                    os.Offer.ProviderCompany!.Shortname,
                     os.OfferSubscriptionStatusId,
                     os.Id,
                     os.Offer.Documents
@@ -517,6 +521,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                 os.OfferId,
                 os.Offer!.Name,
                 os.Offer.ProviderCompany!.Name,
+                os.Offer.ProviderCompany!.Shortname,
                 os.Offer.Documents
                     .Where(document =>
                         document.DocumentTypeId == documentTypeId

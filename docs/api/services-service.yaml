@@ -2124,6 +2124,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         status:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
         subscriptionId:
@@ -2816,6 +2818,8 @@ components:
           type: string
           nullable: true
         provider:
+          type: string
+        providerShortName:
           type: string
         contact:
           type: array
