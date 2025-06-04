@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
@@ -37,9 +38,11 @@ public record ServiceOverviewData(
     Guid Id,
     string? Title,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
     LicenseTypeId LicenseType,
     string Price,
-    IEnumerable<ServiceTypeId> ServiceTypeIds);
+    IEnumerable<ServiceTypeId> ServiceTypeIds
+);

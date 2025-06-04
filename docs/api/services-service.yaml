@@ -2587,6 +2587,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         leadPictureId:
           type: string
           format: uuid
