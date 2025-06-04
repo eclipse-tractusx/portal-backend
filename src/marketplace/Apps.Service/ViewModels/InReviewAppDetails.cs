@@ -18,10 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json.Serialization;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
-
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -48,15 +47,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="PrivacyPolicies">Privacy policy assigned to app.</param>
 /// <param name="OfferStatusId">OfferStatusId of the app.</param>
 /// <param name="TechnicalUserProfile">TechnicalUserProfile of the User.</param>
-
 public record InReviewAppDetails(
     Guid Id,
     string Title,
     Guid LeadPictureId,
     IEnumerable<Guid> Images,
     string Provider,
-    [property: JsonPropertyName("providerShortName")]
-    string Shortname,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     IEnumerable<string> UseCases,
     IEnumerable<LocalizedDescription> Description,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
