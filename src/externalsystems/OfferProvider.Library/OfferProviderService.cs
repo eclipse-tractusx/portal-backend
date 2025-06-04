@@ -27,6 +27,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.OfferProvider.Library;
 public class OfferProviderService : IOfferProviderService
 {
     private const string GrantType = "client_credentials";
+    private const string Scope = "openid";
     private readonly ITokenService _tokenService;
 
     /// <summary>
@@ -47,7 +48,8 @@ public class OfferProviderService : IOfferProviderService
             TokenAddress = authUrl,
             ClientId = clientId,
             ClientSecret = clientSecret,
-            GrantType = GrantType
+            GrantType = GrantType,
+            Scope = Scope
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
@@ -66,7 +68,8 @@ public class OfferProviderService : IOfferProviderService
             TokenAddress = authUrl,
             ClientId = clientId,
             ClientSecret = clientSecret,
-            GrantType = GrantType
+            GrantType = GrantType,
+            Scope = Scope
         };
         using var httpClient = await _tokenService.GetAuthorizedClient<OfferProviderService>(settings, cancellationToken)
             .ConfigureAwait(ConfigureAwaitOptions.None);
