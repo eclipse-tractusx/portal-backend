@@ -30,6 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="Provider"></param>
 /// <param name="LeadPictureId"></param>
 /// <param name="ProviderName"></param>
+/// <param name="Shortname"></param>
 /// <param name="UseCase"></param>
 /// <param name="Descriptions"></param>
 /// <param name="Agreements"></param>

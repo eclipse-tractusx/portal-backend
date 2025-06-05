@@ -34,6 +34,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Agreements">the assigned agreements</param>
 /// <param name="Price">the offer price</param>
 /// <param name="Images">list of the images</param>
+/// <param name="Shortname">returns shortname of company</param>
 /// <param name="ProviderUri">the provider uri</param>
 /// <param name="ContactEmail">contact email</param>
 /// <param name="ContactNumber">contact number</param>
