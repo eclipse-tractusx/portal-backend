@@ -35,6 +35,7 @@ public record OfferSubscriptionStatusData(
     [property: JsonPropertyName("offerId")] Guid OfferId,
     [property: JsonPropertyName("name")] string? OfferName,
     [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     [property: JsonPropertyName("status")] OfferSubscriptionStatusId OfferSubscriptionStatusId,
     [property: JsonPropertyName("subscriptionId")] Guid OfferSubscriptionId,
     [property: JsonPropertyName("image")] Guid? DocumentId

@@ -298,6 +298,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                     os.OfferId,
                     os.Offer!.Name,
                     os.Offer.ProviderCompany!.Name,
+                    os.Offer.ProviderCompany!.Shortname,
                     os.OfferSubscriptionStatusId,
                     os.Id,
                     os.Offer.Documents

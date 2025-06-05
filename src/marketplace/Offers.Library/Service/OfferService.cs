@@ -875,6 +875,7 @@ public class OfferService(
                             item.OfferId,
                             item.OfferName,
                             item.Provider,
+                            item.Shortname,
                             item.OfferSubscriptionStatusId,
                             item.OfferSubscriptionId,
                             item.DocumentId == Guid.Empty ? null : item.DocumentId)));
