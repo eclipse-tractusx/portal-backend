@@ -2825,6 +2825,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         contact:
           type: array
           items:

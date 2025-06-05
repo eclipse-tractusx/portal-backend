@@ -44,6 +44,7 @@ public record SubscriberSubscriptionDetailData(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
     IEnumerable<SubscriptionAssignedConnectorData> ConnectorData
