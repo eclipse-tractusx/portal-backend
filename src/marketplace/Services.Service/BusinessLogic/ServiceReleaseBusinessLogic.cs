@@ -119,6 +119,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.Agreements,
             result.Price,
             result.Images,
+            result.Shortname,
             result.ProviderUri,
             result.ContactEmail,
             result.ContactNumber,

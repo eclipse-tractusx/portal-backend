@@ -1974,6 +1974,8 @@ components:
         providerName:
           type: string
           nullable: true
+        providerShortName:
+          type: string
         useCase:
           type: array
           items:
@@ -2664,6 +2666,8 @@ components:
             type: string
             format: uuid
           description: list of the images
+        providerShortName:
+          type: string
         providerUri:
           type: string
           description: the provider uri
