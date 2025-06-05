@@ -2295,6 +2295,8 @@ components:
         customer:
           type: string
           description: Name of the company subscribing the offer
+        providerShortName:
+          type: string
         bpn:
           type: string
           description: 'When called from /provider bpn of the company subscribing the offer, otherwise the provider company''s bpn'

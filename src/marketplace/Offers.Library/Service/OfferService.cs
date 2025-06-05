@@ -800,6 +800,7 @@ public class OfferService(
             data.OfferSubscriptionStatus,
             data.Name,
             data.Customer,
+            data.Shortname,
             data.Bpn,
             data.Contact,
             data.TechnicalUserData,

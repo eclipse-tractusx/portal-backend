@@ -20,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Offers.Library.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service;
 
@@ -41,6 +42,7 @@ public record ProviderSubscriptionDetailData(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string Customer,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,

@@ -225,6 +225,7 @@ public class ServiceBusinessLogic : IServiceBusinessLogic
             offerSubscriptionDetails.OfferSubscriptionStatus,
             offerSubscriptionDetails.Name,
             offerSubscriptionDetails.Customer,
+            offerSubscriptionDetails.Shortname,
             offerSubscriptionDetails.Bpn,
             offerSubscriptionDetails.Contact,
             offerSubscriptionDetails.TechnicalUserData,

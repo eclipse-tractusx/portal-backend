@@ -77,6 +77,7 @@ public record OfferProviderSubscriptionDetail(
     OfferSubscriptionStatusId OfferSubscriptionStatus,
     string? Name,
     string Customer,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     string? Bpn,
     IEnumerable<string> Contact,
     IEnumerable<SubscriptionTechnicalUserData> TechnicalUserData,
