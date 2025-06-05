@@ -2303,6 +2303,7 @@ components:
           description: Name of the company subscribing the offer
         providerShortName:
           type: string
+          description: Short name of the company subscribing the offer
         bpn:
           type: string
           description: 'When called from /provider bpn of the company subscribing the offer, otherwise the provider company''s bpn'
@@ -2458,6 +2459,7 @@ components:
           description: Provider of the app.
         providerShortName:
           type: string
+          description: Provider short name of the app.
         leadPictureId:
           type: string
           description: Lead picture Id.
@@ -2672,6 +2674,7 @@ components:
           description: list of the images
         providerShortName:
           type: string
+          description: returns shortname of company
         providerUri:
           type: string
           description: the provider uri
