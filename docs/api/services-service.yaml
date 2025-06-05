@@ -1628,6 +1628,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         status:
           $ref: '#/components/schemas/OfferStatusId'
         lastChanged:
@@ -2444,6 +2446,8 @@ components:
         provider:
           type: string
           description: Provider of the app.
+        providerShortName:
+          type: string
         leadPictureId:
           type: string
           description: Lead picture Id.

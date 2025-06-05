@@ -276,6 +276,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ContactEmail,
                 offer.OfferDescriptions.SingleOrDefault(d => d.LanguageShortName == languageShortName)!.DescriptionLong,
@@ -705,6 +706,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.SERVICE_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId,
                 offer.DateLastChanged
                 ))
