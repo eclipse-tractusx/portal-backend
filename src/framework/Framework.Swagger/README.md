@@ -1,4 +1,4 @@
-# Catena-X Portal Backend Framework Swagger
+# Catena-X Portal Backend Framework Swagger 
 
 The Catena-X Portal Backend Framework Swagger library provides a useful set of extensions for the use of Swagger.
 
