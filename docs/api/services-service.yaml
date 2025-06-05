@@ -1825,6 +1825,8 @@ components:
           $ref: '#/components/schemas/OfferStatusId'
         provider:
           type: string
+        providerShortName:
+          type: string
         description:
           type: string
       additionalProperties: false
