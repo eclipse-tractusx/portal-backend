@@ -85,6 +85,7 @@ public class ServiceReleaseBusinessLogic : IServiceReleaseBusinessLogic
             result.Title ?? Constants.ErrorString,
             result.ServiceTypeIds,
             result.Provider,
+            result.Shortname,
             result.Descriptions,
             result.Documents.GroupBy(d => d.DocumentTypeId).ToDictionary(g => g.Key, g => g.Select(d => new DocumentData(d.DocumentId, d.DocumentName))),
             result.ProviderUri ?? Constants.ErrorString,

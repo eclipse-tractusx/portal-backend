@@ -673,6 +673,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.ServiceDetails.Select(x => x.ServiceTypeId),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferDescriptions.Select(description => new LocalizedDescription(description.LanguageShortName, description.DescriptionLong, description.DescriptionShort)),
                 offer.Documents.Select(d => new DocumentTypeData(d.DocumentTypeId, d.Id, d.DocumentName)),
                 offer.MarketingUrl,
