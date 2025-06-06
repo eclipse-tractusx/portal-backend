@@ -28,6 +28,7 @@ public record CompanyApplicationDetails(
     [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
     [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
     [property: JsonPropertyName("companyName")] string CompanyName,
+    [property: JsonPropertyName("companyShortName")] string Shortname,
     [property: JsonPropertyName("companyRoles")] IEnumerable<CompanyRoleId> CompanyRoles,
     [property: JsonPropertyName("applicationChecklist")] IEnumerable<ApplicationChecklistEntryDetails> ApplicationChecklist,
     [property: JsonPropertyName("email")] string? Email,

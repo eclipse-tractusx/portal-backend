@@ -6283,6 +6283,8 @@ components:
           format: date-time
         companyName:
           type: string
+        companyShortName:
+          type: string
         companyRoles:
           type: array
           items:
@@ -6346,6 +6348,8 @@ components:
           type: string
           format: date-time
         companyName:
+          type: string
+        companyShortName:
           type: string
         email:
           type: string
