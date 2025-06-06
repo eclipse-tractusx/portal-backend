@@ -84,6 +84,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     c.TypeId,
                     c.StatusId,
                     c.Provider!.Name,
+                    c.Provider!.Shortname,
                     c.SelfDescriptionDocumentId,
                     c.TechnicalUserId == default ? null : new TechnicalUserData(
                         c.TechnicalUser!.Id,
