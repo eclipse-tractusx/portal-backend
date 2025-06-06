@@ -57,6 +57,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                 con.StatusId,
                 con.HostId,
                 con.Host!.Name,
+                con.Host!.Shortname,
                 con.SelfDescriptionDocumentId,
                 con.TechnicalUserId == null ? null : new TechnicalUserData(
                     con.TechnicalUser!.Id,
@@ -107,6 +108,7 @@ public class ConnectorsRepository(PortalDbContext dbContext) : IConnectorsReposi
                     connector.StatusId,
                     connector.HostId,
                     connector.Host!.Name,
+                    connector.Host!.Shortname,
                     connector.SelfDescriptionDocumentId,
                     connector.TechnicalUserId == default ? null : new TechnicalUserData(
                         connector.TechnicalUser!.Id,

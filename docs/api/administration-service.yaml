@@ -6935,6 +6935,8 @@ components:
         hostCompanyName:
           type: string
           nullable: true
+        hostCompanyShortName:
+          type: string
         selfDescriptionDocumentId:
           type: string
           format: uuid
