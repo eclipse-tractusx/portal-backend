@@ -6979,11 +6979,13 @@ components:
           $ref: '#/components/schemas/ConnectorTypeId'
         name:
           type: string
+        hostCompanyName:
+          type: string
+        hostCompanyShortName:
+          type: string
         companyId:
           type: string
           format: uuid
-        hostCompanyName:
-          type: string
         skippedDate:
           type: string
           format: date-time

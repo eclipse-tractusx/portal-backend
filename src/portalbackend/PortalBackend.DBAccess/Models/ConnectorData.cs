@@ -18,9 +18,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -29,15 +29,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// </summary>
 public record ConnectorData(
     string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
+    [StringLength(2, MinimumLength = 2)] string Location,
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status,
     Guid? HostId,
     string? HostCompanyName,
     [property: JsonPropertyName("hostCompanyShortName")] string Shortname,
-
     Guid? SelfDescriptionDocumentId,
     TechnicalUserData? TechnicalUser,
     string ConnectorUrl
@@ -46,19 +44,14 @@ public record ConnectorData(
 /// <summary>
 /// Connector information for the daps call.
 /// </summary>
-public record ConnectorInformationData(
-    string Name,
-    string Bpn,
-    Guid Id,
-    string Url);
+public record ConnectorInformationData(string Name, string Bpn, Guid Id, string Url);
 
 /// <summary>
 /// View model for connectors.
 /// </summary>
 public record ManagedConnectorData(
     string Name,
-    [StringLength(2, MinimumLength = 2)]
-    string Location,
+    [StringLength(2, MinimumLength = 2)] string Location,
     Guid Id,
     ConnectorTypeId Type,
     ConnectorStatusId Status,
@@ -66,7 +59,8 @@ public record ManagedConnectorData(
     [property: JsonPropertyName("hostCompanyShortName")] string Shortname,
     Guid? SelfDescriptionDocumentId,
     TechnicalUserData? TechnicalUser,
-    string ConnectorUrl);
+    string ConnectorUrl
+);
 
 /// <summary>
 /// connector information to delete
@@ -82,8 +76,20 @@ public record DeleteConnectorData(
     DeleteServiceAccountData DeleteServiceAccountData,
     string Location
 );
-public record ConnectorOfferSubscription(Guid AssignedOfferSubscriptionIds, OfferSubscriptionStatusId OfferSubscriptionStatus);
+
+public record ConnectorOfferSubscription(
+    Guid AssignedOfferSubscriptionIds,
+    OfferSubscriptionStatusId OfferSubscriptionStatus
+);
 
 public record TechnicalUserData(Guid Id, string Name, string? ClientId, string Description);
 
-public record ConnectorMissingSdDocumentData(Guid ConnectorId, ConnectorTypeId Type, string Name, Guid CompanyId, string HostCompanyName, DateTimeOffset? SkippedDate);
+public record ConnectorMissingSdDocumentData(
+    Guid ConnectorId,
+    ConnectorTypeId Type,
+    string Name,
+    string HostCompanyName,
+    [property: JsonPropertyName("hostCompanyShortName")] string Shortname,
+    Guid CompanyId,
+    DateTimeOffset? SkippedDate
+);
