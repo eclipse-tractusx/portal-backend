@@ -20,7 +20,6 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
@@ -61,7 +60,6 @@ public record ManagedConnectorData(
     ConnectorTypeId Type,
     ConnectorStatusId Status,
     string? ProviderCompanyName,
-    [property: JsonPropertyName("providerShortName")] string Shortname,
     Guid? SelfDescriptionDocumentId,
     TechnicalUserData? TechnicalUser,
     string ConnectorUrl);
