@@ -1238,7 +1238,7 @@ public class OfferRepositoryTests : IAssemblyFixture<TestDbFixture>
         // Assert
         result.Should().NotBeNull();
         result!.Data.Should().HaveCount(4)
-            .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "CX-Operator", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
+            .And.StartWith(new InReviewServiceData(new Guid("ac1cf001-7fbc-1f2f-817f-bce0000c0001"), "Consulting Service - Data Readiness", OfferStatusId.ACTIVE, "CX-Operator", "CX", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."));
     }
 
     #endregion

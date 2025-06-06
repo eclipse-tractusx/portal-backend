@@ -19,10 +19,18 @@
  ********************************************************************************/
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 
 /// <summary>
 ///  View model of an application's base data.
 /// </summary>
-public record InReviewServiceData(Guid Id, string? Title, OfferStatusId Status, string Provider, string Description);
+public record InReviewServiceData(
+    Guid Id,
+    string? Title,
+    OfferStatusId Status,
+    string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
+    string Description
+);
