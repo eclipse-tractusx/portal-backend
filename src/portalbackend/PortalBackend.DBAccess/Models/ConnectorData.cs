@@ -61,7 +61,7 @@ public record ManagedConnectorData(
     ConnectorTypeId Type,
     ConnectorStatusId Status,
     string? ProviderCompanyName,
-    [property: JsonPropertyName("providerShortName")] string Shortname,
+    [property: JsonPropertyName("hostCompanyShortName")] string Shortname,
     Guid? SelfDescriptionDocumentId,
     TechnicalUserData? TechnicalUser,
     string ConnectorUrl);
