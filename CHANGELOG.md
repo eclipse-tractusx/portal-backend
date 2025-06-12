@@ -4,6 +4,25 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
+## 2.5.0-RC2
+
+### Feature
+  
+* **Connectors**
+  * added validation for technical user in connector registration [#1350](https://github.com/eclipse-tractusx/portal-backend/pull/1350)
+
+### Bugfixes
+
+* **Miscellaneous**
+  * adjusted CustomAuthorizationMiddleware registration [#1358](https://github.com/eclipse-tractusx/portal-backend/pull/1358) 
+* **Offer Auto Setup**
+  * added grant type(`client_credentials`) in token generation in auto setup [#1376](https://github.com/eclipse-tractusx/portal-backend/pull/1376) 
+  * added scope(`openid`) in token generation in auto setup [#1382](https://github.com/eclipse-tractusx/portal-backend/pull/1382) 
+* **Offer Subscription**
+  * fixed the external technical user creation for app and service subscriptions [#1372](https://github.com/eclipse-tractusx/portal-backend/pull/1372)
+  * fixed the api route for decline service subscription [#1378](https://github.com/eclipse-tractusx/portal-backend/pull/1378)
+  * fixed retrieve processes for service account callback as no tracking [#1380](https://github.com/eclipse-tractusx/portal-backend/pull/1380)
+
 ## 2.5.0-RC1
 
 ### Feature
@@ -36,10 +55,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
 * **Nuget packages**
   * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
-
-### Known Knowns
-
-* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
 
 ## 2.4.0
 

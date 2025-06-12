@@ -185,4 +185,5 @@ public interface IOfferSubscriptionsRepository
     Task<(string? Bpn, string? OfferName, Guid? ProcessId)> GetDimTechnicalUserDataForSubscriptionId(Guid offerSubscriptionId);
 
     IAsyncEnumerable<(Process Process, ProcessStep<Process, ProcessTypeId, ProcessStepTypeId> ProcessStep)> GetOfferSubscriptionRetriggerProcessesForCompanyId(Guid companyId);
+    IAsyncEnumerable<(ProcessTypeId ProcessTypeId, VerifyProcessData<ProcessTypeId, ProcessStepTypeId> ProcessData, Guid? TechnicalUserId, Guid? TechnicalUserVersion)> GetProcessDataForTechnicalUserCallback(Guid processId, IEnumerable<ProcessStepTypeId> processStepTypeIds);
 }

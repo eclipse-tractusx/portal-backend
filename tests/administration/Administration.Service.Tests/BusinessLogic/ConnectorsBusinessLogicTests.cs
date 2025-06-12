@@ -334,6 +334,27 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Fact]
+    public async Task CreateConnectorAsync_WithLinkedTechnicalUser_ThrowsControllerArgumentException()
+    {
+        // Arrange
+        var saId = Guid.NewGuid();
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", "de", saId);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(saId, ValidCompanyId))
+                  .Returns((true, true));
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_ARGUMENT_TECH_USER_IN_USE.ToString());
+        ex.Parameters.Should().NotBeNull().And.Satisfy(
+           x => x.Name == "technicalUserId"
+           &&
+           x.Value == saId.ToString()
+           );
+    }
+
+    [Fact]
     public async Task CreateConnectorAsync_WithClientIdNull_DoesntSaveData()
     {
         // Arrange
@@ -1702,8 +1723,8 @@ public class ConnectorsBusinessLogicTests
         A.CallTo(() => _connectorsRepository.GetConnectorInformationByIdForIamUser(ExistingConnectorId, A<Guid>.That.Not.Matches(x => x == _identity.CompanyId)))
             .Returns((_fixture.Create<ConnectorInformationData>(), false));
 
-        A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, ValidCompanyId))
-            .Returns(true);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(ServiceAccountUserId, ValidCompanyId))
+                 .Returns((true, false));
 
         A.CallTo(() => _sdFactoryBusinessLogic.RegisterConnectorAsync(A<Guid>._, A<string>._, A<string>._, A<CancellationToken>._))
             .Returns(Task.CompletedTask);
@@ -1721,8 +1742,8 @@ public class ConnectorsBusinessLogicTests
 
     private void SetupCheckActiveServiceAccountExistsForCompanyAsyncForManaged()
     {
-        A.CallTo(() => _technicalUserRepository.CheckActiveServiceAccountExistsForCompanyAsync(ServiceAccountUserId, HostCompanyId))
-            .Returns(true);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(ServiceAccountUserId, HostCompanyId))
+                 .Returns((true, false));
     }
 
     private void SetupIdentity()
