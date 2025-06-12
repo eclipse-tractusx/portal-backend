@@ -56,6 +56,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 * **Validation Limitations**: pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
 * **Validation of File Upload Limitation**: it is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
 * **In Memory Storage Limitation**: sensitive information (such as passwords) is read in an unencrypted manner in memory.
+* **Connector URL**: Updating connector URL for Connector with missing SD Document is not working. [#1346](https://github.com/eclipse-tractusx/portal-backend/issues/1346)
 
 ## 2.4.0
 
