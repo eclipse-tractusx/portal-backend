@@ -1,0 +1,31 @@
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Next.Context;
+using Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Next.Entities;
+
+namespace Org.Eclipse.TractusX.Portal.Backend.Framework.Processes.Library.Next.DBAccess;
+
+public interface IProcessRepositoryContextAccess<TProcess, TProcessType, TProcessStep, TProcessStepType> :
+    IProcessDbContext<TProcess, TProcessStep>,
+    IProcessCreation<TProcess, TProcessType, TProcessStep, TProcessStepType>
+    where TProcess : class, IProcess, IProcessNavigation<TProcessStep>
+    where TProcessStep : class, IProcessStep, IProcessStepNavigation<TProcess, TProcessType, TProcessStepType>
+    where TProcessType : class, IProcessType, IProcessTypeNavigation<TProcessStep>
+    where TProcessStepType : class, IProcessStepType, IProcessStepTypeNavigation<TProcessStep, TProcessType>;
