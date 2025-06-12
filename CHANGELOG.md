@@ -23,10 +23,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed the api route for decline service subscription [#1378](https://github.com/eclipse-tractusx/portal-backend/pull/1378)
   * fixed retrieve processes for service account callback as no tracking [#1380](https://github.com/eclipse-tractusx/portal-backend/pull/1380)
 
-### Known Knowns
-
-* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
-
 ## 2.5.0-RC1
 
 ### Feature
@@ -59,10 +55,6 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
 * **Nuget packages**
   * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
-
-### Known Knowns
-
-* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
 
 ## 2.4.0
 
