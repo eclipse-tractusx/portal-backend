@@ -4,26 +4,7 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
 
 ## Unreleased
 
-## 2.5.0-RC2
-
-### Feature
-  
-* **Connectors**
-  * added validation for technical user in connector registration [#1350](https://github.com/eclipse-tractusx/portal-backend/pull/1350)
-
-### Bugfixes
-
-* **Miscellaneous**
-  * adjusted CustomAuthorizationMiddleware registration [#1358](https://github.com/eclipse-tractusx/portal-backend/pull/1358) 
-* **Offer Auto Setup**
-  * added grant type(`client_credentials`) in token generation in auto setup [#1376](https://github.com/eclipse-tractusx/portal-backend/pull/1376) 
-  * added scope(`openid`) in token generation in auto setup [#1382](https://github.com/eclipse-tractusx/portal-backend/pull/1382) 
-* **Offer Subscription**
-  * fixed the external technical user creation for app and service subscriptions [#1372](https://github.com/eclipse-tractusx/portal-backend/pull/1372)
-  * fixed the api route for decline service subscription [#1378](https://github.com/eclipse-tractusx/portal-backend/pull/1378)
-  * fixed retrieve processes for service account callback as no tracking [#1380](https://github.com/eclipse-tractusx/portal-backend/pull/1380)
-
-## 2.5.0-RC1
+## 2.5.0
 
 ### Feature
 
@@ -40,6 +21,8 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * implemented country-specific SD toggle for SD Factory [#1345](https://github.com/eclipse-tractusx/portal-backend/pull/1345)
 * **Connectors**
   * added connector management role [#1337](https://github.com/eclipse-tractusx/portal-backend/pull/1337)
+* **Connectors**
+  * added validation for technical user in connector registration [#1350](https://github.com/eclipse-tractusx/portal-backend/pull/1350)
 
 ### Bugfixes
 
@@ -47,6 +30,15 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed the validation and request body for auto setup callback url [#1318](https://github.com/eclipse-tractusx/portal-backend/pull/1318)
 * **Registration Service**
   * fixed document api to show only `COMMERCIAL_REGISTER_EXTRACT` type document  [#1275](https://github.com/eclipse-tractusx/portal-backend/pull/1275)
+* **Miscellaneous**
+  * adjusted CustomAuthorizationMiddleware registration [#1358](https://github.com/eclipse-tractusx/portal-backend/pull/1358) 
+* **Offer Auto Setup**
+  * added grant type(`client_credentials`) in token generation in auto setup [#1376](https://github.com/eclipse-tractusx/portal-backend/pull/1376) 
+  * added scope(`openid`) in token generation in auto setup [#1382](https://github.com/eclipse-tractusx/portal-backend/pull/1382) 
+* **Offer Subscription**
+  * fixed the external technical user creation for app and service subscriptions [#1372](https://github.com/eclipse-tractusx/portal-backend/pull/1372)
+  * fixed the api route for decline service subscription [#1378](https://github.com/eclipse-tractusx/portal-backend/pull/1378)
+  * fixed retrieve processes for service account callback as no tracking [#1380](https://github.com/eclipse-tractusx/portal-backend/pull/1380)
 
 ### Technical Support
 
@@ -55,6 +47,15 @@ New features, fixed bugs, known defects and other noteworthy changes to each rel
   * fixed and improved dependencies check [#1335](https://github.com/eclipse-tractusx/portal-backend/pull/1335)
 * **Nuget packages**
   * adjusted nuget push action [#1338](https://github.com/eclipse-tractusx/portal-backend/pull/1338)
+
+### Known Knowns
+
+* Please refer to the **[list of open bugs](https://github.com/eclipse-tractusx/portal-backend/issues?q=is%3Aopen+is%3Aissue+label%3Abug)**.
+* **Note for Gaia-X Clearing House Tagus upgrade**:
+  * If a company was onboarded with ELBE clearing house, the legal person self description document is not accepted when creating a connector with newer versions of the clearing house. Portal operators are advised to create new legal person and connector self description documents for all previously onboarded companies. The portal backend will activate connector without updated legal person self description document to allow for a transition phase. The connector will not have a document until reissuance for both company and connector is triggered by operators.
+* **Validation Limitations**: pattern validation for URL inputs in `POST` and `PUT` endpoints is currently limited, potentially allowing invalid URLs to be accepted. [#587](https://github.com/eclipse-tractusx/portal-backend/issues/587)
+* **Validation of File Upload Limitation**: it is recommended to make use of an existing trustworthy 3rd party virus-scan service for a more broad scan for known malicious signatures. [#779](https://github.com/eclipse-tractusx/portal-backend/issues/779)
+* **In Memory Storage Limitation**: sensitive information (such as passwords) is read in an unencrypted manner in memory.
 
 ## 2.4.0
 
