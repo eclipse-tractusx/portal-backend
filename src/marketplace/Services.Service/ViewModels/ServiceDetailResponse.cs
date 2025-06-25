@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 
@@ -29,6 +30,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="Id">ID of the app.</param>
 /// <param name="Title">Title or name of the app.</param>
 /// <param name="Provider">Provider of the app.</param>
+/// <param name="Shortname">Provider short name of the app.</param>
 /// <param name="LeadPictureId">Lead picture Id.</param>
 /// <param name="ContactEmail">Contact email address.</param>
 /// <param name="Description">The description of the service.</param>
@@ -39,11 +41,11 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Services.Service.ViewModels;
 /// <param name="ServiceTypes">Collection of the assigned serviceTypeIds.</param>
 /// <param name="Documents">documents assigned to offer</param>
 /// <param name="TechnicalUserProfile">Technical User Profile</param>
-
 public record ServiceDetailResponse(
     Guid Id,
     string? Title,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     Guid? LeadPictureId,
     string? ContactEmail,
     string? Description,
@@ -53,4 +55,5 @@ public record ServiceDetailResponse(
     IEnumerable<OfferSubscriptionStateDetailData> OfferSubscriptionDetailData,
     IEnumerable<ServiceTypeId> ServiceTypes,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,
-    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile);
+    IDictionary<Guid, IEnumerable<string>> TechnicalUserProfile
+);
