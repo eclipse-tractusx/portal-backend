@@ -54,6 +54,6 @@ public record SubscriptionExternalServiceData(
     [property: JsonPropertyName("participant_id")] string? ParticipantId,
     [property: JsonPropertyName("iatp_id")] string? IatpId,
     [property: JsonPropertyName("did_resolver")] string DidResolver,
-    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string DecentralIdentityManagementAuthUrl,
-    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string? DecentralIdentityManagementServiceUrl
+    [property: JsonPropertyName("decentralIdentityManagementServiceUrl")] string? DecentralIdentityManagementServiceUrl,
+    [property: JsonPropertyName("decentralIdentityManagementAuthUrl")] string DecentralIdentityManagementAuthUrl
 );
