@@ -749,11 +749,11 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var offerStatus = new[] { OfferStatusId.ACTIVE, OfferStatusId.IN_REVIEW };
         var inReviewData = new[] {
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.ACTIVE)
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.ACTIVE),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.ACTIVE)
         };
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, inReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._, A<OfferSorting>._))
@@ -777,11 +777,11 @@ public class AppReleaseBusinessLogicTest
         // Arrange
         var offerStatus = new[] { OfferStatusId.IN_REVIEW };
         var inReviewData = new[]{
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW),
-            new InReviewAppData(Guid.NewGuid(),null,null!, OfferStatusId.IN_REVIEW)
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW),
+            new InReviewAppData(Guid.NewGuid(),null,null!,null!, OfferStatusId.IN_REVIEW)
         };
         var paginationResult = (int skip, int take) => Task.FromResult(new Pagination.Source<InReviewAppData>(5, inReviewData.Skip(skip).Take(take)));
         A.CallTo(() => _offerRepository.GetAllInReviewStatusAppsAsync(A<IEnumerable<OfferStatusId>>._, A<OfferSorting>._))

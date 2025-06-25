@@ -2481,6 +2481,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         image:
           type: string
           format: uuid
@@ -2541,6 +2543,9 @@ components:
           format: uuid
         provider:
           type: string
+        providerShortName:
+          type: string
+          nullable: true
         status:
           $ref: '#/components/schemas/OfferStatusId'
         lastChanged:
@@ -2574,6 +2579,9 @@ components:
         provider:
           type: string
           description: Provider.
+        providerShortName:
+          type: string
+          description: Short description.
         licenseType:
           $ref: '#/components/schemas/LicenseTypeId'
         price:
@@ -2616,6 +2624,9 @@ components:
         provider:
           type: string
           description: Provider of the app.
+        providerShortname:
+          type: string
+          description: Provider short name of the app.
         contactEmail:
           type: string
           description: Email address of the app's primary contact.
@@ -3008,6 +3019,8 @@ components:
           format: uuid
         provider:
           type: string
+        providerShortName:
+          type: string
       additionalProperties: false
     ClientInfoData:
       type: object
@@ -3176,6 +3189,8 @@ components:
           nullable: true
         provider:
           type: string
+        providerShortName:
+          type: string
         status:
           $ref: '#/components/schemas/OfferStatusId'
       additionalProperties: false
@@ -3212,6 +3227,9 @@ components:
         provider:
           type: string
           description: Provider of the app.
+        providerShortName:
+          type: string
+          description: Provider short name of the app.
         useCases:
           type: array
           items:
@@ -3469,6 +3487,8 @@ components:
           nullable: true
         customer:
           type: string
+        providerShortName:
+          type: string
         bpn:
           type: string
           nullable: true
@@ -3534,6 +3554,8 @@ components:
           type: string
           nullable: true
         provider:
+          type: string
+        providerShortName:
           type: string
         status:
           $ref: '#/components/schemas/OfferSubscriptionStatusId'
@@ -3710,6 +3732,8 @@ components:
           type: string
           nullable: true
         provider:
+          type: string
+        providerShortName:
           type: string
         contact:
           type: array
