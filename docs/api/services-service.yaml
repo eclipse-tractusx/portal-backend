@@ -2865,11 +2865,11 @@ components:
           nullable: true
         did_resolver:
           type: string
-        decentralIdentityManagementAuthUrl:
-          type: string
         decentralIdentityManagementServiceUrl:
           type: string
           nullable: true
+        decentralIdentityManagementAuthUrl:
+          type: string
       additionalProperties: false
     SubscriptionStatusSorting:
       enum:
