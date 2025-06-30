@@ -358,21 +358,10 @@ public class BpdmBusinessLogicTests
     public async Task HandlePullLegalEntity_WithSharingProcessStartedNotSet_ReturnsExpected()
     {
         // Arrange
-        var company = new Company(Guid.NewGuid(), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
-        {
-            BusinessPartnerNumber = "1"
-        };
+        var context = PreparePullLegalEntity();
         var checklistEntry = _fixture.Build<ApplicationChecklistEntry>()
             .With(x => x.ApplicationChecklistEntryStatusId, ApplicationChecklistEntryStatusId.TO_DO)
             .Create();
-        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
-                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO }
-            }
-            .ToImmutableDictionary();
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutSharingProcessStarted, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        SetupForHandlePullLegalEntity(company);
 
         // Act
         var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
@@ -384,6 +373,78 @@ public class BpdmBusinessLogicTests
         result.SkipStepTypeIds.Should().BeNull();
         result.Modified.Should().BeFalse();
         result.ProcessMessage.Should().Be("SharingProcessStarted was not set");
+    }
+
+    [Fact]
+    public async Task HandlePullLegalEntity_BringYourOwnWallet_True_ReturnsExpected()
+    {
+        // Arrange
+        var context = PreparePullLegalEntity();
+
+        A.CallTo(() => _bpdmService.GetSharingState(A<Guid>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(new BpdmSharingState(
+                Guid.NewGuid(),
+                BpdmSharingStateType.Success,
+                null,
+                null,
+                DateTimeOffset.UtcNow,
+                null
+            )));
+        var bpdmLegalEntityOutputData = _fixture.Build<BpdmLegalEntityOutputData>()
+            .With(x => x.LegalEntity,
+                new BpdmLegelEntityData("CAXSDUMMYCATENAZZ",
+                null,
+                null,
+                null,
+                _fixture.Create<BpdmConfidenceCriteria>(), Enumerable.Empty<BpdmStatus>())
+            ).Create();
+
+        A.CallTo(() => _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), A<CancellationToken>._))
+            .Returns(bpdmLegalEntityOutputData);
+
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(true);
+
+        // Act
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
+
+        // Assert
+        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.TRANSMIT_BPN_DID);
+    }
+
+    [Fact]
+    public async Task HandlePullLegalEntity_BringYourOwnWallet_False_ReturnsExpected()
+    {
+        // Arrange
+        var context = PreparePullLegalEntity();
+
+        A.CallTo(() => _bpdmService.GetSharingState(A<Guid>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(new BpdmSharingState(
+                Guid.NewGuid(),
+                BpdmSharingStateType.Success,
+                null,
+                null,
+                DateTimeOffset.UtcNow,
+                null
+            )));
+        var bpdmLegalEntityOutputData = _fixture.Build<BpdmLegalEntityOutputData>()
+            .With(x => x.LegalEntity,
+                new BpdmLegelEntityData("CAXSDUMMYCATENAZZ",
+                null,
+                null,
+                null,
+                _fixture.Create<BpdmConfidenceCriteria>(), Enumerable.Empty<BpdmStatus>())
+            ).Create();
+
+        A.CallTo(() => _bpdmService.FetchInputLegalEntity(context.ApplicationId.ToString(), A<CancellationToken>._))
+            .Returns(bpdmLegalEntityOutputData);
+
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(false);
+
+        // Act
+        var result = await _logic.HandlePullLegalEntity(context, CancellationToken.None);
+
+        // Assert
+        result.ScheduleStepTypeIds.Should().ContainSingle(x => x == ProcessStepTypeId.CREATE_IDENTITY_WALLET);
     }
 
     [Fact]
@@ -576,4 +637,21 @@ public class BpdmBusinessLogicTests
     }
 
     #endregion
+
+    private IApplicationChecklistService.WorkerChecklistProcessStepData PreparePullLegalEntity()
+    {
+        var company = new Company(Guid.NewGuid(), "Test Company", CompanyStatusId.ACTIVE, DateTimeOffset.UtcNow)
+        {
+            BusinessPartnerNumber = "1"
+        };
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                { ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE },
+                { ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.TO_DO }
+            }
+            .ToImmutableDictionary();
+        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithoutSharingProcessStarted, default, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        SetupForHandlePullLegalEntity(company);
+        return context;
+    }
 }

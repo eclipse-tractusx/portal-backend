@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,28 +16,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 
-using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
-using System.Text.Json.Serialization;
+namespace Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library.DependencyInjection;
 
-namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
-
-public record RegistrationData(
-    string Name,
-    string City,
-    string StreetName,
-    string CountryAlpha2Code,
-    [property: JsonPropertyName("bpn")] string? BusinessPartnerNumber,
-    string? ShortName,
-    string Region,
-    string? StreetAdditional,
-    string? StreetNumber,
-    string? ZipCode,
-    IEnumerable<CompanyUniqueIdData> UniqueIds,
-    string? HolderDid = null
-);
-
-public record CompanyUniqueIdData(
-    [property: JsonPropertyName("type")] UniqueIdentifierId UniqueIdentifierId,
-    string Value
-);
+public class UniversalDidResolverSettings
+{
+    [Required(AllowEmptyStrings = false)]
+    public string UniversalResolverAddress { get; set; } = null!;
+}

@@ -67,6 +67,64 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         setOptionalParameters?.Invoke(address);
         return context.Addresses.Add(address).Entity;
     }
+    public async Task CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument)
+    {
+        var walletId = await context.CompanyWalletDatas
+            .Where(wallet => wallet.CompanyId == companyId)
+            .Select(wallet => wallet.Id)
+            .SingleOrDefaultAsync();
+
+        var wallet = new CompanyWalletData(
+            walletId == Guid.Empty ? Guid.NewGuid() : walletId,
+            companyId,
+            did,
+            didDocument,
+            BringYourOwnWalletClientFields.Identification,
+            new byte[1],
+            new byte[1],
+            default,
+            BringYourOwnWalletClientFields.NotUsed);
+
+        if (walletId != Guid.Empty)
+        {
+            context.CompanyWalletDatas.Entry(wallet).State = EntityState.Modified;
+        }
+        else
+        {
+            context.CompanyWalletDatas.Add(wallet);
+        }
+    }
+
+    public Task<bool> IsBringYourOwnWallet(Guid applicationId)
+    {
+        return context.CompanyApplications
+                .Where(app => app.Id == applicationId)
+                .Join(context.CompanyWalletDatas,
+                    app => app.CompanyId,
+                    wallet => wallet.CompanyId,
+                    (app, wallet) => wallet)
+                .AnyAsync(wallet => wallet.ClientId == BringYourOwnWalletClientFields.Identification);
+    }
+
+    public Task<Guid> GetApplicationIdByCompanyId(Guid companyId) =>
+        context.CompanyApplications
+            .AsNoTracking()
+            .Where(app => app.CompanyId == companyId)
+            .Select(app => app.Id)
+            .SingleOrDefaultAsync();
+
+    public Task<bool> IsDidInUse(string did) =>
+        context.CompanyWalletDatas
+            .AsNoTracking()
+            .Where(wallet => wallet.Did == did)
+            .AnyAsync();
+
+    public Task<string?> GetCompanyHolderDidAsync(Guid companyId) =>
+        context.Companies
+            .AsNoTracking()
+            .Where(company => company.Id == companyId)
+            .Select(company => company.DidDocumentLocation)
+            .SingleOrDefaultAsync();
 
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
@@ -398,9 +456,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
     public Task<Guid> GetCopmanyActiveWalletId(string bpn) =>
         context.Companies
             .Where(x => x.BusinessPartnerNumber == bpn &&
-                x.CompanyStatusId == CompanyStatusId.ACTIVE &&
-                x.CompanyWalletData != null
-                && x.CompanyApplications.Any(ca => ca.ApplicationStatusId == CompanyApplicationStatusId.CONFIRMED))
+                x.CompanyWalletData != null)
             .Select(x => x.CompanyWalletData!.Id)
             .SingleOrDefaultAsync();
 

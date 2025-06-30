@@ -46,7 +46,8 @@ public class TechnicalUserBusinessLogic(
     IOptions<ServiceAccountSettings> options,
     ITechnicalUserCreation technicalUserCreation,
     IIdentityService identityService,
-    IServiceAccountManagement serviceAccountManagement)
+    IServiceAccountManagement serviceAccountManagement,
+    IBringYourOwnWalletBusinessLogic bringYourOwnWalletBusinessLogic)
     : ITechnicalUserBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
@@ -80,6 +81,13 @@ public class TechnicalUserBusinessLogic(
 
         technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
             .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
+
+        var filteredTechnicalUserRoles = technicalUserCreationInfos.UserRoleIds.Where(roleId => result.TechnicalUserRoleIds.Contains(roleId)).ToImmutableArray();
+        var isBringYourOwnWallet = await bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        if (isBringYourOwnWallet && filteredTechnicalUserRoles.Any(id => bringYourOwnWalletBusinessLogic.GetExcludedUserRoles().Contains(id)))
+        {
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
+        }
 
         const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;
         var (_, _, serviceAccounts) = await technicalUserCreation.CreateTechnicalUsersAsync(technicalUserCreationInfos, companyId, [result.Bpn], TechnicalUserTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);

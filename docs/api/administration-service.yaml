@@ -7781,6 +7781,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CompanyUniqueIdData'
+        holderDid:
+          type: string
+          nullable: true
         externalId:
           type: string
         userDetails:
