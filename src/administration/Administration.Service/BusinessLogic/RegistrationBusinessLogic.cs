@@ -298,6 +298,11 @@ public sealed class RegistrationBusinessLogic(
 
     private ProcessStepTypeId CreateWalletStep() => _settings.UseDimWallet ? ProcessStepTypeId.CREATE_DIM_WALLET : ProcessStepTypeId.CREATE_IDENTITY_WALLET;
 
+    private async Task<ProcessStepTypeId> CreateWalletOrBpnCredentialStepAsync(Guid applicationId)
+    {
+        var isWalletCustomerProvider = await portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId);
+        return isWalletCustomerProvider ? ProcessStepTypeId.REQUEST_BPN_CREDENTIAL : CreateWalletStep();
+    }
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, string bpn, CancellationToken cancellationToken)
     {
@@ -428,6 +433,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ApproveRegistrationVerification(Guid applicationId)
     {
+        var createWalletOrBpnCredentalStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
@@ -435,7 +441,7 @@ public sealed class RegistrationBusinessLogic(
                 [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION,
                 [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
-                [CreateWalletStep()])
+                [createWalletOrBpnCredentalStep])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -448,7 +454,7 @@ public sealed class RegistrationBusinessLogic(
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
             businessPartnerSuccess
-                ? new[] { CreateWalletStep() }
+                ? new[] { createWalletOrBpnCredentalStep }
                 : null);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);

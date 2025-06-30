@@ -67,7 +67,32 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         setOptionalParameters?.Invoke(address);
         return context.Addresses.Add(address).Entity;
     }
+    public void CreateCustomerWallet(Guid companyId, string did)
+    {
+        var wallet = new CompanyWalletData(
+            Guid.NewGuid(),
+            companyId,
+            did,
+            JsonDocument.Parse("{}"),
+            "BYOWCLIENT_ID",
+            new byte[1],
+            new byte[1],
+            default,
+            "NOT_SET");
 
+        context.CompanyWalletDatas.Add(wallet);
+    }
+
+    public Task<bool> IsBringYourOwnWallet(Guid applicationId)
+    {
+        return context.CompanyApplications
+                .Where(app => app.Id == applicationId)
+                .Join(context.CompanyWalletDatas,
+                    app => app.CompanyId,
+                    wallet => wallet.CompanyId,
+                    (app, wallet) => wallet)
+                .AnyAsync(wallet => wallet.ClientId == "BYOWCLIENT_ID");
+    }
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
         var address = new Address(addressId, null!, null!, null!, null!, default);

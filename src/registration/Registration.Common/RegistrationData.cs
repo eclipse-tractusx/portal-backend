@@ -33,7 +33,8 @@ public record RegistrationData(
     string? StreetAdditional,
     string? StreetNumber,
     string? ZipCode,
-    IEnumerable<CompanyUniqueIdData> UniqueIds
+    IEnumerable<CompanyUniqueIdData> UniqueIds,
+    string? HolderDid = null
 );
 
 public record CompanyUniqueIdData(

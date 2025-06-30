@@ -989,6 +989,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, () => (string?)null)
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -1054,6 +1055,9 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._))
             .MustNotHaveHappened();
         A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateCustomerWallet(A<Guid>._, A<string>._))
+            .MustNotHaveHappened();
+
 
         company.Should().NotBeNull();
         address.Should().NotBeNull();
@@ -1155,6 +1159,110 @@ public class RegistrationBusinessLogicTest
 
         address.Should().Match<Address>(a =>
             a.Id == existingData.AddressId!.Value &&
+            a.City == companyData.City &&
+            a.CountryAlpha2Code == companyData.CountryAlpha2Code &&
+            a.Region == companyData.Region &&
+            a.Streetadditional == companyData.StreetAdditional &&
+            a.Streetname == companyData.StreetName &&
+            a.Streetnumber == companyData.StreetNumber &&
+            a.Zipcode == companyData.ZipCode);
+    }
+    [Fact]
+    public async Task SetCompanyWithAddressAsync_WithoutInitialCompanyAddress_CreatesAddressAndAddCustomerWallet()
+    {
+        //Arrange
+        var applicationId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+        var addressId = Guid.NewGuid();
+        var identityData = A.Fake<IIdentityData>();
+        A.CallTo(() => identityData.IdentityId).Returns(Guid.NewGuid());
+        A.CallTo(() => identityData.IdentityTypeId).Returns(IdentityTypeId.COMPANY_USER);
+        A.CallTo(() => identityData.CompanyId).Returns(companyId);
+
+        A.CallTo(() => _identityService.IdentityData).Returns(identityData);
+        var companyData = _fixture.Build<CompanyDetailData>()
+            .With(x => x.BusinessPartnerNumber, default(string?))
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.CountryAlpha2Code, _alpha2code)
+            .With(x => x.Region, _region)
+            .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, "https://did.example.com/holder")
+            .Create();
+
+        var existingData = _fixture.Build<CompanyApplicationDetailData>()
+            .With(x => x.CompanyId, companyId)
+            .With(x => x.AddressId, default(Guid?))
+            .With(x => x.City, default(string?))
+            .With(x => x.CountryAlpha2Code, default(string?))
+            .With(x => x.Region, default(string?))
+            .With(x => x.Streetadditional, default(string?))
+            .With(x => x.Streetname, default(string?))
+            .With(x => x.Streetnumber, default(string?))
+            .With(x => x.Zipcode, default(string?))
+            .With(x => x.IsUserOfCompany, true)
+            .Create();
+
+        Company? company = null;
+        Address? address = null;
+
+        var sut = new RegistrationBusinessLogic(
+            _options,
+            null!,
+            _userProvisioningService,
+            _identityProviderProvisioningService,
+            null!,
+            _portalRepositories,
+            null!,
+            _identityService,
+            _dateTimeProvider,
+            _mailingProcessCreation);
+
+        A.CallTo(() => _applicationRepository.GetCompanyApplicationDetailDataAsync(applicationId, A<Guid>._, companyId))
+            .Returns(existingData);
+
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
+            {
+                company = new Company(companyId, null!, default, default);
+                initialize?.Invoke(company);
+                modify(company);
+            });
+
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .ReturnsLazily((string city, string streetName, string region, string alpha2Code, Action<Address>? setParameters) =>
+            {
+                address = new Address(addressId, city, streetName, region, alpha2Code, default);
+                setParameters?.Invoke(address);
+                return address;
+            });
+
+        // Act
+        await sut.SetCompanyDetailDataAsync(applicationId, companyData);
+
+        // Assert
+        A.CallTo(() => _companyRepository.CreateAddress(A<string>._, A<string>._, A<string>._, A<string>._, A<Action<Address>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateAddress(companyData.City, companyData.StreetName, companyData.Region,
+                companyData.CountryAlpha2Code, A<Action<Address>>._))
+            .MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.AttachAndModifyCompany(companyId, A<Action<Company>>._, A<Action<Company>>._))
+            .MustHaveHappened();
+        A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._))
+            .MustNotHaveHappened();
+        A.CallTo(() => _portalRepositories.SaveAsync()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _companyRepository.CreateCustomerWallet(A<Guid>._, A<string>._))
+            .MustHaveHappenedOnceExactly();
+
+        company.Should().NotBeNull();
+        address.Should().NotBeNull();
+
+        company!.Id.Should().Be(companyId);
+        company.AddressId.Should().Be(addressId);
+
+        address.Should().Match<Address>(a =>
+            a.Id == addressId &&
             a.City == companyData.City &&
             a.CountryAlpha2Code == companyData.CountryAlpha2Code &&
             a.Region == companyData.Region &&

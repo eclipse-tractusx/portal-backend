@@ -43,6 +43,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
 
@@ -269,9 +270,16 @@ public class RegistrationBusinessLogic(
         {
             await identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(_identityData.CompanyId, companyDetails.Name).ConfigureAwait(ConfigureAwaitOptions.None);
         }
+        if (!string.IsNullOrEmpty(companyDetails.HolderDid))
+        {
+            CreateCustomerWallet(companyDetails.CompanyId, companyDetails.HolderDid, companyRepository);
+        }
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
+    private static void CreateCustomerWallet(Guid companyId, string did, ICompanyRepository companyRepository) => companyRepository.CreateCustomerWallet(
+            companyId,
+            did);
     private async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, IApplicationRepository applicationRepository)
     {
         var companyApplicationData = await applicationRepository
@@ -352,7 +360,8 @@ public class RegistrationBusinessLogic(
                 c.Shortname = modifyData.ShortName;
                 c.CompanyStatusId = CompanyStatusId.PENDING;
                 c.AddressId = addressId;
-            });
+            }
+            );
 
     public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo)
     {
