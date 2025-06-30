@@ -44,6 +44,7 @@ public class IssuerComponentBusinessLogic(
     {
         var applicationId = context.ApplicationId;
         var (exists, holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
+        var isBringYourOwnWallet = await repositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -68,7 +69,11 @@ public class IssuerComponentBusinessLogic(
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/bpncredential";
-        var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber, new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
+        var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber, 
+            isBringYourOwnWallet 
+                ? null 
+                : new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
+        
         await service.CreateBpnlCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -112,6 +117,7 @@ public class IssuerComponentBusinessLogic(
     {
         var applicationId = context.ApplicationId;
         var (exists, holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<IApplicationRepository>().GetBpnlCredentialIformationByApplicationId(applicationId).ConfigureAwait(false);
+        var isBringYourOwnWallet = await repositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId).ConfigureAwait(false);
         if (!exists)
         {
             throw new NotFoundException($"CompanyApplication {applicationId} does not exist");
@@ -136,7 +142,12 @@ public class IssuerComponentBusinessLogic(
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/membershipcredential";
-        var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x", new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
+        
+        var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x", 
+            isBringYourOwnWallet 
+                ? null 
+                : new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
+        
         await service.CreateMembershipCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -179,6 +190,7 @@ public class IssuerComponentBusinessLogic(
     public async Task<Guid> CreateFrameworkCredentialData(Guid useCaseFrameworkVersionId, string frameworkId, Guid identityId, string token, CancellationToken cancellationToken)
     {
         var (holder, businessPartnerNumber, walletInformation) = await repositories.GetInstance<ICompanyRepository>().GetWalletData(identityId).ConfigureAwait(false);
+        var isBringYourOwnWallet = await repositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(identityId).ConfigureAwait(false);
         if (holder is null)
         {
             throw new ConflictException("The holder must be set");
@@ -196,8 +208,11 @@ public class IssuerComponentBusinessLogic(
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-
-        var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId, new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), null);
+        
+        var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId, 
+            isBringYourOwnWallet 
+                ? null :
+            new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), null);
         return await service.CreateFrameworkCredential(data, token, cancellationToken).ConfigureAwait(false);
     }
 }
