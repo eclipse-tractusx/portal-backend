@@ -42,7 +42,7 @@ public static class ValidationExpressions
     /// <remarks>
     /// The pattern ensures ISO-1366-2 code value: NW
     /// </remarks>
-    public const string Region = "^[A-Z1-9]{1,3}$";
+    public const string Region = "^[A-Z0-9]{1,3}$";
 
     #region UniqueIdentifiers
     public const string Worldwide = "Worldwide";
