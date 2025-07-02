@@ -3184,12 +3184,14 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 0
         - name: size
           in: query
           description: size to get number of records
           schema:
             type: integer
             format: int32
+            default: 15
         - name: companyApplicationStatusFilter
           in: query
           description: Search by company applicationstatus
@@ -3327,12 +3329,14 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 0
         - name: size
           in: query
           description: size to get number of records
           schema:
             type: integer
             format: int32
+            default: 15
         - name: companyApplicationStatusFilter
           in: query
           description: Search by company applicationstatus
@@ -4478,12 +4482,14 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 0
         - name: size
           in: query
           description: number of service account data
           schema:
             type: integer
             format: int32
+            default: 15
         - name: isOwner
           in: query
           description: isOwner either true or false
@@ -5267,12 +5273,14 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 0
         - name: size
           in: query
           description: size to get number of records
           schema:
             type: integer
             format: int32
+            default: 15
         - name: companyUserId
           in: query
           description: Company User Id

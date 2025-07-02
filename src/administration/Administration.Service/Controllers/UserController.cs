@@ -176,8 +176,8 @@ public class UserController : ControllerBase
     [Route("owncompany/users")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyUserData>), StatusCodes.Status200OK)]
     public Task<Pagination.Response<CompanyUserData>> GetOwnCompanyUserDatasAsync(
-        [FromQuery] int page,
-        [FromQuery] int size,
+        [FromQuery] int page = 0,
+        [FromQuery] int size = 15,
         [FromQuery] Guid? companyUserId = null,
         [FromQuery] string? firstName = null,
         [FromQuery] string? lastName = null,

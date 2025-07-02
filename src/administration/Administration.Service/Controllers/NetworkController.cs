@@ -178,6 +178,6 @@ public class NetworkController(INetworkBusinessLogic logic)
     [Authorize(Policy = PolicyTypes.ValidCompany)]
     [Route("companies")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyDetailsOspOnboarding>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null, [FromQuery] string? externalId = null, [FromQuery] DateCreatedOrderFilter? dateCreatedOrderFilter = null) =>
+    public Task<Pagination.Response<CompanyDetailsOspOnboarding>> GetOspCompanyDetailsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null, [FromQuery] string? externalId = null, [FromQuery] DateCreatedOrderFilter? dateCreatedOrderFilter = null) =>
         logic.GetOspCompanyDetailsAsync(page, size, companyApplicationStatusFilter, companyName, externalId, dateCreatedOrderFilter);
 }
