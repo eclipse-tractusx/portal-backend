@@ -896,10 +896,15 @@ public class RegistrationBusinessLogicTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("BPNL00000003CRHK")]
-    public async Task SetCompanyWithAddressAsync_ModifyCompany(string? bpn)
+    [InlineData(null, "X")]
+    [InlineData("", "XX")]
+    [InlineData("BPNL00000003CRHK", "XXX")]
+    [InlineData("BPNL00000003CRHK", "0")]
+    [InlineData("BPNL00000003CRHK", "02")]
+    [InlineData("BPNL00000003CRHK", "123")]
+    [InlineData("BPNL00000003CRHK", "023")]
+    [InlineData("BPNL00000003CRHK", "X23")]
+    public async Task SetCompanyWithAddressAsync_ModifyCompany(string? bpn, string region)
     {
         //Arrange
         var applicationId = Guid.NewGuid();
@@ -913,7 +918,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.BusinessPartnerNumber, bpn)
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, _alpha2code)
-            .With(x => x.Region, _region)
+            .With(x => x.Region, region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
             .Create();
 
