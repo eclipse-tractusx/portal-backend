@@ -35,5 +35,4 @@ public static class CompanySubscriptionStatusExtensions
             data.TechnicalUser,
             data.DateCreated,
             data.ProcessSteps.GetProcessStepTypeId(offerId));
-            
 }
