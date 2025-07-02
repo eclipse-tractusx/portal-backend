@@ -193,6 +193,70 @@ public class AppsControllerTests
         result.Content.Should().HaveCount(5);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
+    public async Task GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount_AndCreatedAt(string? offerIdTxt)
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
+
+        var testData = Enumerable.Range(0, 5)
+            .Select(i =>
+            {
+                var createdAt = now.AddDays(i);
+
+                var companySubscriptionStatuses = new List<CompanySubscriptionStatus>
+                {
+                    new CompanySubscriptionStatus(
+                        Guid.NewGuid(),               // CompanyId
+                        $"Company {i}",               // CompanyName
+                        Guid.NewGuid(),               // SubscriptionId
+                        OfferSubscriptionStatusId.ACTIVE,
+                        "DE",                         // Country
+                        $"BPN00000000{i}",                    // BpnNumber
+                        $"email{i}@example.com",      // Email
+                        false,                        // TechnicalUser
+                        createdAt,                    // CreatedAt
+                        ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION)
+                };
+
+                return new OfferCompanySubscriptionStatusResponse(
+                    Guid.NewGuid(),                   // OfferId
+                    $"Test Offer {i}",                // OfferName
+                    companySubscriptionStatuses,      // CompanySubscriptionStatuses
+                    Guid.NewGuid());                  // Image
+            })
+            .ToImmutableArray();
+
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(
+            new Pagination.Metadata(testData.Length, 1, 0, testData.Length),
+            testData);
+
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(
+            A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._, A<string?>._))
+            .Returns(pagination);
+
+        // Act
+        var result = await _controller.GetCompanyProvidedAppSubscriptionStatusesForCurrentUserAsync(offerId: offerId);
+
+        // Assert
+        A.CallTo(() => _logic.GetCompanyProvidedAppSubscriptionStatusesForUserAsync(
+            0, 15, null, null, offerId, null)).MustHaveHappenedOnceExactly();
+
+        result.Content.Should().HaveCount(5);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var item = result.Content.ElementAt(i);
+            item.CompanySubscriptionStatuses.Should().ContainSingle();
+
+            var status = item.CompanySubscriptionStatuses.Single();
+            status.DateCreated.Should().BeCloseTo(now.AddDays(i), TimeSpan.FromSeconds(1));
+        }
+    }
+
     [Fact]
     public async Task AddAppSubscriptionWithConsent_ReturnsExpectedId()
     {
