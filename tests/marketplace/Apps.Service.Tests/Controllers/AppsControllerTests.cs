@@ -210,23 +210,23 @@ public class AppsControllerTests
                 var companySubscriptionStatuses = new List<CompanySubscriptionStatus>
                 {
                     new CompanySubscriptionStatus(
-                        Guid.NewGuid(),               // CompanyId
-                        $"Company {i}",               // CompanyName
-                        Guid.NewGuid(),               // SubscriptionId
-                        OfferSubscriptionStatusId.ACTIVE,
-                        "DE",                         // Country
-                        $"BPN00000000{i}",                    // BpnNumber
-                        $"email{i}@example.com",      // Email
-                        false,                        // TechnicalUser
-                        createdAt,                    // CreatedAt
+                        Guid.NewGuid(),
+                        $"Company {i}",
+                        Guid.NewGuid(),
+                        OfferSubscriptionStatusId.PENDING,
+                        "DE",
+                        $"BPN00000000000{i}",
+                        $"email{i}@example.com",
+                        false,
+                        createdAt,
                         ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION)
                 };
 
                 return new OfferCompanySubscriptionStatusResponse(
-                    Guid.NewGuid(),                   // OfferId
-                    $"Test Offer {i}",                // OfferName
-                    companySubscriptionStatuses,      // CompanySubscriptionStatuses
-                    Guid.NewGuid());                  // Image
+                    Guid.NewGuid(),
+                    $"Test Offer {i}",
+                    companySubscriptionStatuses,
+                    Guid.NewGuid());
             })
             .ToImmutableArray();
 
