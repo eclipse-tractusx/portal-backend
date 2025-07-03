@@ -79,6 +79,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
                                 s.Company.BusinessPartnerNumber,
                                 s.Requester!.Email,
                                 s.Offer!.TechnicalUserProfiles.Any(tup => tup.TechnicalUserProfileAssignedUserRoles.Any()),
+                                s.DateCreated,
                                 s.Process!.ProcessSteps
                                     .Where(ps => ps.ProcessStepStatusId == ProcessStepStatusId.TODO)
                                     .Select(ps => new ValueTuple<ProcessStepTypeId, ProcessStepStatusId>(

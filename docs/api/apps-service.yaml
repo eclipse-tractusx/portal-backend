@@ -3041,6 +3041,9 @@ components:
           nullable: true
         technicalUser:
           type: boolean
+        dateCreated:
+          type: string
+          format: date-time
         processStepTypeId:
           $ref: '#/components/schemas/ProcessStepTypeId'
       additionalProperties: false
