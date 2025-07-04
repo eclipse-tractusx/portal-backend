@@ -9,5 +9,17 @@
     "initialization_vector": null,
     "encryption_mode": 0,
     "authentication_service_url": "https://example.org/auth"
+  },
+    {
+    "id": "84571142-db6b-4b86-b7af-1039dc0ffb5d",
+    "company_id": "554f23d5-669e-48ed-b06b-9a84dfa017c5",
+    "did": "did:web:test",
+    "did_document": {},
+    "client_id": "BYOWCLIENT_ID",
+    "client_secret": "",
+    "initialization_vector": null,
+    "encryption_mode": 0,
+    "authentication_service_url": "https://example.org/auth"
   }
+
 ]

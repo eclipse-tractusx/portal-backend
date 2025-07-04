@@ -1058,7 +1058,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRepository.CreateCustomerWallet(A<Guid>._, A<string>._))
             .MustNotHaveHappened();
 
-
         company.Should().NotBeNull();
         address.Should().NotBeNull();
 

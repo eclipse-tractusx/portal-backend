@@ -74,11 +74,11 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             companyId,
             did,
             JsonDocument.Parse("{}"),
-            "BYOWCLIENT_ID",
+            BringYourOwnWalletClientFields.Identification,
             new byte[1],
             new byte[1],
             default,
-            "NOT_SET");
+            BringYourOwnWalletClientFields.NotUsed);
 
         context.CompanyWalletDatas.Add(wallet);
     }
@@ -91,7 +91,7 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                     app => app.CompanyId,
                     wallet => wallet.CompanyId,
                     (app, wallet) => wallet)
-                .AnyAsync(wallet => wallet.ClientId == "BYOWCLIENT_ID");
+                .AnyAsync(wallet => wallet.ClientId == BringYourOwnWalletClientFields.Identification);
     }
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
