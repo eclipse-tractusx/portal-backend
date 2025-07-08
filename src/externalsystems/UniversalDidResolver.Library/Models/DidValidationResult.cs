@@ -25,7 +25,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library.Model
 
 public record DidValidationResult(
     [property: JsonPropertyName("didResolutionMetadata")] DidResolutionMetadata DidResolutionMetadata,
-    [property: JsonPropertyName("didDocument")] JsonElement DidDocument
+    [property: JsonPropertyName("didDocument")] JsonDocument DidDocument
 
 );
 

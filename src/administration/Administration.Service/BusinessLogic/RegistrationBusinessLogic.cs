@@ -301,7 +301,7 @@ public sealed class RegistrationBusinessLogic(
     private async Task<ProcessStepTypeId> CreateWalletOrBpnCredentialStepAsync(Guid applicationId)
     {
         var isWalletCustomerProvider = await portalRepositories.GetInstance<ICompanyRepository>().IsBringYourOwnWallet(applicationId);
-        return isWalletCustomerProvider ? ProcessStepTypeId.REQUEST_BPN_CREDENTIAL : CreateWalletStep();
+        return isWalletCustomerProvider ? ProcessStepTypeId.TRANSMIT_BPN_DID : CreateWalletStep();
     }
     /// <inheritdoc />
     public async Task ProcessClearinghouseResponseAsync(ClearinghouseResponseData data, string bpn, CancellationToken cancellationToken)

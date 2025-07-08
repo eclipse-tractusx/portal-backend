@@ -67,13 +67,13 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         setOptionalParameters?.Invoke(address);
         return context.Addresses.Add(address).Entity;
     }
-    public void CreateCustomerWallet(Guid companyId, string did)
+    public void CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument)
     {
         var wallet = new CompanyWalletData(
             Guid.NewGuid(),
             companyId,
             did,
-            JsonDocument.Parse("{}"),
+            didDocument,
             BringYourOwnWalletClientFields.Identification,
             new byte[1],
             new byte[1],

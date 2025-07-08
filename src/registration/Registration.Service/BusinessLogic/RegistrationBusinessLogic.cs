@@ -41,6 +41,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Provisioning.Library.Service;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Common;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Model;
+using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -57,11 +58,12 @@ public class RegistrationBusinessLogic(
     IApplicationChecklistCreationService checklistService,
     IIdentityService identityService,
     IDateTimeProvider dateTimeProvider,
-    IMailingProcessCreation mailingProcessCreation) : IRegistrationBusinessLogic
+    IMailingProcessCreation mailingProcessCreation,
+    IBringYourOwnWalletBusinessLogic bringYourOwnWalletBusinessLogic) : IRegistrationBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
     private readonly RegistrationSettings _settings = settings.Value;
-
+    private readonly IBringYourOwnWalletBusinessLogic _bringYourOwnWalletBusinessLogic = bringYourOwnWalletBusinessLogic;
     private static readonly Regex bpnRegex = new(@"(\w|\d){16}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
     public IAsyncEnumerable<string> GetClientRolesCompositeAsync() =>
@@ -272,14 +274,16 @@ public class RegistrationBusinessLogic(
         }
         if (!string.IsNullOrEmpty(companyDetails.HolderDid))
         {
-            CreateCustomerWallet(companyDetails.CompanyId, companyDetails.HolderDid, companyRepository);
+            await CreateCustomerWalletAsync(companyDetails.CompanyId, companyDetails.HolderDid, companyRepository);
         }
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
-    private static void CreateCustomerWallet(Guid companyId, string did, ICompanyRepository companyRepository) => companyRepository.CreateCustomerWallet(
-            companyId,
-            did);
+    private async Task CreateCustomerWalletAsync(Guid companyId, string did, ICompanyRepository companyRepository)
+    {
+        var didDocument = await _bringYourOwnWalletBusinessLogic.ValidateDid(did, CancellationToken.None).ConfigureAwait(ConfigureAwaitOptions.None);
+        companyRepository.CreateCustomerWallet(companyId, did, didDocument);
+    }
     private async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, IApplicationRepository applicationRepository)
     {
         var companyApplicationData = await applicationRepository

@@ -135,11 +135,11 @@ public class IssuerComponentBusinessLogicTests
                     x.CallbackUrl == "https://example.org/callback/api/administration/registration/issuer/bpncredential"),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        
+
         //bring your own wallet true
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(true);
         result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
-        
+
         A.CallTo(() => _issuerComponentService
                 .CreateBpnlCredential(
                     A<CreateBpnCredentialRequest>.That.Matches(x =>
@@ -149,7 +149,7 @@ public class IssuerComponentBusinessLogicTests
                         ),
                     A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        
+
         //call should be 2 times now
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
             .MustHaveHappenedTwiceExactly();
@@ -355,7 +355,7 @@ public class IssuerComponentBusinessLogicTests
 
         //bring your own wallet false
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(false);
-        
+
         // Act
         var result = await _sut.CreateMembershipCredential(context, CancellationToken.None);
 
@@ -373,10 +373,10 @@ public class IssuerComponentBusinessLogicTests
                 ),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        
+
         //bring your own wallet false
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(true);
-        
+
         // Act
         result = await _sut.CreateMembershipCredential(context, CancellationToken.None);
         A.CallTo(() => _issuerComponentService
@@ -588,7 +588,7 @@ public class IssuerComponentBusinessLogicTests
 
         //bring your own wallet false
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(false);
-        
+
         // Act
         var result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
@@ -607,10 +607,10 @@ public class IssuerComponentBusinessLogicTests
                 Token,
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        
+
         //bring your own wallet true
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(true);
-        
+
         // Act
         result = await _sut.CreateFrameworkCredentialData(useCaseFrameworkVersionId, "TRACEABILITY_FRAMEWORK", identityId, Token, CancellationToken.None);
 
@@ -626,7 +626,7 @@ public class IssuerComponentBusinessLogicTests
                     Token,
                     A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
-        
+
         //call is 2 times
         A.CallTo(() => _companyRepository.GetWalletData(identityId))
             .MustHaveHappenedTwiceExactly();

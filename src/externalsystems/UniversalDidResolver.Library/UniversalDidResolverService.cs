@@ -68,7 +68,7 @@ public class UniversalDidResolverService(IHttpClientFactory httpClientFactory) :
         return validationResult;
     }
 
-    public async Task<bool> ValidateSchema(JsonElement content, CancellationToken cancellationToken)
+    public async Task<bool> ValidateSchema(JsonDocument content, CancellationToken cancellationToken)
     {
         var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new UnexpectedConditionException("Assembly location must be set");
 

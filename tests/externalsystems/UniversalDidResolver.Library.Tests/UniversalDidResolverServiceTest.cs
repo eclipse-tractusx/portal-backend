@@ -59,7 +59,7 @@ public class UniversalDidResolverServiceTests
         HttpRequestMessage? request = null;
         var didDocumentJson = "{\"id\":\"did:web:123\"}";
         using var doc = JsonDocument.Parse(didDocumentJson);
-        var didValidationResult = new DidValidationResult(new DidResolutionMetadata(null), doc.RootElement.Clone());
+        var didValidationResult = new DidValidationResult(new DidResolutionMetadata(null), doc);
         using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -69,7 +69,7 @@ public class UniversalDidResolverServiceTests
 
         // Mock ValidateSchema to return true
         var universalDidResolverService = _fixture.Freeze<IUniversalDidResolverService>();
-        A.CallTo(() => universalDidResolverService.ValidateSchema(A<JsonElement>._, A<CancellationToken>._)).Returns(true);
+        A.CallTo(() => universalDidResolverService.ValidateSchema(A<JsonDocument>._, A<CancellationToken>._)).Returns(true);
 
         // Act
         var result = await _sut.ValidateDid(did, CancellationToken.None);
@@ -90,7 +90,7 @@ public class UniversalDidResolverServiceTests
         using var doc = JsonDocument.Parse(didDocumentJson);
         var didValidationResult = new DidValidationResult(
             new DidResolutionMetadata("notFound"),
-            doc.RootElement.Clone()
+            doc
         );
         using var responseMessage = new HttpResponseMessage
         {
@@ -114,7 +114,7 @@ public class UniversalDidResolverServiceTests
         const string did = "did:web:123";
         HttpRequestMessage? request = null;
         using var emptyDoc = JsonDocument.Parse("{}");
-        var didValidationResult = new DidValidationResult(new DidResolutionMetadata(null), emptyDoc.RootElement.Clone());
+        var didValidationResult = new DidValidationResult(new DidResolutionMetadata(null), emptyDoc);
         using var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.BadRequest,
@@ -132,7 +132,7 @@ public class UniversalDidResolverServiceTests
 
         // Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(Act);
-        ex.Message.Should().Be("DID URL could not be reached by the exetenal resolver, 404 error");
+        ex.Message.Should().Be("DID URL could not be reached by the external resolver, 404 error");
         request.Should().NotBeNull();
         request!.RequestUri.Should().NotBeNull();
         request.RequestUri!.AbsoluteUri.Should().Be($"https://dev.uniresolver.io/1.0/identifiers/{Uri.EscapeDataString(did)}");

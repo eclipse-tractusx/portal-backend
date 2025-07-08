@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -44,7 +45,7 @@ public class BringYourOwnWalletBuisinessLogicTests
     {
         // Arrange
         const string did = "did:web:123";
-        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}").RootElement;
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
@@ -61,7 +62,7 @@ public class BringYourOwnWalletBuisinessLogicTests
     {
         // Arrange
         const string did = "did:web:123";
-        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}").RootElement;
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata("notFound"), didDocument);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
@@ -79,7 +80,7 @@ public class BringYourOwnWalletBuisinessLogicTests
     {
         // Arrange
         const string did = "did:web:123";
-        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}").RootElement;
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
@@ -99,7 +100,7 @@ public class BringYourOwnWalletBuisinessLogicTests
     {
         // Arrange
         const string did = "did:web:empty";
-        var didDocument = JsonDocument.Parse("{}").RootElement;
+        var didDocument = JsonDocument.Parse("{}");
         var validationResult = new DidValidationResult(
                     new DidResolutionMetadata(Error: null),
                     didDocument

@@ -27,6 +27,7 @@ using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Entities;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
 using System.Collections.Immutable;
+using System.Text.Json;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Tests;
@@ -1139,9 +1140,10 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
     {
         // Arrange
         var (sut, context) = await CreateSut();
+        var didDocument = JsonDocument.Parse("{}"); // Provide a valid JSON string or object as needed
 
         // Act
-        sut.CreateCustomerWallet(Guid.NewGuid(), "did:web:example.com");
+        sut.CreateCustomerWallet(Guid.NewGuid(), "did:web:example.com", didDocument);
 
         // Assert
         context.CompanyWalletDatas.Should().NotBeEmpty();

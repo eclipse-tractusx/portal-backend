@@ -466,8 +466,8 @@ public class RegistrationBusinessLogicTest
     }
 
     [Theory]
-    [InlineData(true, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL)]
-    [InlineData(false, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL)]
+    [InlineData(true, ProcessStepTypeId.TRANSMIT_BPN_DID)]
+    [InlineData(false, ProcessStepTypeId.TRANSMIT_BPN_DID)]
     public async Task SetRegistrationVerification_WithApproval_BYOW_CallsExpected(bool useDimWallet, ProcessStepTypeId expectedTypeId)
     {
         // Arrange

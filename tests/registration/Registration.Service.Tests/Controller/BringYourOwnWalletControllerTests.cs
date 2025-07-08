@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -51,7 +52,8 @@ public class BringYourOwnWalletControllerTests
     {
         // Arrange
         var did = "did:web:example.com";
-        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.ValidateDid(did, A<CancellationToken>._)).DoesNothing();
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.ValidateDid(did, A<CancellationToken>._))
+            .Returns(Task.FromResult(System.Text.Json.JsonDocument.Parse("{}")));
 
         // Act
         await _controller.validateDid(did, CancellationToken.None);

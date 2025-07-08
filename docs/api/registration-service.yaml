@@ -51,18 +51,6 @@ paths:
             text/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '502':
-          description: Bad Gateway
-          content:
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            text/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal Server Error
         '401':

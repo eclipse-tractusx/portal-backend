@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -18,7 +19,7 @@
  ********************************************************************************/
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library;
-using System.Net;
+using System.Text.Json;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 {
@@ -30,7 +31,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         {
             _universalResolverService = universalResolverService;
         }
-        public async Task ValidateDid(string did, CancellationToken cancellationToken)
+        public async Task<JsonDocument> ValidateDid(string did, CancellationToken cancellationToken)
         {
             var validationResult = await _universalResolverService.ValidateDid(did, cancellationToken);
             var isSchemaValid = await _universalResolverService.ValidateSchema(
@@ -42,6 +43,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
             {
                 throw new UnsupportedMediaTypeException("DID validation failed. DID Document is not valid.");
             }
+            return validationResult.DidDocument;
         }
     }
 }

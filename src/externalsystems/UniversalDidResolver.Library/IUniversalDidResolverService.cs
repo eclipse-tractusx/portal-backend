@@ -33,5 +33,5 @@ public interface IUniversalDidResolverService
     /// <returns><c>true</c> if the did is valid, otherwise <c>false</c></returns>
     Task<DidValidationResult> ValidateDid(string did, CancellationToken cancellationToken);
 
-    Task<bool> ValidateSchema(JsonElement content, CancellationToken cancellationToken);
+    Task<bool> ValidateSchema(JsonDocument content, CancellationToken cancellationToken);
 }

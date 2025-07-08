@@ -69,11 +69,11 @@ public class IssuerComponentBusinessLogic(
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/bpncredential";
-        var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber, 
-            isBringYourOwnWallet 
-                ? null 
+        var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber,
+            isBringYourOwnWallet
+                ? null
                 : new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
-        
+
         await service.CreateBpnlCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -142,12 +142,12 @@ public class IssuerComponentBusinessLogic(
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
 
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/membershipcredential";
-        
-        var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x", 
-            isBringYourOwnWallet 
-                ? null 
+
+        var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x",
+            isBringYourOwnWallet
+                ? null
                 : new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), callbackUrl);
-        
+
         await service.CreateMembershipCredential(data, cancellationToken).ConfigureAwait(false);
         return new IApplicationChecklistService.WorkerChecklistProcessStepExecutionResult(
             ProcessStepStatusId.DONE,
@@ -208,9 +208,9 @@ public class IssuerComponentBusinessLogic(
 
         var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
         var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-        
-        var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId, 
-            isBringYourOwnWallet 
+
+        var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId,
+            isBringYourOwnWallet
                 ? null :
             new TechnicalUserDetails(walletInformation.WalletUrl, walletInformation.ClientId, secret), null);
         return await service.CreateFrameworkCredential(data, token, cancellationToken).ConfigureAwait(false);

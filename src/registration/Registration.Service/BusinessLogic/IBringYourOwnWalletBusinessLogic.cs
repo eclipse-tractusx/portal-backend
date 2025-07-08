@@ -1,4 +1,5 @@
 /********************************************************************************
+ * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -17,10 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+using System.Text.Json;
+
 namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 {
     public interface IBringYourOwnWalletBusinessLogic
     {
-        Task ValidateDid(string did, CancellationToken cancellationToken);
+        Task<JsonDocument> ValidateDid(string did, CancellationToken cancellationToken);
     }
 }
