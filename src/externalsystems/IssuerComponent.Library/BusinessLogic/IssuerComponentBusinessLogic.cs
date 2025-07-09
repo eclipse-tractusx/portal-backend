@@ -65,9 +65,7 @@ public class IssuerComponentBusinessLogic(
             throw new ConflictException("The wallet information must be set");
         }
 
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-
+        var secret = GetDecriptedSecret(walletInformation, isBringYourOwnWallet);
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/bpncredential";
         var data = new CreateBpnCredentialRequest(holder, businessPartnerNumber,
             isBringYourOwnWallet
@@ -85,6 +83,18 @@ public class IssuerComponentBusinessLogic(
             null,
             true,
             null);
+    }
+
+    private string GetDecriptedSecret(PortalBackend.DBAccess.Models.WalletInformation walletInformation, bool isBringYourOwnWallet)
+    {
+        if (isBringYourOwnWallet)
+        {
+            return string.Empty;
+        }
+
+        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
+        return CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+
     }
 
     public async Task StoreBpnlCredentialResponse(Guid applicationId, IssuerResponseData data)
@@ -138,9 +148,7 @@ public class IssuerComponentBusinessLogic(
             throw new ConflictException("The wallet information must be set");
         }
 
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-
+        var secret = GetDecriptedSecret(walletInformation, isBringYourOwnWallet);
         var callbackUrl = $"{_settings.CallbackBaseUrl}/api/administration/registration/issuer/membershipcredential";
 
         var data = new CreateMembershipCredentialRequest(holder, businessPartnerNumber, "catena-x",

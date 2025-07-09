@@ -433,7 +433,7 @@ public sealed class RegistrationBusinessLogic(
     /// <inheritdoc />
     public async Task ApproveRegistrationVerification(Guid applicationId)
     {
-        var createWalletOrBpnCredentalStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
+        var createWalletOrTransmitCustomerDidStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
@@ -441,7 +441,7 @@ public sealed class RegistrationBusinessLogic(
                 [ApplicationChecklistEntryStatusId.TO_DO],
                 ProcessStepTypeId.MANUAL_VERIFY_REGISTRATION,
                 [ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER],
-                [createWalletOrBpnCredentalStep])
+                [createWalletOrTransmitCustomerDidStep])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
         var businessPartnerSuccess = context.Checklist[ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER] == new ValueTuple<ApplicationChecklistEntryStatusId, string?>(ApplicationChecklistEntryStatusId.DONE, null);
@@ -454,7 +454,7 @@ public sealed class RegistrationBusinessLogic(
                 entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE;
             },
             businessPartnerSuccess
-                ? new[] { createWalletOrBpnCredentalStep }
+                ? new[] { createWalletOrTransmitCustomerDidStep }
                 : null);
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
