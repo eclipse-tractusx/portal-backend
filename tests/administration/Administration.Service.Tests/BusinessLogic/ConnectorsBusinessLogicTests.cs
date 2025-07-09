@@ -240,7 +240,21 @@ public class ConnectorsBusinessLogicTests
     }
     #endregion
 
-    #region Create Connector
+    #region Create Connector 
+
+    [Fact]
+    public async Task CreateConnectorAsync_WithoutTechnicalUser_ThrowsException()
+    {
+        // Arrange
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_MISSING_TECH_USER.ToString());
+    }
 
     [Theory]
     [InlineData(true)]
