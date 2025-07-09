@@ -574,9 +574,9 @@ public class ConnectorsBusinessLogicTests
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         SetupTechnicalIdentity();
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
         // Act
-        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
         var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
 
         // Assert
