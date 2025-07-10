@@ -240,7 +240,21 @@ public class ConnectorsBusinessLogicTests
     }
     #endregion
 
-    #region Create Connector
+    #region Create Connector 
+
+    [Fact]
+    public async Task CreateConnectorAsync_WithoutTechnicalUser_ThrowsException()
+    {
+        // Arrange
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+
+        // Act
+        async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<ControllerArgumentException>(Act);
+        ex.Message.Should().Be(AdministrationConnectorErrors.CONNECTOR_MISSING_TECH_USER.ToString());
+    }
 
     [Theory]
     [InlineData(true)]
@@ -358,8 +372,10 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithClientIdNull_DoesntSaveData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+        var sa01 = Guid.NewGuid();
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, sa01);
 
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
         // Act
         var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
@@ -372,6 +388,7 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocumentAndSdConnectionDisabled_CallsExpected()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -397,8 +414,9 @@ public class ConnectorsBusinessLogicTests
             ]
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, sa01);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
         // Act
         await sut.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -412,9 +430,10 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithoutSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+        var sa01 = Guid.NewGuid();
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, sa01);
         A.CallTo(() => _identity.CompanyId).Returns(CompanyIdWithoutSdDocument);
-
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
         // Act
         async Task Act() => await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
 
@@ -456,7 +475,9 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateConnectorAsync_WithFailingDapsService_ReturnsCreatedConnectorData()
     {
         // Arrange
-        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, null);
+        var sa01 = Guid.NewGuid();
+        var connectorInput = new ConnectorInputModel("connectorName", "https://test.de", CountryCode_de, sa01);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
         // Act
         var result = await _logic.CreateConnectorAsync(connectorInput, CancellationToken.None);
@@ -525,7 +546,8 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, null);
+        var sa01 = Guid.NewGuid();
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, sa01);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
@@ -552,6 +574,7 @@ public class ConnectorsBusinessLogicTests
         }), _sdFactoryBusinessLogic, _identityService, _serviceAccountManagement, _dateTimeProvider, A.Fake<ILogger<ConnectorsBusinessLogic>>());
 
         SetupTechnicalIdentity();
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
         // Act
         var result = await sut.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
@@ -588,7 +611,8 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithInvalidLocation_ThrowsControllerArgumentException()
     {
         // Arrange
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", _validOfferSubscriptionId, null);
+        var sa01 = Guid.NewGuid();
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", "invalid", _validOfferSubscriptionId, sa01);
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
@@ -606,10 +630,11 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithNotExistingSubscription_ThrowsNotFoundException()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((false, default, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
 
@@ -625,10 +650,11 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithCallerNotOfferProvider_ThrowsForbiddenException()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, false, default, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
 
@@ -644,10 +670,11 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithOfferAlreadyLinked_ThrowsUnexpectedConditionException()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, true, default, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
 
@@ -663,10 +690,11 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithInactiveSubscription_ThrowsUnexpectedConditionException()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, ValidCompanyId))
             .Returns((true, true, false, OfferSubscriptionStatusId.INACTIVE, default, default, default));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
 
         SetupTechnicalIdentity();
 
@@ -682,10 +710,12 @@ public class ConnectorsBusinessLogicTests
     public async Task CreateManagedConnectorAsync_WithoutExistingSelfDescriptionDocument_ThrowsUnexpectedException()
     {
         // Arrange
+        var sa01 = Guid.NewGuid();
         var subscriptionId = Guid.NewGuid();
         A.CallTo(() => _offerSubscriptionRepository.CheckOfferSubscriptionWithOfferProvider(subscriptionId, A<Guid>.That.Matches(x => x == ValidCompanyId)))
             .Returns((true, true, false, OfferSubscriptionStatusId.ACTIVE, null, ValidCompanyId, ValidCompanyBpn));
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, null);
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, subscriptionId, sa01);
+        A.CallTo(() => _technicalUserRepository.CheckTechnicalUserDetailsAsync(A<Guid>._, A<Guid>._)).Returns((true, false));
 
         // Act
         async Task Act() => await _logic.CreateManagedConnectorAsync(connectorInput, CancellationToken.None);
