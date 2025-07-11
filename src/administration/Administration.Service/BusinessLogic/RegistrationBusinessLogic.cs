@@ -249,6 +249,7 @@ public sealed class RegistrationBusinessLogic(
             throw ConflictException.Create(AdministrationRegistrationErrors.REGISTRATION_CONFLICT_BPN_OF_COMPANY_SET, new ErrorParameter[] { new("companyId", applicationCompanyData.CompanyId.ToString()) });
         }
 
+        var createWalletOrTransmitCustomerDidStep = await CreateWalletOrBpnCredentialStepAsync(applicationId);
         var context = await checklistService
             .VerifyChecklistEntryAndProcessSteps(
                 applicationId,
@@ -267,7 +268,7 @@ public sealed class RegistrationBusinessLogic(
                     ProcessStepTypeId.CREATE_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PULL,
                     ProcessStepTypeId.RETRIGGER_BUSINESS_PARTNER_NUMBER_PUSH,
-                    ProcessStepTypeId.CREATE_IDENTITY_WALLET
+                    createWalletOrTransmitCustomerDidStep
                 ])
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
@@ -291,7 +292,7 @@ public sealed class RegistrationBusinessLogic(
             entry => entry.ApplicationChecklistEntryStatusId = ApplicationChecklistEntryStatusId.DONE,
             registrationValidationFailed
                 ? null
-                : new[] { CreateWalletStep() });
+                : new[] { createWalletOrTransmitCustomerDidStep });
 
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }

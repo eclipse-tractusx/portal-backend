@@ -708,6 +708,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, (string?)null)
             .Create();
         A.CallTo(() => _companyRepository.CheckBpnExists("BPNL00000001TEST")).Returns(true);
 
@@ -797,6 +798,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CompanyId, companyId)
             .With(x => x.CountryAlpha2Code, countryCode)
             .With(x => x.Region, _region)
+            .With(x => x.HolderDid, (string?)null)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(uniqueIdentifierId, identifierValue)])
             .Create();
 
@@ -865,6 +867,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, (string?)null)
             .Create();
 
         var sut = new RegistrationBusinessLogic(
@@ -938,6 +941,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, (string?)null)
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -1112,6 +1116,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.CountryAlpha2Code, _alpha2code)
             .With(x => x.Region, _region)
             .With(x => x.UniqueIds, [new CompanyUniqueIdData(UniqueIdentifierId.VAT_ID, _vatId)])
+            .With(x => x.HolderDid, (string?)null)
             .Create();
 
         var existingData = _fixture.Build<CompanyApplicationDetailData>()
@@ -1222,7 +1227,7 @@ public class RegistrationBusinessLogicTest
             .With(x => x.IsUserOfCompany, true)
             .Create();
 
-        Company? company = null;
+        var company = new Company(companyId, null!, default, default);
         Address? address = null;
 
         var sut = new RegistrationBusinessLogic(
@@ -1244,7 +1249,6 @@ public class RegistrationBusinessLogicTest
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
             .Invokes((Guid companyId, Action<Company>? initialize, Action<Company> modify) =>
             {
-                company = new Company(companyId, null!, default, default);
                 initialize?.Invoke(company);
                 modify(company);
             });
@@ -1267,7 +1271,7 @@ public class RegistrationBusinessLogicTest
                 companyData.CountryAlpha2Code, A<Action<Address>>._))
             .MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(A<Guid>._, A<Action<Company>>._, A<Action<Company>>._))
-            .MustHaveHappenedOnceExactly();
+            .MustHaveHappenedTwiceExactly();
         A.CallTo(() => _companyRepository.AttachAndModifyCompany(companyId, A<Action<Company>>._, A<Action<Company>>._))
             .MustHaveHappened();
         A.CallTo(() => _companyRepository.AttachAndModifyAddress(A<Guid>._, A<Action<Address>>._, A<Action<Address>>._))

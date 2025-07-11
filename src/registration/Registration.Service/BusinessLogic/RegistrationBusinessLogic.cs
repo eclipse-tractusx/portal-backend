@@ -272,16 +272,19 @@ public class RegistrationBusinessLogic(
         {
             await identityProviderProvisioningService.UpdateCompanyNameInSharedIdentityProvider(_identityData.CompanyId, companyDetails.Name).ConfigureAwait(ConfigureAwaitOptions.None);
         }
+
         if (!string.IsNullOrEmpty(companyDetails.HolderDid))
         {
             await CreateCustomerWalletAsync(companyDetails.CompanyId, companyDetails.HolderDid, companyRepository);
         }
+
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
     }
 
     private async Task CreateCustomerWalletAsync(Guid companyId, string did, ICompanyRepository companyRepository)
     {
         var didDocument = await _bringYourOwnWalletBusinessLogic.ValidateDid(did, CancellationToken.None).ConfigureAwait(ConfigureAwaitOptions.None);
+        UpdateDidLocation(companyId, did, companyRepository);
         companyRepository.CreateCustomerWallet(companyId, did, didDocument);
     }
     private async Task<CompanyApplicationDetailData> GetAndValidateApplicationData(Guid applicationId, CompanyDetailData companyDetails, IApplicationRepository applicationRepository)
@@ -366,6 +369,13 @@ public class RegistrationBusinessLogic(
                 c.AddressId = addressId;
             }
             );
+
+    private static void UpdateDidLocation(Guid companyId, string didLocation, ICompanyRepository companyRepository) =>
+        companyRepository.AttachAndModifyCompany(
+            companyId,
+            _ => { },
+            c => { c.DidDocumentLocation = didLocation; }
+        );
 
     public Task<int> InviteNewUserAsync(Guid applicationId, UserCreationInfoWithMessage userCreationInfo)
     {
