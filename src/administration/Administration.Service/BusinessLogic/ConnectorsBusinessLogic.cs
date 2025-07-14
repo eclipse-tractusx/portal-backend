@@ -122,12 +122,12 @@ public class ConnectorsBusinessLogic(
 
         if (string.IsNullOrEmpty(result.Bpn))
         {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
         if (string.IsNullOrWhiteSpace(result.CountryAlpha2Code))
         {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         await ValidateTechnicalUser(name, technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -152,12 +152,7 @@ public class ConnectorsBusinessLogic(
 
         var result = await portalRepositories.GetInstance<IOfferSubscriptionsRepository>()
             .CheckOfferSubscriptionWithOfferProvider(subscriptionId, companyId)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (result?.Exists != true)
-        {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
-        }
+            .ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_OFFERSUBSCRIPTION_EXIST, new ErrorParameter[] { new(nameof(subscriptionId), subscriptionId.ToString()) });
 
         if (!result.IsOfferProvider)
         {
@@ -182,7 +177,7 @@ public class ConnectorsBusinessLogic(
 
         if (string.IsNullOrWhiteSpace(result.CountryAlpha2Code))
         {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         await ValidateTechnicalUser(name, technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -302,7 +297,7 @@ public class ConnectorsBusinessLogic(
         };
 
         var result = await connectorsRepository.GetConnectorDeleteDataAsync(connectorId, companyId, processStepsToFilter).ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, new ErrorParameter[] { new(nameof(connectorId), connectorId.ToString()) });
-        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(result.Location);
+        var countrySpecificSettings = _clearinghouseSettings.GetCountrySpecificSettings(result.Location ?? throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]));
         if (!result.IsProvidingOrHostCompany)
         {
             throw ForbiddenException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_PROVIDER_COMPANY_NOR_HOST, [new(nameof(companyId), companyId.ToString()), new(nameof(connectorId), connectorId.ToString())]);
@@ -441,15 +436,10 @@ public class ConnectorsBusinessLogic(
         var connectorsRepository = portalRepositories
             .GetInstance<IConnectorsRepository>();
         var documentRepository = portalRepositories
-           .GetInstance<IDocumentRepository>();
+            .GetInstance<IDocumentRepository>();
         var connector = await connectorsRepository
             .GetConnectorUpdateInformation(connectorId, companyId)
-            .ConfigureAwait(ConfigureAwaitOptions.None);
-
-        if (connector == null)
-        {
-            throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, [new(nameof(connectorId), connectorId.ToString())]);
-        }
+            .ConfigureAwait(ConfigureAwaitOptions.None) ?? throw NotFoundException.Create(AdministrationConnectorErrors.CONNECTOR_NOT_FOUND, [new(nameof(connectorId), connectorId.ToString())]);
 
         if (connector.ConnectorUrl == data.ConnectorUrl)
         {
@@ -458,7 +448,7 @@ public class ConnectorsBusinessLogic(
 
         if (string.IsNullOrWhiteSpace(connector.CountryAlpha2Code))
         {
-            throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
+            throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_COUNTRYCODE_NOT_FOUND, [new(nameof(companyId), companyId.ToString())]);
         }
 
         if (!connector.IsProviderCompany)

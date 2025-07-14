@@ -960,7 +960,6 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.Exists.Should().BeTrue();
         result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.ProviderBpn.Should().Be("BPNL00000003LLHA");
         result.IsOfferProvider.Should().BeTrue();
@@ -978,7 +977,6 @@ public class OfferSubscriptionRepositoryTest : IAssemblyFixture<TestDbFixture>
 
         // Assert
         result.Should().NotBeNull();
-        result.Exists.Should().BeTrue();
         result.OfferSubscriptionStatus.Should().Be(OfferSubscriptionStatusId.ACTIVE);
         result.ProviderBpn.Should().Be("BPNL00000003LLHA");
         result.IsOfferProvider.Should().BeFalse();

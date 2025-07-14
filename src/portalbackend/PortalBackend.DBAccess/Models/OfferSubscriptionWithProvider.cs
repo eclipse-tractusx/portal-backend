@@ -24,7 +24,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <summary>
 /// Get offer subscription with offer provider
 /// </summary>
-/// <param name="Exists">Existence of offer subscription</param>
 /// <param name="IsOfferProvider">true if Company Id is the same as ProviderCompanyId</param>
 /// <param name="OfferSubscriptionAlreadyLinked">true if OfferSubscription is already linked to a connector</param>
 /// <param name="OfferSubscriptionStatus">Offer subscription status</param>
@@ -33,7 +32,6 @@ namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 /// <param name="ProviderBpn">Provider's Bpn</param>
 /// <param name="CountryAlpha2Code">Provider's country code</param>
 public record OfferSubscriptionWithProvider(
-    bool Exists,
     bool IsOfferProvider,
     bool OfferSubscriptionAlreadyLinked,
     OfferSubscriptionStatusId OfferSubscriptionStatus,
