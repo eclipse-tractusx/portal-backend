@@ -95,11 +95,11 @@ public interface ICompanyRepository
     void AttachAndModifyProviderCompanyDetails(Guid providerCompanyDetailId, Action<ProviderCompanyDetail> initialize, Action<ProviderCompanyDetail> modify);
 
     /// <summary>
-    /// Gets the business partner number for the given id
+    /// Gets the business partner number, sd document and company's country code for the given id
     /// </summary>
     /// <param name="companyId">Id of the company</param>
-    /// <returns>Returns the business partner number</returns>
-    Task<(string? Bpn, Guid? SelfDescriptionDocumentId)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId);
+    /// <returns>Returns the business partner number, sd document and company's country code</returns>
+    Task<(string? Bpn, Guid? SelfDescriptionDocumentId, string? CountryAlpha2Code)> GetCompanyBpnAndSelfDescriptionDocumentByIdAsync(Guid companyId);
 
     /// <summary>
     /// Gets the the companyAssigendUeseCase Details
