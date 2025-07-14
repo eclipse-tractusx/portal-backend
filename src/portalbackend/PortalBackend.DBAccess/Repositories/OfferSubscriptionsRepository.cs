@@ -481,7 +481,6 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
         dbContext.OfferSubscriptions
             .Where(x => x.Id == subscriptionId)
             .Select(os => new OfferSubscriptionWithProvider(
-                true,
                 os.Offer!.ProviderCompanyId == offerProvidingCompanyId,
                 os.ConnectorAssignedOfferSubscriptions.Any(),
                 os.OfferSubscriptionStatusId,

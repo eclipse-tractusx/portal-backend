@@ -140,7 +140,6 @@ public class SubscriptionConfigurationBusinessLogic(
             await HandleOfferSetupProcesses(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
         }
         await portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
-
     }
 
     public async Task DeleteOfferProviderCompanyDetailsAsync()
