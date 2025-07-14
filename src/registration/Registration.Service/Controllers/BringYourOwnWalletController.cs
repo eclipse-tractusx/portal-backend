@@ -41,5 +41,29 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 
             return NoContent();
         }
+
+        [HttpPost]
+        [Authorize(Roles = "submit_registration")]
+        [Route("{companyId}/saveHolderDid/{did}")]
+        [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<NoContentResult> SaveHolderDid([FromRoute] Guid companyId, [FromRoute] string did)
+        {
+            await logic.SaveCustomerWalletAsync(companyId, did);
+
+            return NoContent();
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "submit_registration")]
+        [Route("{did}/getHolderDid")]
+        [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<string> GetHolderDid([FromRoute] Guid companyId)
+        {
+            return await logic.getCompanyWalletDidAsync(companyId);
+        }
     }
 }

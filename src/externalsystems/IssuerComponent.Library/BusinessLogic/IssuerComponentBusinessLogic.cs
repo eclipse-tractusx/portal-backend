@@ -214,8 +214,7 @@ public class IssuerComponentBusinessLogic(
             throw new ConflictException("The wallet information must be set");
         }
 
-        var cryptoConfig = _settings.EncryptionConfigs.SingleOrDefault(x => x.Index == walletInformation.EncryptionMode) ?? throw new ConfigurationException($"EncryptionModeIndex {walletInformation.EncryptionMode} is not configured");
-        var secret = CryptoHelper.Decrypt(walletInformation.ClientSecret, walletInformation.InitializationVector, Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var secret = GetDecriptedSecret(walletInformation, isBringYourOwnWallet);
 
         var data = new CreateFrameworkCredentialRequest(holder, businessPartnerNumber, frameworkId, useCaseFrameworkVersionId,
             isBringYourOwnWallet

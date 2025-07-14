@@ -93,6 +93,14 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                     (app, wallet) => wallet)
                 .AnyAsync(wallet => wallet.ClientId == BringYourOwnWalletClientFields.Identification);
     }
+
+    public Task<string?> GetCompanyHolderDidAsync(Guid companyId) =>
+        context.Companies
+            .AsNoTracking()
+            .Where(company => company.Id == companyId)
+            .Select(company => company.DidDocumentLocation)
+            .SingleOrDefaultAsync();
+
     public void AttachAndModifyAddress(Guid addressId, Action<Address>? initialize, Action<Address> modify)
     {
         var address = new Address(addressId, null!, null!, null!, null!, default);

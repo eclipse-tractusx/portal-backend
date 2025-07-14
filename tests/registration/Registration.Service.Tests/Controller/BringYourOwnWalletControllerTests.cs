@@ -77,4 +77,71 @@ public class BringYourOwnWalletControllerTests
         await act.Should().ThrowAsync<ServiceException>()
             .WithMessage("DID validation failed");
     }
+
+    [Fact]
+    public async Task SaveHolderDid_WhenDidIsInvalid_ShouldThrowServiceException()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var did = "did:web:example.com";
+        var exception = new ServiceException("DID validation failed", HttpStatusCode.BadRequest);
+
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.SaveCustomerWalletAsync(companyId, did))
+            .Throws(exception);
+
+        // Act
+        Func<Task> act = async () => await _controller.SaveHolderDid(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<ServiceException>()
+            .WithMessage("DID validation failed");
+    }
+
+    [Fact]
+    public async Task SaveHolderDid_ShouldBeValid()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var did = "did:web:example.com";
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.ValidateDid(did, A<CancellationToken>._))
+            .Returns(Task.FromResult(System.Text.Json.JsonDocument.Parse("{}")));
+
+        // Act
+        await _controller.SaveHolderDid(companyId, did);
+
+        // Assert
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.SaveCustomerWalletAsync(companyId, did)).MustHaveHappenedOnceExactly();
+    }
+    [Fact]
+    public async Task GetHolderDid_ShouldReturnDid_WhenDidExists()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var expectedDid = "did:web:example.com";
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.getCompanyWalletDidAsync(companyId))
+            .Returns(Task.FromResult(expectedDid));
+
+        // Act
+        var result = await _controller.GetHolderDid(companyId);
+
+        // Assert
+        result.Should().Be(expectedDid);
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.getCompanyWalletDidAsync(companyId)).MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public async Task GetHolderDid_ShouldReturnNull_WhenDidDoesNotExist()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        A.CallTo(() => _bringYourOwnWalletBusinessLogicFake.getCompanyWalletDidAsync(companyId))
+        .Throws(new NotFoundException("Company wallet DID not found for the given company ID."));
+
+        // Act
+        Func<Task> act = async () => await _controller.GetHolderDid(companyId);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("Company wallet DID not found for the given company ID.");
+    }
 }
