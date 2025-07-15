@@ -113,7 +113,7 @@ paths:
           description: Internal Server Error
         '401':
           description: The User is unauthorized
-  '/api/registration/bringYourOwnWallet/{did}/getHolderDid':
+  '/api/registration/bringYourOwnWallet/{companyId}/getHolderDid':
     get:
       tags:
         - BringYourOwnWallet
@@ -125,11 +125,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: did
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '204':
           description: No Content

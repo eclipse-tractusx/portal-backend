@@ -57,7 +57,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.Controllers
 
         [HttpGet]
         [Authorize(Roles = "submit_registration")]
-        [Route("{did}/getHolderDid")]
+        [Route("{companyId}/getHolderDid")]
         [ProducesResponseType(typeof(NoContentResult), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
