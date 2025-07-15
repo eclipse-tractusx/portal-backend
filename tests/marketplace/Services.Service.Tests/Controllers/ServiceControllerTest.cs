@@ -205,6 +205,70 @@ public class ServiceControllerTest
 
     [Theory]
     [InlineData(null)]
+    [InlineData("9a3f7db1-8f2f-4b21-a27d-fd5a95f61b3e")]
+    public async Task GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount_AndCreatedAt(string? offerIdTxt)
+    {
+        // Arrange
+        var now = DateTimeOffset.UtcNow;
+        Guid? offerId = offerIdTxt == null ? null : new Guid(offerIdTxt);
+
+        var testData = Enumerable.Range(0, 5)
+            .Select(i =>
+            {
+                var createdAt = now.AddDays(i);
+
+                var companySubscriptionStatuses = new List<CompanySubscriptionStatus>
+                {
+                    new CompanySubscriptionStatus(
+                        Guid.NewGuid(),
+                        $"Company {i}",
+                        Guid.NewGuid(),
+                        OfferSubscriptionStatusId.PENDING,
+                        "DE",
+                        $"BPN00000000000{i}",
+                        $"email{i}@example.com",
+                        false,
+                        createdAt,
+                        ProcessStepTypeId.MANUAL_TRIGGER_ACTIVATE_SUBSCRIPTION)
+                };
+
+                return new OfferCompanySubscriptionStatusResponse(
+                    Guid.NewGuid(),
+                    $"Test Service {i}",
+                    companySubscriptionStatuses,
+                    Guid.NewGuid());
+            })
+            .ToImmutableArray();
+
+        var pagination = new Pagination.Response<OfferCompanySubscriptionStatusResponse>(
+            new Pagination.Metadata(testData.Length, 1, 0, testData.Length),
+            testData);
+
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(
+            A<int>._, A<int>._, A<SubscriptionStatusSorting?>._, A<OfferSubscriptionStatusId?>._, A<Guid?>._, A<string?>._))
+            .Returns(pagination);
+
+        // Act
+        var result = await _controller.GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync(offerId: offerId);
+
+        // Assert
+        A.CallTo(() => _logic.GetCompanyProvidedServiceSubscriptionStatusesForUserAsync(
+            0, 15, null, null, offerId, null)).MustHaveHappenedOnceExactly();
+
+        result.Content.Should().HaveCount(5);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var item = result.Content.ElementAt(i);
+            item.CompanySubscriptionStatuses.Should().ContainSingle();
+
+            var status = item.CompanySubscriptionStatuses.Single();
+            status.DateCreated.Should().BeCloseTo(now.AddDays(i), TimeSpan.FromSeconds(1));
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
     [InlineData("c714b905-9d2a-4cf3-b9f7-10be4eeddfc8")]
     public async Task GetCompanyProvidedServiceSubscriptionStatusesForCurrentUserAsync_ReturnsExpectedCount(string? offerIdTxt)
     {

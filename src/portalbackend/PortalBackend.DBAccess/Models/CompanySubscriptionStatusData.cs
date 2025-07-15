@@ -35,5 +35,6 @@ public record CompanySubscriptionStatusData(
     string? BpnNumber,
     string? Email,
     bool TechnicalUser,
+    DateTimeOffset DateCreated,
     IEnumerable<(ProcessStepTypeId ProcessStepTypeId, ProcessStepStatusId ProcessStepStatusId)> ProcessSteps
 );

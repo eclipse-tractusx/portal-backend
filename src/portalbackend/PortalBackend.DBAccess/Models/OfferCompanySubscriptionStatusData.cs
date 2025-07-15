@@ -44,5 +44,6 @@ public record CompanySubscriptionStatus(
     string? BpnNumber,
     string? Email,
     bool TechnicalUser,
+    DateTimeOffset DateCreated,
     ProcessStepTypeId? ProcessStepTypeId
 );

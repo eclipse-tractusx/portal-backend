@@ -33,5 +33,6 @@ public static class CompanySubscriptionStatusExtensions
             data.BpnNumber,
             data.Email,
             data.TechnicalUser,
+            data.DateCreated,
             data.ProcessSteps.GetProcessStepTypeId(offerId));
 }
