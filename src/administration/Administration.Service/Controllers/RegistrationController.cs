@@ -77,7 +77,7 @@ public class RegistrationController(IRegistrationBusinessLogic logic)
     [Authorize(Roles = "view_submitted_applications")]
     [Route("applications")]
     [ProducesResponseType(typeof(Pagination.Response<CompanyApplicationDetails>), StatusCodes.Status200OK)]
-    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page, [FromQuery] int size, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null) =>
+    public Task<Pagination.Response<CompanyApplicationDetails>> GetApplicationDetailsAsync([FromQuery] int page = 0, [FromQuery] int size = 15, [FromQuery] CompanyApplicationStatusFilter? companyApplicationStatusFilter = null, [FromQuery] string? companyName = null) =>
         logic.GetCompanyApplicationDetailsAsync(page, size, companyApplicationStatusFilter, companyName);
 
     /// <summary>
