@@ -19,10 +19,12 @@
  ********************************************************************************/
 
 namespace Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
+using System.Text.Json.Serialization;
 
 public record OfferSubscriptionConnectorData(
     Guid SubscriptionId,
     string CustomerName,
+    [property: JsonPropertyName("customerShortName")] string Shortname,
     string? OfferName,
     IEnumerable<Guid> ConnectorIds
 );

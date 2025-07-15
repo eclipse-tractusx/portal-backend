@@ -6291,6 +6291,8 @@ components:
           format: date-time
         companyName:
           type: string
+        companyShortName:
+          type: string
         companyRoles:
           type: array
           items:
@@ -6354,6 +6356,8 @@ components:
           type: string
           format: date-time
         companyName:
+          type: string
+        companyShortName:
           type: string
         email:
           type: string
@@ -6943,6 +6947,8 @@ components:
         hostCompanyName:
           type: string
           nullable: true
+        hostCompanyShortName:
+          type: string
         selfDescriptionDocumentId:
           type: string
           format: uuid
@@ -6985,11 +6991,13 @@ components:
           $ref: '#/components/schemas/ConnectorTypeId'
         name:
           type: string
+        hostCompanyName:
+          type: string
+        hostCompanyShortName:
+          type: string
         companyId:
           type: string
           format: uuid
-        hostCompanyName:
-          type: string
         skippedDate:
           type: string
           format: date-time
