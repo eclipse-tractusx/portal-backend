@@ -2291,6 +2291,8 @@ public class OfferServiceTests
         result.TenantUrl.Should().Be(data.TenantUrl);
         result.AppInstanceId.Should().Be(data.AppInstanceId);
         result.OfferSubscriptionStatus.Should().Be(data.OfferSubscriptionStatus);
+        result.ExternalService.DecentralIdentityManagementServiceUrl.Should().Be(walletData.DecentralIdentityManagementAuthUrl);
+        result.ExternalService.DecentralIdentityManagementAuthUrl.Should().Be(data.ExternalServiceData!.DecentralIdentityManagementServiceUrl);
         A.CallTo(() => _userRolesRepository.GetUserRoleIdsUntrackedAsync(A<IEnumerable<UserRoleConfig>>.That.IsSameSequenceAs(companyAdminRoles)))
             .MustHaveHappenedOnceExactly();
         A.CallTo(() => _offerSubscriptionsRepository.GetOfferSubscriptionDetailsForProviderAsync(appId, subscriptionId, _companyId, OfferTypeId.APP, A<IEnumerable<Guid>>.That.IsSameSequenceAs(new[] { _validUserRoleId })))
