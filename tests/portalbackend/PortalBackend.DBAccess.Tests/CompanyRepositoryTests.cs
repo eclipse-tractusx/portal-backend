@@ -1143,12 +1143,26 @@ public class CompanyRepositoryTests : IAssemblyFixture<TestDbFixture>
         var didDocument = JsonDocument.Parse("{}"); // Provide a valid JSON string or object as needed
 
         // Act
-        sut.CreateCustomerWallet(Guid.NewGuid(), "did:web:example.com", didDocument);
+        await sut.CreateCustomerWallet(Guid.NewGuid(), "did:web:example.com", didDocument);
 
         // Assert
         context.CompanyWalletDatas.Should().NotBeEmpty();
         context.CompanyWalletDatas.Should().HaveCount(2);
     }
 
+    [Fact]
+    public async Task CreateCompanyWallet_ExistingCustomerWallet_ReturnsExpectedResult()
+    {
+        // Arrange
+        var (sut, context) = await CreateSut();
+        var didDocument = JsonDocument.Parse("{}"); // Provide a valid JSON string or object as needed
+
+        // Act
+        await sut.CreateCustomerWallet(Guid.Parse("554f23d5-669e-48ed-b06b-9a84dfa017c5"), "did:web:example.com", didDocument);
+
+        // Assert
+        context.CompanyWalletDatas.Should().NotBeEmpty();
+        context.CompanyWalletDatas.Where(wallet => wallet.ClientId.Equals(BringYourOwnWalletClientFields.Identification)).Should().HaveCount(1);
+    }
     #endregion
 }

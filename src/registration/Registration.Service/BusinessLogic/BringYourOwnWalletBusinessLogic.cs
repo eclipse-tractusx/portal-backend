@@ -60,8 +60,10 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var didDocument = await ValidateDid(did, CancellationToken.None).ConfigureAwait(ConfigureAwaitOptions.None);
-            UpdateDidLocation(companyId, did, companyRepository);
-            companyRepository.CreateCustomerWallet(companyId, did, didDocument);
+            var didLocation = CreateDidLocation(didDocument);
+
+            UpdateCompanyDidLocation(companyId, didLocation, companyRepository);
+            await companyRepository.CreateCustomerWallet(companyId, did, didDocument).ConfigureAwait(ConfigureAwaitOptions.None);
 
             await _portalRepositories.SaveAsync().ConfigureAwait(ConfigureAwaitOptions.None);
         }
@@ -76,11 +78,49 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
             }
             return did;
         }
-        private static void UpdateDidLocation(Guid companyId, string didLocation, ICompanyRepository companyRepository) =>
+        private static void UpdateCompanyDidLocation(Guid companyId, string didLocation, ICompanyRepository companyRepository) =>
             companyRepository.AttachAndModifyCompany(
                 companyId,
                 _ => { },
-                c => { c.DidDocumentLocation = didLocation; }
+                c =>
+                {
+                    c.DidDocumentLocation = didLocation;
+                }
             );
+
+        private static string CreateDidLocation(JsonDocument didDocument)
+        {
+            if (!didDocument.RootElement.TryGetProperty("id", out var idProperty))
+            {
+                throw new UnsupportedMediaTypeException("DID validation failed: missing 'id' property.");
+            }
+
+            var did = idProperty.GetString();
+            if (string.IsNullOrWhiteSpace(did) || !did.StartsWith("did:", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnsupportedMediaTypeException("Invalid DID format: must start with 'did:'.");
+            }
+
+            var didParts = did.Split(':', 3);
+            if (didParts.Length != 3)
+            {
+                throw new UnsupportedMediaTypeException("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
+            }
+
+            var method = didParts[1];
+            var identifier = didParts[2];
+
+            if (!method.Equals("web", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnsupportedMediaTypeException($"Unsupported DID method: '{method}'. Only 'did:web' is supported.");
+            }
+
+            var hostAndPath = identifier.Replace(":", "/");
+
+            var isBareDomain = !hostAndPath.Contains("/");
+            var urlPath = isBareDomain ? "/.well-known/did.json" : "/did.json";
+
+            return $"https://{hostAndPath}{urlPath}";
+        }
     }
 }

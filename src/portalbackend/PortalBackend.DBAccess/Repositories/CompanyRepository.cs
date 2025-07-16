@@ -67,10 +67,15 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
         setOptionalParameters?.Invoke(address);
         return context.Addresses.Add(address).Entity;
     }
-    public void CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument)
+    public async Task CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument)
     {
+        var walletId = await context.CompanyWalletDatas
+            .Where(wallet => wallet.CompanyId == companyId)
+            .Select(wallet => wallet.Id)
+            .SingleOrDefaultAsync();
+
         var wallet = new CompanyWalletData(
-            Guid.NewGuid(),
+            walletId == Guid.Empty ? Guid.NewGuid() : walletId,
             companyId,
             did,
             didDocument,
@@ -80,7 +85,14 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
             default,
             BringYourOwnWalletClientFields.NotUsed);
 
-        context.CompanyWalletDatas.Add(wallet);
+        if (walletId != Guid.Empty)
+        {
+            context.CompanyWalletDatas.Entry(wallet).State = EntityState.Modified;
+        }
+        else
+        {
+            context.CompanyWalletDatas.Add(wallet);
+        }
     }
 
     public Task<bool> IsBringYourOwnWallet(Guid applicationId)

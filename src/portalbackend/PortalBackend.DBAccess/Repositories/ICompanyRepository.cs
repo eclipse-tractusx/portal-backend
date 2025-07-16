@@ -41,7 +41,7 @@ public interface ICompanyRepository
 
     void AttachAndModifyCompany(Guid companyId, Action<Company>? initialize, Action<Company> modify);
 
-    void CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument);
+    Task CreateCustomerWallet(Guid companyId, string did, JsonDocument didDocument);
 
     Task<bool> IsBringYourOwnWallet(Guid applicationId);
 

@@ -227,4 +227,112 @@ public class BringYourOwnWalletBuisinessLogicTests
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage("Company wallet DID not found for the given company ID.");
     }
+
+    [Fact]
+    public async Task SaveCustomerWallet_InvalidDocumentId_ThrowException()
+    {
+        // Arrange
+        const string did = "did:web:123";
+        var companyId = Guid.NewGuid();
+        var didDocument = JsonDocument.Parse("{}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
+            .DoesNothing();
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(A.Fake<ICompanyRepository>());
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.FromResult(validationResult));
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+
+        // Act
+
+        Func<Task> act = async () =>
+            await _sut.SaveCustomerWalletAsync(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+            .WithMessage("DID validation failed: missing 'id' property.");
+    }
+
+    [Fact]
+    public async Task SaveCustomerWallet_InvalidDidFormat_ThrowException()
+    {
+        // Arrange
+        const string did = "did:web:123";
+        var companyId = Guid.NewGuid();
+        var didDocument = JsonDocument.Parse("{\"id\":\":web:123\"}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
+            .DoesNothing();
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(A.Fake<ICompanyRepository>());
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.FromResult(validationResult));
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+
+        // Act
+
+        Func<Task> act = async () =>
+            await _sut.SaveCustomerWalletAsync(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+            .WithMessage("Invalid DID format: must start with 'did:'.");
+    }
+
+    [Fact]
+    public async Task SaveCustomerWallet_InvalidDidForm_ThrowException()
+    {
+        // Arrange
+        const string did = "did:web:123";
+        var companyId = Guid.NewGuid();
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web\"}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
+            .DoesNothing();
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(A.Fake<ICompanyRepository>());
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.FromResult(validationResult));
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+
+        // Act
+
+        Func<Task> act = async () =>
+            await _sut.SaveCustomerWalletAsync(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+            .WithMessage("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
+    }
+
+    [Fact]
+    public async Task SaveCustomerWallet_InvalidDidMethod_ThrowException()
+    {
+        // Arrange
+        const string did = "did:web:123";
+        var companyId = Guid.NewGuid();
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:error:123\"}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
+            .DoesNothing();
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(A.Fake<ICompanyRepository>());
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.FromResult(validationResult));
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+
+        // Act
+
+        Func<Task> act = async () =>
+            await _sut.SaveCustomerWalletAsync(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+            .WithMessage("Unsupported DID method: 'error'. Only 'did:web' is supported.");
+    }
 }
