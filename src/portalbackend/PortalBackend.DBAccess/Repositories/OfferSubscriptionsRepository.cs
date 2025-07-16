@@ -496,8 +496,7 @@ public class OfferSubscriptionsRepository(PortalDbContext dbContext) : IOfferSub
     public IAsyncEnumerable<OfferSubscriptionConnectorData> GetConnectorOfferSubscriptionData(bool? connectorIdSet, Guid companyId) =>
         dbContext.OfferSubscriptions
             .Where(os =>
-                os.Offer!.ProviderCompanyId == companyId &&
-                (os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE || os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.PENDING) &&
+                os.Offer!.ProviderCompanyId == companyId && os.OfferSubscriptionStatusId == OfferSubscriptionStatusId.ACTIVE &&
                 (connectorIdSet == null || (connectorIdSet.Value ? os.ConnectorAssignedOfferSubscriptions.Any() : !os.ConnectorAssignedOfferSubscriptions.Any())))
             .Select(os => new OfferSubscriptionConnectorData(
                 os.Id,
