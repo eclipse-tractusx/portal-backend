@@ -29,7 +29,10 @@ public static class UniversalDidResolverServiceCollectionExtension
     public static IServiceCollection AddUniversalDidResolverService(this IServiceCollection services, IConfigurationSection section)
     {
         services.AddOptions<UniversalDidResolverSettings>()
-            .Bind(section);
+            .Bind(section)
+            .Validate(settings =>
+                        !string.IsNullOrWhiteSpace(settings.UniversalResolverAddress),
+                        "UniversalResolverAddress is required.");
 
         services.AddTransient<LoggingHandler<UniversalDidResolverService>>();
 
