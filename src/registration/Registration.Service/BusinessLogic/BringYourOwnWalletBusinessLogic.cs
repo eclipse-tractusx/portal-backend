@@ -48,6 +48,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
             {
                 throw new UnsupportedMediaTypeException("DID validation failed. DID Document is not valid.");
             }
+
+            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var didExists = await companyRepository.IsDidInUse(did).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (didExists)
+            {
+                throw new ConflictException("DID is already in use.");
+            }
+
             return validationResult.DidDocument;
         }
 

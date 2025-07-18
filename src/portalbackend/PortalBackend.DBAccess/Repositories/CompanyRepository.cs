@@ -106,6 +106,12 @@ public class CompanyRepository(PortalDbContext context) : ICompanyRepository
                 .AnyAsync(wallet => wallet.ClientId == BringYourOwnWalletClientFields.Identification);
     }
 
+    public Task<bool> IsDidInUse(string did) =>
+        context.CompanyWalletDatas
+            .AsNoTracking()
+            .Where(wallet => wallet.Did == did)
+            .AnyAsync();
+
     public Task<string?> GetCompanyHolderDidAsync(Guid companyId) =>
         context.Companies
             .AsNoTracking()

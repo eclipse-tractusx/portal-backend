@@ -45,6 +45,8 @@ public interface ICompanyRepository
 
     Task<bool> IsBringYourOwnWallet(Guid applicationId);
 
+    Task<bool> IsDidInUse(string did);
+
     Task<string?> GetCompanyHolderDidAsync(Guid companyId);
 
     Address CreateAddress(string city, string streetname, string region, string countryAlpha2Code, Action<Address>? setOptionalParameters = null);

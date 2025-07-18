@@ -79,6 +79,30 @@ public class BringYourOwnWalletBuisinessLogicTests
     }
 
     [Fact]
+    public async Task ValidateDid_ThrowsConflictException_WhenDidExists()
+    {
+        // Arrange
+        const string did = "did:web:123";
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:123\"}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>()).Returns(companyRepository);
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
+            .ReturnsLazily(() => Task.FromResult(validationResult));
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+        A.CallTo(() => companyRepository.IsDidInUse(did)).ReturnsLazily(() => true);
+
+        // Act
+        var act = () => _sut.ValidateDid(did, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<ConflictException>()
+            .WithMessage("DID is already in use.");
+    }
+
+    [Fact]
     public async Task ValidateDid_ThrowsServiceException_WhenSchemaIsInvalid()
     {
         // Arrange
