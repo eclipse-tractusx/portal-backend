@@ -152,15 +152,16 @@ public class BringYourOwnWalletBuisinessLogicTests
         var did = "did:web:example.com";
         var didDocument = JsonDocument.Parse("{\"id\":\"did:web:example.com\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
-
+        var companyRepository = A.Fake<ICompanyRepository>();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
             .DoesNothing();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
             .ReturnsLazily(() => true);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         // Act
         await _sut.SaveCustomerWalletAsync(companyId, did);
 
@@ -178,9 +179,11 @@ public class BringYourOwnWalletBuisinessLogicTests
         var did = "";
         var didDocument = JsonDocument.Parse("{\"id\":\"did:web:example.com\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
@@ -215,6 +218,30 @@ public class BringYourOwnWalletBuisinessLogicTests
     }
 
     [Fact]
+    public async Task SaveCustomerWalletAsync_ThrowsException_WhenCompanyIdInvalid()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var did = "did:web:example.com";
+        var didDocument = JsonDocument.Parse("{\"id\":\"did:web:example.com\"}");
+        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
+
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(companyRepository);
+        A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._)).Throws<Exception>();
+        A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
+            .ReturnsLazily(() => true);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => false);
+        // Act
+        Func<Task> act = async () => await _sut.SaveCustomerWalletAsync(companyId, did);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("Company ID not found or not valid.");
+    }
+
+    [Fact]
     public async Task GetCompanyWalletDidAsync_ReturnsDid_WhenWalletExists()
     {
         // Arrange
@@ -225,6 +252,7 @@ public class BringYourOwnWalletBuisinessLogicTests
             .Returns(companyRepository);
         A.CallTo(() => companyRepository.GetCompanyHolderDidAsync(companyId))
             .Returns(Task.FromResult<string?>(expectedDid));
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
 
         // Act
         var result = await _sut.getCompanyWalletDidAsync(companyId);
@@ -234,22 +262,41 @@ public class BringYourOwnWalletBuisinessLogicTests
     }
 
     [Fact]
-    public async Task GetCompanyWalletDidAsync_ReturnsNull_WhenWalletDoesNotExist()
+    public async Task GetCompanyWalletDidAsync_ThrowException_WhenWalletDoesNotExist()
     {
         // Arrange
         var companyId = Guid.NewGuid();
         var companyRepository = A.Fake<ICompanyRepository>();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
             .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         A.CallTo(() => companyRepository.GetCompanyHolderDidAsync(companyId))
             .Returns(Task.FromResult<string?>(null));
-
         // Act
         Func<Task> act = async () => await _sut.getCompanyWalletDidAsync(companyId);
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("Company wallet DID not found for the given company ID.");
+            .WithMessage("Company wallet DID not found.");
+    }
+
+    [Fact]
+    public async Task GetCompanyWalletDidAsync_ThrowException_WhenCompanyIdDoesNotExist()
+    {
+        // Arrange
+        var companyId = Guid.NewGuid();
+        var companyRepository = A.Fake<ICompanyRepository>();
+        A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
+            .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => false);
+        A.CallTo(() => companyRepository.GetCompanyHolderDidAsync(companyId))
+            .Returns(Task.FromResult<string?>(null));
+        // Act
+        Func<Task> act = async () => await _sut.getCompanyWalletDidAsync(companyId);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage("Company ID not found or not valid.");
     }
 
     [Fact]
@@ -260,14 +307,17 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var didDocument = JsonDocument.Parse("{}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
+
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
             .DoesNothing();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
             .ReturnsLazily(() => true);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
 
         // Act
 
@@ -287,10 +337,12 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var didDocument = JsonDocument.Parse("{\"id\":\":web:123\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
             .DoesNothing();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
@@ -314,10 +366,13 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var didDocument = JsonDocument.Parse("{\"id\":\"did:web\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
+
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
             .DoesNothing();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))
@@ -341,10 +396,12 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var didDocument = JsonDocument.Parse("{\"id\":\"did:error:123\"}");
         var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
+        var companyRepository = A.Fake<ICompanyRepository>();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>().CreateCustomerWallet(companyId, did, didDocument))
             .DoesNothing();
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
-            .Returns(A.Fake<ICompanyRepository>());
+            .Returns(companyRepository);
+        A.CallTo(() => companyRepository.IsExistingCompany(companyId)).ReturnsLazily(() => true);
         A.CallTo(() => _universalDidResolverService.ValidateDid(did, A<CancellationToken>._))
             .ReturnsLazily(() => Task.FromResult(validationResult));
         A.CallTo(() => _universalDidResolverService.ValidateSchema(didDocument, A<CancellationToken>._))

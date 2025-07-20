@@ -45,6 +45,8 @@ public interface ICompanyRepository
 
     Task<bool> IsBringYourOwnWallet(Guid applicationId);
 
+    Task<Guid> GetApplicationIdByCompanyId(Guid companyId);
+
     Task<bool> IsDidInUse(string did);
 
     Task<string?> GetCompanyHolderDidAsync(Guid companyId);

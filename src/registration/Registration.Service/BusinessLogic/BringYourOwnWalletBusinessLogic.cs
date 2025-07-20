@@ -61,12 +61,18 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
         public async Task SaveCustomerWalletAsync(Guid companyId, string did)
         {
+            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var companyExists = await companyRepository.IsExistingCompany(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (!companyExists)
+            {
+                throw new NotFoundException("Company ID not found or not valid.");
+            }
+
             if (string.IsNullOrEmpty(did))
             {
                 throw new ForbiddenException("Invalid DID. DID cannot be empty or NULL.");
             }
 
-            var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var didDocument = await ValidateDid(did, CancellationToken.None).ConfigureAwait(ConfigureAwaitOptions.None);
             var didLocation = CreateDidLocation(didDocument);
 
@@ -79,10 +85,16 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         public async Task<string> getCompanyWalletDidAsync(Guid companyId)
         {
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
+            var companyExists = await companyRepository.IsExistingCompany(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+            if (!companyExists)
+            {
+                throw new NotFoundException("Company ID not found or not valid.");
+            }
+
             var did = await companyRepository.GetCompanyHolderDidAsync(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (string.IsNullOrEmpty(did))
             {
-                throw new NotFoundException("Company wallet DID not found for the given company ID.");
+                throw new NotFoundException("Company wallet DID not found.");
             }
             return did;
         }

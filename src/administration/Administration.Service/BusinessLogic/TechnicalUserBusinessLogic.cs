@@ -46,7 +46,8 @@ public class TechnicalUserBusinessLogic(
     IOptions<ServiceAccountSettings> options,
     ITechnicalUserCreation technicalUserCreation,
     IIdentityService identityService,
-    IServiceAccountManagement serviceAccountManagement)
+    IServiceAccountManagement serviceAccountManagement,
+    IBringYourOwnWalletBusinessLogic bringYourOwnWalletBusinessLogic)
     : ITechnicalUserBusinessLogic
 {
     private readonly IIdentityData _identityData = identityService.IdentityData;
@@ -76,6 +77,11 @@ public class TechnicalUserBusinessLogic(
         if (string.IsNullOrEmpty(result.Bpn))
         {
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, [new(CompanyId, companyId.ToString())]);
+        }
+
+        if (!await bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(companyId, technicalUserCreationInfos.UserRoleIds))
+        {
+            throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
         }
 
         technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
@@ -335,19 +341,38 @@ public class TechnicalUserBusinessLogic(
     {
         var externalRoleNames = _settings.DimUserRoles.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
         var providerOnlyRoleNames = _settings.UserRolesAccessibleByProviderOnly.Where(role => role.ClientId == _settings.ClientId).SelectMany(role => role.UserRoleNames).ToImmutableHashSet();
+        var companyId = _identityData.CompanyId;
 
-        return portalRepositories.GetInstance<IUserRolesRepository>()
-            .GetServiceAccountRolesAsync(
-                _identityData.CompanyId,
-                _settings.ClientId,
-                languageShortName ?? Constants.DefaultLanguage)
-            .Select(x => new UserRoleWithDescription(
-                x.UserRoleId,
-                x.UserRoleText,
-                x.RoleDescription,
-                externalRoleNames.Contains(x.UserRoleText) ? UserRoleType.External : UserRoleType.Internal,
-                providerOnlyRoleNames.Contains(x.UserRoleText)
-            ));
+        var userRoles = portalRepositories.GetInstance<IUserRolesRepository>()
+                .GetServiceAccountRolesAsync(
+                    companyId,
+                    _settings.ClientId,
+                    languageShortName ?? Constants.DefaultLanguage)
+                .Select(x => new UserRoleWithDescription(
+                    x.UserRoleId,
+                    x.UserRoleText,
+                    x.RoleDescription,
+                    externalRoleNames.Contains(x.UserRoleText) ? UserRoleType.External : UserRoleType.Internal,
+                    providerOnlyRoleNames.Contains(x.UserRoleText)
+                ));
+
+        var isBringYourOwnWallet = bringYourOwnWalletBusinessLogic.IsBringYourOwnWallet(companyId).GetAwaiter().GetResult();
+        if (isBringYourOwnWallet)
+        {
+            var excludedRoles = bringYourOwnWalletBusinessLogic.GetExcludedUserRoles();
+            if (excludedRoles.Any())
+            {
+                return userRoles.Where(role => !excludedRoles.Contains(role.UserRoleId))
+                    .Select(role => new UserRoleWithDescription(
+                        role.UserRoleId,
+                        role.UserRoleText,
+                        role.RoleDescription,
+                        role.RoleType,
+                        role.ProviderOnly));
+            }
+        }
+
+        return userRoles;
     }
 
     public async Task HandleServiceAccountCreationCallback(Guid processId, AuthenticationDetail callbackData)
