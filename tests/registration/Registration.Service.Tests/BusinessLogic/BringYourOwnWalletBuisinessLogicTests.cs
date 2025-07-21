@@ -74,7 +74,7 @@ public class BringYourOwnWalletBuisinessLogicTests
         var act = () => _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("DID validation failed. DID Document is not valid.");
     }
 
@@ -119,7 +119,7 @@ public class BringYourOwnWalletBuisinessLogicTests
         var act = () => _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("DID validation failed. DID Document is not valid.");
     }
 
@@ -140,7 +140,7 @@ public class BringYourOwnWalletBuisinessLogicTests
         var act = () => _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("DID validation failed. DID Document is not valid.");
     }
 
@@ -325,7 +325,7 @@ public class BringYourOwnWalletBuisinessLogicTests
             await _sut.SaveCustomerWalletAsync(companyId, did);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("DID validation failed: missing 'id' property.");
     }
 
@@ -354,7 +354,7 @@ public class BringYourOwnWalletBuisinessLogicTests
             await _sut.SaveCustomerWalletAsync(companyId, did);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("Invalid DID format: must start with 'did:'.");
     }
 
@@ -384,7 +384,7 @@ public class BringYourOwnWalletBuisinessLogicTests
             await _sut.SaveCustomerWalletAsync(companyId, did);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
     }
 
@@ -413,7 +413,7 @@ public class BringYourOwnWalletBuisinessLogicTests
             await _sut.SaveCustomerWalletAsync(companyId, did);
 
         // Assert
-        await act.Should().ThrowAsync<UnsupportedMediaTypeException>()
+        await act.Should().ThrowAsync<ControllerArgumentException>()
             .WithMessage("Unsupported DID method: 'error'. Only 'did:web' is supported.");
     }
 }

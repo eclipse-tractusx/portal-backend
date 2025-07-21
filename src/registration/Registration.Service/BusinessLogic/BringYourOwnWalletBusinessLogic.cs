@@ -46,7 +46,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
             if (!isSchemaValid)
             {
-                throw new UnsupportedMediaTypeException("DID validation failed. DID Document is not valid.");
+                throw new ControllerArgumentException("DID validation failed. DID Document is not valid.");
             }
 
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
@@ -112,19 +112,19 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         {
             if (!didDocument.RootElement.TryGetProperty("id", out var idProperty))
             {
-                throw new UnsupportedMediaTypeException("DID validation failed: missing 'id' property.");
+                throw new ControllerArgumentException("DID validation failed: missing 'id' property.");
             }
 
             var did = idProperty.GetString();
             if (string.IsNullOrWhiteSpace(did) || !did.StartsWith("did:", StringComparison.OrdinalIgnoreCase))
             {
-                throw new UnsupportedMediaTypeException("Invalid DID format: must start with 'did:'.");
+                throw new ControllerArgumentException("Invalid DID format: must start with 'did:'.");
             }
 
             var didParts = did.Split(':', 3);
             if (didParts.Length != 3)
             {
-                throw new UnsupportedMediaTypeException("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
+                throw new ControllerArgumentException("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
             }
 
             var method = didParts[1];
@@ -132,7 +132,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
             if (!method.Equals("web", StringComparison.OrdinalIgnoreCase))
             {
-                throw new UnsupportedMediaTypeException($"Unsupported DID method: '{method}'. Only 'did:web' is supported.");
+                throw new ControllerArgumentException($"Unsupported DID method: '{method}'. Only 'did:web' is supported.");
             }
 
             var hostAndPath = identifier.Replace(":", "/");

@@ -44,25 +44,25 @@ public class UniversalDidResolverService(IHttpClientFactory httpClientFactory) :
         {
             if (ex.InnerException is SocketException)
             {
-                throw new NotFoundException("Universal resolver is not reachable");
+                throw new ControllerArgumentException("Universal resolver is not reachable");
             }
-            throw new NotFoundException("DID URL could not be reached by the external resolver, 404 error", ex);
+            throw new ControllerArgumentException("DID URL could not be reached by the external resolver, 404 error");
         }
 
         if (!result.IsSuccessStatusCode)
         {
-            throw new NotFoundException($"Did validation failed with status code {result.StatusCode} and reason {result.ReasonPhrase}. Did: {did}");
+            throw new ControllerArgumentException($"Did validation failed with status code {result.StatusCode} and reason {result.ReasonPhrase}. Did: {did}");
         }
 
         var validationResult = await result.Content.ReadFromJsonAsync<DidValidationResult>(Options, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.None);
         if (validationResult == null)
         {
-            throw new NotFoundException("DID validation failed: No result returned.");
+            throw new ControllerArgumentException("DID validation failed: No result returned.");
         }
 
         if (!string.IsNullOrWhiteSpace(validationResult.DidResolutionMetadata.Error))
         {
-            throw new UnsupportedMediaTypeException("DID validation failed during validation");
+            throw new ControllerArgumentException("DID validation failed during validation");
         }
 
         return validationResult;
