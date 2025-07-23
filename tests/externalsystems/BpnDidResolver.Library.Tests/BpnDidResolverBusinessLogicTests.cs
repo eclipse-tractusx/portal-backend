@@ -258,7 +258,7 @@ public class BpnDidResolverBusinessLogicTests
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(ApplicationId)).Returns(true);
 
         // Act
-        var result = await _logic.TransmitDidAndBpn(context, CancellationToken.None);
+        await _logic.TransmitDidAndBpn(context, CancellationToken.None);
 
         // Assert
         A.CallTo(() => _bpnDidResolverService.TransmitDidAndBpn(did, BPN, A<CancellationToken>._))
