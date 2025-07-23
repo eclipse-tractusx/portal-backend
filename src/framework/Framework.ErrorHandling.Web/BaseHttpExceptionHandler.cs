@@ -60,6 +60,7 @@ public class BaseHttpExceptionHandler(IErrorMessageService errorMessageService)
     protected static readonly IReadOnlyDictionary<Type, (HttpStatusCode StatusCode, Func<Exception, (string?, IEnumerable<string>)>? MessageFunc, LogLevel LogLevel)> ErrorTypes = ImmutableDictionary.CreateRange(
     [
         CreateErrorEntry<ArgumentException>(HttpStatusCode.BadRequest, argumentException => (argumentException.ParamName, Enumerable.Repeat(argumentException.Message, 1))),
+        CreateErrorEntry<BadHttpRequestException>(HttpStatusCode.BadRequest),
         CreateErrorEntry<ControllerArgumentException>(HttpStatusCode.BadRequest, caException => (caException.ParamName, Enumerable.Repeat(caException.Message, 1))),
         CreateErrorEntry<NotFoundException>(HttpStatusCode.NotFound),
         CreateErrorEntry<ConflictException>(HttpStatusCode.Conflict),
