@@ -32,7 +32,6 @@ public class BringYourOwnWalletBusinessLogic(
 
     public async Task<bool> IsUserRoleAuthorizedForBYOW(Guid companyId, IEnumerable<Guid> userRoleId)
     {
-        var companyRepository = portalRepositories.GetInstance<ICompanyRepository>();
         if (!await IsBringYourOwnWallet(companyId))
         {
             return true;

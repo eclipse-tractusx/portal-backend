@@ -203,7 +203,6 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var did = "did:web:INVALID";
         var didDocument = JsonDocument.Parse("{\"id\":\"did:web:example.com\"}");
-        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())
             .Returns(A.Fake<ICompanyRepository>());
@@ -224,7 +223,6 @@ public class BringYourOwnWalletBuisinessLogicTests
         var companyId = Guid.NewGuid();
         var did = "did:web:example.com";
         var didDocument = JsonDocument.Parse("{\"id\":\"did:web:example.com\"}");
-        var validationResult = new DidValidationResult(new DidResolutionMetadata(null), didDocument);
         var companyRepository = A.Fake<ICompanyRepository>();
 
         A.CallTo(() => _portalRepositories.GetInstance<ICompanyRepository>())

@@ -72,7 +72,7 @@ public class UniversalDidResolverServiceTests
         A.CallTo(() => universalDidResolverService.ValidateSchema(A<JsonDocument>._, A<CancellationToken>._)).Returns(true);
 
         // Act
-        var result = await _sut.ValidateDid(did, CancellationToken.None);
+        await _sut.ValidateDid(did, CancellationToken.None);
 
         // Assert
         request.Should().NotBeNull();
