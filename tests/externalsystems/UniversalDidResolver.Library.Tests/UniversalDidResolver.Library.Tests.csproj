@@ -40,4 +40,5 @@
     <ProjectReference Include="..\..\..\src\externalsystems\UniversalDidResolver.Library\UniversalDidResolver.Library.csproj" />
     <ProjectReference Include="..\..\shared\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
+
 </Project>
