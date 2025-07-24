@@ -48,7 +48,7 @@ public static class UniversalDidResolverServiceCollectionExtension
 
     private static void RegisterUniversalResolver(UniversalDidResolverSettings settings, IServiceCollection services)
     {
-        var baseAddress = settings.UniversalResolverAddress.EndsWith('/')
+        var baseAddress = settings.UniversalResolverAddress.EndsWith("/")
             ? settings.UniversalResolverAddress
             : $"{settings.UniversalResolverAddress}/";
         services.AddHttpClient("universalResolver", c =>

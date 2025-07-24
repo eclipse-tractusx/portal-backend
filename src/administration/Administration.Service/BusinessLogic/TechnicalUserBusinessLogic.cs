@@ -79,13 +79,13 @@ public class TechnicalUserBusinessLogic(
             throw ConflictException.Create(AdministrationServiceAccountErrors.SERVICE_BPN_NOT_SET_CONFLICT, [new(CompanyId, companyId.ToString())]);
         }
 
-        technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
-            .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
-
         if (!await bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(companyId, technicalUserCreationInfos.UserRoleIds))
         {
             throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
         }
+
+        technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
+            .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
         const TechnicalUserTypeId TechnicalUserTypeId = TechnicalUserTypeId.OWN;
         var (_, _, serviceAccounts) = await technicalUserCreation.CreateTechnicalUsersAsync(technicalUserCreationInfos, companyId, [result.Bpn], TechnicalUserTypeId, false, true, new ServiceAccountCreationProcessData(ProcessTypeId.DIM_TECHNICAL_USER, null)).ConfigureAwait(ConfigureAwaitOptions.None);
