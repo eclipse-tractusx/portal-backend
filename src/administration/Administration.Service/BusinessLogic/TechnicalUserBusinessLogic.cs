@@ -82,10 +82,7 @@ public class TechnicalUserBusinessLogic(
         technicalUserCreationInfos.UserRoleIds.Except(result.TechnicalUserRoleIds)
             .IfAny(unassignable => throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ROLES_NOT_ASSIGN_ARGUMENT, parameters: [new("unassignable", string.Join(",", unassignable)), new("userRoleIds", string.Join(",", result.TechnicalUserRoleIds))]));
 
-        var filteredTechnicalUserRoles = technicalUserCreationInfos.UserRoleIds
-            .Where(roleId => result.TechnicalUserRoleIds.Contains(roleId))
-            .ToImmutableArray();
-        if (!await bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(companyId, filteredTechnicalUserRoles))
+        if (!await bringYourOwnWalletBusinessLogic.IsUserRoleAuthorizedForBYOW(companyId, technicalUserCreationInfos.UserRoleIds))
         {
             throw ControllerArgumentException.Create(AdministrationServiceAccountErrors.SERVICE_ACCOUNT_USER_ROLES_NOT_ALLOWED, parameters: [new("userRoleIds", string.Join(",", bringYourOwnWalletBusinessLogic.GetExcludedUserRoles()))]);
         }
