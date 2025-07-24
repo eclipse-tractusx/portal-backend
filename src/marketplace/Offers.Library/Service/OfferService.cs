@@ -795,8 +795,7 @@ public class OfferService(
         var data = await GetOfferSubscriptionDetailsInternal(offerId, subscriptionId, offerTypeId, contactUserRoles, OfferCompanyRole.Provider, portalRepositories.GetInstance<IOfferSubscriptionsRepository>().GetOfferSubscriptionDetailsForProviderAsync)
             .ConfigureAwait(ConfigureAwaitOptions.None);
 
-        var url = data.ExternalServiceData?.DecentralIdentityManagementServiceUrl;
-        var authUrl = url!.Contains("/oauth/token") ? url : $"{url}/oauth/token";
+        var authUrl = data.ExternalServiceData?.DecentralIdentityManagementServiceUrl;
         var serviceUrl = walletData.DecentralIdentityManagementAuthUrl;
 
         return new OfferProviderSubscriptionDetailData(
@@ -816,7 +815,7 @@ public class OfferService(
                 data.ExternalServiceData?.ParticipantId,
                 data.ExternalServiceData == null || data.ExternalServiceData.TrustedIssuer.EndsWith(":holder-iatp") ? data.ExternalServiceData?.TrustedIssuer : $"{data.ExternalServiceData.TrustedIssuer}:holder-iatp",
                 walletData.BpnDidResolverUrl,
-                authUrl,
+                authUrl!.Contains("/oauth/token") ? authUrl : $"{authUrl}/oauth/token",
                 serviceUrl));
     }
 
