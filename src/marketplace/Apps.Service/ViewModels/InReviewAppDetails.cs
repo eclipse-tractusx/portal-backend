@@ -20,6 +20,7 @@
 
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Models;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.PortalEntities.Enums;
+using System.Text.Json.Serialization;
 
 namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 
@@ -31,6 +32,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="LeadPictureId">Uri to app's lead picture.</param>
 /// <param name="Images">List of Images to app's secondary pictures.</param>
 /// <param name="Provider">Provider of the app.</param>
+/// <param name="Shortname">Provider short name of the app.</param>
 /// <param name="UseCases">Names of the app's use cases.</param>
 /// <param name="Description">description of the app.</param>
 /// <param name="Documents">documents assigned to offer</param>
@@ -45,13 +47,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Apps.Service.ViewModels;
 /// <param name="PrivacyPolicies">Privacy policy assigned to app.</param>
 /// <param name="OfferStatusId">OfferStatusId of the app.</param>
 /// <param name="TechnicalUserProfile">TechnicalUserProfile of the User.</param>
-
 public record InReviewAppDetails(
     Guid Id,
     string Title,
     Guid LeadPictureId,
     IEnumerable<Guid> Images,
     string Provider,
+    [property: JsonPropertyName("providerShortName")] string Shortname,
     IEnumerable<string> UseCases,
     IEnumerable<LocalizedDescription> Description,
     IDictionary<DocumentTypeId, IEnumerable<DocumentData>> Documents,

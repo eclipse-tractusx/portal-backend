@@ -803,6 +803,7 @@ public class OfferService(
             data.OfferSubscriptionStatus,
             data.Name,
             data.Customer,
+            data.Shortname,
             data.Bpn,
             data.Contact,
             data.TechnicalUserData,
@@ -877,6 +878,7 @@ public class OfferService(
                             item.OfferId,
                             item.OfferName,
                             item.Provider,
+                            item.Shortname,
                             item.OfferSubscriptionStatusId,
                             item.OfferSubscriptionId,
                             item.DocumentId == Guid.Empty ? null : item.DocumentId)));

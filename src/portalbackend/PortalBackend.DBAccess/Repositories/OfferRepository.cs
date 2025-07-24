@@ -73,6 +73,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 a.Id,
                 a.Name,
                 a.ProviderCompany!.Name, // This translates into a 'left join' which does return null for all columns if the foreingn key is null. The '!' just makes the compiler happy
+                a.ProviderCompany!.Shortname,
                 a.UseCases.Select(uc => uc.Name),
                 a.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 a.LicenseTypeId,
@@ -96,6 +97,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id),
                 offer.MarketingUrl,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.ContactEmail,
                 offer.ContactNumber,
                 offer.UseCases.Select(uc => new AppUseCaseData(uc.Id, uc.Name)),
@@ -212,6 +214,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Name,
                 offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE && document.DocumentStatusId != DocumentStatusId.INACTIVE).Select(document => document.Id).FirstOrDefault(),
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId,
                 offer.DateLastChanged
                 ))
@@ -314,6 +317,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                 offer.Id,
                 offer.Name,
                 offer.ProviderCompany!.Name,
+                offer.ProviderCompany!.Shortname,
                 offer.OfferStatusId))
             .SingleOrDefaultAsync();
 
@@ -530,6 +534,7 @@ public class OfferRepository(PortalDbContext dbContext) : IOfferRepository
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_LEADIMAGE).Select(document => document.Id).FirstOrDefault(),
                     offer.Documents.Where(document => document.DocumentTypeId == DocumentTypeId.APP_IMAGE).Select(document => document.Id),
                     offer.ProviderCompany!.Name,
+                    offer.ProviderCompany!.Shortname,
                     offer.UseCases.Select(uc => uc.Name),
                     offer.OfferDescriptions.Select(od => new LocalizedDescription(od.LanguageShortName, od.DescriptionLong, od.DescriptionShort)),
                     offer.Documents.Where(d => d.DocumentTypeId != DocumentTypeId.APP_IMAGE && d.DocumentTypeId != DocumentTypeId.APP_LEADIMAGE)
