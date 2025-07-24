@@ -206,8 +206,11 @@ public class ConnectorsBusinessLogic(
 
     private async Task ValidateTechnicalUser(ConnectorTypeId type, string name, Guid? technicalUserId, Guid companyId)
     {
-        if (technicalUserId == null && type == ConnectorTypeId.COMPANY_CONNECTOR)
+        if (technicalUserId == null)
         {
+            if (type != ConnectorTypeId.COMPANY_CONNECTOR)
+                return;
+
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_MISSING_TECH_USER, [new ErrorParameter("name", name)]);
         }
 
