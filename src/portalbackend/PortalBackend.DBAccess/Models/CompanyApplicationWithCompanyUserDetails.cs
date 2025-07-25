@@ -28,7 +28,7 @@ public record CompanyApplicationWithCompanyUserDetails(
     [property: JsonPropertyName("applicationStatus")] CompanyApplicationStatusId CompanyApplicationStatusId,
     [property: JsonPropertyName("dateCreated")] DateTimeOffset DateCreated,
     [property: JsonPropertyName("companyName")] string CompanyName,
-    [property: JsonPropertyName("companyShortName")] string Shortname
+    [property: JsonPropertyName("companyShortName")] string? Shortname
     )
 {
     [JsonPropertyName("email")]
