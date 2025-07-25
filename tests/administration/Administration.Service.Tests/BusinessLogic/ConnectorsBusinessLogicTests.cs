@@ -541,13 +541,13 @@ public class ConnectorsBusinessLogicTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled)
+    [InlineData(true, "ac1cf001-7fbc-1f2f-817f-bce058020002")] // Valid technical user
+    [InlineData(false, null)]
+    public async Task CreateManagedConnectorAsync_WithTechnicalUser_ReturnsCreatedConnectorData(bool clearingHouseDisabled, string? technicalUserIdString)
     {
         // Arrange
-        var sa01 = Guid.NewGuid();
-        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, sa01);
+        Guid? technicalUserId = technicalUserIdString != null ? Guid.Parse(technicalUserIdString) : null;
+        var connectorInput = new ManagedConnectorInputModel("connectorName", "https://test.de", CountryCode_de, _validOfferSubscriptionId, technicalUserId);
         var sut = new ConnectorsBusinessLogic(_portalRepositories, Options.Create(new ConnectorsSettings
         {
             MaxPageSize = 15,
