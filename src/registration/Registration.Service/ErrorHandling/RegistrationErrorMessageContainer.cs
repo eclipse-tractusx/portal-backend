@@ -37,6 +37,7 @@ public class RegistrationErrorMessageContainer : IErrorMessageContainer
         new((int)RegistrationErrors.REGISTRATION_FORBIDDEN_NOT_PERMITTED_DOCUMENT_ACCESS, "The user is not permitted to access document {documentId}."),
         new((int)RegistrationErrors.REGISTRATION_FORBIDDEN_DOCUMENT_ACCESSIBLE_AFTER_ONBOARDING_PROCESS, "Documents not accessible as onboarding process finished {documentId}."),
         new((int)RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_NOT_FOUND, "CompanyApplication {applicationId} not found"),
+        new((int)RegistrationErrors.REGISTRATION_COMPANY_ID_NOT_FOUND, "Company {companyId} not found"),
         new((int)RegistrationErrors.REGISTRATION_COMPANY_APPLICATION_FOR_COMPANY_ID_NOT_FOUND, "CompanyApplication {applicationId} for CompanyId {companyId} not found"),
         new((int)RegistrationErrors.REGISTRATION_FORBIDDEN_USER_APPLICATION_NOT_ASSIGN_WITH_COMP_APPLICATION, "users company is not assigned with CompanyApplication {applicationId}"),
         new((int)RegistrationErrors.REGISTRATION_ARGUMENT_EMAIL_MUST_NOT_EMPTY, "email must not be empty"),
@@ -71,7 +72,11 @@ public class RegistrationErrorMessageContainer : IErrorMessageContainer
         new((int)RegistrationErrors.REGISTRATION_NOT_INVALID_COUNTRY_CODE, "invalid country code {alpha2Code}"),
         new((int)RegistrationErrors.REGISTRATION_FORBIDDEN_USER_NOT_ALLOWED_TO_DECLINED_APP, "User is not allowed to decline this application"),
         new((int)RegistrationErrors.REGISTRATION_UNEXPECT_APP_DECLINED_DATA_NOT_NULL, "ApplicationDeclineData should never be null here"),
-        new((int)RegistrationErrors.REGISTRATION_UNEXPECT_IDENTITY_PROVIDER_TYPE_ID_SHARED_OR_OWN, "IdentityProviderTypeId should allways be shared or own here")
+        new((int)RegistrationErrors.REGISTRATION_UNEXPECT_IDENTITY_PROVIDER_TYPE_ID_SHARED_OR_OWN, "IdentityProviderTypeId should allways be shared or own here"),
+        new((int)RegistrationErrors.REGISTRATION_CONFLICT_DID_ALREADY_IN_USE, "DID is already in use."),
+        new((int)RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT, "DID validation failed. DID connot be empty, NULL or data does not match with DID schema."),
+        new((int)RegistrationErrors.REGISTRATION_INVALID_DID_FORMAT, "Invalid DID format: must be in the form 'did:<method>:<identifier>'."),
+        new((int)RegistrationErrors.REGISTRATION_UNSUPPORTED_DID_METHOD, "Unsupported DID method: '{method}'. Only 'did:web' is supported."),
 
    ]);
 
@@ -127,6 +132,10 @@ public enum RegistrationErrors
     REGISTRATION_NOT_INVALID_COUNTRY_CODE,
     REGISTRATION_FORBIDDEN_USER_NOT_ALLOWED_TO_DECLINED_APP,
     REGISTRATION_UNEXPECT_APP_DECLINED_DATA_NOT_NULL,
-    REGISTRATION_UNEXPECT_IDENTITY_PROVIDER_TYPE_ID_SHARED_OR_OWN
-
+    REGISTRATION_UNEXPECT_IDENTITY_PROVIDER_TYPE_ID_SHARED_OR_OWN,
+    REGISTRATION_INVALID_DID_DOCUMENT,
+    REGISTRATION_CONFLICT_DID_ALREADY_IN_USE,
+    REGISTRATION_COMPANY_ID_NOT_FOUND,
+    REGISTRATION_INVALID_DID_FORMAT,
+    REGISTRATION_UNSUPPORTED_DID_METHOD
 }

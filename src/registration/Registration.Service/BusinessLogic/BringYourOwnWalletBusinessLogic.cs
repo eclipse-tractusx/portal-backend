@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -21,6 +20,7 @@
 using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library;
 using System.Text.Json;
 
@@ -47,14 +47,14 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
             if (!isSchemaValid)
             {
-                throw new ControllerArgumentException("DID validation failed. DID Document is not valid.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT);
             }
 
             var companyRepository = _portalRepositories.GetInstance<ICompanyRepository>();
             var didExists = await companyRepository.IsDidInUse(did).ConfigureAwait(ConfigureAwaitOptions.None);
             if (didExists)
             {
-                throw new ConflictException("DID is already in use.");
+                throw ConflictException.Create(RegistrationErrors.REGISTRATION_CONFLICT_DID_ALREADY_IN_USE);
             }
 
             return validationResult.DidDocument;
@@ -66,12 +66,12 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
             var companyExists = await companyRepository.IsExistingCompany(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (!companyExists)
             {
-                throw new NotFoundException("Company ID not found or not valid.");
+                throw NotFoundException.Create(RegistrationErrors.REGISTRATION_CONFLICT_DID_ALREADY_IN_USE);
             }
 
             if (string.IsNullOrEmpty(did))
             {
-                throw new ForbiddenException("Invalid DID. DID cannot be empty or NULL.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT);
             }
 
             var didDocument = await ValidateDid(did, CancellationToken.None).ConfigureAwait(ConfigureAwaitOptions.None);
@@ -89,13 +89,13 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
             var companyExists = await companyRepository.IsExistingCompany(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (!companyExists)
             {
-                throw new NotFoundException("Company ID not found or not valid.");
+                throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_ID_NOT_FOUND, [new("companyId", companyId.ToString())]);
             }
 
             var did = await companyRepository.GetCompanyHolderDidAsync(companyId).ConfigureAwait(ConfigureAwaitOptions.None);
             if (string.IsNullOrEmpty(did))
             {
-                throw new NotFoundException("Company wallet DID not found.");
+                throw NotFoundException.Create(RegistrationErrors.REGISTRATION_COMPANY_ID_NOT_FOUND, [new("companyId", companyId.ToString())]);
             }
             return did;
         }
@@ -113,19 +113,20 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
         {
             if (!didDocument.RootElement.TryGetProperty("id", out var idProperty))
             {
-                throw new ControllerArgumentException("DID validation failed: missing 'id' property.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT);
+
             }
 
             var did = idProperty.GetString();
             if (string.IsNullOrWhiteSpace(did) || !did.StartsWith("did:", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ControllerArgumentException("Invalid DID format: must start with 'did:'.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_INVALID_DID_FORMAT);
             }
 
             var didParts = did.Split(':', 3);
             if (didParts.Length != 3)
             {
-                throw new ControllerArgumentException("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_INVALID_DID_FORMAT);
             }
 
             var method = didParts[1];
@@ -133,7 +134,7 @@ namespace Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic
 
             if (!method.Equals("web", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ControllerArgumentException($"Unsupported DID method: '{method}'. Only 'did:web' is supported.");
+                throw ControllerArgumentException.Create(RegistrationErrors.REGISTRATION_UNSUPPORTED_DID_METHOD, [new("method", method)]);
             }
 
             var hostAndPath = identifier.Replace(":", "/");

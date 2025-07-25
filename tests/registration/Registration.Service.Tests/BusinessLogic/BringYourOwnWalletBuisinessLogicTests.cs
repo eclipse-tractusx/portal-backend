@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2025 Cofinity-X GmbH
  * Copyright (c) 2025 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -24,6 +23,7 @@ using Org.Eclipse.TractusX.Portal.Backend.Framework.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess;
 using Org.Eclipse.TractusX.Portal.Backend.PortalBackend.DBAccess.Repositories;
 using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.BusinessLogic;
+using Org.Eclipse.TractusX.Portal.Backend.Registration.Service.ErrorHandling;
 using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library;
 using Org.Eclipse.TractusX.Portal.Backend.UniversalDidResolver.Library.Models;
 using System.Text.Json;
@@ -75,7 +75,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("DID validation failed. DID Document is not valid.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ConflictException>()
-            .WithMessage("DID is already in use.");
+            .WithMessage(RegistrationErrors.REGISTRATION_CONFLICT_DID_ALREADY_IN_USE.ToString());
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("DID validation failed. DID Document is not valid.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("DID validation failed. DID Document is not valid.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<Exception>()
-            .WithMessage("Invalid DID. DID cannot be empty or NULL.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("Company ID not found or not valid.");
+            .WithMessage(RegistrationErrors.REGISTRATION_CONFLICT_DID_ALREADY_IN_USE.ToString());
     }
 
     [Fact]
@@ -275,7 +275,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("Company wallet DID not found.");
+            .WithMessage(RegistrationErrors.REGISTRATION_COMPANY_ID_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -294,7 +294,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
-            .WithMessage("Company ID not found or not valid.");
+            .WithMessage(RegistrationErrors.REGISTRATION_COMPANY_ID_NOT_FOUND.ToString());
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("DID validation failed: missing 'id' property.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_DOCUMENT.ToString());
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("Invalid DID format: must start with 'did:'.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_FORMAT.ToString());
     }
 
     [Fact]
@@ -383,7 +383,7 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("Invalid DID format: must be in the form 'did:<method>:<identifier>'.");
+            .WithMessage(RegistrationErrors.REGISTRATION_INVALID_DID_FORMAT.ToString());
     }
 
     [Fact]
@@ -412,6 +412,6 @@ public class BringYourOwnWalletBuisinessLogicTests
 
         // Assert
         await act.Should().ThrowAsync<ControllerArgumentException>()
-            .WithMessage("Unsupported DID method: 'error'. Only 'did:web' is supported.");
+            .WithMessage(RegistrationErrors.REGISTRATION_UNSUPPORTED_DID_METHOD.ToString());
     }
 }

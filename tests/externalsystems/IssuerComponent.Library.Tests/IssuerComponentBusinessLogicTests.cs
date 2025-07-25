@@ -102,23 +102,8 @@ public class IssuerComponentBusinessLogicTests
     public async Task CreateBpnlCredential_WithValid_CallsExpected()
     {
         // Arrange
-        var cryptoConfig = _options.Value.EncryptionConfigs.First();
-        var (secret, vector) = CryptoHelper.Encrypt("test123", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
-        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
-            {
-                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
-                {ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO}
-            }
-            .ToImmutableDictionary();
-        var entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
-        var context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
-        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
-            .Returns((true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
+        CreateContextForCredential(out var entry, out var context);
 
-        //bring your own wallet false
-        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(false);
         // Act
         var result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
@@ -135,24 +120,74 @@ public class IssuerComponentBusinessLogicTests
                     x.CallbackUrl == "https://example.org/callback/api/administration/registration/issuer/bpncredential"),
                 A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE);
+        result.Modified.Should().BeTrue();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry!(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
+    }
+
+    [Fact]
+    public async Task CreateBpnlCredential_WithValid_BringYourOwnWallet_true_CallsExpected()
+    {
+        // Arrange
+        CreateContextForCredential(out var entry, out var context);
 
         //bring your own wallet true
         A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(true);
-        result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
+        // Act
+        var result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
+
+        // Assert
+        A.CallTo(() => _issuerComponentService
+            .CreateBpnlCredential(
+                A<CreateBpnCredentialRequest>.That.Matches(x => x.TechnicalUserDetails == null),
+                A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+
+        //call should be 2 times now
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
+            .MustHaveHappenedOnceExactly();
+        result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
+        result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE);
+        result.Modified.Should().BeTrue();
+        result.SkipStepTypeIds.Should().BeNull();
+        result.ModifyChecklistEntry.Should().NotBeNull();
+        result.ModifyChecklistEntry!(entry);
+        entry.ApplicationChecklistEntryStatusId.Should().Be(ApplicationChecklistEntryStatusId.IN_PROGRESS);
+    }
+
+    [Fact]
+    public async Task CreateBpnlCredential_WithValid_BringYourOwnWallet_false_CallsExpected()
+    {
+        // Arrange
+        CreateContextForCredential(out var entry, out var context);
+
+        //bring your own wallet false
+        A.CallTo(() => _companyRepository.IsBringYourOwnWallet(A<Guid>._)).Returns(false);
+
+        var result = await _sut.CreateBpnlCredential(context, CancellationToken.None);
 
         A.CallTo(() => _issuerComponentService
                 .CreateBpnlCredential(
                     A<CreateBpnCredentialRequest>.That.Matches(x =>
-                        x.Holder == "did:123:testabc" &&
-                        x.BusinessPartnerNumber == ValidBpn &&
-                        x.TechnicalUserDetails == null
-                        ),
+                    x.Holder == "did:123:testabc" &&
+                    x.BusinessPartnerNumber == ValidBpn &&
+                    x.TechnicalUserDetails != null &&
+                    x.TechnicalUserDetails.WalletUrl == "https://example.com/wallet" &&
+                    x.TechnicalUserDetails.ClientId == "cl1" &&
+                    x.TechnicalUserDetails.ClientSecret == "test123" &&
+                    x.CallbackUrl == "https://example.org/callback/api/administration/registration/issuer/bpncredential"),
                     A<CancellationToken>._))
             .MustHaveHappenedOnceExactly();
 
         //call should be 2 times now
         A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(IdWithBpn))
-            .MustHaveHappenedTwiceExactly();
+            .MustHaveHappenedOnceExactly();
         result.StepStatusId.Should().Be(ProcessStepStatusId.DONE);
         result.ScheduleStepTypeIds.Should().ContainSingle().Which.Should().Be(ProcessStepTypeId.AWAIT_BPN_CREDENTIAL_RESPONSE);
         result.Modified.Should().BeTrue();
@@ -705,4 +740,22 @@ public class IssuerComponentBusinessLogicTests
     }
 
     #endregion
+
+    private void CreateContextForCredential(out ApplicationChecklistEntry entry, out IApplicationChecklistService.WorkerChecklistProcessStepData context)
+    {
+        var cryptoConfig = _options.Value.EncryptionConfigs.First();
+        var (secret, vector) = CryptoHelper.Encrypt("test123", Convert.FromHexString(cryptoConfig.EncryptionKey), cryptoConfig.CipherMode, cryptoConfig.PaddingMode);
+        var checklist = new Dictionary<ApplicationChecklistEntryTypeId, ApplicationChecklistEntryStatusId>
+            {
+                {ApplicationChecklistEntryTypeId.REGISTRATION_VERIFICATION, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BUSINESS_PARTNER_NUMBER, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.IDENTITY_WALLET, ApplicationChecklistEntryStatusId.DONE},
+                {ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO}
+            }
+            .ToImmutableDictionary();
+        entry = new ApplicationChecklistEntry(IdWithBpn, ApplicationChecklistEntryTypeId.BPNL_CREDENTIAL, ApplicationChecklistEntryStatusId.TO_DO, DateTimeOffset.UtcNow);
+        context = new IApplicationChecklistService.WorkerChecklistProcessStepData(IdWithBpn, ProcessStepTypeId.REQUEST_BPN_CREDENTIAL, checklist, Enumerable.Empty<ProcessStepTypeId>());
+        A.CallTo(() => _applicationRepository.GetBpnlCredentialIformationByApplicationId(A<Guid>._))
+            .Returns((true, "did:123:testabc", ValidBpn, new WalletInformation("cl1", secret, vector, 0, "https://example.com/wallet")));
+    }
 }
