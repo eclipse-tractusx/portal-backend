@@ -125,7 +125,7 @@ public class ConnectorsBusinessLogic(
             throw UnexpectedConditionException.Create(AdministrationConnectorErrors.CONNECTOR_UNEXPECTED_NO_BPN_ASSIGNED, new ErrorParameter[] { new(nameof(companyId), companyId.ToString()) });
         }
 
-        await ValidateTechnicalUser(name, technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await ValidateTechnicalUser(ConnectorTypeId.COMPANY_CONNECTOR, name, technicalUserId, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.COMPANY_CONNECTOR, location, companyId, companyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
@@ -174,7 +174,7 @@ public class ConnectorsBusinessLogic(
             throw ConflictException.Create(AdministrationConnectorErrors.CONNECTOR_CONFLICT_SET_BPN, new ErrorParameter[] { new("companyId", result.CompanyId.ToString()) });
         }
 
-        await ValidateTechnicalUser(name, technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
+        await ValidateTechnicalUser(ConnectorTypeId.CONNECTOR_AS_A_SERVICE, name, technicalUserId, result.CompanyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         var connectorRequestModel = new ConnectorRequestModel(name, connectorUrl, ConnectorTypeId.CONNECTOR_AS_A_SERVICE, location, companyId, result.CompanyId, technicalUserId);
         return await CreateAndRegisterConnectorAsync(
@@ -204,15 +204,18 @@ public class ConnectorsBusinessLogic(
         }
     }
 
-    private async Task ValidateTechnicalUser(string name, Guid? technicalUserId, Guid companyId)
+    private async Task ValidateTechnicalUser(ConnectorTypeId type, string name, Guid? technicalUserId, Guid companyId)
     {
         if (technicalUserId == null)
         {
+            if (type != ConnectorTypeId.COMPANY_CONNECTOR)
+                return;
+
             throw ControllerArgumentException.Create(AdministrationConnectorErrors.CONNECTOR_MISSING_TECH_USER, [new ErrorParameter("name", name)]);
         }
 
         var (activeUserExists, linkedToConnectorOrOffer) = await portalRepositories.GetInstance<ITechnicalUserRepository>()
-                .CheckTechnicalUserDetailsAsync(technicalUserId.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
+                .CheckTechnicalUserDetailsAsync(technicalUserId!.Value, companyId).ConfigureAwait(ConfigureAwaitOptions.None);
 
         if (!activeUserExists)
         {
